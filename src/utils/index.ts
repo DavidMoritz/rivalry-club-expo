@@ -64,12 +64,14 @@ export function scoreDisplay(result: number): string {
 }
 
 export function sourceCase(name: string): string {
-  // Simple snake_case conversion without lodash dependency
+  // Convert to snake_case and handle special characters
   return name
     .toLowerCase()
-    .replace(/\s+/g, '_')
-    .replace(/[^\w]/g, '')
-    .replace('é', 'e');
+    .replace('é', 'e')
+    .replace(/[^\w\s]/g, '_') // Replace all special characters with underscore
+    .replace(/\s+/g, '_') // Replace spaces with underscore
+    .replace(/_+/g, '_') // Replace multiple consecutive underscores with single underscore
+    .replace(/^_|_$/g, ''); // Remove leading/trailing underscores
 }
 
 export function lastItem<T>(arr?: T[] | null): T | null {

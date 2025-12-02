@@ -33,6 +33,8 @@ export function GameWithCharactersDisplay({
         data={game.fighters?.items || []}
         renderItem={({ item }) => item && <CharacterDisplay fighter={item} />}
         style={styles.fightersContainer}
+        numColumns={3}
+        keyExtractor={(item) => item?.id || ''}
       />
     </>
   );

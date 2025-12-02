@@ -32,12 +32,9 @@ export function CharacterDisplay({
   return (
     <View
       key={fighter.id}
-      className={twMerge(
-        'items-center h-[150px] justify-between my-1.25',
-        className,
-      )}>
+      style={styles.fighterWrapper}
+      className={className}>
       <Image
-        className="aspect-square"
         style={{
           aspectRatio: 1,
           flex: 4,
@@ -47,7 +44,7 @@ export function CharacterDisplay({
       />
       {!hideName && (
         <View style={styles.fighterText}>
-          <Text className="text-sm text-white">{fighter.name}</Text>
+          <Text style={{ color: 'white', fontSize: 14 }}>{fighter.name}</Text>
         </View>
       )}
     </View>

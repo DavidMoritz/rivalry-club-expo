@@ -20,6 +20,7 @@ export const styles = StyleSheet.create({
     fontWeight: 'bold',
     justifyContent: 'center',
     width: '100%',
+    color: 'white',
   },
   fighterWrapper: {
     alignItems: 'center',
@@ -73,6 +74,7 @@ export const styles = StyleSheet.create({
   },
   text: {
     fontSize: 14,
+    color: 'white',
   },
   tierFighters: {
     alignItems: 'center',

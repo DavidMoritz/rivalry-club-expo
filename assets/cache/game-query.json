@@ -1,0 +1,438 @@
+{
+  "data": {
+    "listGames": {
+      "nextToken": null,
+      "items": [
+        {
+          "id": "73ed69cf-2775-43d6-bece-aed10da3e25a",
+          "name": "Super Smash Bros. Ultimate",
+          "fighters": {
+            "nextToken": null,
+            "items": [
+              {
+                "id": "483cfead-6301-11ee-a22d-169ccb685861",
+                "name": "Mario",
+                "gamePosition": 1
+              },
+              {
+                "id": "483d0208-6301-11ee-a22d-169ccb685861",
+                "name": "Donkey Kong",
+                "gamePosition": 2
+              },
+              {
+                "id": "483d02ea-6301-11ee-a22d-169ccb685861",
+                "name": "Link",
+                "gamePosition": 3
+              },
+              {
+                "id": "483d038a-6301-11ee-a22d-169ccb685861",
+                "name": "Samus",
+                "gamePosition": 4
+              },
+              {
+                "id": "483d041f-6301-11ee-a22d-169ccb685861",
+                "name": "Dark Samus",
+                "gamePosition": 5
+              },
+              {
+                "id": "483d04b6-6301-11ee-a22d-169ccb685861",
+                "name": "Yoshi",
+                "gamePosition": 6
+              },
+              {
+                "id": "483d0543-6301-11ee-a22d-169ccb685861",
+                "name": "Kirby",
+                "gamePosition": 7
+              },
+              {
+                "id": "483d05d0-6301-11ee-a22d-169ccb685861",
+                "name": "Fox",
+                "gamePosition": 8
+              },
+              {
+                "id": "483d073f-6301-11ee-a22d-169ccb685861",
+                "name": "Pikachu",
+                "gamePosition": 9
+              },
+              {
+                "id": "483d07dd-6301-11ee-a22d-169ccb685861",
+                "name": "Luigi",
+                "gamePosition": 10
+              },
+              {
+                "id": "483d0879-6301-11ee-a22d-169ccb685861",
+                "name": "Ness",
+                "gamePosition": 11
+              },
+              {
+                "id": "483d0907-6301-11ee-a22d-169ccb685861",
+                "name": "Captain Falcon",
+                "gamePosition": 12
+              },
+              {
+                "id": "483d0993-6301-11ee-a22d-169ccb685861",
+                "name": "Jigglypuff",
+                "gamePosition": 13
+              },
+              {
+                "id": "483d0a1a-6301-11ee-a22d-169ccb685861",
+                "name": "Peach",
+                "gamePosition": 14
+              },
+              {
+                "id": "483d0aa1-6301-11ee-a22d-169ccb685861",
+                "name": "Daisy",
+                "gamePosition": 15
+              },
+              {
+                "id": "483d0b31-6301-11ee-a22d-169ccb685861",
+                "name": "Bowser",
+                "gamePosition": 16
+              },
+              {
+                "id": "483d0bb8-6301-11ee-a22d-169ccb685861",
+                "name": "Ice Climbers",
+                "gamePosition": 17
+              },
+              {
+                "id": "483d0c46-6301-11ee-a22d-169ccb685861",
+                "name": "Sheik",
+                "gamePosition": 18
+              },
+              {
+                "id": "483d0ccf-6301-11ee-a22d-169ccb685861",
+                "name": "Zelda",
+                "gamePosition": 19
+              },
+              {
+                "id": "483d0d66-6301-11ee-a22d-169ccb685861",
+                "name": "Dr. Mario",
+                "gamePosition": 20
+              },
+              {
+                "id": "483d0df0-6301-11ee-a22d-169ccb685861",
+                "name": "Pichu",
+                "gamePosition": 21
+              },
+              {
+                "id": "483d0e76-6301-11ee-a22d-169ccb685861",
+                "name": "Falco",
+                "gamePosition": 22
+              },
+              {
+                "id": "483d0f02-6301-11ee-a22d-169ccb685861",
+                "name": "Marth",
+                "gamePosition": 23
+              },
+              {
+                "id": "483d0f8d-6301-11ee-a22d-169ccb685861",
+                "name": "Lucina",
+                "gamePosition": 24
+              },
+              {
+                "id": "483d1018-6301-11ee-a22d-169ccb685861",
+                "name": "Young Link",
+                "gamePosition": 25
+              },
+              {
+                "id": "483d109e-6301-11ee-a22d-169ccb685861",
+                "name": "Ganondorf",
+                "gamePosition": 26
+              },
+              {
+                "id": "483d1126-6301-11ee-a22d-169ccb685861",
+                "name": "Mewtwo",
+                "gamePosition": 27
+              },
+              {
+                "id": "483d11aa-6301-11ee-a22d-169ccb685861",
+                "name": "Roy",
+                "gamePosition": 28
+              },
+              {
+                "id": "483d1231-6301-11ee-a22d-169ccb685861",
+                "name": "Chrom",
+                "gamePosition": 29
+              },
+              {
+                "id": "483d12bf-6301-11ee-a22d-169ccb685861",
+                "name": "Mr. Game & Watch",
+                "gamePosition": 30
+              },
+              {
+                "id": "483d1347-6301-11ee-a22d-169ccb685861",
+                "name": "Meta Knight",
+                "gamePosition": 31
+              },
+              {
+                "id": "483d13ce-6301-11ee-a22d-169ccb685861",
+                "name": "Pit",
+                "gamePosition": 32
+              },
+              {
+                "id": "483d1456-6301-11ee-a22d-169ccb685861",
+                "name": "Dark Pit",
+                "gamePosition": 33
+              },
+              {
+                "id": "483d14dc-6301-11ee-a22d-169ccb685861",
+                "name": "Zero Suit Samus",
+                "gamePosition": 34
+              },
+              {
+                "id": "483d156a-6301-11ee-a22d-169ccb685861",
+                "name": "Wario",
+                "gamePosition": 35
+              },
+              {
+                "id": "483d15ee-6301-11ee-a22d-169ccb685861",
+                "name": "Snake",
+                "gamePosition": 36
+              },
+              {
+                "id": "483d1676-6301-11ee-a22d-169ccb685861",
+                "name": "Ike",
+                "gamePosition": 37
+              },
+              {
+                "id": "483d1797-6301-11ee-a22d-169ccb685861",
+                "name": "Pokémon Trainer",
+                "gamePosition": 38
+              },
+              {
+                "id": "483d182f-6301-11ee-a22d-169ccb685861",
+                "name": "Diddy Kong",
+                "gamePosition": 39
+              },
+              {
+                "id": "483d18b4-6301-11ee-a22d-169ccb685861",
+                "name": "Lucas",
+                "gamePosition": 40
+              },
+              {
+                "id": "483d1932-6301-11ee-a22d-169ccb685861",
+                "name": "Sonic",
+                "gamePosition": 41
+              },
+              {
+                "id": "483d19b8-6301-11ee-a22d-169ccb685861",
+                "name": "King Dedede",
+                "gamePosition": 42
+              },
+              {
+                "id": "483d1a3b-6301-11ee-a22d-169ccb685861",
+                "name": "Olimar",
+                "gamePosition": 43
+              },
+              {
+                "id": "483d1aba-6301-11ee-a22d-169ccb685861",
+                "name": "Lucario",
+                "gamePosition": 44
+              },
+              {
+                "id": "483d1b3f-6301-11ee-a22d-169ccb685861",
+                "name": "R.O.B.",
+                "gamePosition": 45
+              },
+              {
+                "id": "483d1bbf-6301-11ee-a22d-169ccb685861",
+                "name": "Toon Link",
+                "gamePosition": 46
+              },
+              {
+                "id": "483d1c40-6301-11ee-a22d-169ccb685861",
+                "name": "Wolf",
+                "gamePosition": 47
+              },
+              {
+                "id": "483d1cc5-6301-11ee-a22d-169ccb685861",
+                "name": "Villager",
+                "gamePosition": 48
+              },
+              {
+                "id": "483d1d43-6301-11ee-a22d-169ccb685861",
+                "name": "Mega Man",
+                "gamePosition": 49
+              },
+              {
+                "id": "483d1e61-6301-11ee-a22d-169ccb685861",
+                "name": "Wii Fit Trainer",
+                "gamePosition": 50
+              },
+              {
+                "id": "483d1ee9-6301-11ee-a22d-169ccb685861",
+                "name": "Rosalina & Luma",
+                "gamePosition": 51
+              },
+              {
+                "id": "483d1f7c-6301-11ee-a22d-169ccb685861",
+                "name": "Little Mac",
+                "gamePosition": 52
+              },
+              {
+                "id": "483d2001-6301-11ee-a22d-169ccb685861",
+                "name": "Greninja",
+                "gamePosition": 53
+              },
+              {
+                "id": "483d2085-6301-11ee-a22d-169ccb685861",
+                "name": "Mii Fighters",
+                "gamePosition": 54
+              },
+              {
+                "id": "483d210b-6301-11ee-a22d-169ccb685861",
+                "name": "Palutena",
+                "gamePosition": 55
+              },
+              {
+                "id": "483d2191-6301-11ee-a22d-169ccb685861",
+                "name": "Pac-man",
+                "gamePosition": 56
+              },
+              {
+                "id": "483d221a-6301-11ee-a22d-169ccb685861",
+                "name": "Robin",
+                "gamePosition": 57
+              },
+              {
+                "id": "483d22a0-6301-11ee-a22d-169ccb685861",
+                "name": "Shulk",
+                "gamePosition": 58
+              },
+              {
+                "id": "483d232b-6301-11ee-a22d-169ccb685861",
+                "name": "Bowser Jr.",
+                "gamePosition": 59
+              },
+              {
+                "id": "483d23ae-6301-11ee-a22d-169ccb685861",
+                "name": "Duck Hunt",
+                "gamePosition": 60
+              },
+              {
+                "id": "483d2434-6301-11ee-a22d-169ccb685861",
+                "name": "Ryu",
+                "gamePosition": 61
+              },
+              {
+                "id": "483d24b8-6301-11ee-a22d-169ccb685861",
+                "name": "Ken",
+                "gamePosition": 62
+              },
+              {
+                "id": "483d253f-6301-11ee-a22d-169ccb685861",
+                "name": "Cloud",
+                "gamePosition": 63
+              },
+              {
+                "id": "483d25c3-6301-11ee-a22d-169ccb685861",
+                "name": "Corrin",
+                "gamePosition": 64
+              },
+              {
+                "id": "483d264d-6301-11ee-a22d-169ccb685861",
+                "name": "Bayonetta",
+                "gamePosition": 65
+              },
+              {
+                "id": "483d26d3-6301-11ee-a22d-169ccb685861",
+                "name": "Inkling",
+                "gamePosition": 66
+              },
+              {
+                "id": "483d27d7-6301-11ee-a22d-169ccb685861",
+                "name": "Ridley",
+                "gamePosition": 67
+              },
+              {
+                "id": "483d287a-6301-11ee-a22d-169ccb685861",
+                "name": "Simon",
+                "gamePosition": 68
+              },
+              {
+                "id": "483d2910-6301-11ee-a22d-169ccb685861",
+                "name": "Richter",
+                "gamePosition": 69
+              },
+              {
+                "id": "483d299e-6301-11ee-a22d-169ccb685861",
+                "name": "King K. Rool",
+                "gamePosition": 70
+              },
+              {
+                "id": "483d2a28-6301-11ee-a22d-169ccb685861",
+                "name": "Isabelle",
+                "gamePosition": 71
+              },
+              {
+                "id": "483d2ab5-6301-11ee-a22d-169ccb685861",
+                "name": "Incineroar",
+                "gamePosition": 72
+              },
+              {
+                "id": "483d2b88-6301-11ee-a22d-169ccb685861",
+                "name": "Piranha Plant",
+                "gamePosition": 73
+              },
+              {
+                "id": "483d2c1c-6301-11ee-a22d-169ccb685861",
+                "name": "Joker",
+                "gamePosition": 74
+              },
+              {
+                "id": "483d2ca9-6301-11ee-a22d-169ccb685861",
+                "name": "Hero",
+                "gamePosition": 75
+              },
+              {
+                "id": "483d2dfc-6301-11ee-a22d-169ccb685861",
+                "name": "Banjo & Kazooie",
+                "gamePosition": 76
+              },
+              {
+                "id": "483d2e91-6301-11ee-a22d-169ccb685861",
+                "name": "Terry",
+                "gamePosition": 77
+              },
+              {
+                "id": "483d2f1a-6301-11ee-a22d-169ccb685861",
+                "name": "Byleth",
+                "gamePosition": 78
+              },
+              {
+                "id": "483d2fa3-6301-11ee-a22d-169ccb685861",
+                "name": "Min Min",
+                "gamePosition": 79
+              },
+              {
+                "id": "483d3032-6301-11ee-a22d-169ccb685861",
+                "name": "Steve",
+                "gamePosition": 80
+              },
+              {
+                "id": "483d30ba-6301-11ee-a22d-169ccb685861",
+                "name": "Sephiroth",
+                "gamePosition": 81
+              },
+              {
+                "id": "483d3143-6301-11ee-a22d-169ccb685861",
+                "name": "Pyra / Mythra",
+                "gamePosition": 82
+              },
+              {
+                "id": "483d3267-6301-11ee-a22d-169ccb685861",
+                "name": "Kazuya",
+                "gamePosition": 83
+              },
+              {
+                "id": "483d32f9-6301-11ee-a22d-169ccb685861",
+                "name": "Sora",
+                "gamePosition": 84
+              }
+            ]
+          }
+        }
+      ]
+    }
+  }
+}

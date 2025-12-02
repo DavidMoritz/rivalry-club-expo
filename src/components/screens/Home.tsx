@@ -1,5 +1,5 @@
 import { FontAwesomeIcon } from '@fortawesome/react-native-fontawesome';
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import {
   FlatList,
   Image,
@@ -10,6 +10,7 @@ import {
   View,
 } from 'react-native';
 
+import gameQuery from '../../../assets/cache/game-query.json';
 import { darkStyles, lightStyles, styles } from '../../utils/styles';
 import { s3Favicons } from '../../utils';
 import { GameWithCharactersDisplay } from './GameWithCharactersDisplay';
@@ -32,19 +33,34 @@ interface HomeProps {
 }
 
 export default function Home({ onEnterClick }: HomeProps) {
-  // For now, we'll use mock data. This will be replaced with GraphQL query later
-  const [games] = useState<Game[]>([
-    {
-      id: '1',
-      name: 'Super Smash Bros. Ultimate',
-      fighters: { items: [] },
-    },
-  ]);
+  const [games, setGames] = useState<Game[]>([]);
+
+  useEffect(() => {
+    // Load game data from cached query
+    const loadedGames = gameQuery.data?.listGames?.items;
+    if (loadedGames?.length) {
+      setGames(loadedGames as Game[]);
+    }
+  }, []);
 
   const isDarkMode = true;
 
   // Note: This will use 'shuffle' icon since we don't have Pro 'swords' icon yet
   const buttonIcon = <FontAwesomeIcon icon="shuffle" color="white" />;
+
+  if (!games.length) {
+    return (
+      <SafeAreaView
+        style={[
+          styles.container,
+          isDarkMode ? darkStyles.container : lightStyles.container,
+        ]}>
+        <View className="flex-1 items-center justify-center">
+          <Text className="text-white text-xl">Loading games...</Text>
+        </View>
+      </SafeAreaView>
+    );
+  }
 
   return (
     <SafeAreaView

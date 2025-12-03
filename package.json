@@ -19,10 +19,12 @@
     "@fortawesome/react-native-fontawesome": "^0.3.2",
     "@react-native-async-storage/async-storage": "^2.2.0",
     "@react-native-community/netinfo": "^11.4.1",
+    "@supabase/supabase-js": "^2.86.0",
     "@tanstack/react-query": "^5.90.11",
     "amazon-cognito-identity-js": "^6.3.16",
     "aws-amplify": "^6.15.8",
     "expo": "~54.0.25",
+    "expo-secure-store": "~15.0.7",
     "expo-status-bar": "~3.0.8",
     "nativewind": "^4.2.1",
     "react": "19.1.0",
@@ -39,6 +41,9 @@
   "devDependencies": {
     "@aws-amplify/backend": "^1.18.0",
     "@aws-amplify/backend-cli": "^1.8.0",
+    "@aws-sdk/client-cloudformation": "^3.943.0",
+    "@aws-sdk/client-dynamodb": "^3.943.0",
+    "@aws-sdk/lib-dynamodb": "^3.943.0",
     "@react-native-community/cli": "^20.0.2",
     "@types/react": "~19.1.0",
     "typescript": "~5.9.2"

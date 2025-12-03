@@ -1,8 +1,8 @@
-import { useAuthenticator } from '@aws-amplify/ui-react-native';
 import { generateClient } from 'aws-amplify/data';
 import { useEffect, useState } from 'react';
 
 import type { Schema } from '../../amplify/data/resource';
+import { supabase } from '../lib/supabase';
 
 interface AuthUser {
   id: string;
@@ -14,45 +14,74 @@ interface AuthUser {
 }
 
 /**
- * Custom hook that manages user creation and retrieval after Cognito authentication.
+ * Custom hook that manages user creation and retrieval after Supabase authentication.
  *
  * Flow:
- * 1. Gets the authenticated Cognito user from Amplify
- * 2. Queries the database for a User record matching the Cognito awsSub
- * 3. If no User exists, creates one with the Cognito user's email and awsSub
+ * 1. Gets the authenticated Supabase user
+ * 2. Queries the AppSync database for a User record matching the Supabase user ID
+ * 3. If no User exists, creates one with the Supabase user's email and ID
  * 4. Returns the User record
  */
 export function useAuthUser() {
-  const { user: amplifyUser } = useAuthenticator();
   const [user, setUser] = useState<AuthUser | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<Error | null>(null);
+  const [supabaseUserId, setSupabaseUserId] = useState<string | null>(null);
+
+  // Listen for auth changes from Supabase
+  useEffect(() => {
+    supabase.auth.getSession().then(({ data: { session } }) => {
+      setSupabaseUserId(session?.user?.id || null);
+    });
+
+    const {
+      data: { subscription },
+    } = supabase.auth.onAuthStateChange((_event, session) => {
+      setSupabaseUserId(session?.user?.id || null);
+    });
+
+    return () => subscription.unsubscribe();
+  }, []);
 
   useEffect(() => {
     async function fetchOrCreateUser() {
-      if (!amplifyUser?.username) {
-        console.log('[useAuthUser] No amplifyUser.username yet, waiting...');
+      if (!supabaseUserId) {
+        console.log('[useAuthUser] No supabaseUserId yet, waiting...');
         setIsLoading(false);
         return;
       }
 
       try {
-        console.log('[useAuthUser] Starting fetchOrCreateUser for:', amplifyUser.username);
+        console.log('[useAuthUser] Starting fetchOrCreateUser for:', supabaseUserId);
         setIsLoading(true);
         setError(null);
 
-        // Generate client inside the effect after Amplify is configured
+        // Get Supabase user email
+        const {
+          data: { user: supabaseUser },
+        } = await supabase.auth.getUser();
+        const email = supabaseUser?.email || '';
+
+        // Generate AppSync client
         const client = generateClient<Schema>();
 
-        // Query for existing user by Cognito awsSub
-        console.log('[useAuthUser] Querying database for user with awsSub:', amplifyUser.username);
-        const { data: users, errors: queryErrors } = await client.models.User.list({
+        // Query for existing user by Supabase user ID (stored in awsSub field)
+        console.log('[useAuthUser] Querying database for user with awsSub:', supabaseUserId);
+        const listResult = await client.models.User.list({
           filter: {
             awsSub: {
-              eq: amplifyUser.username,
+              eq: supabaseUserId,
             },
           },
         });
+
+        console.log('[useAuthUser] List result received');
+        console.log('[useAuthUser] listResult.data:', listResult.data);
+        console.log('[useAuthUser] listResult.errors:', listResult.errors);
+
+        // AWS Amplify v6 returns { data: User[], errors: Error[] }
+        const users = listResult.data;
+        const queryErrors = listResult.errors;
 
         if (queryErrors && queryErrors.length > 0) {
           console.error('[useAuthUser] Query errors:', queryErrors);
@@ -63,18 +92,28 @@ export function useAuthUser() {
 
         if (users && users.length > 0) {
           // User exists in database
-          console.log('[useAuthUser] User found in database:', users[0].id);
-          setUser(users[0] as AuthUser);
+          const foundUser = users[0];
+          console.log('[useAuthUser] ✓ User found in database!');
+          console.log('[useAuthUser]   - DynamoDB ID:', foundUser.id);
+          console.log('[useAuthUser]   - Email:', foundUser.email);
+          console.log('[useAuthUser]   - Name:', foundUser.firstName, foundUser.lastName);
+          console.log('[useAuthUser]   - awsSub:', foundUser.awsSub);
+          console.log('[useAuthUser]   - Role:', foundUser.role);
+          setUser(foundUser as AuthUser);
         } else {
           // Create new user in database
-          const email = amplifyUser.signInDetails?.loginId || '';
           console.log('[useAuthUser] Creating new user with email:', email);
 
-          const { data: newUser, errors } = await client.models.User.create({
+          const createResult = await client.models.User.create({
             email,
-            awsSub: amplifyUser.username,
+            awsSub: supabaseUserId, // Store Supabase user ID in awsSub field
             role: 0, // Default role
           });
+
+          console.log('[useAuthUser] Create result:', JSON.stringify(createResult, null, 2));
+
+          const newUser = createResult.data;
+          const errors = createResult.errors;
 
           if (errors && errors.length > 0) {
             console.error('[useAuthUser] Create user errors:', errors);
@@ -102,12 +141,11 @@ export function useAuthUser() {
     }
 
     fetchOrCreateUser();
-  }, [amplifyUser?.username, amplifyUser?.signInDetails?.loginId]);
+  }, [supabaseUserId]);
 
   return {
     user,
     isLoading,
     error,
-    amplifyUser,
   };
 }

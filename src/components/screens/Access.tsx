@@ -1,6 +1,7 @@
 import React from 'react';
-import { Text, View } from 'react-native';
+import { Text, TouchableOpacity, View } from 'react-native';
 
+import { supabase } from '../../lib/supabase';
 import { useAuthUser } from '../../hooks/useAuthUser';
 
 interface Game {
@@ -54,6 +55,12 @@ export function Access({ selectedGame }: AccessProps) {
     );
   }
 
+  async function handleSignOut() {
+    console.log('[Access] Signing out...');
+    await supabase.auth.signOut();
+    console.log('[Access] Signed out successfully');
+  }
+
   return (
     <View className="flex-1 bg-black items-center justify-center">
       <Text className="text-white text-2xl font-bold">
@@ -67,6 +74,21 @@ export function Access({ selectedGame }: AccessProps) {
       )}
       <Text className="text-green-500 mt-8">✓ User created in database</Text>
       <Text className="text-gray-500 text-sm mt-2">User ID: {user.id}</Text>
+
+      <TouchableOpacity
+        onPress={handleSignOut}
+        style={{
+          backgroundColor: '#dc2626',
+          paddingHorizontal: 24,
+          paddingVertical: 12,
+          borderRadius: 8,
+          marginTop: 32,
+        }}
+      >
+        <Text style={{ color: 'white', fontSize: 16, fontWeight: 'bold' }}>
+          Sign Out
+        </Text>
+      </TouchableOpacity>
     </View>
   );
 }

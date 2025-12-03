@@ -39,7 +39,7 @@ const schema = a.schema({
       awsSub: a.string().required(),
       deletedAt: a.datetime(),
     })
-    .authorization((allow) => [allow.owner()]),
+    .authorization((allow) => [allow.publicApiKey()]),
 
   // Rivalry type - represents a competition between two users
   Rivalry: a

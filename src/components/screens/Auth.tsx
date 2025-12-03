@@ -24,41 +24,34 @@ export function Auth({ onAuthSuccess }: AuthProps) {
 
   async function checkAuthStatus() {
     try {
-      const { data: { session } } = await supabase.auth.getSession();
+      const {
+        data: { session }
+      } = await supabase.auth.getSession();
 
       if (session) {
-        console.log('[Auth] Found cached session for:', session.user.email);
-        console.log('[Auth] Clearing cached session...');
-        // Clear the cached session since we deleted the user in Supabase
-        await supabase.auth.signOut();
-        console.log('[Auth] Session cleared. Please sign in again.');
-      } else {
-        console.log('[Auth] No authenticated user found');
+        onAuthSuccess();
       }
     } catch (err) {
-      console.log('[Auth] Error checking auth status:', err);
+      console.error('[Auth] Error checking auth status:', err);
     }
   }
 
   async function handleSignIn() {
-    console.log('[Auth] Sign in attempt for:', email);
     setError(null);
     setLoading(true);
 
     try {
       const { data, error: signInError } = await supabase.auth.signInWithPassword({
         email: email.trim(),
-        password: password.trim(),
+        password: password.trim()
       });
 
       if (signInError) {
-        console.error('[Auth] Sign in error:', signInError);
         setError(signInError.message);
         return;
       }
 
       if (data.session) {
-        console.log('[Auth] Sign in successful!', data.user?.email);
         onAuthSuccess();
       }
     } catch (err: any) {
@@ -70,8 +63,6 @@ export function Auth({ onAuthSuccess }: AuthProps) {
   }
 
   async function handleSignUp() {
-    console.log('[Auth] Sign up attempt for:', email);
-
     if (password !== confirmPassword) {
       setError('Passwords do not match');
       return;
@@ -83,24 +74,22 @@ export function Auth({ onAuthSuccess }: AuthProps) {
     try {
       const { data, error: signUpError } = await supabase.auth.signUp({
         email: email.trim(),
-        password: password.trim(),
+        password: password.trim()
       });
 
       if (signUpError) {
-        console.error('[Auth] Sign up error:', signUpError);
         setError(signUpError.message);
         return;
       }
 
-      console.log('[Auth] Sign up successful!', data.user?.email);
-
       // Supabase automatically signs in after sign up (if email confirmation is disabled)
       // Or requires email confirmation (check your Supabase dashboard settings)
       if (data.session) {
-        console.log('[Auth] Automatically signed in after sign up');
         onAuthSuccess();
       } else {
-        setError('Sign up successful! Please check your email to confirm your account, then sign in.');
+        setError(
+          'Sign up successful! Please check your email to confirm your account, then sign in.'
+        );
         setIsSignUp(false); // Switch back to sign in mode
       }
     } catch (err: any) {
@@ -203,6 +192,7 @@ export function Auth({ onAuthSuccess }: AuthProps) {
         )}
 
         <TouchableOpacity
+          testID="auth-submit-button"
           style={{
             backgroundColor: '#6b21a8',
             paddingHorizontal: 32,
@@ -217,13 +207,20 @@ export function Auth({ onAuthSuccess }: AuthProps) {
           }}
           onPress={isSignUp ? handleSignUp : handleSignIn}
           disabled={loading || !email || !password}
+          accessibilityState={{ disabled: loading || !email || !password }}
         >
           <Text style={{ color: 'white', fontSize: 18, fontWeight: 'bold' }}>
-            {loading ? 'Loading...' : isSignUp ? 'Sign Up' : 'Sign in nows'}
+            {loading ? 'Loading...' : isSignUp ? 'Sign Up' : 'Sign In'}
           </Text>
         </TouchableOpacity>
 
-        <TouchableOpacity onPress={() => setIsSignUp(!isSignUp)} style={{ marginTop: 8 }}>
+        <TouchableOpacity
+          onPress={() => {
+            setIsSignUp(!isSignUp);
+            setError(null);
+          }}
+          style={{ marginTop: 8 }}
+        >
           <Text style={{ color: '#22d3ee', fontSize: 16 }}>
             {isSignUp ? 'Already have an account? Sign In' : "Don't have an account? Sign Up"}
           </Text>

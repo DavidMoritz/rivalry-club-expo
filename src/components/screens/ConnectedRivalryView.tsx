@@ -1,0 +1,245 @@
+import React, { useEffect, useState } from 'react';
+import { Text, View } from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
+
+import { useUpdateFighterViaApiMutation } from '../../controllers/c-fighter';
+import {
+  useCreateContestMutation,
+  useRivalryWithAllInfoQuery,
+  useUpdateContestMutation,
+  useUpdateContestTierListsMutation,
+  useUpdateCurrentContestShuffleTierSlotsMutation,
+  useUpdateRivalryMutation,
+  useUpdateTierSlotsMutation,
+} from '../../controllers/c-rivalry';
+import { MContest } from '../../models/m-contest';
+import { PROVISIONAL_THRESHOLD, STEPS_PER_STOCK } from '../../models/m-game';
+import { MRivalry } from '../../models/m-rivalry';
+import { useRivalry, useUpdateRivalry } from '../../providers/rivalry';
+import { darkStyles, styles } from '../../utils/styles';
+import { Button } from '../common/Button';
+import { CurrentContest } from './parts/CurrentContest';
+import { RivalryView } from './parts/RivalryView';
+
+interface ConnectedRivalryViewProps {
+  navigation: {
+    navigate: (screen: string) => void;
+    setOptions: (options: { title?: string; headerTitle?: string }) => void;
+  };
+}
+
+export function ConnectedRivalryView({
+  navigation,
+}: ConnectedRivalryViewProps): JSX.Element {
+  const isDarkMode = true;
+  const updateRivalryProvider = useUpdateRivalry();
+  const rivalry = useRivalry();
+
+  const [tiersReady, setTiersReady] = useState<boolean>(false);
+
+  const updateRivalryMutation = useUpdateRivalryMutation({
+    rivalry,
+  });
+
+  const updateRivalryProviderAndMutation = () => {
+    if (!rivalry) return;
+
+    updateRivalryProvider(rivalry);
+    updateRivalryMutation.mutate();
+  };
+
+  const createContestMutation = useCreateContestMutation({
+    rivalry,
+    onSuccess: (currentContest: MContest) => {
+      rivalry?.setCurrentContest(currentContest);
+      updateRivalryProviderAndMutation();
+      setTiersReady(true);
+    },
+  });
+
+  const updateTierSlotsAMutation = useUpdateTierSlotsMutation({
+    rivalry,
+    tierListSignifier: 'A',
+  });
+
+  const updateTierSlotsBMutation = useUpdateTierSlotsMutation({
+    rivalry,
+    tierListSignifier: 'B',
+  });
+
+  const updateTierListsMutation = useUpdateContestTierListsMutation({
+    contest: rivalry?.currentContest,
+    onSuccess: () => {
+      if (!rivalry) return;
+
+      rivalry.tierListA?.adjustTierSlotPositionBySteps(
+        rivalry.currentContest?.tierSlotA?.position as number,
+        (rivalry.currentContest?.result as number) * STEPS_PER_STOCK * -1,
+      );
+      rivalry.tierListB?.adjustTierSlotPositionBySteps(
+        rivalry.currentContest?.tierSlotB?.position as number,
+        (rivalry.currentContest?.result as number) * STEPS_PER_STOCK,
+      );
+
+      updateTierSlotsAMutation.mutate();
+      updateTierSlotsBMutation.mutate();
+
+      rivalry.contestCount++;
+      updateRivalryProviderAndMutation();
+
+      createContestMutation.mutate();
+    },
+  });
+
+  const resolveUpdateFighterStatsMutation = useUpdateFighterViaApiMutation();
+
+  const resolveContestMutation = useUpdateContestMutation({
+    rivalry,
+    onSuccess: () => {
+      if (!(rivalry && rivalry.tierListA && rivalry.tierListB)) return;
+
+      if (
+        !(
+          rivalry.currentContest?.tierSlotA && rivalry.currentContest?.tierSlotB
+        )
+      ) {
+        return;
+      }
+
+      rivalry.currentContest.tierSlotA.tierList = rivalry.tierListA;
+      rivalry.currentContest.tierSlotB.tierList = rivalry.tierListB;
+
+      updateTierListsMutation.mutate();
+    },
+  });
+
+  const updateCurrentContestShuffleTierSlotsMutation =
+    useUpdateCurrentContestShuffleTierSlotsMutation({
+      rivalry,
+      onSuccess: (currentContest: MContest) => {
+        if (!rivalry) return;
+
+        rivalry.currentContest = currentContest;
+      },
+    });
+
+  async function handleResolveContest() {
+    setTiersReady(false);
+
+    if (!rivalry?.currentContest) return;
+
+    const isATheWinner = (rivalry.currentContest.result || 0) > 0;
+
+    if (
+      rivalry.currentContest.tierSlotA &&
+      (rivalry.currentContest.tierSlotA.contestCount ?? 0) >=
+        PROVISIONAL_THRESHOLD &&
+      rivalry.tierListA
+    ) {
+      resolveUpdateFighterStatsMutation.mutate({
+        fighterId: rivalry.currentContest.tierSlotA.fighterId,
+        didWin: isATheWinner,
+        tier: rivalry.tierListA.title,
+      });
+    }
+
+    if (
+      rivalry.currentContest.tierSlotB &&
+      (rivalry.currentContest.tierSlotB.contestCount ?? 0) >=
+        PROVISIONAL_THRESHOLD &&
+      rivalry.tierListB
+    ) {
+      resolveUpdateFighterStatsMutation.mutate({
+        fighterId: rivalry.currentContest.tierSlotB.fighterId,
+        didWin: !isATheWinner,
+        tier: rivalry.tierListB.title,
+      });
+    }
+
+    rivalry.adjustStanding();
+
+    resolveContestMutation.mutate();
+  }
+
+  const {
+    data: _,
+    isLoading,
+    isError,
+    error,
+  } = useRivalryWithAllInfoQuery({
+    rivalry,
+    onSuccess: (populatedRivalry: MRivalry) => {
+      updateRivalryProvider(populatedRivalry);
+      setTiersReady(true);
+    },
+  });
+
+  useEffect(() => {
+    navigation.setOptions({
+      headerTitle: rivalry?.displayTitle() || 'Header Title',
+    });
+  }, [navigation, rivalry]);
+
+  const handlePressShuffle = () => {
+    updateCurrentContestShuffleTierSlotsMutation.mutate();
+  };
+
+  return (
+    <SafeAreaView
+      style={[
+        styles.container,
+        isDarkMode ? darkStyles.container : styles.container,
+      ]}
+      edges={['top', 'bottom']}>
+      {createContestMutation.isPending && (
+        <View style={{ flex: 1, alignItems: 'center', justifyContent: 'center' }}>
+          <Text style={[styles.text, { fontSize: 18 }]}>Creating Contest...</Text>
+        </View>
+      )}
+
+      {createContestMutation.isError && (
+        <View style={{ flex: 1, alignItems: 'center', justifyContent: 'center', paddingHorizontal: 16 }}>
+          <Text style={[styles.text, { fontSize: 18, fontWeight: 'bold', color: '#ef4444', marginBottom: 16 }]}>
+            Error
+          </Text>
+          <Text style={styles.text}>
+            {`Error creating contest: ${createContestMutation.error.message}`}
+          </Text>
+        </View>
+      )}
+
+      {isLoading && (
+        <View style={{ flex: 1, alignItems: 'center', justifyContent: 'center' }}>
+          <Text style={[styles.text, { fontSize: 18 }]}>Loading Rivalry...</Text>
+        </View>
+      )}
+
+      {isError && (
+        <View style={{ flex: 1, alignItems: 'center', justifyContent: 'center', paddingHorizontal: 16 }}>
+          <Text style={[styles.text, { fontSize: 18, fontWeight: 'bold', color: '#ef4444', marginBottom: 16 }]}>
+            Error
+          </Text>
+          <Text style={styles.text}>{`Error loading rivalry: ${error.message}`}</Text>
+        </View>
+      )}
+
+      {tiersReady && rivalry?.currentContestId && (
+        <CurrentContest
+          onPressShuffle={handlePressShuffle}
+          onResolveContest={handleResolveContest}
+        />
+      )}
+
+      {!rivalry?.currentContest && (
+        <Button
+          text="+ Create new contest"
+          onPress={() => {
+            createContestMutation.mutate();
+          }}
+        />
+      )}
+
+      {tiersReady && <RivalryView navigation={navigation} />}
+    </SafeAreaView>
+  );
+}

@@ -5,7 +5,6 @@ import {
   Image,
   SafeAreaView,
   Text,
-  TouchableOpacity,
   TouchableWithoutFeedback,
   View,
 } from 'react-native';
@@ -13,6 +12,7 @@ import {
 import gameQuery from '../../../assets/cache/game-query.json';
 import { darkStyles, lightStyles, styles } from '../../utils/styles';
 import { s3Favicons } from '../../utils';
+import { Button } from '../common/Button';
 import { GameWithCharactersDisplay } from './GameWithCharactersDisplay';
 
 // Temporary Game type - will be replaced with GraphQL type later
@@ -36,17 +36,16 @@ export default function Home({ onEnterClick }: HomeProps) {
   const [games, setGames] = useState<Game[]>([]);
 
   useEffect(() => {
+    console.log('[Home] Home screen mounted! Logs are working.');
     // Load game data from cached query
     const loadedGames = gameQuery.data?.listGames?.items;
     if (loadedGames?.length) {
+      console.log('[Home] Loaded', loadedGames.length, 'games');
       setGames(loadedGames as Game[]);
     }
   }, []);
 
   const isDarkMode = true;
-
-  // Note: This will use 'shuffle' icon since we don't have Pro 'swords' icon yet
-  const buttonIcon = <FontAwesomeIcon icon="shuffle" color="white" />;
 
   if (!games.length) {
     return (
@@ -82,14 +81,16 @@ export default function Home({ onEnterClick }: HomeProps) {
             <Text style={styles.title}>Rivalry Club</Text>
           </View>
         </TouchableWithoutFeedback>
-        <TouchableOpacity
+        <Button
+          text="Enter"
           onPress={() => onEnterClick(games[0])}
-          className="self-center w-1/2 my-2 text-center bg-purple-900 border rounded-full border-slate-300 h-9">
-          <View className="flex-row items-center justify-center">
-            {buttonIcon}
-            <Text className="mt-1 ml-4 text-lg text-white">Enter</Text>
-          </View>
-        </TouchableOpacity>
+          className="w-1/2"
+          leftContent={
+            <View className="mr-2">
+              <FontAwesomeIcon icon="shuffle" color="white" />
+            </View>
+          }
+        />
       </View>
       <View style={styles.viewLower}>
         <FlatList

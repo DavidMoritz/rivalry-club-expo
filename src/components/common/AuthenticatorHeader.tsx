@@ -5,14 +5,12 @@ import { s3Favicons } from '../../utils';
 import { styles } from '../../utils/styles';
 
 export function AuthenticatorHeader(): JSX.Element {
-  console.log('[AuthenticatorHeader] Rendering header');
-
   return (
     <View>
       <Image
         style={styles.siteLogoImage}
         source={{
-          uri: `${s3Favicons}/swords-144.png`,
+          uri: `${s3Favicons}/swords-144.png`
         }}
       />
       <View style={styles.titleContainer}>

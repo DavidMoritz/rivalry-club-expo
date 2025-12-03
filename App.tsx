@@ -32,25 +32,16 @@ const storage = {
   async clear() {
     // SecureStore doesn't have a clear all method
     // This is a limitation but shouldn't cause issues
-  },
+  }
 };
 
 // Configure Amplify with the full outputs file
 // We're using Supabase for auth, but Amplify for the GraphQL API
 try {
   Amplify.configure(outputs);
-  console.log('[App] Amplify.configure succeeded');
-  console.log('[App] GraphQL endpoint:', outputs.data.url);
-  console.log('[App] Default auth mode:', outputs.data.default_authorization_type);
 } catch (configErr) {
   console.error('[App] Amplify.configure failed:', configErr);
 }
-
-console.log('[App] Amplify configured with auth:', outputs.auth ? 'YES' : 'NO');
-console.log('[App] Auth user pool ID:', outputs.auth?.user_pool_id);
-console.log('[App] Auth region:', outputs.auth?.aws_region);
-console.log('[App] Auth client ID:', outputs.auth?.user_pool_client_id);
-console.log('[App] Amplify configured with data:', outputs.data ? 'YES' : 'NO');
 
 // Test storage
 (async () => {
@@ -84,10 +75,7 @@ export default function App() {
 
     setEntering(true);
     setSelectedGame(game);
-    console.log('[App] State updated - entering:', true, 'selectedGame:', game.name);
   }
-
-  console.log('[App] Rendering - entering:', entering, 'selectedGame:', selectedGame?.name);
 
   if (!entering) {
     return (
@@ -109,21 +97,17 @@ function AuthenticatedApp({ selectedGame }: { selectedGame: Game | null }) {
     // Check initial session
     supabase.auth.getSession().then(({ data: { session } }) => {
       setAuthenticated(!!session);
-      console.log('[AuthenticatedApp] Initial session check:', !!session);
     });
 
     // Subscribe to auth changes
     const {
-      data: { subscription },
+      data: { subscription }
     } = supabase.auth.onAuthStateChange((_event, session) => {
       setAuthenticated(!!session);
-      console.log('[AuthenticatedApp] Auth state changed:', !!session);
     });
 
     return () => subscription.unsubscribe();
   }, []);
-
-  console.log('[AuthenticatedApp] Authenticated:', authenticated);
 
   if (!authenticated) {
     return (

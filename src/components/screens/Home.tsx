@@ -1,13 +1,6 @@
 import { FontAwesomeIcon } from '@fortawesome/react-native-fontawesome';
 import React, { useEffect, useState } from 'react';
-import {
-  FlatList,
-  Image,
-  SafeAreaView,
-  Text,
-  TouchableWithoutFeedback,
-  View,
-} from 'react-native';
+import { FlatList, Image, SafeAreaView, Text, TouchableWithoutFeedback, View } from 'react-native';
 
 import gameQuery from '../../../assets/cache/game-query.json';
 import { darkStyles, lightStyles, styles } from '../../utils/styles';
@@ -40,7 +33,6 @@ export default function Home({ onEnterClick }: HomeProps) {
     // Load game data from cached query
     const loadedGames = gameQuery.data?.listGames?.items;
     if (loadedGames?.length) {
-      console.log('[Home] Loaded', loadedGames.length, 'games');
       setGames(loadedGames as Game[]);
     }
   }, []);
@@ -50,10 +42,8 @@ export default function Home({ onEnterClick }: HomeProps) {
   if (!games.length) {
     return (
       <SafeAreaView
-        style={[
-          styles.container,
-          isDarkMode ? darkStyles.container : lightStyles.container,
-        ]}>
+        style={[styles.container, isDarkMode ? darkStyles.container : lightStyles.container]}
+      >
         <View className="flex-1 items-center justify-center">
           <Text className="text-white text-xl">Loading games...</Text>
         </View>
@@ -63,16 +53,14 @@ export default function Home({ onEnterClick }: HomeProps) {
 
   return (
     <SafeAreaView
-      style={[
-        styles.container,
-        isDarkMode ? darkStyles.container : lightStyles.container,
-      ]}>
+      style={[styles.container, isDarkMode ? darkStyles.container : lightStyles.container]}
+    >
       <View style={styles.viewUpper}>
         <TouchableWithoutFeedback onPress={() => onEnterClick(games[0])}>
           <Image
             style={styles.siteLogoImage}
             source={{
-              uri: `${s3Favicons}/swords-144.png`,
+              uri: `${s3Favicons}/swords-144.png`
             }}
           />
         </TouchableWithoutFeedback>

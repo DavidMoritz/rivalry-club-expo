@@ -1,0 +1,98 @@
+import React, { useState } from 'react';
+import { Text, TouchableOpacity, View } from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
+
+import { useAuthUser } from '../../hooks/useAuthUser';
+import { useUserRivalries } from '../../hooks/useUserRivalries';
+import { darkStyles, styles } from '../../utils/styles';
+import { RivalriesTable } from './parts/RivalriesTable';
+
+interface Rivalry {
+  id: string;
+  updatedAt: string;
+  userAName?: string;
+  userBName?: string;
+  contestCount?: number;
+}
+
+export function RivalryIndex() {
+  const { user, isLoading: userLoading, error: userError } = useAuthUser();
+  const {
+    rivalries,
+    isLoading: rivalriesLoading,
+    error: rivalriesError
+  } = useUserRivalries(user?.id);
+
+  const [selectedRivalry, setSelectedRivalry] = useState<Rivalry | null>(null);
+
+  function handleSelectRivalry(rivalry: Rivalry) {
+    setSelectedRivalry(rivalry);
+    // TODO: Navigate to rivalry detail view
+    console.log('Selected rivalry:', rivalry);
+  }
+
+  function handleCreateRivalry() {
+    // TODO: Navigate to create rivalry screen
+    console.log('Create new rivalry');
+  }
+
+  const isLoading = userLoading || rivalriesLoading;
+  const error = userError || rivalriesError;
+
+  if (isLoading) {
+    return (
+      <SafeAreaView style={[styles.container, darkStyles.container]}>
+        <View style={{ flex: 1, alignItems: 'center', justifyContent: 'center' }}>
+          <Text style={[styles.text, { fontSize: 18 }]}>
+            {userLoading ? 'Loading user data...' : 'Loading rivalries...'}
+          </Text>
+        </View>
+      </SafeAreaView>
+    );
+  }
+
+  if (error) {
+    return (
+      <SafeAreaView style={[styles.container, darkStyles.container]}>
+        <View style={{ flex: 1, alignItems: 'center', justifyContent: 'center', paddingHorizontal: 16 }}>
+          <Text style={[styles.text, { fontSize: 18, fontWeight: 'bold', color: '#ef4444', marginBottom: 16 }]}>
+            Error
+          </Text>
+          <Text style={styles.text}>{error.message}</Text>
+        </View>
+      </SafeAreaView>
+    );
+  }
+
+  return (
+    <SafeAreaView style={[styles.container, darkStyles.container]} edges={['top', 'bottom']}>
+      <View style={{ paddingHorizontal: 16, paddingVertical: 16, borderBottomWidth: 1, borderBottomColor: '#333' }}>
+        <Text style={[styles.text, { fontSize: 24, fontWeight: 'bold' }]}>
+          Welcome{user?.firstName ? `, ${user.firstName}` : ''}!
+        </Text>
+        <Text style={[styles.text, { marginTop: 4, color: '#999' }]}>
+          Select a rivalry to continue
+        </Text>
+
+        <TouchableOpacity
+          testID="create-rivalry-button"
+          onPress={handleCreateRivalry}
+          style={{
+            backgroundColor: '#6b21a8',
+            paddingHorizontal: 24,
+            paddingVertical: 12,
+            borderRadius: 8,
+            marginTop: 16,
+            alignItems: 'center'
+          }}
+        >
+          <Text style={[styles.text, { fontSize: 16, fontWeight: 'bold' }]}>
+            Create New Rivalry
+          </Text>
+        </TouchableOpacity>
+      </View>
+
+      <RivalriesTable rivalries={rivalries} onSelectRivalry={handleSelectRivalry} />
+    </SafeAreaView>
+  );
+}

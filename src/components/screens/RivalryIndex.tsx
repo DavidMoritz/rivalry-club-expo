@@ -1,4 +1,5 @@
-import React, { useState } from 'react';
+import { useRouter } from 'expo-router';
+import React from 'react';
 import { Text, TouchableOpacity, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
@@ -16,6 +17,7 @@ interface Rivalry {
 }
 
 export function RivalryIndex() {
+  const router = useRouter();
   const { user, isLoading: userLoading, error: userError } = useAuthUser();
   const {
     rivalries,
@@ -23,17 +25,14 @@ export function RivalryIndex() {
     error: rivalriesError
   } = useUserRivalries(user?.id);
 
-  const [selectedRivalry, setSelectedRivalry] = useState<Rivalry | null>(null);
-
   function handleSelectRivalry(rivalry: Rivalry) {
-    setSelectedRivalry(rivalry);
-    // TODO: Navigate to rivalry detail view
-    console.log('Selected rivalry:', rivalry);
+    // Navigate to rivalry detail view using Expo Router
+    router.push(`/rivalry/${rivalry.id}`);
   }
 
   function handleCreateRivalry() {
-    // TODO: Navigate to create rivalry screen
-    console.log('Create new rivalry');
+    // Navigate to create rivalry screen using Expo Router
+    router.push('/rivalry/create');
   }
 
   const isLoading = userLoading || rivalriesLoading;

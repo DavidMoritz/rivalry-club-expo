@@ -45,6 +45,34 @@ interface UpdateCurrentContestShuffleTierSlotsMutationProps extends RivalryQuery
 
 /** Queries */
 
+export const useRivalryContestsQuery = ({
+  rivalryId,
+  limit = 100,
+}: {
+  rivalryId?: string;
+  limit?: number;
+}) =>
+  useQuery({
+    enabled: !!rivalryId,
+    queryKey: ['rivalryContests', rivalryId, limit],
+    queryFn: async () => {
+      const { data: contests, errors, nextToken } = await client.models.Contest.list({
+        filter: { rivalryId: { eq: rivalryId } },
+        limit,
+      });
+
+      if (errors) {
+        console.error('[useRivalryContestsQuery] GraphQL errors:', errors);
+        throw new Error(errors[0]?.message || 'Failed to fetch contests');
+      }
+
+      return {
+        contests: contests.map((c) => getMContest(c as any)),
+        nextToken,
+      };
+    },
+  });
+
 export const useRivalryWithAllInfoQuery = ({
   rivalry,
   onSuccess,

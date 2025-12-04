@@ -1,14 +1,24 @@
-import {
-  Contest,
-  ModelContestConnection,
-  ModelTierListConnection,
-  Rivalry,
-  TierList,
-} from '../API';
+import type { Schema } from '../../amplify/data/resource';
 import { getMContest, MContest } from './m-contest';
 import { MGame } from './m-game';
 import { getMTierList, MTierList, TIERS } from './m-tier-list';
 import { MUser } from './m-user';
+
+// Extract Gen 2 types from the schema
+type Rivalry = Schema['Rivalry']['type'];
+type Contest = Schema['Contest']['type'];
+type TierList = Schema['TierList']['type'];
+
+// Gen 2 doesn't have ModelConnection types - we'll define them based on API responses
+type ModelContestConnection = {
+  items: Array<Contest | null>;
+  nextToken?: string | null;
+};
+
+type ModelTierListConnection = {
+  items: Array<TierList | null>;
+  nextToken?: string | null;
+};
 
 export interface MRivalry extends Rivalry {
   _currentContest?: MContest;

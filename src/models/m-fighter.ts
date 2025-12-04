@@ -1,5 +1,8 @@
-import { Fighter } from '../API';
+import type { Schema } from '../../amplify/data/resource';
 import { MGame } from './m-game';
+
+// Extract Gen 2 type
+type Fighter = Schema['Fighter']['type'];
 
 export interface MFighter extends Fighter {
   baseFighter: Fighter;

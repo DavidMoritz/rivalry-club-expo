@@ -6,6 +6,7 @@ import { RivalryIndex } from '../RivalryIndex';
 // Mock the hooks
 const mockUseAuthUser = jest.fn();
 const mockUseUserRivalries = jest.fn();
+const mockRouterPush = jest.fn();
 
 jest.mock('../../../hooks/useAuthUser', () => ({
   useAuthUser: () => mockUseAuthUser()
@@ -13,6 +14,12 @@ jest.mock('../../../hooks/useAuthUser', () => ({
 
 jest.mock('../../../hooks/useUserRivalries', () => ({
   useUserRivalries: (userId: string | undefined) => mockUseUserRivalries(userId)
+}));
+
+jest.mock('expo-router', () => ({
+  useRouter: () => ({
+    push: mockRouterPush
+  })
 }));
 
 describe('RivalryIndex', () => {
@@ -175,7 +182,7 @@ describe('RivalryIndex', () => {
       const createButton = getByTestId('create-rivalry-button');
       fireEvent.press(createButton);
 
-      expect(console.log).toHaveBeenCalledWith('Create new rivalry');
+      expect(mockRouterPush).toHaveBeenCalledWith('/rivalry/create');
     });
   });
 
@@ -268,9 +275,7 @@ describe('RivalryIndex', () => {
       fireEvent.press(rivalryRow.parent?.parent || rivalryRow);
 
       await waitFor(() => {
-        expect(console.log).toHaveBeenCalledWith('Selected rivalry:', expect.objectContaining({
-          id: 'rivalry1'
-        }));
+        expect(mockRouterPush).toHaveBeenCalledWith('/rivalry/rivalry1');
       });
     });
   });

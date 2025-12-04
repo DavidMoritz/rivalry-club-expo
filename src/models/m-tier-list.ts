@@ -1,6 +1,6 @@
 import { sample, sortBy } from 'lodash';
+import type { Schema } from '../../amplify/data/resource';
 
-import { TierList, TierSlot } from '../API';
 import { STEPS_PER_STOCK } from './m-game';
 import { MRivalry } from './m-rivalry';
 import {
@@ -8,6 +8,10 @@ import {
   MTierSlot,
   normalizeTierSlotPositionToIndex,
 } from './m-tier-slot';
+
+// Extract Gen 2 types
+type TierList = Schema['TierList']['type'];
+type TierSlot = Schema['TierSlot']['type'];
 
 type TierSlotPositionsPojo = Record<string, { id: string; position: number }>;
 

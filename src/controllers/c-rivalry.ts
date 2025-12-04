@@ -1,27 +1,12 @@
-import { GraphQLQuery, GraphQLResult } from '@aws-amplify/api';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
-import { API, graphqlOperation } from 'aws-amplify';
+import { generateClient } from 'aws-amplify/data';
 import { pick } from 'lodash';
+import type { Schema } from '../../amplify/data/resource';
 
-import { CreateContestMutation, Rivalry, UpdateContestMutation } from '../API';
-import {
-  RivalryWithAllInfoQuery,
-  UpdateContestTierListsMutation,
-  UpdateMultipleTierSlotsMutation,
-} from '../custom-api';
-import {
-  generateUpdateMultipleTierSlotsQuery,
-  getRivalryWithAllInfo,
-  updateContestTierLists,
-} from '../graphql/custom-queries';
-import {
-  createContest,
-  updateContest,
-  updateRivalry,
-} from '../graphql/mutations';
 import { getMContest, MContest } from '../models/m-contest';
 import { MRivalry } from '../models/m-rivalry';
-import { MTierList } from '../models/m-tier-list';
+
+const client = generateClient<Schema>();
 
 const UPDATE_RIVALRY_KEYS = ['id', 'contestCount', 'currentContestId'];
 
@@ -36,12 +21,15 @@ interface ContestQueryBaseProps {
 interface RivalryQueryProps extends RivalryQueryBaseProps {
   onSuccess?: (populatedRivalry: MRivalry) => void;
 }
+
 interface RivalryMutationProps extends RivalryQueryBaseProps {
   onSuccess?: () => void;
 }
+
 interface RivalryMutationWithContestProps extends RivalryQueryBaseProps {
   onSuccess?: (contest: MContest) => void;
 }
+
 interface TierListMutationProps extends RivalryQueryBaseProps {
   tierListSignifier: 'A' | 'B';
   onSuccess?: () => void;
@@ -49,6 +37,10 @@ interface TierListMutationProps extends RivalryQueryBaseProps {
 
 interface UpdateContestMutationProps extends ContestQueryBaseProps {
   onSuccess?: () => void;
+}
+
+interface UpdateCurrentContestShuffleTierSlotsMutationProps extends RivalryQueryBaseProps {
+  onSuccess?: (contest: MContest) => void;
 }
 
 /** Queries */
@@ -61,23 +53,71 @@ export const useRivalryWithAllInfoQuery = ({
     enabled: !!rivalry?.id,
     queryKey: ['rivalryId', rivalry?.id],
     queryFn: async () => {
-      const result = await API.graphql<GraphQLQuery<RivalryWithAllInfoQuery>>({
-        query: getRivalryWithAllInfo,
-        variables: { id: rivalry?.id as string },
-      });
+      console.log('[useRivalryWithAllInfoQuery] Starting query for rivalry ID:', rivalry?.id);
 
-      const { contests, tierLists } = result?.data?.getRivalry as Rivalry;
+      // Use Gen 2 client to fetch rivalry with related data
+      const { data: rivalryData, errors } = await client.models.Rivalry.get(
+        { id: rivalry?.id as string },
+        {
+          selectionSet: [
+            'id',
+            'userAId',
+            'userBId',
+            'gameId',
+            'contestCount',
+            'currentContestId',
+            'createdAt',
+            'updatedAt',
+            'deletedAt',
+            'contests.*',
+            'tierLists.*',
+            'tierLists.tierSlots.*',
+          ],
+        }
+      );
 
-      if (!(tierLists?.items.some(Boolean) && contests?.items.some(Boolean))) {
-        return result;
+      if (errors) {
+        console.error('[useRivalryWithAllInfoQuery] Errors:', errors);
+        throw new Error(errors[0]?.message || 'Failed to fetch rivalry');
       }
 
-      (rivalry as MRivalry).setMContests(contests);
-      (rivalry as MRivalry).setMTierLists(tierLists);
+      console.log('[useRivalryWithAllInfoQuery] Query result:', rivalryData);
 
-      onSuccess?.(rivalry as MRivalry);
+      if (!rivalryData) {
+        throw new Error('Rivalry not found');
+      }
 
-      return result;
+      // Convert Gen 2 LazyLoader data structures to our model format
+      // In Gen 2, relationships are LazyLoaders - we need to resolve them
+      const contestsArray: any[] = [];
+      if (rivalryData.contests) {
+        for await (const contest of rivalryData.contests) {
+          contestsArray.push(contest);
+        }
+      }
+      const contests = { items: contestsArray };
+
+      const tierListsArray: any[] = [];
+      if (rivalryData.tierLists) {
+        for await (const tierListData of rivalryData.tierLists) {
+          const tierSlotsArray: any[] = [];
+          if (tierListData.tierSlots) {
+            for await (const tierSlot of tierListData.tierSlots) {
+              tierSlotsArray.push(tierSlot);
+            }
+          }
+          tierListsArray.push({ ...tierListData, tierSlots: { items: tierSlotsArray } });
+        }
+      }
+      const tierLists = { items: tierListsArray };
+
+      if (tierLists.items.some(Boolean) && contests.items.some(Boolean)) {
+        (rivalry as MRivalry).setMContests(contests as any);
+        (rivalry as MRivalry).setMTierLists(tierLists as any);
+        onSuccess?.(rivalry as MRivalry);
+      }
+
+      return rivalryData;
     },
   });
 
@@ -90,26 +130,127 @@ export const useCreateContestMutation = ({
   const queryClient = useQueryClient();
 
   return useMutation({
-    mutationFn: async () =>
-      await API.graphql(
-        graphqlOperation(createContest, {
-          input: {
-            rivalryId: rivalry?.id,
-            tierSlotAId: rivalry?.tierListA?.sampleEligibleSlot()?.id,
-            tierSlotBId: rivalry?.tierListB?.sampleEligibleSlot()?.id,
-          },
+    mutationFn: async () => {
+      // Sample eligible tier slots from both tier lists
+      const tierSlotA = rivalry?.tierListA?.sampleEligibleSlot();
+      const tierSlotB = rivalry?.tierListB?.sampleEligibleSlot();
+
+      if (!(tierSlotA && tierSlotB)) {
+        throw new Error('Unable to sample tier slots');
+      }
+
+      // Create contest using Gen 2 client
+      const { data: contestData, errors } = await client.models.Contest.create({
+        rivalryId: rivalry?.id as string,
+        tierSlotAId: tierSlotA.id,
+        tierSlotBId: tierSlotB.id,
+        result: 0,
+        bias: 0,
+      });
+
+      if (errors) {
+        throw new Error(errors[0]?.message || 'Failed to create contest');
+      }
+
+      return getMContest(contestData as any);
+    },
+    onSuccess: (contest) => {
+      queryClient.invalidateQueries({ queryKey: ['rivalryId', rivalry?.id] });
+      onSuccess?.(contest);
+    },
+  });
+};
+
+export const useUpdateRivalryMutation = ({ rivalry }: RivalryMutationProps) => {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: async () => {
+      const updateInput = pick(rivalry, UPDATE_RIVALRY_KEYS);
+
+      const { data, errors } = await client.models.Rivalry.update(updateInput as any);
+
+      if (errors) {
+        throw new Error(errors[0]?.message || 'Failed to update rivalry');
+      }
+
+      return data;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['rivalryId', rivalry?.id] });
+    },
+  });
+};
+
+export const useUpdateContestMutation = ({
+  rivalry,
+  onSuccess,
+}: RivalryMutationProps) => {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: async () => {
+      const contest = rivalry?.currentContest;
+
+      if (!contest) {
+        throw new Error('No current contest');
+      }
+
+      const { data, errors } = await client.models.Contest.update({
+        id: contest.id,
+        result: contest.result,
+        bias: contest.bias,
+      });
+
+      if (errors) {
+        throw new Error(errors[0]?.message || 'Failed to update contest');
+      }
+
+      return data;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['rivalryId', rivalry?.id] });
+      onSuccess?.();
+    },
+  });
+};
+
+export const useUpdateContestTierListsMutation = ({
+  contest,
+  onSuccess,
+}: UpdateContestMutationProps) => {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: async () => {
+      const rivalry = contest?.rivalry;
+
+      if (!(rivalry?.tierListA && rivalry?.tierListB)) {
+        throw new Error('Tier lists not found');
+      }
+
+      // Update both tier lists
+      const [resultA, resultB] = await Promise.all([
+        client.models.TierList.update({
+          id: rivalry.tierListA.id,
+          standing: rivalry.tierListA.standing,
         }),
-      ),
-    onSuccess: response => {
-      const rawContestData = (response as GraphQLResult<CreateContestMutation>)
-        ?.data?.createContest;
+        client.models.TierList.update({
+          id: rivalry.tierListB.id,
+          standing: rivalry.tierListB.standing,
+        }),
+      ]);
 
-      if (!rawContestData) return;
+      if (resultA.errors || resultB.errors) {
+        throw new Error('Failed to update tier lists');
+      }
 
-      const currentContest = getMContest(rawContestData);
-
-      queryClient.invalidateQueries({ queryKey: ['usersByAwsSub'] });
-      onSuccess?.(currentContest);
+      return { tierListA: resultA.data, tierListB: resultB.data };
+    },
+    onSuccess: () => {
+      const rivalry = contest?.rivalry;
+      queryClient.invalidateQueries({ queryKey: ['rivalryId', rivalry?.id] });
+      onSuccess?.();
     },
   });
 };
@@ -123,47 +264,31 @@ export const useUpdateTierSlotsMutation = ({
 
   return useMutation({
     mutationFn: async () => {
-      const key = `tierList${tierListSignifier}` as keyof MRivalry;
-      const tierList = rivalry?.[key] as MTierList;
+      const tierList =
+        tierListSignifier === 'A' ? rivalry?.tierListA : rivalry?.tierListB;
 
-      return await API.graphql<GraphQLQuery<UpdateMultipleTierSlotsMutation>>({
-        query: generateUpdateMultipleTierSlotsQuery(tierList.slots.length || 0),
-        variables: tierList.getPositionsPojo(),
-      });
+      if (!tierList) {
+        throw new Error('Tier list not found');
+      }
+
+      const positionsPojo = tierList.getPositionsPojo();
+
+      // Update all tier slots in parallel
+      const updates = Object.values(positionsPojo).map(({ id, position }) =>
+        client.models.TierSlot.update({ id, position })
+      );
+
+      const results = await Promise.all(updates);
+
+      const errors = results.filter((r) => r.errors).flatMap((r) => r.errors);
+      if (errors.length > 0) {
+        throw new Error(errors[0]?.message || 'Failed to update tier slots');
+      }
+
+      return results.map((r) => r.data);
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({
-        queryKey: ['rivalryId', rivalry?.id],
-      });
-
-      onSuccess?.();
-    },
-    onError: e => {
-      console.error('Error on useUpdateTierSlotsMutation', e);
-    },
-  });
-};
-
-export const useUpdateContestMutation = ({
-  rivalry,
-  onSuccess,
-}: RivalryMutationProps) => {
-  const queryClient = useQueryClient();
-
-  return useMutation({
-    mutationFn: async () =>
-      await API.graphql(
-        graphqlOperation(updateContest, {
-          input: {
-            bias: rivalry?.currentContest?.bias,
-            id: rivalry?.currentContest?.id,
-            result: rivalry?.currentContest?.result,
-          },
-        }),
-      ),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['usersByAwsSub'] });
-
+      queryClient.invalidateQueries({ queryKey: ['rivalryId', rivalry?.id] });
       onSuccess?.();
     },
   });
@@ -172,85 +297,33 @@ export const useUpdateContestMutation = ({
 export const useUpdateCurrentContestShuffleTierSlotsMutation = ({
   rivalry,
   onSuccess,
-}: RivalryMutationWithContestProps) => {
+}: UpdateCurrentContestShuffleTierSlotsMutationProps) => {
   const queryClient = useQueryClient();
 
   return useMutation({
-    mutationFn: async () =>
-      await API.graphql(
-        graphqlOperation(updateContest, {
-          input: {
-            id: rivalry?.currentContest?.id,
-            tierSlotAId: rivalry?.tierListA?.sampleEligibleSlot()?.id,
-            tierSlotBId: rivalry?.tierListB?.sampleEligibleSlot()?.id,
-          },
-        }),
-      ),
-    onSuccess: response => {
-      const rawContestData = (response as GraphQLResult<UpdateContestMutation>)
-        ?.data?.updateContest;
+    mutationFn: async () => {
+      const tierSlotA = rivalry?.tierListA?.sampleEligibleSlot();
+      const tierSlotB = rivalry?.tierListB?.sampleEligibleSlot();
 
-      if (!rawContestData) return;
+      if (!(tierSlotA && tierSlotB && rivalry?.currentContest)) {
+        throw new Error('Unable to sample tier slots');
+      }
 
-      const currentContest = getMContest(rawContestData);
-
-      queryClient.invalidateQueries({ queryKey: ['usersByAwsSub'] });
-      onSuccess?.(currentContest);
-    },
-  });
-};
-
-export const useUpdateRivalryMutation = ({
-  rivalry,
-  onSuccess,
-}: RivalryMutationProps) => {
-  const queryClient = useQueryClient();
-
-  return useMutation({
-    mutationFn: async () =>
-      await API.graphql(
-        graphqlOperation(updateRivalry, {
-          input: pick(rivalry, UPDATE_RIVALRY_KEYS),
-        }),
-      ),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['usersByAwsSub'] });
-
-      onSuccess?.();
-    },
-  });
-};
-
-export const useUpdateContestTierListsMutation = ({
-  contest,
-  onSuccess,
-}: UpdateContestMutationProps) => {
-  const queryClient = useQueryClient();
-
-  return useMutation({
-    mutationFn: async () =>
-      await API.graphql<GraphQLQuery<UpdateContestTierListsMutation>>({
-        query: updateContestTierLists,
-        variables: {
-          tierListA: {
-            id: contest?.tierSlotA?.tierListId,
-            standing: contest?.tierSlotA?.tierList?.standing,
-          },
-          tierListB: {
-            id: contest?.tierSlotB?.tierListId,
-            standing: contest?.tierSlotB?.tierList?.standing,
-          },
-        },
-      }),
-    onMutate: () => {
-      queryClient.invalidateQueries({
-        queryKey: ['rivalryId', contest?.rivalryId],
+      const { data, errors } = await client.models.Contest.update({
+        id: rivalry.currentContest.id,
+        tierSlotAId: tierSlotA.id,
+        tierSlotBId: tierSlotB.id,
       });
 
-      onSuccess?.();
+      if (errors) {
+        throw new Error(errors[0]?.message || 'Failed to update contest');
+      }
+
+      return getMContest(data as any);
     },
-    onError: e => {
-      console.warn('Error on useUpdateContestTierListsMutation', e);
+    onSuccess: (contest) => {
+      queryClient.invalidateQueries({ queryKey: ['rivalryId', rivalry?.id] });
+      onSuccess?.(contest);
     },
   });
 };

@@ -1,4 +1,4 @@
-import { Game } from '../../src/API';
+import type { Schema } from '../../amplify/data/resource';
 import {
   getMGame,
   MGame,
@@ -7,9 +7,11 @@ import {
   STOCK,
 } from '../../src/models/m-game';
 
+// Extract Gen 2 type
+type Game = Schema['Game']['type'];
+
 describe('MGame Model', () => {
   const mockGame: Game = {
-    __typename: 'Game',
     id: '123',
     name: 'Super Smash Bros Ultimate',
     createdAt: '2024-01-01',

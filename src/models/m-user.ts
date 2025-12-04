@@ -1,4 +1,7 @@
-import { User } from '../API';
+import type { Schema } from '../../amplify/data/resource';
+
+// Extract Gen 2 type
+type User = Schema['User']['type'];
 
 type ComparativeName = string | MUser;
 

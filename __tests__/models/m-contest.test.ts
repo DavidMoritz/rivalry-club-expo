@@ -1,12 +1,11 @@
-import { Contest, TierList } from '../../src/API';
 import { getMContest } from '../../src/models/m-contest';
 import { getMRivalry } from '../../src/models/m-rivalry';
 import { getMTierList } from '../../src/models/m-tier-list';
 import { getMUser } from '../../src/models/m-user';
+import { TestContest, TestRivalry, TestTierList } from '../test-helpers';
 
 describe('MContest Model', () => {
-  const mockContest: Contest = {
-    __typename: 'Contest',
+  const mockContest: TestContest = {
     id: 'contest-123',
     rivalryId: 'rivalry-123',
     tierSlotAId: 'slot-a-123',
@@ -19,7 +18,7 @@ describe('MContest Model', () => {
 
   describe('getMContest', () => {
     it('should create an MContest from a Contest object', () => {
-      const mContest = getMContest(mockContest);
+      const mContest = getMContest(mockContest as any);
 
       expect(mContest).toBeDefined();
       expect(mContest.id).toBe(mockContest.id);
@@ -27,13 +26,13 @@ describe('MContest Model', () => {
     });
 
     it('should return baseContest', () => {
-      const mContest = getMContest(mockContest);
+      const mContest = getMContest(mockContest as any);
 
       expect(mContest.baseContest).toEqual(mockContest);
     });
 
     it('should initialize with undefined rivalry and tier slots', () => {
-      const mContest = getMContest(mockContest);
+      const mContest = getMContest(mockContest as any);
 
       expect(mContest.rivalry).toBeUndefined();
       expect(mContest.tierSlotA).toBeUndefined();
@@ -43,17 +42,16 @@ describe('MContest Model', () => {
 
   describe('getWinner and getLoser', () => {
     it('should return undefined winner/loser when result is null', () => {
-      const contest = getMContest({ ...mockContest, result: null });
+      const contest = getMContest({ ...mockContest, result: null } as any);
 
       expect(contest.getWinner()).toBeUndefined();
       expect(contest.getLoser()).toBeUndefined();
     });
 
     it('should identify winner as A when result is positive', () => {
-      const contest = getMContest({ ...mockContest, result: 2 });
+      const contest = getMContest({ ...mockContest, result: 2 } as any);
       const mockRivalry = getMRivalry({
         rivalry: {
-          __typename: 'Rivalry',
           id: 'rivalry-123',
           userAId: 'user-a',
           userBId: 'user-b',
@@ -66,7 +64,6 @@ describe('MContest Model', () => {
 
       mockRivalry.userA = getMUser({
         user: {
-          __typename: 'User',
           id: 'user-a',
           email: 'a@test.com',
           firstName: 'Alice',
@@ -80,7 +77,6 @@ describe('MContest Model', () => {
 
       mockRivalry.userB = getMUser({
         user: {
-          __typename: 'User',
           id: 'user-b',
           email: 'b@test.com',
           firstName: 'Bob',
@@ -102,10 +98,9 @@ describe('MContest Model', () => {
     });
 
     it('should identify winner as B when result is negative', () => {
-      const contest = getMContest({ ...mockContest, result: -2 });
+      const contest = getMContest({ ...mockContest, result: -2 } as any);
       const mockRivalry = getMRivalry({
         rivalry: {
-          __typename: 'Rivalry',
           id: 'rivalry-123',
           userAId: 'user-a',
           userBId: 'user-b',
@@ -118,7 +113,6 @@ describe('MContest Model', () => {
 
       mockRivalry.userA = getMUser({
         user: {
-          __typename: 'User',
           id: 'user-a',
           email: 'a@test.com',
           firstName: 'Alice',
@@ -132,7 +126,6 @@ describe('MContest Model', () => {
 
       mockRivalry.userB = getMUser({
         user: {
-          __typename: 'User',
           id: 'user-b',
           email: 'b@test.com',
           firstName: 'Bob',
@@ -159,7 +152,6 @@ describe('MContest Model', () => {
       const contest = getMContest(mockContest);
       const mockRivalry = getMRivalry({
         rivalry: {
-          __typename: 'Rivalry',
           id: 'rivalry-123',
           userAId: 'user-a',
           userBId: 'user-b',
@@ -188,8 +180,7 @@ describe('MContest Model', () => {
     it('should set rivalry and find matching tier slots', () => {
       const contest = getMContest(mockContest);
 
-      const createMockTierList = (userId: string): TierList => ({
-        __typename: 'TierList',
+      const createMockTierList = (userId: string): TestTierList => ({
         id: `tier-list-${userId}`,
         rivalryId: 'rivalry-123',
         userId,
@@ -197,24 +188,37 @@ describe('MContest Model', () => {
         createdAt: '2024-01-01',
         updatedAt: '2024-01-01',
         tierSlots: {
-          __typename: 'ModelTierSlotConnection',
-          items: [
-            {
-              __typename: 'TierSlot',
-              id: userId === 'user-a' ? 'slot-a-123' : 'slot-b-123',
-              tierListId: `tier-list-${userId}`,
-              fighterId: `fighter-${userId}`,
-              position: 0,
-              createdAt: '2024-01-01',
-              updatedAt: '2024-01-01',
-            },
-          ],
+          items:
+            userId === 'user-a'
+              ? [
+                  {
+                    id: 'slot-a-123',
+                    tierListId: 'tier-list-user-a',
+                    fighterId: 'fighter-1',
+                    position: 0,
+                    winCount: 0,
+                    contestCount: 0,
+                    createdAt: '2024-01-01',
+                    updatedAt: '2024-01-01',
+                  },
+                ]
+              : [
+                  {
+                    id: 'slot-b-123',
+                    tierListId: 'tier-list-user-b',
+                    fighterId: 'fighter-2',
+                    position: 0,
+                    winCount: 0,
+                    contestCount: 0,
+                    createdAt: '2024-01-01',
+                    updatedAt: '2024-01-01',
+                  },
+                ],
         },
       });
 
       const mockRivalry = getMRivalry({
         rivalry: {
-          __typename: 'Rivalry',
           id: 'rivalry-123',
           userAId: 'user-a',
           userBId: 'user-b',

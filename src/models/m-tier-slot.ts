@@ -1,6 +1,9 @@
-import { TierSlot } from '../API';
+import type { Schema } from '../../amplify/data/resource';
 import { MFighter } from './m-fighter';
 import { MTierList, Tier, TIERS } from './m-tier-list';
+
+// Extract Gen 2 type
+type TierSlot = Schema['TierSlot']['type'];
 
 export function normalizeTierSlotPositionToIndex(slot: MTierSlot, idx: number) {
   return {

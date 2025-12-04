@@ -10,7 +10,7 @@ import {
   useUpdateContestTierListsMutation,
   useUpdateCurrentContestShuffleTierSlotsMutation,
   useUpdateRivalryMutation,
-  useUpdateTierSlotsMutation,
+  useUpdateTierSlotsMutation
 } from '../../controllers/c-rivalry';
 import { MContest } from '../../models/m-contest';
 import { PROVISIONAL_THRESHOLD, STEPS_PER_STOCK } from '../../models/m-game';
@@ -28,17 +28,16 @@ interface ConnectedRivalryViewProps {
   };
 }
 
-export function ConnectedRivalryView({
-  navigation,
-}: ConnectedRivalryViewProps): JSX.Element {
-  const isDarkMode = true;
+export function ConnectedRivalryView({ navigation }: ConnectedRivalryViewProps): JSX.Element {
   const updateRivalryProvider = useUpdateRivalry();
   const rivalry = useRivalry();
+
+  console.log('[ConnectedRivalryView] Rivalry ID:', rivalry?.id);
 
   const [tiersReady, setTiersReady] = useState<boolean>(false);
 
   const updateRivalryMutation = useUpdateRivalryMutation({
-    rivalry,
+    rivalry
   });
 
   const updateRivalryProviderAndMutation = () => {
@@ -54,17 +53,17 @@ export function ConnectedRivalryView({
       rivalry?.setCurrentContest(currentContest);
       updateRivalryProviderAndMutation();
       setTiersReady(true);
-    },
+    }
   });
 
   const updateTierSlotsAMutation = useUpdateTierSlotsMutation({
     rivalry,
-    tierListSignifier: 'A',
+    tierListSignifier: 'A'
   });
 
   const updateTierSlotsBMutation = useUpdateTierSlotsMutation({
     rivalry,
-    tierListSignifier: 'B',
+    tierListSignifier: 'B'
   });
 
   const updateTierListsMutation = useUpdateContestTierListsMutation({
@@ -74,11 +73,11 @@ export function ConnectedRivalryView({
 
       rivalry.tierListA?.adjustTierSlotPositionBySteps(
         rivalry.currentContest?.tierSlotA?.position as number,
-        (rivalry.currentContest?.result as number) * STEPS_PER_STOCK * -1,
+        (rivalry.currentContest?.result as number) * STEPS_PER_STOCK * -1
       );
       rivalry.tierListB?.adjustTierSlotPositionBySteps(
         rivalry.currentContest?.tierSlotB?.position as number,
-        (rivalry.currentContest?.result as number) * STEPS_PER_STOCK,
+        (rivalry.currentContest?.result as number) * STEPS_PER_STOCK
       );
 
       updateTierSlotsAMutation.mutate();
@@ -88,7 +87,7 @@ export function ConnectedRivalryView({
       updateRivalryProviderAndMutation();
 
       createContestMutation.mutate();
-    },
+    }
   });
 
   const resolveUpdateFighterStatsMutation = useUpdateFighterViaApiMutation();
@@ -98,11 +97,7 @@ export function ConnectedRivalryView({
     onSuccess: () => {
       if (!(rivalry && rivalry.tierListA && rivalry.tierListB)) return;
 
-      if (
-        !(
-          rivalry.currentContest?.tierSlotA && rivalry.currentContest?.tierSlotB
-        )
-      ) {
+      if (!(rivalry.currentContest?.tierSlotA && rivalry.currentContest?.tierSlotB)) {
         return;
       }
 
@@ -110,7 +105,7 @@ export function ConnectedRivalryView({
       rivalry.currentContest.tierSlotB.tierList = rivalry.tierListB;
 
       updateTierListsMutation.mutate();
-    },
+    }
   });
 
   const updateCurrentContestShuffleTierSlotsMutation =
@@ -120,7 +115,7 @@ export function ConnectedRivalryView({
         if (!rivalry) return;
 
         rivalry.currentContest = currentContest;
-      },
+      }
     });
 
   async function handleResolveContest() {
@@ -132,27 +127,25 @@ export function ConnectedRivalryView({
 
     if (
       rivalry.currentContest.tierSlotA &&
-      (rivalry.currentContest.tierSlotA.contestCount ?? 0) >=
-        PROVISIONAL_THRESHOLD &&
+      (rivalry.currentContest.tierSlotA.contestCount ?? 0) >= PROVISIONAL_THRESHOLD &&
       rivalry.tierListA
     ) {
       resolveUpdateFighterStatsMutation.mutate({
         fighterId: rivalry.currentContest.tierSlotA.fighterId,
         didWin: isATheWinner,
-        tier: rivalry.tierListA.title,
+        tier: rivalry.tierListA.title
       });
     }
 
     if (
       rivalry.currentContest.tierSlotB &&
-      (rivalry.currentContest.tierSlotB.contestCount ?? 0) >=
-        PROVISIONAL_THRESHOLD &&
+      (rivalry.currentContest.tierSlotB.contestCount ?? 0) >= PROVISIONAL_THRESHOLD &&
       rivalry.tierListB
     ) {
       resolveUpdateFighterStatsMutation.mutate({
         fighterId: rivalry.currentContest.tierSlotB.fighterId,
         didWin: !isATheWinner,
-        tier: rivalry.tierListB.title,
+        tier: rivalry.tierListB.title
       });
     }
 
@@ -165,18 +158,24 @@ export function ConnectedRivalryView({
     data: _,
     isLoading,
     isError,
-    error,
+    error
   } = useRivalryWithAllInfoQuery({
     rivalry,
     onSuccess: (populatedRivalry: MRivalry) => {
+      console.log('[ConnectedRivalryView] Query onSuccess called');
+      console.log(
+        '[ConnectedRivalryView] Populated rivalry:',
+        populatedRivalry._currentContest?.baseContest.id
+      );
+      console.log('[ConnectedRivalryView] Contest count:', populatedRivalry.contestCount);
       updateRivalryProvider(populatedRivalry);
       setTiersReady(true);
-    },
+    }
   });
 
   useEffect(() => {
     navigation.setOptions({
-      headerTitle: rivalry?.displayTitle() || 'Header Title',
+      headerTitle: rivalry?.displayTitle() || 'Header Title'
     });
   }, [navigation, rivalry]);
 
@@ -186,23 +185,29 @@ export function ConnectedRivalryView({
 
   return (
     <SafeAreaView
-      style={[
-        styles.container,
-        isDarkMode ? darkStyles.container : styles.container,
-      ]}
-      edges={['top', 'bottom']}>
+      style={[styles.container, darkStyles.container, { flex: 1, padding: 16 }]}
+      edges={['top', 'bottom']}
+    >
       {createContestMutation.isPending && (
         <View style={{ flex: 1, alignItems: 'center', justifyContent: 'center' }}>
-          <Text style={[styles.text, { fontSize: 18 }]}>Creating Contest...</Text>
+          <Text style={[styles.text, darkStyles.text, { fontSize: 18 }]}>Creating Contest...</Text>
         </View>
       )}
 
       {createContestMutation.isError && (
-        <View style={{ flex: 1, alignItems: 'center', justifyContent: 'center', paddingHorizontal: 16 }}>
-          <Text style={[styles.text, { fontSize: 18, fontWeight: 'bold', color: '#ef4444', marginBottom: 16 }]}>
+        <View
+          style={{ flex: 1, alignItems: 'center', justifyContent: 'center', paddingHorizontal: 16 }}
+        >
+          <Text
+            style={[
+              styles.text,
+              darkStyles.text,
+              { fontSize: 18, fontWeight: 'bold', color: '#ef4444', marginBottom: 16 }
+            ]}
+          >
             Error
           </Text>
-          <Text style={styles.text}>
+          <Text style={[styles.text, darkStyles.text]}>
             {`Error creating contest: ${createContestMutation.error.message}`}
           </Text>
         </View>
@@ -210,16 +215,26 @@ export function ConnectedRivalryView({
 
       {isLoading && (
         <View style={{ flex: 1, alignItems: 'center', justifyContent: 'center' }}>
-          <Text style={[styles.text, { fontSize: 18 }]}>Loading Rivalry...</Text>
+          <Text style={[styles.text, darkStyles.text, { fontSize: 18 }]}>Loading Rivalry...</Text>
         </View>
       )}
 
       {isError && (
-        <View style={{ flex: 1, alignItems: 'center', justifyContent: 'center', paddingHorizontal: 16 }}>
-          <Text style={[styles.text, { fontSize: 18, fontWeight: 'bold', color: '#ef4444', marginBottom: 16 }]}>
+        <View
+          style={{ flex: 1, alignItems: 'center', justifyContent: 'center', paddingHorizontal: 16 }}
+        >
+          <Text
+            style={[
+              styles.text,
+              darkStyles.text,
+              { fontSize: 18, fontWeight: 'bold', color: '#ef4444', marginBottom: 16 }
+            ]}
+          >
             Error
           </Text>
-          <Text style={styles.text}>{`Error loading rivalry: ${error.message}`}</Text>
+          <Text
+            style={[styles.text, darkStyles.text]}
+          >{`Error loading rivalry: ${error.message}`}</Text>
         </View>
       )}
 
@@ -232,6 +247,7 @@ export function ConnectedRivalryView({
 
       {!rivalry?.currentContest && (
         <Button
+          className="h-14 px-8 w-64"
           text="+ Create new contest"
           onPress={() => {
             createContestMutation.mutate();

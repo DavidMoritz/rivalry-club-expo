@@ -1,8 +1,11 @@
-import { Contest } from '../API';
+import type { Schema } from '../../amplify/data/resource';
 import { MRivalry } from './m-rivalry';
 import { MTierList } from './m-tier-list';
 import { MTierSlot } from './m-tier-slot';
 import { MUser } from './m-user';
+
+// Extract Gen 2 type
+type Contest = Schema['Contest']['type'];
 
 type ParticipantDetail = {
   user?: MUser;

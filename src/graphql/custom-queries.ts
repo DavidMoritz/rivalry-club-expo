@@ -1,5 +1,5 @@
 import { upperFirst } from 'lodash';
-import * as APITypes from '../API';
+// import * as APITypes from '../API'; // Not needed with Gen 2
 import {
   GetBasicUserQuery,
   ListGamesWithFightersQuery,

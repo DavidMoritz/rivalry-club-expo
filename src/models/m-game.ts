@@ -1,4 +1,7 @@
-import { Game } from '../API';
+import type { Schema } from '../../amplify/data/resource';
+
+// Extract Gen 2 type
+type Game = Schema['Game']['type'];
 
 export interface MGame extends Game {
   abbr: string;

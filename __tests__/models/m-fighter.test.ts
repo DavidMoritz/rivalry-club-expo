@@ -1,10 +1,12 @@
-import { Fighter } from '../../src/API';
+import type { Schema } from '../../amplify/data/resource';
 import { getMFighter } from '../../src/models/m-fighter';
 import { getMGame } from '../../src/models/m-game';
 
+// Extract Gen 2 type
+type Fighter = Schema['Fighter']['type'];
+
 describe('MFighter Model', () => {
   const mockFighter: Fighter = {
-    __typename: 'Fighter',
     id: 'fighter-123',
     gameId: 'game-123',
     name: 'Mario',
@@ -42,7 +44,6 @@ describe('MFighter Model', () => {
     it.skip('should set and get game', () => {
       const mFighter = getMFighter(mockFighter);
       const mGame = getMGame({
-        __typename: 'Game',
         id: 'game-123',
         name: 'Super Smash Bros Ultimate',
         createdAt: '2024-01-01',

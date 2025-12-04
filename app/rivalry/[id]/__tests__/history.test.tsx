@@ -8,6 +8,13 @@ import HistoryRoute from '../history';
 // Mock expo-router
 jest.mock('expo-router', () => ({
   useLocalSearchParams: jest.fn(),
+  useRouter: jest.fn(() => ({
+    back: jest.fn(),
+    push: jest.fn(),
+    replace: jest.fn(),
+    navigate: jest.fn(),
+    canGoBack: jest.fn(() => true),
+  })),
   Stack: {
     Screen: ({ children }: any) => children,
   },

@@ -1,4 +1,4 @@
-import { useLocalSearchParams, Stack } from 'expo-router';
+import { useLocalSearchParams, Stack, useRouter } from 'expo-router';
 import { StatusBar } from 'expo-status-bar';
 import React, { useState, useMemo, useCallback } from 'react';
 import { SafeAreaView, Text, View, FlatList, ActivityIndicator } from 'react-native';
@@ -8,6 +8,7 @@ import type { Schema } from '../../../amplify/data/resource';
 
 import gameQuery from '../../../assets/cache/game-query.json';
 import { darkStyles, styles, contestStyles } from '../../../src/utils/styles';
+import { Button } from '../../../src/components/common/Button';
 import { ContestRow } from '../../../src/components/common/ContestRow';
 import { getMContest, MContest } from '../../../src/models/m-contest';
 import { getMGame, MGame } from '../../../src/models/m-game';
@@ -17,7 +18,14 @@ import { useRivalryContext } from '../../../src/providers/rivalry';
 
 const client = generateClient<Schema>();
 
+// Debug: Log GraphQL operations
+if (__DEV__) {
+  console.log('[HistoryRoute] GraphQL Client Info:');
+  console.log('[HistoryRoute] Client methods:', Object.keys(client.models.Contest));
+}
+
 export default function HistoryRoute() {
+  const router = useRouter();
   const params = useLocalSearchParams();
   const rivalryId = params.id as string;
   const rivalryContext = useRivalryContext();
@@ -42,6 +50,7 @@ export default function HistoryRoute() {
   } = useQuery({
     enabled: !!rivalryId,
     queryKey: ['rivalryWithInfo', rivalryId],
+    structuralSharing: false,
     queryFn: async () => {
       const { data: rivalryData, errors } = await client.models.Rivalry.get(
         { id: rivalryId },
@@ -121,21 +130,38 @@ export default function HistoryRoute() {
   const { isLoading: isLoadingContests, error } = useQuery({
     enabled: !!rivalryId && !!rivalry && !!game,
     queryKey: ['rivalryContests', rivalryId],
+    structuralSharing: false,
     queryFn: async () => {
-      const {
-        data: contestData,
-        errors,
-        nextToken: newNextToken
-      } = await client.models.Contest.list({
-        filter: { rivalryId: { eq: rivalryId } },
-        limit: 100
-      });
+      // Use the GSI query for efficient sorting by createdAt
+      let allContests: any[] = [];
+      let currentNextToken: string | null | undefined = undefined;
+      let pageCount = 0;
+      const maxPages = 10; // Safety limit
 
-      if (errors) {
-        console.error('[HistoryRoute] GraphQL errors:', errors);
-        throw new Error(errors[0]?.message || 'Failed to fetch contests');
-      }
+      do {
+        const {
+          data: pageData,
+          errors,
+          nextToken: pageNextToken
+        } = await client.models.Contest.contestsByRivalryIdAndCreatedAt({
+          rivalryId: rivalryId,
+          sortDirection: 'DESC', // Most recent first
+          limit: 100,
+          nextToken: currentNextToken
+        });
 
+        if (errors) {
+          console.error('[HistoryRoute] GraphQL errors:', errors);
+          throw new Error(errors[0]?.message || 'Failed to fetch contests');
+        }
+
+        allContests = [...allContests, ...pageData];
+        currentNextToken = pageNextToken;
+        pageCount++;
+      } while (currentNextToken && pageCount < maxPages);
+
+      const contestData = allContests;
+      const newNextToken = currentNextToken;
       const mContests = contestData.map((c) => {
         const mContest = getMContest(c as any);
         if (rivalry) {
@@ -182,7 +208,26 @@ export default function HistoryRoute() {
         return mContest;
       });
 
-      setContests((prev) => [...prev, ...mContests]);
+      // Sort the new contests before adding them
+      mContests.sort((a, b) => {
+        const dateA = new Date(a.createdAt || 0).getTime();
+        const dateB = new Date(b.createdAt || 0).getTime();
+
+        return dateB - dateA; // Descending order
+      });
+
+      setContests((prev) => {
+        // Combine and re-sort to maintain order
+        const combined = [...prev, ...mContests];
+        combined.sort((a, b) => {
+          const dateA = new Date(a.createdAt || 0).getTime();
+          const dateB = new Date(b.createdAt || 0).getTime();
+
+          return dateB - dateA;
+        });
+
+        return combined;
+      });
       setNextToken(newNextToken || null);
     } catch (error) {
       console.error('[HistoryRoute] loadMore error:', error);
@@ -264,6 +309,10 @@ export default function HistoryRoute() {
       <Stack.Screen options={{ title: 'Contest History' }} />
       <SafeAreaView style={[styles.container, darkStyles.container]}>
         <View style={contestStyles.tableWrapper}>
+          <View style={{ alignSelf: 'flex-start', marginBottom: 16 }}>
+            <Button onPress={() => router.back()} text="← Back" />
+          </View>
+
           <View style={[contestStyles.row, contestStyles.tableHeaderRow]}>
             <View style={contestStyles.item}>
               <Text style={[contestStyles.tableHeader, { color: 'white' }]}>Date</Text>

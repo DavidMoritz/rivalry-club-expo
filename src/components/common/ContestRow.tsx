@@ -27,10 +27,10 @@ export function ContestRow({ contest, game, rivalry }: ContestRowProps) {
 
   useEffect(() => {
     const tierSlotA = rivalry?.tierListA?.slots.find(
-      thisTierSlot => thisTierSlot?.id === contest?.tierSlotAId
+      (thisTierSlot) => thisTierSlot?.id === contest?.tierSlotAId
     );
     const tierSlotB = rivalry?.tierListB?.slots.find(
-      thisTierSlot => thisTierSlot?.id === contest?.tierSlotBId
+      (thisTierSlot) => thisTierSlot?.id === contest?.tierSlotBId
     );
 
     setFighterA(fighterByIdFromGame(game, tierSlotA?.fighterId || ''));
@@ -44,32 +44,14 @@ export function ContestRow({ contest, game, rivalry }: ContestRowProps) {
       <View style={contestStyles.item}>
         <Text style={{ color: 'white', fontSize: 14 }}>{updatedDisplay}</Text>
       </View>
-      <View
-        style={[
-          contestStyles.item,
-          contest.result > 0 ? contestStyles.winner : null,
-        ]}>
-        <CharacterDisplay
-          fighter={fighterA}
-          hideName={true}
-          className="h-10"
-        />
+      <View style={[contestStyles.item, contest.result > 0 ? contestStyles.winner : null]}>
+        <CharacterDisplay fighter={fighterA} hideName={true} height={75} />
       </View>
       <View style={contestStyles.item}>
-        <Text style={{ color: 'white', fontSize: 14 }}>
-          {scoreDisplay(contest.result)}
-        </Text>
+        <Text style={{ color: 'white', fontSize: 14 }}>{scoreDisplay(contest.result)}</Text>
       </View>
-      <View
-        style={[
-          contestStyles.item,
-          contest.result < 0 ? contestStyles.winner : null,
-        ]}>
-        <CharacterDisplay
-          fighter={fighterB}
-          hideName={true}
-          className="h-10"
-        />
+      <View style={[contestStyles.item, contest.result < 0 ? contestStyles.winner : null]}>
+        <CharacterDisplay fighter={fighterB} hideName={true} height={75} />
       </View>
     </View>
   );

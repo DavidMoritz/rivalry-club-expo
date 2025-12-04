@@ -1,4 +1,4 @@
-import { useLocalSearchParams, Stack } from 'expo-router';
+import { useLocalSearchParams, Stack, useRouter } from 'expo-router';
 import { StatusBar } from 'expo-status-bar';
 import React, { useState, useMemo } from 'react';
 import { SafeAreaView, Text, View } from 'react-native';
@@ -20,6 +20,7 @@ import { darkStyles, styles } from '../../../src/utils/styles';
 const client = generateClient<Schema>();
 
 export default function TiersRoute() {
+  const router = useRouter();
   const params = useLocalSearchParams();
   const rivalryId = params.id as string;
   const rivalryContext = useRivalryContext();
@@ -40,6 +41,7 @@ export default function TiersRoute() {
   const { isLoading, isError, error } = useQuery({
     enabled: !!rivalryId,
     queryKey: ['rivalryTiers', rivalryId],
+    structuralSharing: false,
     queryFn: async () => {
       const { data: rivalryData, errors } = await client.models.Rivalry.get(
         { id: rivalryId },
@@ -172,6 +174,10 @@ export default function TiersRoute() {
 
             {!isLoading && !isError && rivalry && (
               <>
+                <View style={{ alignSelf: 'flex-start', marginBottom: 16 }}>
+                  <Button onPress={() => router.back()} text="← Back" />
+                </View>
+
                 <Text style={[darkStyles.text, { fontSize: 18, marginBottom: 8, marginTop: 16 }]}>
                   {rivalry.displayUserAName()} tier list
                 </Text>

@@ -6,45 +6,59 @@ const { DynamoDBDocumentClient, ScanCommand, BatchWriteCommand } = require('@aws
 const client = new DynamoDBClient({ region: 'us-east-1' });
 const docClient = DynamoDBDocumentClient.from(client, {
   marshallOptions: {
-    removeUndefinedValues: true,
-  },
+    removeUndefinedValues: true
+  }
 });
+
+const userChanges = {
+  // change 'a129627a-cd3f-43b9-a685-45909395c202' email to t@t.com
+  // remove the awsSub field from all users
+  // add the following awsSub to cooresponding users by id:
+  // <id>: <awsSub>
+  'a129627a-cd3f-43b9-a685-45909395c202': 'f789a369-f565-4ea5-9695-45d2be534255',
+  'cc0849eb-2875-4baa-bbd1-48cbba8ee471': '455d1931-2395-46d7-b02e-6f39314deadc',
+  'ca004cbe-536d-48f7-94bb-ea6328056b61': '070935af-7a76-4bce-a4a0-05d8a7497dad',
+  '3f539aff-9c94-4d69-926a-8eab083aa39f': '39d58611-8ddb-4e18-b1b6-c67cdc764ae9'
+};
 
 // Source tables (old app - staging environment from 2023)
 const SOURCE_SUFFIX = '-zgox4hnry5aeblka7pk4mzmqle-staging';
 
 // Target tables (new sandbox - created Dec 2, 2025)
-const TARGET_SUFFIX = '-5wxxiyf36rgj7ei2vwaeni3vnm-NONE';
+// const TARGET_SUFFIX = '-5wxxiyf36rgj7ei2vwaeni3vnm-NONE';
+
+// Target tables (new sandbox - created Dec 4, 2025)
+const TARGET_SUFFIX = '-eufbm2g2krhd3kvltqwnkdayb4-NONE';
 
 const TABLE_MAPPINGS = {
   Game: {
     source: `Game${SOURCE_SUFFIX}`,
-    target: `Game${TARGET_SUFFIX}`,
+    target: `Game${TARGET_SUFFIX}`
   },
   Fighter: {
     source: `Fighter${SOURCE_SUFFIX}`,
-    target: `Fighter${TARGET_SUFFIX}`,
+    target: `Fighter${TARGET_SUFFIX}`
   },
   User: {
     source: `User${SOURCE_SUFFIX}`,
-    target: `User${TARGET_SUFFIX}`,
+    target: `User${TARGET_SUFFIX}`
   },
   Rivalry: {
     source: `Rivalry${SOURCE_SUFFIX}`,
-    target: `Rivalry${TARGET_SUFFIX}`,
+    target: `Rivalry${TARGET_SUFFIX}`
   },
   Contest: {
     source: `Contest${SOURCE_SUFFIX}`,
-    target: `Contest${TARGET_SUFFIX}`,
+    target: `Contest${TARGET_SUFFIX}`
   },
   TierList: {
     source: `TierList${SOURCE_SUFFIX}`,
-    target: `TierList${TARGET_SUFFIX}`,
+    target: `TierList${TARGET_SUFFIX}`
   },
   TierSlot: {
     source: `TierSlot${SOURCE_SUFFIX}`,
-    target: `TierSlot${TARGET_SUFFIX}`,
-  },
+    target: `TierSlot${TARGET_SUFFIX}`
+  }
 };
 
 async function verifyTables() {
@@ -71,7 +85,7 @@ async function scanTable(tableName) {
       console.log(`  Scan iteration ${scanCount}...`);
 
       const scanParams = {
-        TableName: tableName,
+        TableName: tableName
       };
 
       if (lastEvaluatedKey) {
@@ -125,13 +139,13 @@ async function batchWrite(tableName, items) {
     const requestItems = {
       [tableName]: batch.map((item) => ({
         PutRequest: {
-          Item: item,
-        },
-      })),
+          Item: item
+        }
+      }))
     };
 
     const command = new BatchWriteCommand({
-      RequestItems: requestItems,
+      RequestItems: requestItems
     });
 
     await docClient.send(command);
@@ -165,6 +179,74 @@ async function migrateTable(modelName) {
   }
 }
 
+async function updateUsers() {
+  console.log('\n' + '='.repeat(50));
+  console.log('Updating Users table');
+  console.log('='.repeat(50));
+
+  const userTableName = `User${TARGET_SUFFIX}`;
+  const { UpdateCommand } = require('@aws-sdk/lib-dynamodb');
+
+  try {
+    // Step 1: Get all users
+    const users = await scanTable(userTableName);
+    console.log(`Found ${users.length} users to update`);
+
+    // Step 2: Update user 'a129627a-cd3f-43b9-a685-45909395c202' email to t@t.com
+    const testUserId = 'a129627a-cd3f-43b9-a685-45909395c202';
+    const testUser = users.find((u) => u.id === testUserId);
+    if (testUser) {
+      console.log(`\nUpdating user ${testUserId} email to t@t.com...`);
+      const updateCmd = new UpdateCommand({
+        TableName: userTableName,
+        Key: { id: testUserId },
+        UpdateExpression: 'SET email = :email',
+        ExpressionAttributeValues: {
+          ':email': 't@t.com'
+        }
+      });
+      await docClient.send(updateCmd);
+      console.log('✓ Email updated');
+    } else {
+      console.log(`✗ Test user ${testUserId} not found`);
+    }
+
+    // Step 3: Clear all awsSub fields
+    console.log('\nClearing all awsSub fields...');
+    for (const user of users) {
+      const updateCmd = new UpdateCommand({
+        TableName: userTableName,
+        Key: { id: user.id },
+        UpdateExpression: 'REMOVE awsSub'
+      });
+      await docClient.send(updateCmd);
+    }
+    console.log(`✓ Cleared awsSub for ${users.length} users`);
+
+    // Step 4: Add new awsSub values by user ID
+    console.log('\nAdding new awsSub values by user ID...');
+
+    for (const [userId, awsSub] of Object.entries(userChanges)) {
+      console.log(`  Setting awsSub for user ${userId.substring(0, 8)}...`);
+      const updateCmd = new UpdateCommand({
+        TableName: userTableName,
+        Key: { id: userId },
+        UpdateExpression: 'SET awsSub = :awsSub',
+        ExpressionAttributeValues: {
+          ':awsSub': awsSub
+        }
+      });
+      await docClient.send(updateCmd);
+      console.log(`  ✓ Updated`);
+    }
+
+    console.log('\n✓ User updates complete');
+  } catch (error) {
+    console.error('✗ Error updating users:', error.message);
+    throw error;
+  }
+}
+
 async function main() {
   console.log('DynamoDB Migration Script');
   console.log('='.repeat(50));
@@ -173,11 +255,22 @@ async function main() {
     await verifyTables();
 
     // Migrate in order to respect foreign key relationships
-    const migrationOrder = ['Game', 'Fighter', 'User', 'Rivalry', 'TierList', 'Contest', 'TierSlot'];
+    const migrationOrder = [
+      'Game',
+      'Fighter',
+      'User',
+      'Rivalry',
+      'TierList',
+      'Contest',
+      'TierSlot'
+    ];
 
     for (const modelName of migrationOrder) {
       await migrateTable(modelName);
     }
+
+    // Apply user changes after migration
+    await updateUsers();
 
     console.log('\n' + '='.repeat(50));
     console.log('Migration complete!');

@@ -11,7 +11,7 @@ const schema = a.schema({
       name: a.string().required(),
       fighters: a.hasMany('Fighter', 'gameId'),
       rivalries: a.hasMany('Rivalry', 'gameId'),
-      deletedAt: a.datetime(),
+      deletedAt: a.datetime()
     })
     .authorization((allow) => [allow.publicApiKey()]),
 
@@ -25,7 +25,7 @@ const schema = a.schema({
       contestCount: a.integer(),
       winCount: a.integer(),
       tierBreakdown: a.string(),
-      tierSlots: a.hasMany('TierSlot', 'fighterId'),
+      tierSlots: a.hasMany('TierSlot', 'fighterId')
     })
     .authorization((allow) => [allow.publicApiKey()]),
 
@@ -37,7 +37,7 @@ const schema = a.schema({
       lastName: a.string(),
       role: a.integer().required(),
       awsSub: a.string().required(),
-      deletedAt: a.datetime(),
+      deletedAt: a.datetime()
     })
     .authorization((allow) => [allow.publicApiKey()]),
 
@@ -52,7 +52,7 @@ const schema = a.schema({
       currentContestId: a.id(),
       contests: a.hasMany('Contest', 'rivalryId'),
       tierLists: a.hasMany('TierList', 'rivalryId'),
-      deletedAt: a.datetime(),
+      deletedAt: a.datetime()
     })
     .authorization((allow) => [allow.publicApiKey()]),
 
@@ -65,8 +65,12 @@ const schema = a.schema({
       tierSlotBId: a.id().required(),
       result: a.integer(),
       bias: a.integer(),
-      deletedAt: a.datetime(),
+      createdAt: a.datetime(),
+      deletedAt: a.datetime()
     })
+    .secondaryIndexes((index) => [
+      index('rivalryId').sortKeys(['createdAt']).queryField('contestsByRivalryIdAndCreatedAt')
+    ])
     .authorization((allow) => [allow.publicApiKey()]),
 
   // TierList type - represents a user's ranking of fighters
@@ -77,7 +81,7 @@ const schema = a.schema({
       userId: a.id().required(),
       standing: a.integer(),
       tierSlots: a.hasMany('TierSlot', 'tierListId'),
-      deletedAt: a.datetime(),
+      deletedAt: a.datetime()
     })
     .authorization((allow) => [allow.publicApiKey()]),
 
@@ -91,9 +95,9 @@ const schema = a.schema({
       position: a.integer(),
       contestCount: a.integer(),
       winCount: a.integer(),
-      deletedAt: a.datetime(),
+      deletedAt: a.datetime()
     })
-    .authorization((allow) => [allow.publicApiKey()]),
+    .authorization((allow) => [allow.publicApiKey()])
 });
 
 export type Schema = ClientSchema<typeof schema>;
@@ -103,7 +107,7 @@ export const data = defineData({
   authorizationModes: {
     defaultAuthorizationMode: 'apiKey',
     apiKeyAuthorizationMode: {
-      expiresInDays: 30,
-    },
-  },
+      expiresInDays: 30
+    }
+  }
 });

@@ -15,15 +15,23 @@ interface CharacterDisplayProps {
   fighter: Fighter;
   hideName?: boolean;
   className?: string;
+  height?: number;
 }
 
-export function CharacterDisplay({ fighter, hideName, className }: CharacterDisplayProps) {
+export function CharacterDisplay({ fighter, hideName, className, height }: CharacterDisplayProps) {
   if (!fighter) {
     return null;
   }
 
   return (
-    <View key={fighter.id} style={styles.fighterWrapper} className={className}>
+    <View
+      key={fighter.id}
+      style={[
+        styles.fighterWrapper,
+        height !== undefined && { height, width: height }
+      ]}
+      className={className}
+    >
       <Image
         style={{
           aspectRatio: 1,

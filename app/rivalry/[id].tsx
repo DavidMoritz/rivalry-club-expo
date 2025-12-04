@@ -29,17 +29,13 @@ export default function RivalryDetailRoute() {
   // Create a minimal rivalry object to initialize the provider
   // The actual data will be loaded by useRivalryWithAllInfoQuery in ConnectedRivalryView
   const initialRivalry = useMemo(() => {
-    console.log('[RivalryDetailRoute] Creating initial rivalry for ID:', rivalryId);
-    console.log('[RivalryDetailRoute] User names:', userAName, 'vs', userBName);
-
     if (!rivalryId) {
-      console.log('[RivalryDetailRoute] No rivalry ID provided');
+      console.warn('[RivalryDetailRoute] No rivalry ID provided');
 
       return null;
     }
 
     const rivalry = getMRivalry({ rivalry: { id: rivalryId } as any });
-    console.log('[RivalryDetailRoute] Created rivalry:', rivalry.displayTitle());
 
     return rivalry;
   }, [rivalryId]);
@@ -64,11 +60,7 @@ export default function RivalryDetailRoute() {
   return (
     <>
       <Stack.Screen options={{ headerShown: false }} />
-      <RivalryProvider
-        rivalry={initialRivalry}
-        userAName={userAName}
-        userBName={userBName}
-      >
+      <RivalryProvider rivalry={initialRivalry} userAName={userAName} userBName={userBName}>
         <GameProviderWrapper navigation={navigation} game={game} />
       </RivalryProvider>
       <StatusBar style="light" />

@@ -9,7 +9,7 @@ import { MContest } from '../../../models/m-contest';
 import { MGame, STOCK } from '../../../models/m-game';
 import { MTierSlot } from '../../../models/m-tier-slot';
 import { useGame } from '../../../providers/game';
-import { useRivalry } from '../../../providers/rivalry';
+import { useRivalry, useRivalryContext } from '../../../providers/rivalry';
 import { fighterByIdFromGame } from '../../../utils';
 import { CharacterDisplay } from '../../common/CharacterDisplay';
 
@@ -57,6 +57,7 @@ export function CurrentContest({
   const [stockRemaining, setStockRemaining] = useState<string | number>(1);
 
   const rivalry = useRivalry();
+  const { userAName, userBName } = useRivalryContext();
   const contest = rivalry?.currentContest;
 
   useEffect(() => {
@@ -150,7 +151,7 @@ export function CurrentContest({
               }}
             >
               <Text style={[styles.currentContestUser, { color: 'white' }]}>
-                {rivalry.userA?.firstName} {rivalry.tierListA?.prestigeDisplay}
+                {userAName || rivalry.userA?.firstName} {rivalry.tierListA?.prestigeDisplay}
               </Text>
               <CharacterDisplay fighter={fighterA} hideName={true} />
               <Text style={{ fontSize: 14, color: 'white' }}>{fighterA.name} </Text>
@@ -182,7 +183,7 @@ export function CurrentContest({
               }}
             >
               <Text style={[styles.currentContestUser, { color: 'white' }]}>
-                {rivalry.userB?.firstName} {rivalry.tierListB?.prestigeDisplay}
+                {userBName || rivalry.userB?.firstName} {rivalry.tierListB?.prestigeDisplay}
               </Text>
               <CharacterDisplay fighter={fighterB} hideName={true} />
               <Text style={{ fontSize: 14, color: 'white' }}>{fighterB.name}</Text>

@@ -335,10 +335,34 @@ export const useUpdateCurrentContestShuffleTierSlotsMutation = ({
 
   return useMutation({
     mutationFn: async () => {
-      const tierSlotA = rivalry?.tierListA?.sampleEligibleSlot();
-      const tierSlotB = rivalry?.tierListB?.sampleEligibleSlot();
+      if (!rivalry?.currentContest) {
+        throw new Error('No current contest');
+      }
 
-      if (!(tierSlotA && tierSlotB && rivalry?.currentContest)) {
+      // Store the current fighter IDs
+      const currentTierSlotAId = rivalry.currentContest.tierSlotAId;
+      const currentTierSlotBId = rivalry.currentContest.tierSlotBId;
+
+      // Sample tier slot A until we get a different fighter
+      let tierSlotA = rivalry?.tierListA?.sampleEligibleSlot();
+      let attempts = 0;
+      const maxAttempts = 100; // Safety limit
+
+      while (tierSlotA && tierSlotA.id === currentTierSlotAId && attempts < maxAttempts) {
+        tierSlotA = rivalry?.tierListA?.sampleEligibleSlot();
+        attempts++;
+      }
+
+      // Sample tier slot B until we get a different fighter
+      let tierSlotB = rivalry?.tierListB?.sampleEligibleSlot();
+      attempts = 0;
+
+      while (tierSlotB && tierSlotB.id === currentTierSlotBId && attempts < maxAttempts) {
+        tierSlotB = rivalry?.tierListB?.sampleEligibleSlot();
+        attempts++;
+      }
+
+      if (!(tierSlotA && tierSlotB)) {
         throw new Error('Unable to sample tier slots');
       }
 

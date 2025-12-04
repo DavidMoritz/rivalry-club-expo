@@ -12,9 +12,6 @@ interface RivalryViewProps {
 export function RivalryView({ navigation }: RivalryViewProps): JSX.Element {
   const rivalry = useRivalry();
 
-  console.log('[RivalryView] Rivalry from context:', typeof rivalry);
-  console.log('[RivalryView] Contest count:', rivalry?.contestCount);
-
   return (
     <>
       <Button

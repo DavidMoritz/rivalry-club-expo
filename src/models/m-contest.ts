@@ -160,7 +160,7 @@ export function getMContest(contest: Contest): MContest {
         user: this.rivalry?.userA,
         fighterId: this.tierSlotA?.fighterId,
         tierList: this.rivalry?.tierListA,
-        tierSlot: this.tierSlotA,
+        tierSlot: this.tierSlotA
       };
     },
     getDetailsB() {
@@ -168,7 +168,7 @@ export function getMContest(contest: Contest): MContest {
         user: this.rivalry?.userB,
         fighterId: this.tierSlotB?.fighterId,
         tierList: this.rivalry?.tierListB,
-        tierSlot: this.tierSlotB,
+        tierSlot: this.tierSlotB
       };
     },
     getLoser() {
@@ -184,12 +184,17 @@ export function getMContest(contest: Contest): MContest {
 
     setRivalryAndSlots(rivalry) {
       this.rivalry = rivalry;
+
       this.tierSlotA = rivalry.tierListA?.slots.find(
-        thisTierSlot => thisTierSlot?.id === this.tierSlotAId,
+        (thisTierSlot) => thisTierSlot?.id === this.tierSlotAId
       );
       this.tierSlotB = rivalry.tierListB?.slots.find(
-        thisTierSlot => thisTierSlot?.id === this.tierSlotBId,
+        (thisTierSlot) => thisTierSlot?.id === this.tierSlotBId
       );
-    },
+
+      if (!this.tierSlotA || !this.tierSlotB) {
+        console.warn('[MContest] Failed to find tier slots for contest:', this.id);
+      }
+    }
   };
 }

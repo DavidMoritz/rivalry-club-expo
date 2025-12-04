@@ -238,8 +238,12 @@ export function getMRivalry({ rivalry }: GetMRivalryProps): MRivalry {
           })
           .filter(Boolean) as MTierList[]) || [];
 
-      this.tierListA = tLists.find(tL => tL.userId === rivalry.userAId);
-      this.tierListB = tLists.find(tL => tL.userId === rivalry.userBId);
+      this.tierListA = tLists.find(tL => tL.userId === this.userAId);
+      this.tierListB = tLists.find(tL => tL.userId === this.userBId);
+
+      if (!this.tierListA || !this.tierListB) {
+        console.warn('[MRivalry.setMTierLists] Failed to match tier lists to users');
+      }
     },
   };
 }

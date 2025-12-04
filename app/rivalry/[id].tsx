@@ -2,15 +2,27 @@ import { useLocalSearchParams, useRouter, Stack } from 'expo-router';
 import { StatusBar } from 'expo-status-bar';
 import React, { useMemo } from 'react';
 
+import gameQuery from '../../assets/cache/game-query.json';
 import { ConnectedRivalryView } from '../../src/components/screens/ConnectedRivalryView';
+import { getMGame } from '../../src/models/m-game';
 import { getMRivalry } from '../../src/models/m-rivalry';
 import { GameProvider } from '../../src/providers/game';
-import { RivalryProvider, useRivalry } from '../../src/providers/rivalry';
+import { RivalryProvider } from '../../src/providers/rivalry';
 
 export default function RivalryDetailRoute() {
   const router = useRouter();
   const params = useLocalSearchParams();
   const rivalryId = params.id as string;
+
+  // Load game from cache - since there's only one game in the DB
+  const game = useMemo(() => {
+    const games = gameQuery.data?.listGames?.items;
+    if (games && games.length > 0) {
+      return getMGame(games[0] as any);
+    }
+
+    return null;
+  }, []);
 
   // Create a minimal rivalry object to initialize the provider
   // The actual data will be loaded by useRivalryWithAllInfoQuery in ConnectedRivalryView
@@ -50,19 +62,17 @@ export default function RivalryDetailRoute() {
     <>
       <Stack.Screen options={{ headerShown: false }} />
       <RivalryProvider rivalry={initialRivalry}>
-        <GameProviderWrapper navigation={navigation} />
+        <GameProviderWrapper navigation={navigation} game={game} />
       </RivalryProvider>
       <StatusBar style="light" />
     </>
   );
 }
 
-// Wrapper component to provide game context from rivalry
-function GameProviderWrapper({ navigation }: { navigation: any }) {
-  const rivalry = useRivalry();
-
+// Wrapper component to provide game context
+function GameProviderWrapper({ navigation, game }: { navigation: any; game: any }) {
   return (
-    <GameProvider value={rivalry?.game || null}>
+    <GameProvider value={game}>
       <ConnectedRivalryView navigation={navigation} />
     </GameProvider>
   );

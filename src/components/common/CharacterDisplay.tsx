@@ -1,9 +1,8 @@
 import { Image, Text, View } from 'react-native';
 import { twMerge } from 'tailwind-merge';
 
-import { fighterImages } from '../../../assets/images/games/ssbu';
 import { styles } from '../../utils/styles';
-import { sourceCase } from '../../utils';
+import { fighterImageSource } from '../../utils';
 
 // Temporary Fighter type - will be replaced with GraphQL type later
 interface Fighter {
@@ -18,27 +17,18 @@ interface CharacterDisplayProps {
   className?: string;
 }
 
-function fighterImageSource(fighter: Fighter) {
-  return fighterImages[sourceCase(fighter.name)];
-}
-
-export function CharacterDisplay({
-  fighter,
-  hideName,
-  className,
-}: CharacterDisplayProps) {
-  if (!fighter) return null;
+export function CharacterDisplay({ fighter, hideName, className }: CharacterDisplayProps) {
+  if (!fighter) {
+    return null;
+  }
 
   return (
-    <View
-      key={fighter.id}
-      style={styles.fighterWrapper}
-      className={className}>
+    <View key={fighter.id} style={styles.fighterWrapper} className={className}>
       <Image
         style={{
           aspectRatio: 1,
           flex: 4,
-          resizeMode: 'contain',
+          resizeMode: 'contain'
         }}
         source={fighterImageSource(fighter)}
       />

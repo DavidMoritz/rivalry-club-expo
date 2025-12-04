@@ -1,5 +1,7 @@
 import { ImageSourcePropType } from 'react-native';
 
+import { fighterImages } from '../../assets/images/games/ssbu';
+
 // Note: Fighter and Game types will be defined later when we set up GraphQL
 // For now, using basic types
 type Fighter = {
@@ -76,4 +78,8 @@ export function sourceCase(name: string): string {
 
 export function lastItem<T>(arr?: T[] | null): T | null {
   return arr ? arr[arr.length - 1] : null;
+}
+
+export function fighterImageSource(fighter: Fighter): ImageSourcePropType {
+  return fighterImages[sourceCase(fighter.name)];
 }

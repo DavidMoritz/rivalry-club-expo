@@ -32,8 +32,6 @@ export function ConnectedRivalryView({ navigation }: ConnectedRivalryViewProps):
   const updateRivalryProvider = useUpdateRivalry();
   const rivalry = useRivalry();
 
-  console.log('[ConnectedRivalryView] Rivalry ID:', rivalry?.id);
-
   const [tiersReady, setTiersReady] = useState<boolean>(false);
 
   const updateRivalryMutation = useUpdateRivalryMutation({
@@ -162,12 +160,6 @@ export function ConnectedRivalryView({ navigation }: ConnectedRivalryViewProps):
   } = useRivalryWithAllInfoQuery({
     rivalry,
     onSuccess: (populatedRivalry: MRivalry) => {
-      console.log('[ConnectedRivalryView] Query onSuccess called');
-      console.log(
-        '[ConnectedRivalryView] Populated rivalry:',
-        populatedRivalry._currentContest?.baseContest.id
-      );
-      console.log('[ConnectedRivalryView] Contest count:', populatedRivalry.contestCount);
       updateRivalryProvider(populatedRivalry);
       setTiersReady(true);
     }

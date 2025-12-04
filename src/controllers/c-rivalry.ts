@@ -53,8 +53,6 @@ export const useRivalryWithAllInfoQuery = ({
     enabled: !!rivalry?.id,
     queryKey: ['rivalryId', rivalry?.id],
     queryFn: async () => {
-      console.log('[useRivalryWithAllInfoQuery] Starting query for rivalry ID:', rivalry?.id);
-
       // Use Gen 2 client to fetch rivalry with related data
       const { data: rivalryData, errors } = await client.models.Rivalry.get(
         { id: rivalry?.id as string },
@@ -77,11 +75,9 @@ export const useRivalryWithAllInfoQuery = ({
       );
 
       if (errors) {
-        console.error('[useRivalryWithAllInfoQuery] Errors:', errors);
+        console.error('[useRivalryWithAllInfoQuery] GraphQL errors:', errors);
         throw new Error(errors[0]?.message || 'Failed to fetch rivalry');
       }
-
-      console.log('[useRivalryWithAllInfoQuery] Query result:', rivalryData);
 
       if (!rivalryData) {
         throw new Error('Rivalry not found');
@@ -112,9 +108,18 @@ export const useRivalryWithAllInfoQuery = ({
       const tierLists = { items: tierListsArray };
 
       if (tierLists.items.some(Boolean) && contests.items.some(Boolean)) {
-        (rivalry as MRivalry).setMContests(contests as any);
-        (rivalry as MRivalry).setMTierLists(tierLists as any);
-        onSuccess?.(rivalry as MRivalry);
+        // Update rivalry with fetched data
+        const mRivalry = rivalry as MRivalry;
+        mRivalry.userAId = rivalryData.userAId;
+        mRivalry.userBId = rivalryData.userBId;
+        mRivalry.gameId = rivalryData.gameId;
+        mRivalry.contestCount = rivalryData.contestCount;
+        mRivalry.currentContestId = rivalryData.currentContestId;
+        mRivalry.setMContests(contests as any);
+        mRivalry.setMTierLists(tierLists as any);
+        onSuccess?.(mRivalry);
+      } else {
+        console.warn('[useRivalryWithAllInfoQuery] Missing tier lists or contests - rivalry data incomplete');
       }
 
       return rivalryData;

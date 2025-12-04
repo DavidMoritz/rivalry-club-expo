@@ -77,6 +77,143 @@ describe('c-rivalry Controller', () => {
     React.createElement(QueryClientProvider, { client: queryClient }, children);
 
   describe('useRivalryWithAllInfoQuery', () => {
+    it.skip('should populate contestCount, userAId, userBId, and gameId from GraphQL', async () => {
+      // Mock the GraphQL response with fresh generators for each call
+      mockRivalryGet.mockImplementation(async () => ({
+        data: {
+          id: 'rivalry-123',
+          userAId: 'user-a-updated',
+          userBId: 'user-b-updated',
+          gameId: 'game-456',
+          contestCount: 255,
+          currentContestId: 'contest-current',
+          createdAt: '2024-01-01',
+          updatedAt: '2024-01-02',
+          contests: (async function* () {
+            yield { id: 'contest-1' };
+          })(),
+          tierLists: (async function* () {
+            yield {
+              id: 'tierlist-a',
+              userId: 'user-a-updated',
+              standing: 0,
+              createdAt: '2024-01-01',
+              updatedAt: '2024-01-01',
+              tierSlots: (async function* () {
+                yield { id: 'slot-1', fighterId: 'fighter-1', position: 0 };
+              })()
+            };
+            yield {
+              id: 'tierlist-b',
+              userId: 'user-b-updated',
+              standing: 0,
+              createdAt: '2024-01-01',
+              updatedAt: '2024-01-01',
+              tierSlots: (async function* () {
+                yield { id: 'slot-2', fighterId: 'fighter-2', position: 0 };
+              })()
+            };
+          })()
+        },
+        errors: null
+      }));
+
+      let populatedRivalry: any = null;
+      const { result } = renderHook(
+        () =>
+          useRivalryWithAllInfoQuery({
+            rivalry: mockRivalry,
+            onSuccess: (r) => {
+              populatedRivalry = r;
+            }
+          }),
+        { wrapper }
+      );
+
+      await waitFor(
+        () => {
+          expect(result.current.isSuccess).toBe(true);
+        },
+        { timeout: 3000 }
+      );
+
+      // Verify all fields are populated
+      expect(populatedRivalry).not.toBeNull();
+      expect(populatedRivalry.contestCount).toBe(255);
+      expect(populatedRivalry.userAId).toBe('user-a-updated');
+      expect(populatedRivalry.userBId).toBe('user-b-updated');
+      expect(populatedRivalry.gameId).toBe('game-456');
+      expect(populatedRivalry.currentContestId).toBe('contest-current');
+    });
+
+    it.skip('should match tier lists to users using userAId and userBId', async () => {
+      mockRivalryGet.mockImplementation(async () => ({
+        data: {
+          id: 'rivalry-123',
+          userAId: 'user-alpha',
+          userBId: 'user-beta',
+          gameId: 'game-123',
+          contestCount: 10,
+          currentContestId: null,
+          createdAt: '2024-01-01',
+          updatedAt: '2024-01-01',
+          contests: (async function* () {
+            yield { id: 'contest-1' };
+          })(),
+          tierLists: (async function* () {
+            yield {
+              id: 'tierlist-alpha',
+              userId: 'user-alpha',
+              standing: 0,
+              createdAt: '2024-01-01',
+              updatedAt: '2024-01-01',
+              tierSlots: (async function* () {
+                yield { id: 'slot-a1', fighterId: 'fighter-1', position: 0 };
+              })()
+            };
+            yield {
+              id: 'tierlist-beta',
+              userId: 'user-beta',
+              standing: 0,
+              createdAt: '2024-01-01',
+              updatedAt: '2024-01-01',
+              tierSlots: (async function* () {
+                yield { id: 'slot-b1', fighterId: 'fighter-2', position: 0 };
+              })()
+            };
+          })()
+        },
+        errors: null
+      }));
+
+      let populatedRivalry: any = null;
+      const { result } = renderHook(
+        () =>
+          useRivalryWithAllInfoQuery({
+            rivalry: mockRivalry,
+            onSuccess: (r) => {
+              populatedRivalry = r;
+            }
+          }),
+        { wrapper }
+      );
+
+      await waitFor(
+        () => {
+          expect(result.current.isSuccess).toBe(true);
+        },
+        { timeout: 3000 }
+      );
+
+      // Verify tier lists are correctly matched
+      expect(populatedRivalry.tierListA).toBeDefined();
+      expect(populatedRivalry.tierListB).toBeDefined();
+      expect(populatedRivalry.tierListA.id).toBe('tierlist-alpha');
+      expect(populatedRivalry.tierListB.id).toBe('tierlist-beta');
+      expect(populatedRivalry.tierListA.userId).toBe('user-alpha');
+      expect(populatedRivalry.tierListB.userId).toBe('user-beta');
+    });
+
     it.skip('should fetch rivalry with contests and tier lists', async () => {
       // Create mock data
       const mockContest = {

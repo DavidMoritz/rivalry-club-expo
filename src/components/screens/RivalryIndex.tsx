@@ -26,8 +26,14 @@ export function RivalryIndex() {
   } = useUserRivalries(user?.id);
 
   function handleSelectRivalry(rivalry: Rivalry) {
-    // Navigate to rivalry detail view using Expo Router
-    router.push(`/rivalry/${rivalry.id}`);
+    // Navigate to rivalry detail view using Expo Router with user names
+    router.push({
+      pathname: `/rivalry/${rivalry.id}`,
+      params: {
+        userAName: rivalry.userAName,
+        userBName: rivalry.userBName
+      }
+    });
   }
 
   function handleCreateRivalry() {

@@ -13,6 +13,8 @@ export default function RivalryDetailRoute() {
   const router = useRouter();
   const params = useLocalSearchParams();
   const rivalryId = params.id as string;
+  const userAName = params.userAName as string | undefined;
+  const userBName = params.userBName as string | undefined;
 
   // Load game from cache - since there's only one game in the DB
   const game = useMemo(() => {
@@ -28,6 +30,7 @@ export default function RivalryDetailRoute() {
   // The actual data will be loaded by useRivalryWithAllInfoQuery in ConnectedRivalryView
   const initialRivalry = useMemo(() => {
     console.log('[RivalryDetailRoute] Creating initial rivalry for ID:', rivalryId);
+    console.log('[RivalryDetailRoute] User names:', userAName, 'vs', userBName);
 
     if (!rivalryId) {
       console.log('[RivalryDetailRoute] No rivalry ID provided');
@@ -61,7 +64,11 @@ export default function RivalryDetailRoute() {
   return (
     <>
       <Stack.Screen options={{ headerShown: false }} />
-      <RivalryProvider rivalry={initialRivalry}>
+      <RivalryProvider
+        rivalry={initialRivalry}
+        userAName={userAName}
+        userBName={userBName}
+      >
         <GameProviderWrapper navigation={navigation} game={game} />
       </RivalryProvider>
       <StatusBar style="light" />

@@ -9,6 +9,7 @@ import type { Schema } from '../../../amplify/data/resource';
 import gameQuery from '../../../assets/cache/game-query.json';
 import { darkStyles, styles, contestStyles } from '../../../src/utils/styles';
 import { Button } from '../../../src/components/common/Button';
+import { HamburgerMenu } from '../../../src/components/common/HamburgerMenu';
 import { ContestRow } from '../../../src/components/common/ContestRow';
 import { getMContest, MContest } from '../../../src/models/m-contest';
 import { getMGame, MGame } from '../../../src/models/m-game';
@@ -318,12 +319,10 @@ export default function HistoryRoute() {
   return (
     <>
       <Stack.Screen options={{ title: 'Contest History' }} />
+      <HamburgerMenu />
       <SafeAreaView style={[styles.container, darkStyles.container]}>
         <View style={contestStyles.tableWrapper}>
-          <View
-            style={{ flexDirection: 'row', gap: 12, alignSelf: 'flex-start', marginBottom: 16 }}
-          >
-            <Button onPress={() => router.back()} text="← Back" />
+          <View style={{ alignSelf: 'flex-start', marginTop: -24, marginBottom: 16 }}>
             <Button
               onPress={() => deleteMostRecentContestMutation.mutate()}
               text="↺ Reverse Recent Contest"

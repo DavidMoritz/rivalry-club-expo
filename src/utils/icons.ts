@@ -1,7 +1,11 @@
 import {
+  faArrowLeft,
+  faBars,
   faCheckCircle,
   faExclamationTriangle,
+  faList,
   faShuffle,
+  faSignOutAlt,
   faSquareCheck,
 } from '@fortawesome/free-solid-svg-icons';
 
@@ -22,10 +26,14 @@ import {
 // import { faSwords } from '@fortawesome/pro-solid-svg-icons/faSwords';
 
 export const iconsInProject = [
+  faArrowLeft,
+  faBars,
   // faBoxingGlove, // Pro icon - uncomment if you have Pro license
   faCheckCircle,
   faExclamationTriangle,
+  faList,
   faShuffle,
+  faSignOutAlt,
   faSquareCheck,
   // faSwords, // Pro icon - uncomment if you have Pro license
 ] as const;

@@ -83,11 +83,14 @@ export function CurrentContest({
         style={{
           flexDirection: 'row',
           alignItems: 'center',
-          justifyContent: 'space-between',
-          marginBottom: 8
+          justifyContent: 'center',
+          marginBottom: 8,
+          position: 'relative'
         }}
       >
-        <Text style={{ fontSize: 14, color: 'white' }}>Current Contest</Text>
+        <Text style={{ fontSize: 18, color: 'white', position: 'absolute', left: 0 }}>
+          Current Contest
+        </Text>
         <TouchableOpacity
           style={{
             alignItems: 'center',

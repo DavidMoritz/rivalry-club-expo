@@ -8,6 +8,7 @@ import type { Schema } from '../../../amplify/data/resource';
 
 import gameQuery from '../../../assets/cache/game-query.json';
 import { Button } from '../../../src/components/common/Button';
+import { HamburgerMenu } from '../../../src/components/common/HamburgerMenu';
 import { TierListDisplay } from '../../../src/components/screens/parts/TierListDisplay';
 import { getMGame } from '../../../src/models/m-game';
 import { getMRivalry, MRivalry } from '../../../src/models/m-rivalry';
@@ -120,6 +121,7 @@ export default function TiersRoute() {
   return (
     <>
       <Stack.Screen options={{ title: 'Tier Lists' }} />
+      <HamburgerMenu />
       <GameProvider value={game}>
         <SyncedScrollViewContext.Provider value={syncedScrollViewState}>
           <SafeAreaView style={[styles.container, darkStyles.container]}>
@@ -174,10 +176,6 @@ export default function TiersRoute() {
 
             {!isLoading && !isError && rivalry && (
               <>
-                <View style={{ alignSelf: 'flex-start', marginBottom: 16 }}>
-                  <Button onPress={() => router.back()} text="← Back" />
-                </View>
-
                 <Text style={[darkStyles.text, { fontSize: 18, marginBottom: 8, marginTop: 16 }]}>
                   {rivalry.displayUserAName()} tier list
                 </Text>

@@ -3,6 +3,7 @@ import { StatusBar } from 'expo-status-bar';
 import React, { useMemo } from 'react';
 
 import gameQuery from '../../assets/cache/game-query.json';
+import { HamburgerMenu } from '../../src/components/common/HamburgerMenu';
 import { ConnectedRivalryView } from '../../src/components/screens/ConnectedRivalryView';
 import { getMGame } from '../../src/models/m-game';
 import { getMRivalry } from '../../src/models/m-rivalry';
@@ -62,6 +63,7 @@ export default function RivalryDetailRoute() {
       <Stack.Screen options={{ headerShown: false }} />
       <RivalryProvider rivalry={initialRivalry} userAName={userAName} userBName={userBName}>
         <GameProviderWrapper navigation={navigation} game={game} />
+        <HamburgerMenu />
       </RivalryProvider>
       <StatusBar style="light" />
     </>

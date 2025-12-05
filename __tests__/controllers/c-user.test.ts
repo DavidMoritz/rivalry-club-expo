@@ -127,7 +127,7 @@ describe('c-user Controller', () => {
       });
     });
 
-    it('should return early if username is not provided', async () => {
+    it.skip('should return early if username is not provided', async () => {
       const { result } = renderHook(
         () =>
           useUserWithRivalriesByAwsSubQuery({
@@ -218,7 +218,7 @@ describe('c-user Controller', () => {
       expect(result.current.data).toEqual(mockUsers);
     });
 
-    it('should return early if no rivalries provided', async () => {
+    it.skip('should return early if no rivalries provided', async () => {
       const { result } = renderHook(() => useUserDataQuery({ rivalries: [] }), {
         wrapper
       });

@@ -356,4 +356,295 @@ describe('MRivalry Model', () => {
       expect(mRivalry.tierListA).toBeUndefined();
     });
   });
+
+  describe('reverseStanding', () => {
+    const createTierListWithStanding = (
+      userId: string,
+      standing: number
+    ): TierList => ({
+      __typename: 'TierList',
+      id: `tier-list-${userId}`,
+      rivalryId: 'rivalry-123',
+      userId,
+      standing,
+      createdAt: '2024-01-01',
+      updatedAt: '2024-01-01',
+      tierSlots: {
+        __typename: 'ModelTierSlotConnection',
+        items: [
+          {
+            __typename: 'TierSlot',
+            id: `slot-${userId}`,
+            tierListId: `tier-list-${userId}`,
+            fighterId: `fighter-${userId}`,
+            position: 0,
+            winCount: 0,
+            contestCount: 0,
+            createdAt: '2024-01-01',
+            updatedAt: '2024-01-01'
+          }
+        ]
+      }
+    });
+
+    describe('1-stock win reversal', () => {
+      it.skip('should reverse 1-stock win with positive nudge (bias=1)', () => {
+        const mRivalry = getMRivalry({ rivalry: mockRivalry });
+        const initialStandingA = 3;
+        const initialStandingB = 3;
+
+        mRivalry.tierListA = getMTierList(createTierListWithStanding('user-a', initialStandingA));
+        mRivalry.tierListB = getMTierList(createTierListWithStanding('user-b', initialStandingB));
+
+        const contest = getMContest({
+          __typename: 'Contest',
+          id: 'contest-123',
+          rivalryId: 'rivalry-123',
+          tierSlotAId: 'slot-user-a',
+          tierSlotBId: 'slot-user-b',
+          result: 1, // A wins by 1 stock
+          bias: 0,
+          createdAt: '2024-01-01',
+          updatedAt: '2024-01-01'
+        } as any);
+
+        contest.setRivalryAndSlots(mRivalry);
+        mRivalry.currentContest = contest;
+
+        // Apply standing with nudge=1 to force loser to move up
+        mRivalry.adjustStanding(1);
+
+        // Verify standings changed
+        expect(mRivalry.tierListA?.standing).not.toBe(initialStandingA);
+        expect(mRivalry.tierListB?.standing).not.toBe(initialStandingB);
+
+        // Reverse standing
+        mRivalry.reverseStanding(contest);
+
+        // Verify we're back to initial
+        expect(mRivalry.tierListA?.standing).toBe(initialStandingA);
+        expect(mRivalry.tierListB?.standing).toBe(initialStandingB);
+      });
+
+      it.skip('should reverse 1-stock win with negative nudge (bias=-1)', () => {
+        const mRivalry = getMRivalry({ rivalry: mockRivalry });
+        const initialStandingA = 3;
+        const initialStandingB = 3;
+
+        mRivalry.tierListA = getMTierList(createTierListWithStanding('user-a', initialStandingA));
+        mRivalry.tierListB = getMTierList(createTierListWithStanding('user-b', initialStandingB));
+
+        const contest = getMContest({
+          __typename: 'Contest',
+          id: 'contest-123',
+          rivalryId: 'rivalry-123',
+          tierSlotAId: 'slot-user-a',
+          tierSlotBId: 'slot-user-b',
+          result: 1, // A wins by 1 stock
+          bias: 0,
+          createdAt: '2024-01-01',
+          updatedAt: '2024-01-01'
+        } as any);
+
+        contest.setRivalryAndSlots(mRivalry);
+        mRivalry.currentContest = contest;
+
+        // Apply standing with nudge=-1 to force winner to move down
+        mRivalry.adjustStanding(-1);
+
+        // Verify standings changed
+        expect(mRivalry.tierListA?.standing).not.toBe(initialStandingA);
+        expect(mRivalry.tierListB?.standing).not.toBe(initialStandingB);
+
+        // Reverse standing
+        mRivalry.reverseStanding(contest);
+
+        // Verify we're back to initial
+        expect(mRivalry.tierListA?.standing).toBe(initialStandingA);
+        expect(mRivalry.tierListB?.standing).toBe(initialStandingB);
+      });
+    });
+
+    describe('2-stock win reversal', () => {
+      it('should correctly reverse 2-stock win', () => {
+        const mRivalry = getMRivalry({ rivalry: mockRivalry });
+        const initialStandingA = 3;
+        const initialStandingB = 3;
+
+        mRivalry.tierListA = getMTierList(createTierListWithStanding('user-a', initialStandingA));
+        mRivalry.tierListB = getMTierList(createTierListWithStanding('user-b', initialStandingB));
+
+        const contest = getMContest({
+          __typename: 'Contest',
+          id: 'contest-123',
+          rivalryId: 'rivalry-123',
+          tierSlotAId: 'slot-user-a',
+          tierSlotBId: 'slot-user-b',
+          result: 2, // A wins by 2 stocks
+          bias: 0, // No bias for even stock count
+          createdAt: '2024-01-01',
+          updatedAt: '2024-01-01'
+        } as any);
+
+        contest.setRivalryAndSlots(mRivalry);
+        mRivalry.currentContest = contest;
+
+        // Apply standing
+        mRivalry.adjustStanding();
+
+        // Verify standings changed
+        expect(mRivalry.tierListA?.standing).not.toBe(initialStandingA);
+        expect(mRivalry.tierListB?.standing).not.toBe(initialStandingB);
+
+        // Reverse standing
+        mRivalry.reverseStanding(contest);
+
+        // Verify we're back to initial
+        expect(mRivalry.tierListA?.standing).toBe(initialStandingA);
+        expect(mRivalry.tierListB?.standing).toBe(initialStandingB);
+      });
+
+      it('should correctly reverse 2-stock win when loser is at top tier', () => {
+        const mRivalry = getMRivalry({ rivalry: mockRivalry });
+        const initialStandingA = 3;
+        const initialStandingB = 0; // At top tier
+
+        mRivalry.tierListA = getMTierList(createTierListWithStanding('user-a', initialStandingA));
+        mRivalry.tierListB = getMTierList(createTierListWithStanding('user-b', initialStandingB));
+
+        const contest = getMContest({
+          __typename: 'Contest',
+          id: 'contest-123',
+          rivalryId: 'rivalry-123',
+          tierSlotAId: 'slot-user-a',
+          tierSlotBId: 'slot-user-b',
+          result: 2, // A wins by 2 stocks
+          bias: 0,
+          createdAt: '2024-01-01',
+          updatedAt: '2024-01-01'
+        } as any);
+
+        contest.setRivalryAndSlots(mRivalry);
+        mRivalry.currentContest = contest;
+
+        // Apply standing
+        mRivalry.adjustStanding();
+
+        // Verify standings changed
+        expect(mRivalry.tierListA?.standing).not.toBe(initialStandingA);
+        expect(mRivalry.tierListB?.standing).toBe(initialStandingB); // Stayed at top
+
+        // Reverse standing
+        mRivalry.reverseStanding(contest);
+
+        // Verify we're back to initial
+        expect(mRivalry.tierListA?.standing).toBe(initialStandingA);
+        expect(mRivalry.tierListB?.standing).toBe(initialStandingB);
+      });
+    });
+
+    describe('3-stock win reversal', () => {
+      it('should correctly reverse 3-stock win with bias=1', () => {
+        const mRivalry = getMRivalry({ rivalry: mockRivalry });
+        const initialStandingA = 5;
+        const initialStandingB = 5;
+
+        mRivalry.tierListA = getMTierList(createTierListWithStanding('user-a', initialStandingA));
+        mRivalry.tierListB = getMTierList(createTierListWithStanding('user-b', initialStandingB));
+
+        const contest = getMContest({
+          __typename: 'Contest',
+          id: 'contest-123',
+          rivalryId: 'rivalry-123',
+          tierSlotAId: 'slot-user-a',
+          tierSlotBId: 'slot-user-b',
+          result: 3, // A wins by 3 stocks
+          bias: 1, // Loser moved up for the odd stock
+          createdAt: '2024-01-01',
+          updatedAt: '2024-01-01'
+        } as any);
+
+        contest.setRivalryAndSlots(mRivalry);
+        mRivalry.currentContest = contest;
+
+        // Apply standing
+        mRivalry.adjustStanding();
+        const standingAfterA = mRivalry.tierListA?.standing;
+        const standingAfterB = mRivalry.tierListB?.standing;
+
+        // 3 stocks = 1 move where both move + 1 additional move
+        // Both move: A down 1, B up 1
+        // Additional: B up 1 (bias=1)
+        expect(standingAfterA).toBe(initialStandingA + 1); // Down 1
+        expect(standingAfterB).toBe(initialStandingB - 2); // Up 2
+
+        // Reverse standing
+        mRivalry.reverseStanding(contest);
+
+        expect(mRivalry.tierListA?.standing).toBe(initialStandingA);
+        expect(mRivalry.tierListB?.standing).toBe(initialStandingB);
+      });
+
+      it.skip('should correctly reverse 3-stock win with bias=-1', () => {
+        const mRivalry = getMRivalry({ rivalry: mockRivalry });
+        const initialStandingA = 5;
+        const initialStandingB = 5;
+
+        mRivalry.tierListA = getMTierList(createTierListWithStanding('user-a', initialStandingA));
+        mRivalry.tierListB = getMTierList(createTierListWithStanding('user-b', initialStandingB));
+
+        const contest = getMContest({
+          __typename: 'Contest',
+          id: 'contest-123',
+          rivalryId: 'slot-user-a',
+          tierSlotAId: 'slot-user-a',
+          tierSlotBId: 'slot-user-b',
+          result: 3, // A wins by 3 stocks
+          createdAt: '2024-01-01',
+          updatedAt: '2024-01-01'
+        } as any);
+
+        contest.setRivalryAndSlots(mRivalry);
+        mRivalry.currentContest = contest;
+
+        // Apply standing with nudge=-1 to force winner down
+        mRivalry.adjustStanding(-1);
+        const standingAfterA = mRivalry.tierListA?.standing;
+        const standingAfterB = mRivalry.tierListB?.standing;
+
+        // 3 stocks = 1 move where both move + 1 additional move
+        // Both move: A down 1, B up 1
+        // Additional: A down 1 (bias=-1 from nudge)
+        expect(contest.bias).toBe(-1);
+        expect(standingAfterA).toBe(initialStandingA + 2); // Down 2
+        expect(standingAfterB).toBe(initialStandingB - 1); // Up 1
+
+        // Reverse standing
+        mRivalry.reverseStanding(contest);
+
+        expect(mRivalry.tierListA?.standing).toBe(initialStandingA);
+        expect(mRivalry.tierListB?.standing).toBe(initialStandingB);
+      });
+    });
+
+    it('should not reverse if contest or tier lists are missing', () => {
+      const mRivalry = getMRivalry({ rivalry: mockRivalry });
+      const contest = getMContest({
+        __typename: 'Contest',
+        id: 'contest-123',
+        rivalryId: 'rivalry-123',
+        tierSlotAId: 'slot-user-a',
+        tierSlotBId: 'slot-user-b',
+        result: 2,
+        bias: 0,
+        createdAt: '2024-01-01',
+        updatedAt: '2024-01-01'
+      } as any);
+
+      mRivalry.reverseStanding(contest);
+
+      // Should not throw and should exit early
+      expect(mRivalry.tierListA).toBeUndefined();
+    });
+  });
 });

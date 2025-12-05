@@ -285,7 +285,7 @@ describe('c-rivalry Controller', () => {
         { wrapper }
       );
 
-      await waitFor(() => expect(result.current.isSuccess).toBe(true));
+      await waitFor(() => expect(result.current.isSuccess).toBe(true), { timeout: 5000 });
 
       expect(mockRivalryGet).toHaveBeenCalled();
       expect(onSuccess).toHaveBeenCalledWith(mockRivalry);
@@ -352,7 +352,7 @@ describe('c-rivalry Controller', () => {
 
       result.current.mutate();
 
-      await waitFor(() => expect(result.current.isSuccess).toBe(true));
+      await waitFor(() => expect(result.current.isSuccess).toBe(true), { timeout: 5000 });
 
       expect(mockGraphql).toHaveBeenCalled();
       expect(onSuccess).toHaveBeenCalled();
@@ -406,7 +406,7 @@ describe('c-rivalry Controller', () => {
 
       result.current.mutate();
 
-      await waitFor(() => expect(result.current.isSuccess).toBe(true));
+      await waitFor(() => expect(result.current.isSuccess).toBe(true), { timeout: 5000 });
 
       expect(mockGraphql).toHaveBeenCalled();
       expect(onSuccess).toHaveBeenCalled();

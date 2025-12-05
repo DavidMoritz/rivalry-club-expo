@@ -120,6 +120,26 @@ export const useRivalryWithAllInfoQuery = ({ rivalry, onSuccess }: RivalryQueryP
           contestsArray.push(contest);
         }
       }
+
+      // If we have a currentContestId but it's not in the contests array, fetch it separately
+      if (rivalryData.currentContestId) {
+        const currentContestExists = contestsArray.some(
+          (c) => c.id === rivalryData.currentContestId
+        );
+        if (!currentContestExists) {
+          const { data: currentContestData, errors: contestErrors } =
+            await client.models.Contest.get({ id: rivalryData.currentContestId });
+          if (contestErrors) {
+            console.error(
+              '[useRivalryWithAllInfoQuery] Error fetching current contest:',
+              contestErrors
+            );
+          } else if (currentContestData) {
+            contestsArray.unshift(currentContestData as any);
+          }
+        }
+      }
+
       const contests = { items: contestsArray };
 
       const tierListsArray: any[] = [];
@@ -384,6 +404,76 @@ export const useUpdateCurrentContestShuffleTierSlotsMutation = ({
     onSuccess: (contest) => {
       queryClient.invalidateQueries({ queryKey: ['rivalryId', rivalry?.id] });
       onSuccess?.(contest);
+    }
+  });
+};
+
+export const useDeleteMostRecentContestMutation = ({
+  rivalry,
+  onSuccess
+}: RivalryMutationProps) => {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: async () => {
+      if (!rivalry) {
+        throw new Error('No rivalry provided');
+      }
+
+      // Find the most recent contest (should NOT be the current contest)
+      const mostRecentContest = rivalry.mContests[1];
+
+      if (!mostRecentContest) {
+        throw new Error('No contests to delete');
+      }
+
+      if (!mostRecentContest.result) {
+        throw new Error('Cannot delete unresolved contest');
+      }
+
+      // Reverse the standings using the bias
+      rivalry.reverseStanding(mostRecentContest);
+
+      // Update both tier lists with reversed standings
+      const [resultA, resultB] = await Promise.all([
+        client.models.TierList.update({
+          id: rivalry.tierListA!.id,
+          standing: rivalry.tierListA!.standing
+        }),
+        client.models.TierList.update({
+          id: rivalry.tierListB!.id,
+          standing: rivalry.tierListB!.standing
+        })
+      ]);
+
+      if (resultA.errors || resultB.errors) {
+        throw new Error('Failed to update tier lists after reversal');
+      }
+
+      // Delete the contest
+      const { errors: deleteErrors } = await client.models.Contest.delete({
+        id: mostRecentContest.id
+      });
+
+      if (deleteErrors) {
+        throw new Error(deleteErrors[0]?.message || 'Failed to delete contest');
+      }
+
+      // Update rivalry to decrement contest count
+      const { errors: rivalryErrors } = await client.models.Rivalry.update({
+        id: rivalry.id,
+        contestCount: Math.max((rivalry.contestCount || 0) - 1, 0)
+      });
+
+      if (rivalryErrors) {
+        throw new Error(rivalryErrors[0]?.message || 'Failed to update rivalry');
+      }
+
+      return mostRecentContest;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['rivalryId', rivalry?.id] });
+      onSuccess?.();
     }
   });
 };

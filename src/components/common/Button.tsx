@@ -4,6 +4,7 @@ import { styles } from '../../utils/styles';
 
 type ButtonProps = {
   className?: string;
+  disabled?: boolean;
   leftContent?: React.ReactNode;
   onPress: () => void;
   rightContent?: React.ReactNode;
@@ -13,6 +14,7 @@ type ButtonProps = {
 
 export function Button({
   className,
+  disabled = false,
   leftContent,
   onPress,
   rightContent,
@@ -23,6 +25,7 @@ export function Button({
     <TouchableOpacity
       className={twMerge(
         'self-center my-2 text-center justify-center items-center bg-purple-900 border rounded-full border-slate-300 h-9',
+        disabled && 'opacity-50',
         className
       )}
       style={{
@@ -34,6 +37,7 @@ export function Button({
         alignItems: 'center'
       }}
       onPress={onPress}
+      disabled={disabled}
     >
       {leftContent && leftContent}
       <Text

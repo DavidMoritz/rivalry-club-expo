@@ -33,6 +33,7 @@ export function ConnectedRivalryView({ navigation }: ConnectedRivalryViewProps):
   const rivalry = useRivalry();
 
   const [tiersReady, setTiersReady] = useState<boolean>(false);
+  const [isResolvingContest, setIsResolvingContest] = useState<boolean>(false);
 
   const updateRivalryMutation = useUpdateRivalryMutation({
     rivalry
@@ -53,9 +54,23 @@ export function ConnectedRivalryView({ navigation }: ConnectedRivalryViewProps):
     onSuccess: (currentContest: MContest) => {
       if (!rivalry) return;
 
-      rivalry.setCurrentContest(currentContest);
-      updateRivalryProviderAndMutation({ currentContestId: currentContest.id });
-      setTiersReady(true);
+      // Don't call rivalry.setCurrentContest here - the tier slots won't be available yet
+      // Let useRivalryWithAllInfoQuery refetch and populate everything properly
+
+      const newContestCount = (rivalry.contestCount || 0) + 1;
+      console.log(
+        '[ConnectedRivalryView] Incrementing contestCount from',
+        rivalry.contestCount,
+        'to',
+        newContestCount
+      );
+      rivalry.contestCount = newContestCount;
+      updateRivalryProviderAndMutation({
+        currentContestId: currentContest.id,
+        contestCount: newContestCount
+      });
+      // Don't set tiersReady here - let useRivalryWithAllInfoQuery.onSuccess handle it
+      // after the query refetches with the new contest data
     }
   });
 
@@ -85,11 +100,6 @@ export function ConnectedRivalryView({ navigation }: ConnectedRivalryViewProps):
 
       updateTierSlotsAMutation.mutate();
       updateTierSlotsBMutation.mutate();
-
-      const newContestCount = (rivalry.contestCount || 0) + 1;
-      console.log('[ConnectedRivalryView] Incrementing contestCount from', rivalry.contestCount, 'to', newContestCount);
-      rivalry.contestCount = newContestCount;
-      updateRivalryProviderAndMutation({ contestCount: newContestCount });
 
       createContestMutation.mutate();
     }
@@ -124,6 +134,7 @@ export function ConnectedRivalryView({ navigation }: ConnectedRivalryViewProps):
     });
 
   async function handleResolveContest() {
+    setIsResolvingContest(true);
     setTiersReady(false);
 
     if (!rivalry?.currentContest) return;
@@ -168,6 +179,7 @@ export function ConnectedRivalryView({ navigation }: ConnectedRivalryViewProps):
     rivalry,
     onSuccess: (populatedRivalry: MRivalry) => {
       updateRivalryProvider(populatedRivalry);
+      setIsResolvingContest(false);
       setTiersReady(true);
     }
   });
@@ -237,12 +249,21 @@ export function ConnectedRivalryView({ navigation }: ConnectedRivalryViewProps):
         </View>
       )}
 
-      {tiersReady && rivalry?.currentContestId && (
-        <CurrentContest
-          onPressShuffle={handlePressShuffle}
-          onResolveContest={handleResolveContest}
-        />
+      {isResolvingContest && (
+        <View style={{ flex: 1, alignItems: 'center', justifyContent: 'center' }}>
+          <Text style={[styles.text, darkStyles.text, { fontSize: 18 }]}>Resolving Contest...</Text>
+        </View>
       )}
+
+      {tiersReady &&
+        !isResolvingContest &&
+        !createContestMutation.isPending &&
+        rivalry?.currentContestId && (
+          <CurrentContest
+            onPressShuffle={handlePressShuffle}
+            onResolveContest={handleResolveContest}
+          />
+        )}
 
       {!rivalry?.currentContest && (
         <Button

@@ -2,7 +2,7 @@ import { useLocalSearchParams, Stack, useRouter } from 'expo-router';
 import { StatusBar } from 'expo-status-bar';
 import React, { useState, useMemo, useCallback } from 'react';
 import { SafeAreaView, Text, View, FlatList, ActivityIndicator } from 'react-native';
-import { useQuery } from '@tanstack/react-query';
+import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { generateClient } from 'aws-amplify/data';
 import type { Schema } from '../../../amplify/data/resource';
 
@@ -15,24 +15,29 @@ import { getMGame, MGame } from '../../../src/models/m-game';
 import { getMRivalry, MRivalry } from '../../../src/models/m-rivalry';
 import { getMUser } from '../../../src/models/m-user';
 import { useRivalryContext } from '../../../src/providers/rivalry';
+import { useDeleteMostRecentContestMutation } from '../../../src/controllers/c-rivalry';
 
 const client = generateClient<Schema>();
-
-// Debug: Log GraphQL operations
-if (__DEV__) {
-  console.log('[HistoryRoute] GraphQL Client Info:');
-  console.log('[HistoryRoute] Client methods:', Object.keys(client.models.Contest));
-}
 
 export default function HistoryRoute() {
   const router = useRouter();
   const params = useLocalSearchParams();
   const rivalryId = params.id as string;
   const rivalryContext = useRivalryContext();
+  const queryClient = useQueryClient();
   const [contests, setContests] = useState<MContest[]>([]);
   const [nextToken, setNextToken] = useState<string | null>(null);
   const [isLoadingMore, setIsLoadingMore] = useState(false);
   const [rivalry, setRivalry] = useState<MRivalry | null>(null);
+
+  const deleteMostRecentContestMutation = useDeleteMostRecentContestMutation({
+    rivalry,
+    onSuccess: () => {
+      // Invalidate queries to refetch contests after deletion
+      queryClient.invalidateQueries({ queryKey: ['rivalryContests', rivalryId] });
+      queryClient.invalidateQueries({ queryKey: ['rivalryWithInfo', rivalryId] });
+    }
+  });
 
   const game = useMemo(() => {
     const games = gameQuery.data?.listGames?.items;
@@ -170,6 +175,12 @@ export default function HistoryRoute() {
 
         return mContest;
       });
+
+      // Set contests on rivalry for the delete mutation
+      // Use the processed mContests with rivalry and slots attached
+      if (rivalry) {
+        rivalry.mContests = mContests;
+      }
 
       setContests(mContests);
       setNextToken(newNextToken || null);
@@ -309,9 +320,31 @@ export default function HistoryRoute() {
       <Stack.Screen options={{ title: 'Contest History' }} />
       <SafeAreaView style={[styles.container, darkStyles.container]}>
         <View style={contestStyles.tableWrapper}>
-          <View style={{ alignSelf: 'flex-start', marginBottom: 16 }}>
+          <View
+            style={{ flexDirection: 'row', gap: 12, alignSelf: 'flex-start', marginBottom: 16 }}
+          >
             <Button onPress={() => router.back()} text="← Back" />
+            <Button
+              onPress={() => deleteMostRecentContestMutation.mutate()}
+              text="↺ Reverse Recent Contest"
+              disabled={
+                deleteMostRecentContestMutation.isPending ||
+                !contests.length ||
+                !contests.some((c) => c.result)
+              }
+            />
           </View>
+
+          {deleteMostRecentContestMutation.isError && (
+            <View
+              style={{ marginBottom: 16, padding: 12, backgroundColor: '#7f1d1d', borderRadius: 8 }}
+            >
+              <Text style={[styles.text, { color: '#fca5a5' }]}>
+                Error reversing contest:{' '}
+                {deleteMostRecentContestMutation.error?.message || 'Unknown error'}
+              </Text>
+            </View>
+          )}
 
           <View style={[contestStyles.row, contestStyles.tableHeaderRow]}>
             <View style={contestStyles.item}>

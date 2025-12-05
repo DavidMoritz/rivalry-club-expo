@@ -28,6 +28,11 @@ export interface MContest extends Contest {
   setRivalryAndSlots(rivalry: MRivalry): void;
   tierSlotA?: MTierSlot;
   tierSlotB?: MTierSlot;
+  // Computed properties for logged-in user perspective
+  loggedInUserTierSlot?: MTierSlot;
+  otherUserTierSlot?: MTierSlot;
+  getLoggedInUserDetails(): ParticipantDetail;
+  getOtherUserDetails(): ParticipantDetail;
 }
 
 export function getMContest(contest: Contest): MContest {
@@ -62,6 +67,18 @@ export function getMContest(contest: Contest): MContest {
       return this._mTierSlotA;
     },
     get tierSlotB() {
+      return this._mTierSlotB;
+    },
+
+    // Computed properties for logged-in user perspective
+    get loggedInUserTierSlot() {
+      if (!this._mRivalry?.isLoggedInUserA()) return this._mTierSlotB;
+
+      return this._mTierSlotA;
+    },
+    get otherUserTierSlot() {
+      if (!this._mRivalry?.isLoggedInUserA()) return this._mTierSlotA;
+
       return this._mTierSlotB;
     },
 
@@ -170,6 +187,20 @@ export function getMContest(contest: Contest): MContest {
         tierList: this.rivalry?.tierListB,
         tierSlot: this.tierSlotB
       };
+    },
+    getLoggedInUserDetails() {
+      if (!this.rivalry?.isLoggedInUserA()) {
+        return this.getDetailsB();
+      }
+
+      return this.getDetailsA();
+    },
+    getOtherUserDetails() {
+      if (!this.rivalry?.isLoggedInUserA()) {
+        return this.getDetailsA();
+      }
+
+      return this.getDetailsB();
     },
     getLoser() {
       if (!this.result) return;

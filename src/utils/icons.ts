@@ -7,6 +7,7 @@ import {
   faShuffle,
   faSignOutAlt,
   faSquareCheck,
+  faUser,
 } from '@fortawesome/free-solid-svg-icons';
 
 /**
@@ -36,4 +37,5 @@ export const iconsInProject = [
   faSignOutAlt,
   faSquareCheck,
   // faSwords, // Pro icon - uncomment if you have Pro license
+  faUser,
 ] as const;

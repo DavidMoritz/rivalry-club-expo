@@ -1,8 +1,9 @@
-import { Image, Text, View } from 'react-native';
+import { Text, View } from 'react-native';
 import { twMerge } from 'tailwind-merge';
 
 import { styles } from '../../utils/styles';
-import { fighterImageSource } from '../../utils';
+import { sourceCase } from '../../utils';
+import { CharacterFace } from '../../../assets/images/games/ssbu/CharacterFaceExample';
 
 // Temporary Fighter type - will be replaced with GraphQL type later
 interface Fighter {
@@ -23,6 +24,9 @@ export function CharacterDisplay({ fighter, hideName, className, height }: Chara
     return null;
   }
 
+  const characterKey = sourceCase(fighter.name);
+  const displaySize = height || 100; // Use provided height or default to 100
+
   return (
     <View
       key={fighter.id}
@@ -32,13 +36,12 @@ export function CharacterDisplay({ fighter, hideName, className, height }: Chara
       ]}
       className={className}
     >
-      <Image
+      <CharacterFace
+        characterKey={characterKey}
+        size={displaySize}
         style={{
-          aspectRatio: 1,
           flex: 4,
-          resizeMode: 'contain'
         }}
-        source={fighterImageSource(fighter)}
       />
       {!hideName && (
         <View style={styles.fighterText}>

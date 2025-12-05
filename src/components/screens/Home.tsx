@@ -73,11 +73,7 @@ export default function Home({ onEnterClick }: HomeProps) {
           text="Enter"
           onPress={() => onEnterClick(games[0])}
           className="w-1/2"
-          leftContent={
-            <View className="mr-2">
-              <FontAwesomeIcon icon="shuffle" color="white" />
-            </View>
-          }
+          style={{ marginTop: 4, marginBottom: 8 }}
         />
       </View>
       <View style={styles.viewLower}>

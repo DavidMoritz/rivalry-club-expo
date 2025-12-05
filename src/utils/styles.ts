@@ -26,7 +26,9 @@ export const styles = StyleSheet.create({
     alignItems: 'center',
     height: 150,
     justifyContent: 'space-between',
-    marginVertical: 5,
+    marginVertical: 0,
+    marginHorizontal: 0,
+    width: '33.33%',
   },
   fightersContainer: {
     flex: 1,
@@ -137,7 +139,7 @@ export const styles = StyleSheet.create({
     top: 0,
   },
   viewLower: { flex: 3 },
-  viewUpper: { flex: 1, alignItems: 'center' },
+  viewUpper: { flex: 1, alignItems: 'center', justifyContent: 'space-between', width: '100%' },
 });
 
 export const darkStyles = StyleSheet.create({

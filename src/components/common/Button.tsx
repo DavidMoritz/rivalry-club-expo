@@ -1,4 +1,4 @@
-import { Text, TouchableOpacity } from 'react-native';
+import { Text, TouchableOpacity, ViewStyle } from 'react-native';
 import { twMerge } from 'tailwind-merge';
 import { styles } from '../../utils/styles';
 
@@ -8,6 +8,7 @@ type ButtonProps = {
   leftContent?: React.ReactNode;
   onPress: () => void;
   rightContent?: React.ReactNode;
+  style?: ViewStyle;
   text: string;
   textClassName?: string;
 };
@@ -18,6 +19,7 @@ export function Button({
   leftContent,
   onPress,
   rightContent,
+  style,
   text,
   textClassName
 }: ButtonProps) {
@@ -28,14 +30,17 @@ export function Button({
         disabled && 'opacity-50',
         className
       )}
-      style={{
-        backgroundColor: '#6b21a8',
-        paddingHorizontal: 24,
-        paddingVertical: 12,
-        borderRadius: 8,
-        marginTop: 16,
-        alignItems: 'center'
-      }}
+      style={[
+        {
+          backgroundColor: '#6b21a8',
+          paddingHorizontal: 24,
+          paddingVertical: 12,
+          borderRadius: 8,
+          marginTop: 16,
+          alignItems: 'center'
+        },
+        style
+      ]}
       onPress={onPress}
       disabled={disabled}
     >

@@ -38,18 +38,23 @@ export function ConnectedRivalryView({ navigation }: ConnectedRivalryViewProps):
     rivalry
   });
 
-  const updateRivalryProviderAndMutation = () => {
+  const updateRivalryProviderAndMutation = (overrides?: {
+    contestCount?: number;
+    currentContestId?: string | null;
+  }) => {
     if (!rivalry) return;
 
     updateRivalryProvider(rivalry);
-    updateRivalryMutation.mutate();
+    updateRivalryMutation.mutate(overrides);
   };
 
   const createContestMutation = useCreateContestMutation({
     rivalry,
     onSuccess: (currentContest: MContest) => {
-      rivalry?.setCurrentContest(currentContest);
-      updateRivalryProviderAndMutation();
+      if (!rivalry) return;
+
+      rivalry.setCurrentContest(currentContest);
+      updateRivalryProviderAndMutation({ currentContestId: currentContest.id });
       setTiersReady(true);
     }
   });
@@ -81,8 +86,10 @@ export function ConnectedRivalryView({ navigation }: ConnectedRivalryViewProps):
       updateTierSlotsAMutation.mutate();
       updateTierSlotsBMutation.mutate();
 
-      rivalry.contestCount++;
-      updateRivalryProviderAndMutation();
+      const newContestCount = (rivalry.contestCount || 0) + 1;
+      console.log('[ConnectedRivalryView] Incrementing contestCount from', rivalry.contestCount, 'to', newContestCount);
+      rivalry.contestCount = newContestCount;
+      updateRivalryProviderAndMutation({ contestCount: newContestCount });
 
       createContestMutation.mutate();
     }

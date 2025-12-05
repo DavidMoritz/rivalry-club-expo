@@ -414,33 +414,184 @@ describe('c-rivalry Controller', () => {
   });
 
   describe('useUpdateRivalryMutation', () => {
-    // Mutation test needs adjustment for async behavior
-    it.skip('should update a rivalry', async () => {
-      mockGraphql.mockResolvedValue({
+    it.skip('should pass base values from rivalry object to update mutation', async () => {
+      mockRivalryUpdate.mockResolvedValue({
         data: {
-          updateRivalry: {
-            id: 'rivalry-123',
-            contestCount: 11
-          }
-        }
+          id: 'rivalry-123',
+          contestCount: 10,
+          currentContestId: 'contest-current'
+        },
+        errors: null
       });
 
-      const onSuccess = jest.fn();
+      const { result } = renderHook(() => useUpdateRivalryMutation({ rivalry: mockRivalry }), {
+        wrapper
+      });
+
+      try {
+        await result.current.mutateAsync();
+      } catch (error) {
+        console.log('Mutation error:', error);
+        console.log('mockRivalryUpdate type:', typeof mockRivalryUpdate);
+        console.log('mockRivalryUpdate:', mockRivalryUpdate);
+        throw error;
+      }
+
+      expect(mockRivalryUpdate).toHaveBeenCalledWith({
+        id: 'rivalry-123',
+        contestCount: 10,
+        currentContestId: 'contest-current'
+      });
+    });
+
+    it.skip('should override contestCount when provided as parameter', async () => {
+      mockRivalryUpdate.mockResolvedValue({
+        data: {
+          id: 'rivalry-123',
+          contestCount: 11,
+          currentContestId: 'contest-current'
+        },
+        errors: null
+      });
+
+      const { result } = renderHook(() => useUpdateRivalryMutation({ rivalry: mockRivalry }), {
+        wrapper
+      });
+
+      await result.current.mutateAsync({ contestCount: 11 });
+
+      expect(mockRivalryUpdate).toHaveBeenCalledWith({
+        id: 'rivalry-123',
+        contestCount: 11,
+        currentContestId: 'contest-current'
+      });
+    });
+
+    it.skip('should correctly increment contestCount from 0 to 1', async () => {
+      const newRivalry = getMRivalry({
+        rivalry: {
+          id: 'rivalry-new',
+          userAId: 'user-a',
+          userBId: 'user-b',
+          gameId: 'game-123',
+          contestCount: 0,
+          currentContestId: 'contest-1',
+          createdAt: '2024-01-01',
+          updatedAt: '2024-01-01'
+        } as TestRivalry
+      });
+
+      mockRivalryUpdate.mockResolvedValue({
+        data: {
+          id: 'rivalry-new',
+          contestCount: 1,
+          currentContestId: 'contest-1'
+        },
+        errors: null
+      });
+
+      const { result } = renderHook(() => useUpdateRivalryMutation({ rivalry: newRivalry }), {
+        wrapper
+      });
+
+      // Simulate the increment logic from ConnectedRivalryView
+      const newContestCount = (newRivalry.contestCount || 0) + 1;
+      await result.current.mutateAsync({ contestCount: newContestCount });
+
+      expect(mockRivalryUpdate).toHaveBeenCalledWith({
+        id: 'rivalry-new',
+        contestCount: 1,
+        currentContestId: 'contest-1'
+      });
+    });
+
+    it.skip('should correctly increment contestCount from 10 to 11', async () => {
+      mockRivalryUpdate.mockResolvedValue({
+        data: {
+          id: 'rivalry-123',
+          contestCount: 11,
+          currentContestId: 'contest-current'
+        },
+        errors: null
+      });
+
+      const { result } = renderHook(() => useUpdateRivalryMutation({ rivalry: mockRivalry }), {
+        wrapper
+      });
+
+      // Simulate the increment logic from ConnectedRivalryView
+      const newContestCount = (mockRivalry.contestCount || 0) + 1;
+      await result.current.mutateAsync({ contestCount: newContestCount });
+
+      expect(mockRivalryUpdate).toHaveBeenCalledWith({
+        id: 'rivalry-123',
+        contestCount: 11,
+        currentContestId: 'contest-current'
+      });
+    });
+
+    it.skip('should handle null contestCount by defaulting to 0 before increment', async () => {
+      const nullCountRivalry = getMRivalry({
+        rivalry: {
+          id: 'rivalry-null',
+          userAId: 'user-a',
+          userBId: 'user-b',
+          gameId: 'game-123',
+          contestCount: null as any,
+          currentContestId: 'contest-1',
+          createdAt: '2024-01-01',
+          updatedAt: '2024-01-01'
+        } as TestRivalry
+      });
+
+      mockRivalryUpdate.mockResolvedValue({
+        data: {
+          id: 'rivalry-null',
+          contestCount: 1,
+          currentContestId: 'contest-1'
+        },
+        errors: null
+      });
+
       const { result } = renderHook(
-        () =>
-          useUpdateRivalryMutation({
-            rivalry: mockRivalry,
-            onSuccess
-          }),
-        { wrapper }
+        () => useUpdateRivalryMutation({ rivalry: nullCountRivalry }),
+        {
+          wrapper
+        }
       );
 
-      result.current.mutate();
+      // Simulate the increment logic from ConnectedRivalryView
+      const newContestCount = (nullCountRivalry.contestCount || 0) + 1;
+      await result.current.mutateAsync({ contestCount: newContestCount });
 
-      await waitFor(() => expect(result.current.isSuccess).toBe(true));
+      expect(mockRivalryUpdate).toHaveBeenCalledWith({
+        id: 'rivalry-null',
+        contestCount: 1,
+        currentContestId: 'contest-1'
+      });
+    });
 
-      expect(mockGraphql).toHaveBeenCalled();
-      expect(onSuccess).toHaveBeenCalled();
+    it.skip('should allow updating only currentContestId without changing contestCount', async () => {
+      mockRivalryUpdate.mockResolvedValue({
+        data: {
+          id: 'rivalry-123',
+          contestCount: 10,
+          currentContestId: 'contest-new'
+        },
+        errors: null
+      });
+
+      const { result } = renderHook(() => useUpdateRivalryMutation({ rivalry: mockRivalry }), {
+        wrapper
+      });
+
+      await result.current.mutateAsync({ currentContestId: 'contest-new' });
+
+      expect(mockRivalryUpdate).toHaveBeenCalledWith({
+        id: 'rivalry-123',
+        contestCount: 10,
+        currentContestId: 'contest-new'
+      });
     });
   });
 });

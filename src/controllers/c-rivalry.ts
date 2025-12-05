@@ -47,7 +47,7 @@ interface UpdateCurrentContestShuffleTierSlotsMutationProps extends RivalryQuery
 
 export const useRivalryContestsQuery = ({
   rivalryId,
-  limit = 100,
+  limit = 100
 }: {
   rivalryId?: string;
   limit?: number;
@@ -56,9 +56,13 @@ export const useRivalryContestsQuery = ({
     enabled: !!rivalryId,
     queryKey: ['rivalryContests', rivalryId, limit],
     queryFn: async () => {
-      const { data: contests, errors, nextToken } = await client.models.Contest.list({
+      const {
+        data: contests,
+        errors,
+        nextToken
+      } = await client.models.Contest.list({
         filter: { rivalryId: { eq: rivalryId } },
-        limit,
+        limit
       });
 
       if (errors) {
@@ -68,15 +72,12 @@ export const useRivalryContestsQuery = ({
 
       return {
         contests: contests.map((c) => getMContest(c as any)),
-        nextToken,
+        nextToken
       };
-    },
+    }
   });
 
-export const useRivalryWithAllInfoQuery = ({
-  rivalry,
-  onSuccess,
-}: RivalryQueryProps) =>
+export const useRivalryWithAllInfoQuery = ({ rivalry, onSuccess }: RivalryQueryProps) =>
   useQuery({
     enabled: !!rivalry?.id,
     queryKey: ['rivalryId', rivalry?.id],
@@ -97,8 +98,8 @@ export const useRivalryWithAllInfoQuery = ({
             'deletedAt',
             'contests.*',
             'tierLists.*',
-            'tierLists.tierSlots.*',
-          ],
+            'tierLists.tierSlots.*'
+          ]
         }
       );
 
@@ -147,18 +148,20 @@ export const useRivalryWithAllInfoQuery = ({
         mRivalry.setMTierLists(tierLists as any);
         onSuccess?.(mRivalry);
       } else {
-        console.warn('[useRivalryWithAllInfoQuery] Missing tier lists or contests - rivalry data incomplete');
+        console.warn(
+          '[useRivalryWithAllInfoQuery] Missing tier lists or contests - rivalry data incomplete'
+        );
       }
 
       return rivalryData;
-    },
+    }
   });
 
 /** Mutations */
 
 export const useCreateContestMutation = ({
   rivalry,
-  onSuccess,
+  onSuccess
 }: RivalryMutationWithContestProps) => {
   const queryClient = useQueryClient();
 
@@ -178,7 +181,7 @@ export const useCreateContestMutation = ({
         tierSlotAId: tierSlotA.id,
         tierSlotBId: tierSlotB.id,
         result: 0,
-        bias: 0,
+        bias: 0
       });
 
       if (errors) {
@@ -190,7 +193,7 @@ export const useCreateContestMutation = ({
     onSuccess: (contest) => {
       queryClient.invalidateQueries({ queryKey: ['rivalryId', rivalry?.id] });
       onSuccess?.(contest);
-    },
+    }
   });
 };
 
@@ -198,9 +201,13 @@ export const useUpdateRivalryMutation = ({ rivalry }: RivalryMutationProps) => {
   const queryClient = useQueryClient();
 
   return useMutation({
-    mutationFn: async () => {
-      const updateInput = pick(rivalry, UPDATE_RIVALRY_KEYS);
-
+    mutationFn: async (
+      overrides?: Partial<Pick<MRivalry, 'contestCount' | 'currentContestId'>>
+    ) => {
+      const updateInput = {
+        ...pick(rivalry, UPDATE_RIVALRY_KEYS),
+        ...overrides
+      };
       const { data, errors } = await client.models.Rivalry.update(updateInput as any);
 
       if (errors) {
@@ -211,14 +218,11 @@ export const useUpdateRivalryMutation = ({ rivalry }: RivalryMutationProps) => {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['rivalryId', rivalry?.id] });
-    },
+    }
   });
 };
 
-export const useUpdateContestMutation = ({
-  rivalry,
-  onSuccess,
-}: RivalryMutationProps) => {
+export const useUpdateContestMutation = ({ rivalry, onSuccess }: RivalryMutationProps) => {
   const queryClient = useQueryClient();
 
   return useMutation({
@@ -232,7 +236,7 @@ export const useUpdateContestMutation = ({
       const { data, errors } = await client.models.Contest.update({
         id: contest.id,
         result: contest.result,
-        bias: contest.bias,
+        bias: contest.bias
       });
 
       if (errors) {
@@ -244,13 +248,13 @@ export const useUpdateContestMutation = ({
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['rivalryId', rivalry?.id] });
       onSuccess?.();
-    },
+    }
   });
 };
 
 export const useUpdateContestTierListsMutation = ({
   contest,
-  onSuccess,
+  onSuccess
 }: UpdateContestMutationProps) => {
   const queryClient = useQueryClient();
 
@@ -266,12 +270,12 @@ export const useUpdateContestTierListsMutation = ({
       const [resultA, resultB] = await Promise.all([
         client.models.TierList.update({
           id: rivalry.tierListA.id,
-          standing: rivalry.tierListA.standing,
+          standing: rivalry.tierListA.standing
         }),
         client.models.TierList.update({
           id: rivalry.tierListB.id,
-          standing: rivalry.tierListB.standing,
-        }),
+          standing: rivalry.tierListB.standing
+        })
       ]);
 
       if (resultA.errors || resultB.errors) {
@@ -284,21 +288,20 @@ export const useUpdateContestTierListsMutation = ({
       const rivalry = contest?.rivalry;
       queryClient.invalidateQueries({ queryKey: ['rivalryId', rivalry?.id] });
       onSuccess?.();
-    },
+    }
   });
 };
 
 export const useUpdateTierSlotsMutation = ({
   rivalry,
   tierListSignifier,
-  onSuccess,
+  onSuccess
 }: TierListMutationProps) => {
   const queryClient = useQueryClient();
 
   return useMutation({
     mutationFn: async () => {
-      const tierList =
-        tierListSignifier === 'A' ? rivalry?.tierListA : rivalry?.tierListB;
+      const tierList = tierListSignifier === 'A' ? rivalry?.tierListA : rivalry?.tierListB;
 
       if (!tierList) {
         throw new Error('Tier list not found');
@@ -323,13 +326,13 @@ export const useUpdateTierSlotsMutation = ({
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['rivalryId', rivalry?.id] });
       onSuccess?.();
-    },
+    }
   });
 };
 
 export const useUpdateCurrentContestShuffleTierSlotsMutation = ({
   rivalry,
-  onSuccess,
+  onSuccess
 }: UpdateCurrentContestShuffleTierSlotsMutationProps) => {
   const queryClient = useQueryClient();
 
@@ -369,7 +372,7 @@ export const useUpdateCurrentContestShuffleTierSlotsMutation = ({
       const { data, errors } = await client.models.Contest.update({
         id: rivalry.currentContest.id,
         tierSlotAId: tierSlotA.id,
-        tierSlotBId: tierSlotB.id,
+        tierSlotBId: tierSlotB.id
       });
 
       if (errors) {
@@ -381,6 +384,6 @@ export const useUpdateCurrentContestShuffleTierSlotsMutation = ({
     onSuccess: (contest) => {
       queryClient.invalidateQueries({ queryKey: ['rivalryId', rivalry?.id] });
       onSuccess?.(contest);
-    },
+    }
   });
 };

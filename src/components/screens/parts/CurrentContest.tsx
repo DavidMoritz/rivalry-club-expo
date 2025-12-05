@@ -24,10 +24,10 @@ function WinnerBadge() {
       source={require('../../../../assets/winner.png')}
       style={{
         position: 'absolute',
-        right: -80,
+        right: -100,
         top: '78%',
-        width: 240,
-        height: 80
+        width: 300,
+        height: 100
       }}
       resizeMode="contain"
     />
@@ -139,7 +139,12 @@ export function CurrentContest({
                 setWinner(contest?.tierSlotA);
               }}
             >
-              <Text style={[styles.currentContestUser, { color: 'white' }]}>
+              <Text
+                style={[
+                  styles.currentContestUser,
+                  { color: winner && contest?.tierSlotA === winner ? 'black' : 'white' }
+                ]}
+              >
                 {userAName || rivalry.userA?.firstName} {rivalry.tierListA?.prestigeDisplay}
               </Text>
               <CharacterDisplay
@@ -149,7 +154,14 @@ export function CurrentContest({
                 width={140}
                 zoomMultiplier={1.55}
               />
-              <Text style={{ fontSize: 14, color: 'white' }}>{fighterA.name} </Text>
+              <Text
+                style={{
+                  fontSize: 14,
+                  color: winner && contest?.tierSlotA === winner ? 'black' : 'white'
+                }}
+              >
+                {fighterA.name}{' '}
+              </Text>
               {winner && contest?.tierSlotA === winner && <WinnerBadge />}
             </TouchableOpacity>
           )}
@@ -177,7 +189,12 @@ export function CurrentContest({
                 setWinner(contest?.tierSlotB);
               }}
             >
-              <Text style={[styles.currentContestUser, { color: 'white' }]}>
+              <Text
+                style={[
+                  styles.currentContestUser,
+                  { color: winner && contest?.tierSlotB === winner ? 'black' : 'white' }
+                ]}
+              >
                 {userBName || rivalry.userB?.firstName} {rivalry.tierListB?.prestigeDisplay}
               </Text>
               <CharacterDisplay
@@ -187,7 +204,14 @@ export function CurrentContest({
                 width={140}
                 zoomMultiplier={1.55}
               />
-              <Text style={{ fontSize: 14, color: 'white' }}>{fighterB.name}</Text>
+              <Text
+                style={{
+                  fontSize: 14,
+                  color: winner && contest?.tierSlotB === winner ? 'black' : 'white'
+                }}
+              >
+                {fighterB.name}
+              </Text>
               {winner && contest?.tierSlotB === winner && <WinnerBadge />}
             </TouchableOpacity>
           )}

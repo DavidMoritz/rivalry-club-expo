@@ -1,6 +1,6 @@
 import { FontAwesomeIcon } from '@fortawesome/react-native-fontawesome';
 import React, { useEffect, useState } from 'react';
-import { FlatList, Image, SafeAreaView, Text, TouchableWithoutFeedback, View } from 'react-native';
+import { FlatList, Image, Linking, SafeAreaView, Text, TouchableOpacity, TouchableWithoutFeedback, View } from 'react-native';
 
 import gameQuery from '../../../assets/cache/game-query.json';
 import { darkStyles, lightStyles, styles } from '../../utils/styles';
@@ -81,6 +81,21 @@ export default function Home({ onEnterClick }: HomeProps) {
           key="id"
           data={games}
           renderItem={({ item }) => <GameWithCharactersDisplay game={item} />}
+          ListFooterComponent={
+            <View style={{ paddingTop: 12, paddingBottom: 24, paddingHorizontal: 16, alignItems: 'center' }}>
+              <Text style={{ color: '#999', fontSize: 17, textAlign: 'center' }}>
+                Custom artwork provided by{' '}
+                <TouchableOpacity
+                  onPress={() => Linking.openURL('https://www.deviantart.com/professorfandango')}
+                  style={{ display: 'inline-flex' }}
+                >
+                  <Text style={{ color: '#60a5fa', fontSize: 17, textDecorationLine: 'underline' }}>
+                    Professor Fandango
+                  </Text>
+                </TouchableOpacity>
+              </Text>
+            </View>
+          }
         />
       </View>
     </SafeAreaView>

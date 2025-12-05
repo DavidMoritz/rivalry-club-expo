@@ -1,0 +1,649 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Character Scale Adjuster</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background: #1a1a1a;
+            color: #fff;
+            margin: 0;
+            padding: 20px;
+        }
+
+        .header {
+            position: sticky;
+            top: 0;
+            background: #2a2a2a;
+            padding: 20px;
+            margin-bottom: 20px;
+            border-radius: 8px;
+            z-index: 100;
+        }
+
+        .progress {
+            font-size: 24px;
+            margin-bottom: 10px;
+        }
+
+        .instructions {
+            background: #333;
+            padding: 15px;
+            border-radius: 5px;
+            margin-bottom: 10px;
+        }
+
+        .controls {
+            display: flex;
+            gap: 10px;
+            margin-top: 10px;
+        }
+
+        button {
+            padding: 10px 20px;
+            font-size: 16px;
+            cursor: pointer;
+            background: #4CAF50;
+            color: white;
+            border: none;
+            border-radius: 5px;
+        }
+
+        button:hover {
+            background: #45a049;
+        }
+
+        button.secondary {
+            background: #2196F3;
+        }
+
+        button.secondary:hover {
+            background: #0b7dda;
+        }
+
+        .grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(400px, 1fr));
+            gap: 20px;
+            margin-top: 20px;
+        }
+
+        .character-card {
+            background: #2a2a2a;
+            border-radius: 8px;
+            padding: 15px;
+            text-align: center;
+            transition: transform 0.2s;
+        }
+
+        .character-card:hover {
+            transform: scale(1.02);
+        }
+
+        .character-card.completed {
+            background: #1a4d1a;
+            border: 2px solid #4CAF50;
+        }
+
+        .character-name {
+            font-size: 18px;
+            font-weight: bold;
+            margin-bottom: 10px;
+            text-transform: capitalize;
+        }
+
+        .image-container {
+            position: relative;
+            display: inline-block;
+            border: 2px solid #444;
+            border-radius: 5px;
+            overflow: hidden;
+            width: 250px;
+            height: 250px;
+            background: #000;
+        }
+
+        .character-card.completed .image-container {
+            border-color: #4CAF50;
+        }
+
+        .character-image {
+            position: absolute;
+            display: block;
+            transform-origin: 0 0;
+        }
+
+        .scale-controls {
+            margin-top: 15px;
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+            align-items: center;
+        }
+
+        .scale-slider-container {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            width: 100%;
+        }
+
+        .scale-slider {
+            flex: 1;
+            height: 8px;
+            border-radius: 4px;
+            background: #444;
+            outline: none;
+            -webkit-appearance: none;
+        }
+
+        .scale-slider::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            width: 20px;
+            height: 20px;
+            border-radius: 50%;
+            background: #4CAF50;
+            cursor: pointer;
+        }
+
+        .scale-slider::-moz-range-thumb {
+            width: 20px;
+            height: 20px;
+            border-radius: 50%;
+            background: #4CAF50;
+            cursor: pointer;
+            border: none;
+        }
+
+        .scale-value {
+            font-size: 16px;
+            font-weight: bold;
+            color: #4CAF50;
+            min-width: 60px;
+            text-align: right;
+        }
+
+        .scale-buttons {
+            display: flex;
+            gap: 5px;
+        }
+
+        .scale-button {
+            padding: 5px 10px;
+            font-size: 14px;
+            background: #555;
+        }
+
+        .scale-button:hover {
+            background: #666;
+        }
+
+        .info {
+            margin-top: 8px;
+            font-size: 12px;
+            color: #aaa;
+        }
+
+        .character-card.completed .info {
+            color: #4CAF50;
+            font-weight: bold;
+        }
+
+        .crosshair {
+            position: absolute;
+            pointer-events: none;
+            z-index: 10;
+        }
+
+        .crosshair-h {
+            position: absolute;
+            width: 100%;
+            height: 1px;
+            background: rgba(255, 0, 0, 0.5);
+            left: 0;
+        }
+
+        .crosshair-v {
+            position: absolute;
+            width: 1px;
+            height: 100%;
+            background: rgba(255, 0, 0, 0.5);
+            top: 0;
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <div class="progress">
+            <span id="completed">0</span> / <span id="total">0</span> characters adjusted
+        </div>
+
+        <div class="instructions">
+            <strong>Instructions:</strong> Use the slider to adjust the scale of each character image.
+            The image is zoomed in on the face center you previously set.
+            Try to make all character faces roughly the same size.
+        </div>
+
+        <div class="controls">
+            <button onclick="exportData()">Export Scales (Copy to Clipboard)</button>
+            <button class="secondary" onclick="loadFromClipboard()">Load From Clipboard</button>
+            <button class="secondary" onclick="resetAll()">Reset All to 1.6</button>
+        </div>
+    </div>
+
+    <div class="grid" id="character-grid"></div>
+
+    <script>
+        const IMAGE_DIR = '../assets/images/games/ssbu/professor_fandango/';
+
+        // Import face center data
+        const faceCenters = {
+            banjo_kazooie: { x: 91, y: 69 },
+            bayonetta: { x: 68, y: 64 },
+            bowser: { x: 81, y: 73 },
+            bowser_jr: { x: 114, y: 77 },
+            byleth: { x: 110, y: 99 },
+            captain_falcon: { x: 80, y: 70 },
+            chrom: { x: 100, y: 54 },
+            cloud: { x: 160, y: 73 },
+            corrin: { x: 103, y: 99 },
+            daisy: { x: 99, y: 93 },
+            dark_pit: { x: 118, y: 94 },
+            dark_samus: { x: 138, y: 70 },
+            diddy_kong: { x: 139, y: 104 },
+            donkey_kong: { x: 135, y: 95 },
+            dr_mario: { x: 128, y: 96 },
+            duck_hunt: { x: 80, y: 119 },
+            falco: { x: 111, y: 80 },
+            fox: { x: 99, y: 78 },
+            ganondorf: { x: 152, y: 65 },
+            greninja: { x: 127, y: 101 },
+            hero: { x: 151, y: 121 },
+            ice_climbers: { x: 134, y: 102 },
+            ike: { x: 119, y: 71 },
+            incineroar: { x: 126, y: 103 },
+            inkling: { x: 112, y: 82 },
+            isabelle: { x: 138, y: 110 },
+            jigglypuff: { x: 133, y: 118 },
+            joker: { x: 167, y: 114 },
+            kazuya: { x: 125, y: 65 },
+            ken: { x: 112, y: 87 },
+            king_dedede: { x: 116, y: 106 },
+            king_k_rool: { x: 74, y: 87 },
+            kirby: { x: 120, y: 112 },
+            link: { x: 142, y: 104 },
+            little_mac: { x: 110, y: 86 },
+            lucario: { x: 146, y: 96 },
+            lucas: { x: 109, y: 100 },
+            lucina: { x: 115, y: 102 },
+            luigi: { x: 123, y: 70 },
+            mario: { x: 114, y: 111 },
+            marth: { x: 121, y: 58 },
+            mega_man: { x: 123, y: 96 },
+            meta_knight: { x: 135, y: 117 },
+            mewtwo: { x: 124, y: 68 },
+            mii_fighters: { x: 131, y: 101 },
+            min_min: { x: 99, y: 129 },
+            mr_game_watch: { x: 80, y: 121 },
+            ness: { x: 96, y: 109 },
+            olimar: { x: 107, y: 124 },
+            pac_man: { x: 122, y: 103 },
+            palutena: { x: 108, y: 70 },
+            peach: { x: 129, y: 120 },
+            pichu: { x: 126, y: 132 },
+            pikachu: { x: 123, y: 112 },
+            piranha_plant: { x: 131, y: 83 },
+            pit: { x: 129, y: 96 },
+            pokemon_trainer: { x: 109, y: 104 },
+            pyra_mythra: { x: 93, y: 75 },
+            r_o_b: { x: 118, y: 77 },
+            richter: { x: 127, y: 68 },
+            ridley: { x: 66, y: 153 },
+            robin: { x: 126, y: 80 },
+            rosalina_luma: { x: 106, y: 63 },
+            roy: { x: 154, y: 108 },
+            ryu: { x: 116, y: 88 },
+            samus: { x: 132, y: 72 },
+            sephiroth: { x: 101, y: 93 },
+            sheik: { x: 150, y: 134 },
+            shulk: { x: 93, y: 76 },
+            simon: { x: 157, y: 87 },
+            snake: { x: 78, y: 122 },
+            sonic: { x: 86, y: 97 },
+            sora: { x: 118, y: 131 },
+            steve: { x: 100, y: 99 },
+            terry: { x: 110, y: 72 },
+            toon_link: { x: 133, y: 114 },
+            villager: { x: 128, y: 99 },
+            wario: { x: 138, y: 101 },
+            wii_fit_trainer: { x: 116, y: 72 },
+            wolf: { x: 104, y: 58 },
+            yoshi: { x: 83, y: 106 },
+            young_link: { x: 145, y: 109 },
+            zelda: { x: 110, y: 67 },
+            zero_suit_samus: { x: 101, y: 74 }
+        };
+
+        // Default scale values (from latest adjustments)
+        const defaultScales = {
+            banjo_kazooie: 0.61,
+            bayonetta: 1.27,
+            bowser: 1.07,
+            bowser_jr: 0.82,
+            byleth: 1.27,
+            captain_falcon: 1.11,
+            chrom: 1.23,
+            cloud: 1.14,
+            corrin: 1.01,
+            daisy: 1.03,
+            dark_pit: 1.13,
+            dark_samus: 1.32,
+            diddy_kong: 0.95,
+            donkey_kong: 0.73,
+            dr_mario: 0.8,
+            duck_hunt: 0.62,
+            falco: 1.13,
+            fox: 0.93,
+            ganondorf: 0.88,
+            greninja: 0.82,
+            hero: 0.92,
+            ice_climbers: 0.64,
+            ike: 0.86,
+            incineroar: 0.94,
+            inkling: 0.97,
+            isabelle: 0.9,
+            jigglypuff: 0.78,
+            joker: 0.96,
+            kazuya: 0.96,
+            ken: 1.04,
+            king_dedede: 0.76,
+            king_k_rool: 0.8,
+            kirby: 0.97,
+            link: 0.99,
+            little_mac: 0.94,
+            lucario: 0.92,
+            lucas: 0.98,
+            lucina: 1.02,
+            luigi: 0.97,
+            mario: 0.88,
+            marth: 1.11,
+            mega_man: 0.85,
+            meta_knight: 0.79,
+            mewtwo: 0.88,
+            mii_fighters: 0.41,
+            min_min: 1.05,
+            mr_game_watch: 0.77,
+            ness: 0.84,
+            olimar: 1.09,
+            pac_man: 0.67,
+            palutena: 0.94,
+            peach: 0.88,
+            pichu: 1.02,
+            pikachu: 0.83,
+            piranha_plant: 0.91,
+            pit: 0.87,
+            pokemon_trainer: 0.66,
+            pyra_mythra: 0.75,
+            r_o_b: 0.68,
+            richter: 0.94,
+            ridley: 0.93,
+            robin: 1,
+            rosalina_luma: 0.74,
+            roy: 1.02,
+            ryu: 1.18,
+            samus: 1.1,
+            sephiroth: 1,
+            sheik: 1.01,
+            shulk: 1.2,
+            simon: 1.12,
+            snake: 1.09,
+            sonic: 0.87,
+            sora: 0.97,
+            steve: 1.24,
+            terry: 0.9,
+            toon_link: 0.72,
+            villager: 1.17,
+            wario: 0.77,
+            wii_fit_trainer: 1.15,
+            wolf: 0.93,
+            yoshi: 0.98,
+            young_link: 0.8,
+            zelda: 0.97,
+            zero_suit_samus: 1
+        };
+
+        let characters = Object.keys(faceCenters).sort();
+        let scaleData = {};
+
+        // Load saved data from localStorage
+        function loadSavedData() {
+            const saved = localStorage.getItem('characterScales');
+            if (saved) {
+                try {
+                    scaleData = JSON.parse(saved);
+                    updateProgress();
+                } catch (e) {
+                    console.error('Failed to load saved data:', e);
+                }
+            }
+        }
+
+        // Save data to localStorage
+        function saveData() {
+            localStorage.setItem('characterScales', JSON.stringify(scaleData));
+            updateProgress();
+        }
+
+        // Update progress counter
+        function updateProgress() {
+            const completed = Object.keys(scaleData).length;
+            document.getElementById('completed').textContent = completed;
+            document.getElementById('total').textContent = characters.length;
+        }
+
+        // Handle scale change
+        function handleScaleChange(characterName, scale) {
+            const numericScale = parseFloat(scale);
+            const defaultScale = defaultScales[characterName];
+
+            // Only store if different from default
+            if (Math.abs(numericScale - defaultScale) > 0.001) {
+                scaleData[characterName] = numericScale;
+            } else {
+                delete scaleData[characterName];
+            }
+
+            saveData();
+            updateImageTransform(characterName, scale);
+            updateCardStatus(characterName);
+        }
+
+        // Update image transform to zoom on face center
+        function updateImageTransform(characterName, scale) {
+            const img = document.getElementById(`img-${characterName}`);
+            const container = document.querySelector(`#card-${characterName} .image-container`);
+
+            const center = faceCenters[characterName];
+            if (!center) return;
+
+            // Container is 250x250
+            const containerSize = 250;
+
+            // Apply additional zoom multiplier for more zoomed-in appearance
+            const displayZoom = 3.0; // This makes it look like your screenshot
+            const effectiveScale = scale * displayZoom;
+
+            // Calculate the translation to center the face
+            // We want the face center to be at the center of the container (125, 125)
+            const translateX = containerSize / 2 - (center.x * effectiveScale);
+            const translateY = containerSize / 2 - (center.y * effectiveScale);
+
+            img.style.transform = `scale(${effectiveScale}) translate(${translateX / effectiveScale}px, ${translateY / effectiveScale}px)`;
+        }
+
+        // Update card status
+        function updateCardStatus(characterName) {
+            const card = document.getElementById(`card-${characterName}`);
+            const defaultScale = defaultScales[characterName];
+            const currentScale = scaleData[characterName];
+
+            // Only mark as completed if it's been adjusted from default
+            if (currentScale && Math.abs(currentScale - defaultScale) > 0.001) {
+                card.classList.add('completed');
+            } else {
+                card.classList.remove('completed');
+            }
+        }
+
+        // Export data
+        function exportData() {
+            const output = {};
+
+            characters.forEach(char => {
+                const scale = scaleData[char] || defaultScales[char];
+                output[char] = parseFloat(scale.toFixed(3));
+            });
+
+            const jsonString = JSON.stringify(output, null, 2);
+
+            navigator.clipboard.writeText(jsonString).then(() => {
+                alert('Scale data copied to clipboard!');
+            }).catch(err => {
+                console.error('Failed to copy:', err);
+                alert('Copy this data:\n\n' + jsonString);
+            });
+        }
+
+        // Load from clipboard
+        function loadFromClipboard() {
+            navigator.clipboard.readText().then(text => {
+                try {
+                    const data = JSON.parse(text);
+                    scaleData = data;
+                    saveData();
+
+                    // Update all sliders and images
+                    Object.entries(data).forEach(([char, scale]) => {
+                        const slider = document.getElementById(`slider-${char}`);
+                        const valueDisplay = document.getElementById(`value-${char}`);
+                        if (slider) {
+                            slider.value = scale;
+                            valueDisplay.textContent = scale.toFixed(2);
+                            updateImageTransform(char, scale);
+                            updateCardStatus(char);
+                        }
+                    });
+
+                    alert('Data loaded successfully!');
+                } catch (e) {
+                    alert('Failed to parse clipboard data. Make sure it\'s valid JSON.');
+                }
+            });
+        }
+
+        // Reset all scales
+        function resetAll() {
+            if (confirm('Reset all scales to their defaults?')) {
+                scaleData = {};
+                localStorage.removeItem('characterScales');
+                characters.forEach(char => {
+                    const defaultScale = defaultScales[char];
+                    const slider = document.getElementById(`slider-${char}`);
+                    const valueDisplay = document.getElementById(`value-${char}`);
+                    if (slider) {
+                        slider.value = defaultScale;
+                        valueDisplay.textContent = defaultScale.toFixed(2);
+                        updateImageTransform(char, defaultScale);
+                        updateCardStatus(char);
+                    }
+                });
+                updateProgress();
+            }
+        }
+
+        // Initialize grid
+        function initializeGrid() {
+            const grid = document.getElementById('character-grid');
+
+            characters.forEach(charName => {
+                const card = document.createElement('div');
+                card.className = 'character-card';
+                card.id = `card-${charName}`;
+
+                const displayName = charName.replace(/_/g, ' ');
+                const savedScale = scaleData[charName];
+                const defaultScale = defaultScales[charName] || 1.6;
+                const currentScale = savedScale || defaultScale;
+
+                card.innerHTML = `
+                    <div class="character-name">${displayName}</div>
+                    <div class="image-container">
+                        <div class="crosshair">
+                            <div class="crosshair-h" style="top: 125px;"></div>
+                            <div class="crosshair-v" style="left: 125px;"></div>
+                        </div>
+                        <img
+                            id="img-${charName}"
+                            class="character-image"
+                            src="${IMAGE_DIR}${charName}.jpg"
+                            alt="${displayName}"
+                            onerror="this.parentElement.parentElement.style.display='none'"
+                        />
+                    </div>
+                    <div class="scale-controls">
+                        <div class="scale-slider-container">
+                            <button class="scale-button" onclick="adjustScale('${charName}', -0.1)">-</button>
+                            <input
+                                type="range"
+                                id="slider-${charName}"
+                                class="scale-slider"
+                                min="0.3"
+                                max="3.0"
+                                step="0.01"
+                                value="${currentScale}"
+                                oninput="handleScaleChange('${charName}', this.value); document.getElementById('value-${charName}').textContent = parseFloat(this.value).toFixed(2)"
+                            />
+                            <button class="scale-button" onclick="adjustScale('${charName}', 0.1)">+</button>
+                            <span id="value-${charName}" class="scale-value">${currentScale.toFixed(2)}</span>
+                        </div>
+                    </div>
+                    <div class="info">Scale: <span id="info-${charName}">${currentScale.toFixed(2)}</span></div>
+                `;
+
+                grid.appendChild(card);
+
+                // Wait for image to load then apply transform
+                const img = document.getElementById(`img-${charName}`);
+                img.onload = () => {
+                    updateImageTransform(charName, currentScale);
+                };
+
+                // Update card status based on whether it's adjusted
+                updateCardStatus(charName);
+            });
+
+            updateProgress();
+        }
+
+        // Adjust scale by increment
+        function adjustScale(charName, increment) {
+            const slider = document.getElementById(`slider-${charName}`);
+            const newValue = Math.max(0.3, Math.min(3.0, parseFloat(slider.value) + increment));
+            slider.value = newValue;
+            handleScaleChange(charName, newValue);
+            document.getElementById(`value-${charName}`).textContent = newValue.toFixed(2);
+            document.getElementById(`info-${charName}`).textContent = newValue.toFixed(2);
+        }
+
+        // Initialize on load
+        function init() {
+            loadSavedData();
+            initializeGrid();
+        }
+
+        init();
+    </script>
+</body>
+</html>

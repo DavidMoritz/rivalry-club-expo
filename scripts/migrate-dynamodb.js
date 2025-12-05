@@ -2,6 +2,8 @@
 
 const { DynamoDBClient } = require('@aws-sdk/client-dynamodb');
 const { DynamoDBDocumentClient, ScanCommand, BatchWriteCommand } = require('@aws-sdk/lib-dynamodb');
+const fs = require('fs');
+const path = require('path');
 
 const client = new DynamoDBClient({ region: 'us-east-1' });
 const docClient = DynamoDBDocumentClient.from(client, {
@@ -10,16 +12,35 @@ const docClient = DynamoDBDocumentClient.from(client, {
   }
 });
 
-const userChanges = {
-  // change 'a129627a-cd3f-43b9-a685-45909395c202' email to t@t.com
-  // remove the awsSub field from all users
-  // add the following awsSub to cooresponding users by id:
-  // <id>: <awsSub>
-  'a129627a-cd3f-43b9-a685-45909395c202': 'f789a369-f565-4ea5-9695-45d2be534255',
-  'cc0849eb-2875-4baa-bbd1-48cbba8ee471': '455d1931-2395-46d7-b02e-6f39314deadc',
-  'ca004cbe-536d-48f7-94bb-ea6328056b61': '070935af-7a76-4bce-a4a0-05d8a7497dad',
-  '3f539aff-9c94-4d69-926a-8eab083aa39f': '39d58611-8ddb-4e18-b1b6-c67cdc764ae9'
-};
+// Load awsSub mappings from external/data/users.csv
+function loadUserAwsSubMappings() {
+  const csvPath = path.join(__dirname, '../../external/data/users.csv');
+  const csvContent = fs.readFileSync(csvPath, 'utf-8');
+  const lines = csvContent.split('\n').slice(1); // Skip header
+
+  const userChanges = {};
+
+  for (const line of lines) {
+    if (!line.trim()) continue;
+
+    // Parse CSV line (handles quoted fields)
+    const matches = line.match(/"([^"]+)"/g);
+    if (!matches || matches.length < 3) continue;
+
+    const id = matches[0].replace(/"/g, '');
+    const awsSub = matches[2].replace(/"/g, '');
+
+    // Only include non-placeholder awsSub values
+    if (!awsSub.startsWith('placeholder-')) {
+      userChanges[id] = awsSub;
+    }
+  }
+
+  return userChanges;
+}
+
+const userChanges = loadUserAwsSubMappings();
+console.log(`Loaded ${Object.keys(userChanges).length} awsSub mappings from users.csv`);
 
 // Source tables (old app - staging environment from 2023)
 const SOURCE_SUFFIX = '-zgox4hnry5aeblka7pk4mzmqle-staging';

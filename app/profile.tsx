@@ -2,12 +2,12 @@ import { StatusBar } from 'expo-status-bar';
 import React from 'react';
 
 import { HamburgerMenu } from '../src/components/common/HamburgerMenu';
-import { RivalryIndex } from '../src/components/screens/RivalryIndex';
+import { Profile } from '../src/components/screens/Profile';
 
-export default function RivalriesRoute() {
+export default function ProfileRoute() {
   return (
     <>
-      <RivalryIndex />
+      <Profile />
       <HamburgerMenu />
       <StatusBar style="light" />
     </>

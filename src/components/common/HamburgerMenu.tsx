@@ -33,6 +33,11 @@ export function HamburgerMenu() {
     router.push('/rivalries');
   };
 
+  const handleProfile = () => {
+    setMenuVisible(false);
+    router.push('/profile');
+  };
+
   return (
     <>
       <TouchableOpacity
@@ -110,6 +115,21 @@ export function HamburgerMenu() {
             >
               <FontAwesomeIcon icon="list" color="white" size={16} style={{ marginRight: 12 }} />
               <Text style={[darkStyles.text, { fontSize: 16 }]}>Rivalries</Text>
+            </TouchableOpacity>
+
+            <View style={{ height: 1, backgroundColor: '#475569', marginVertical: 4 }} />
+
+            <TouchableOpacity
+              onPress={handleProfile}
+              style={{
+                paddingVertical: 12,
+                paddingHorizontal: 16,
+                flexDirection: 'row',
+                alignItems: 'center'
+              }}
+            >
+              <FontAwesomeIcon icon="user" color="white" size={16} style={{ marginRight: 12 }} />
+              <Text style={[darkStyles.text, { fontSize: 16 }]}>Profile</Text>
             </TouchableOpacity>
 
             <View style={{ height: 1, backgroundColor: '#475569', marginVertical: 4 }} />

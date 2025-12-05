@@ -17,31 +17,40 @@ interface CharacterDisplayProps {
   hideName?: boolean;
   className?: string;
   height?: number;
+  width?: number;
+  zoomMultiplier?: number;
 }
 
-export function CharacterDisplay({ fighter, hideName, className, height }: CharacterDisplayProps) {
+export function CharacterDisplay({ fighter, hideName, className, height, width, zoomMultiplier }: CharacterDisplayProps) {
   if (!fighter) {
     return null;
   }
 
   const characterKey = sourceCase(fighter.name);
-  const displaySize = height || 100; // Use provided height or default to 100
+  const displayHeight = height || 100; // Use provided height or default to 100
+  const displayWidth = width || height || 100; // Use width if provided, else height, else default to 100
 
   return (
     <View
       key={fighter.id}
-      style={[
-        styles.fighterWrapper,
-        height !== undefined && { height, width: height }
-      ]}
+      style={
+        height !== undefined || width !== undefined
+          ? {
+              height: displayHeight,
+              width: displayWidth,
+              alignItems: 'center',
+              justifyContent: 'center',
+              overflow: 'hidden'
+            }
+          : styles.fighterWrapper
+      }
       className={className}
     >
       <CharacterFace
         characterKey={characterKey}
-        size={displaySize}
-        style={{
-          flex: 4,
-        }}
+        width={displayWidth}
+        height={displayHeight}
+        zoomMultiplier={zoomMultiplier}
       />
       {!hideName && (
         <View style={styles.fighterText}>

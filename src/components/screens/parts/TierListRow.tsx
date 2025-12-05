@@ -46,7 +46,13 @@ const TierListRow: React.FC<TierListRowProps> = (props) => {
             const fighter = fighterByIdFromGame(game, slot.fighterId);
 
             return fighter ? (
-              <CharacterDisplay key={slot.id} fighter={fighter} hideName={true} height={50} />
+              <CharacterDisplay
+                key={slot.id}
+                fighter={fighter}
+                hideName={true}
+                height={50}
+                zoomMultiplier={0.65}
+              />
             ) : null;
           })}
         </View>

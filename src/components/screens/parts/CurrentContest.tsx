@@ -1,7 +1,7 @@
 import { FontAwesomeIcon } from '@fortawesome/react-native-fontawesome';
 import { range } from 'lodash';
 import { ReactNode, useEffect, useState } from 'react';
-import { Text, TouchableOpacity, View } from 'react-native';
+import { Image, Text, TouchableOpacity, View } from 'react-native';
 
 import { Fighter } from '../../../API';
 import { contestStyles, styles } from '../../../utils/styles';
@@ -20,29 +20,17 @@ interface CurrentContestProps {
 
 function WinnerBadge() {
   return (
-    <View
+    <Image
+      source={require('../../../../assets/winner.png')}
       style={{
         position: 'absolute',
-        right: -15,
-        paddingHorizontal: 8,
-        backgroundColor: '#fefce8',
-        borderWidth: 2,
-        borderColor: '#ef4444',
-        borderRadius: 6,
-        top: '92%',
-        flexDirection: 'row',
-        alignItems: 'center',
-        transform: [{ rotate: '-30deg' }]
+        right: -80,
+        top: '78%',
+        width: 240,
+        height: 80
       }}
-    >
-      <Text style={{ fontSize: 14, fontWeight: 'bold', color: '#dc2626' }}>{'\u2606'} </Text>
-      <Text
-        style={{ fontSize: 24, fontWeight: 'bold', color: '#dc2626', textTransform: 'uppercase' }}
-      >
-        Winner
-      </Text>
-      <Text style={{ fontSize: 14, fontWeight: 'bold', color: '#dc2626' }}> {'\u2606'}</Text>
-    </View>
+      resizeMode="contain"
+    />
   );
 }
 
@@ -137,6 +125,7 @@ export function CurrentContest({
           {fighterA && (
             <TouchableOpacity
               style={{
+                position: 'relative',
                 borderWidth: 4,
                 borderColor: winner && contest?.tierSlotA === winner ? '#15803d' : 'transparent',
                 backgroundColor:
@@ -153,7 +142,13 @@ export function CurrentContest({
               <Text style={[styles.currentContestUser, { color: 'white' }]}>
                 {userAName || rivalry.userA?.firstName} {rivalry.tierListA?.prestigeDisplay}
               </Text>
-              <CharacterDisplay fighter={fighterA} hideName={true} />
+              <CharacterDisplay
+                fighter={fighterA}
+                hideName={true}
+                height={180}
+                width={140}
+                zoomMultiplier={1.55}
+              />
               <Text style={{ fontSize: 14, color: 'white' }}>{fighterA.name} </Text>
               {winner && contest?.tierSlotA === winner && <WinnerBadge />}
             </TouchableOpacity>
@@ -185,7 +180,13 @@ export function CurrentContest({
               <Text style={[styles.currentContestUser, { color: 'white' }]}>
                 {userBName || rivalry.userB?.firstName} {rivalry.tierListB?.prestigeDisplay}
               </Text>
-              <CharacterDisplay fighter={fighterB} hideName={true} />
+              <CharacterDisplay
+                fighter={fighterB}
+                hideName={true}
+                height={180}
+                width={140}
+                zoomMultiplier={1.55}
+              />
               <Text style={{ fontSize: 14, color: 'white' }}>{fighterB.name}</Text>
               {winner && contest?.tierSlotB === winner && <WinnerBadge />}
             </TouchableOpacity>

@@ -6,7 +6,10 @@ import { getCharacterZoomStyle } from './useCharacterZoom';
 interface CharacterFaceProps {
   characterKey: string;
   size?: number;
+  width?: number;
+  height?: number;
   style?: ViewStyle;
+  zoomMultiplier?: number;
 }
 
 /**
@@ -14,14 +17,30 @@ interface CharacterFaceProps {
  *
  * @example
  * <CharacterFace characterKey="mario" size={100} />
+ *
+ * @example
+ * // Show more of the character by zooming out
+ * <CharacterFace characterKey="mario" size={100} zoomMultiplier={0.8} />
+ *
+ * @example
+ * // Use independent width and height for non-square displays
+ * <CharacterFace characterKey="mario" width={120} height={140} zoomMultiplier={1.25} />
  */
 export const CharacterFace: React.FC<CharacterFaceProps> = ({
   characterKey,
   size = 100,
+  width,
+  height,
   style,
+  zoomMultiplier = 1.0,
 }) => {
   const imageSource = fighterImages[characterKey];
-  const zoomStyle = getCharacterZoomStyle(characterKey, size);
+
+  // Use width/height if provided, otherwise fall back to size
+  const displayWidth = width ?? size;
+  const displayHeight = height ?? size;
+
+  const zoomStyle = getCharacterZoomStyle(characterKey, displayWidth, displayHeight, zoomMultiplier);
 
   if (!imageSource) {
     return null;
@@ -32,8 +51,8 @@ export const CharacterFace: React.FC<CharacterFaceProps> = ({
       style={[
         styles.container,
         {
-          width: size,
-          height: size,
+          width: displayWidth,
+          height: displayHeight,
         },
         style,
       ]}

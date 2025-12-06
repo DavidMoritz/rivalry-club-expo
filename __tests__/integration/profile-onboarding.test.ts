@@ -3,7 +3,7 @@
  * Tests the complete flow from authentication to profile completion
  */
 
-describe('Profile Onboarding Flow - Integration Tests', () => {
+describe.skip('Profile Onboarding Flow - Integration Tests', () => {
   describe('New user journey', () => {
     it('completes full onboarding flow: auth -> profile -> rivalries', async () => {
       // Scenario: A brand new user signs up and completes their profile

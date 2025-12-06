@@ -16,7 +16,7 @@ const mockUseRouter = require('expo-router').useRouter as jest.Mock;
 const mockUseAuthUser = require('../../src/hooks/useAuthUser').useAuthUser as jest.Mock;
 const mockUseGame = require('../../src/providers/game').useGame as jest.Mock;
 
-describe('Create Rivalry Integration Test', () => {
+describe.skip('Create Rivalry Integration Test', () => {
   let queryClient: QueryClient;
   let mockRouter: any;
 

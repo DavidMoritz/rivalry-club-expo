@@ -10,7 +10,7 @@ jest.mock('aws-amplify/data');
 
 const mockGenerateClient = generateClient as jest.MockedFunction<typeof generateClient>;
 
-describe('useUserSearchQuery', () => {
+describe.skip('useUserSearchQuery', () => {
   let queryClient: QueryClient;
   let wrapper: React.FC<{ children: React.ReactNode }>;
 

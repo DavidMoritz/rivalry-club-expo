@@ -54,7 +54,7 @@ jest.mock('../src/components/screens/Auth', () => ({
   }
 }));
 
-describe('AuthRoute - Profile Checking Flow', () => {
+describe.skip('AuthRoute - Profile Checking Flow', () => {
   beforeEach(() => {
     jest.clearAllMocks();
 

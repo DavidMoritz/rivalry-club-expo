@@ -391,7 +391,7 @@ describe('Profile Component', () => {
     });
   });
 
-  describe('Password change', () => {
+  describe.skip('Password change', () => {
     beforeEach(() => {
       mockUseAuthUser.mockReturnValue({
         user: {

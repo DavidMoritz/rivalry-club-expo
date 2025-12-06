@@ -1,0 +1,313 @@
+diff --git a/node_modules/react-native-worklets/plugin/index.js b/node_modules/react-native-worklets/plugin/index.js
+index 098edfa..bb58d00 100644
+--- a/node_modules/react-native-worklets/plugin/index.js
++++ b/node_modules/react-native-worklets/plugin/index.js
+@@ -33,7 +33,18 @@ var require_gestureHandlerAutoworkletization = __commonJS({
+     exports2.gestureHandlerObjectHooks = exports2.gestureHandlerBuilderMethods = void 0;
+     exports2.isGestureHandlerEventCallback = isGestureHandlerEventCallback;
+     exports2.isGestureObjectEventCallbackMethod = isGestureObjectEventCallbackMethod;
+-    var types_12 = require("@babel/types");
++    
++// Fallback for isV8IntrinsicIdentifier if it doesn't exist in @babel/types
++const types_12_original = require('@babel/types');
++const types_12 = new Proxy(types_12_original, {
++  get(target, prop) {
++    if (prop === 'isV8IntrinsicIdentifier' && typeof target[prop] !== 'function') {
++      return function() { return false; };
++    }
++    return target[prop];
++  }
++});
++
+     var gestureHandlerGestureObjects = /* @__PURE__ */ new Set([
+       "Tap",
+       "Pan",
+@@ -99,7 +110,15 @@ var require_layoutAnimationAutoworkletization = __commonJS({
+     "use strict";
+     Object.defineProperty(exports2, "__esModule", { value: true });
+     exports2.isLayoutAnimationCallback = isLayoutAnimationCallback;
+-    var types_12 = require("@babel/types");
++    var target_orig = require("@babel/types");
++    var types_12 = new Proxy(target_orig, {
++  get(target, prop) {
++    if (prop === 'isV8IntrinsicIdentifier' && typeof target[prop] !== 'function') {
++      return function() { return false; };
++    }
++    return target[prop];
++  }
++});
+     var EntryExitAnimations = /* @__PURE__ */ new Set([
+       "BounceIn",
+       "BounceInDown",
+@@ -261,7 +280,15 @@ var require_types = __commonJS({
+     exports2.isWorkletizableFunctionNode = isWorkletizableFunctionNode;
+     exports2.isWorkletizableObjectPath = isWorkletizableObjectPath;
+     exports2.isWorkletizableObjectNode = isWorkletizableObjectNode;
+-    var types_12 = require("@babel/types");
++    var target_orig = require("@babel/types");
++    var types_12 = new Proxy(target_orig, {
++  get(target, prop) {
++    if (prop === 'isV8IntrinsicIdentifier' && typeof target[prop] !== 'function') {
++      return function() { return false; };
++    }
++    return target[prop];
++  }
++});
+     exports2.WorkletizableFunction = "FunctionDeclaration|FunctionExpression|ArrowFunctionExpression|ObjectMethod";
+     exports2.WorkletizableObject = "ObjectExpression";
+     function isWorkletizableFunctionPath(path) {
+@@ -287,7 +314,15 @@ var require_referencedWorklets = __commonJS({
+     "use strict";
+     Object.defineProperty(exports2, "__esModule", { value: true });
+     exports2.findReferencedWorklet = findReferencedWorklet;
+-    var types_12 = require("@babel/types");
++    var target_orig = require("@babel/types");
++    var types_12 = new Proxy(target_orig, {
++  get(target, prop) {
++    if (prop === 'isV8IntrinsicIdentifier' && typeof target[prop] !== 'function') {
++      return function() { return false; };
++    }
++    return target[prop];
++  }
++});
+     var types_2 = require_types();
+     function findReferencedWorklet(workletIdentifier, acceptWorkletizableFunction, acceptObject, state) {
+       const workletName = workletIdentifier.node.name;
+@@ -379,7 +414,15 @@ var require_utils = __commonJS({
+     Object.defineProperty(exports2, "__esModule", { value: true });
+     exports2.isRelease = isRelease;
+     exports2.replaceWithFactoryCall = replaceWithFactoryCall;
+-    var types_12 = require("@babel/types");
++    var target_orig = require("@babel/types");
++    var types_12 = new Proxy(target_orig, {
++  get(target, prop) {
++    if (prop === 'isV8IntrinsicIdentifier' && typeof target[prop] !== 'function') {
++      return function() { return false; };
++    }
++    return target[prop];
++  }
++});
+     function isRelease() {
+       var _a, _b;
+       const pattern = /(prod|release|stag[ei])/i;
+@@ -534,7 +577,15 @@ var require_closure = __commonJS({
+     "use strict";
+     Object.defineProperty(exports2, "__esModule", { value: true });
+     exports2.getClosure = getClosure;
+-    var types_12 = require("@babel/types");
++    var target_orig = require("@babel/types");
++    var types_12 = new Proxy(target_orig, {
++  get(target, prop) {
++    if (prop === 'isV8IntrinsicIdentifier' && typeof target[prop] !== 'function') {
++      return function() { return false; };
++    }
++    return target[prop];
++  }
++});
+     var globals_12 = require_globals();
+     function getClosure(funPath, state) {
+       const capturedNames = /* @__PURE__ */ new Set();
+@@ -632,7 +683,15 @@ var require_generate = __commonJS({
+     Object.defineProperty(exports2, "__esModule", { value: true });
+     exports2.generateWorkletFile = generateWorkletFile;
+     var core_1 = require("@babel/core");
+-    var types_12 = require("@babel/types");
++    var target_orig = require("@babel/types");
++    var types_12 = new Proxy(target_orig, {
++  get(target, prop) {
++    if (prop === 'isV8IntrinsicIdentifier' && typeof target[prop] !== 'function') {
++      return function() { return false; };
++    }
++    return target[prop];
++  }
++});
+     var assert_1 = __importDefault(require("assert"));
+     var fs_1 = require("fs");
+     var path_1 = require("path");
+@@ -744,7 +803,15 @@ var require_workletStringCode = __commonJS({
+     exports2.buildWorkletString = buildWorkletString;
+     var core_1 = require("@babel/core");
+     var generator_1 = __importDefault(require("@babel/generator"));
+-    var types_12 = require("@babel/types");
++    var target_orig = require("@babel/types");
++    var types_12 = new Proxy(target_orig, {
++  get(target, prop) {
++    if (prop === 'isV8IntrinsicIdentifier' && typeof target[prop] !== 'function') {
++      return function() { return false; };
++    }
++    return target[prop];
++  }
++});
+     var assert_1 = require("assert");
+     var convertSourceMap = __importStar(require("convert-source-map"));
+     var fs = __importStar(require("fs"));
+@@ -881,7 +948,15 @@ var require_workletFactory = __commonJS({
+     Object.defineProperty(exports2, "__esModule", { value: true });
+     exports2.makeWorkletFactory = makeWorkletFactory;
+     var generator_1 = __importDefault(require("@babel/generator"));
+-    var types_12 = require("@babel/types");
++    var target_orig = require("@babel/types");
++    var types_12 = new Proxy(target_orig, {
++  get(target, prop) {
++    if (prop === 'isV8IntrinsicIdentifier' && typeof target[prop] !== 'function') {
++      return function() { return false; };
++    }
++    return target[prop];
++  }
++});
+     var assert_1 = require("assert");
+     var path_1 = require("path");
+     var closure_1 = require_closure();
+@@ -1069,7 +1144,15 @@ var require_workletFactoryCall = __commonJS({
+     "use strict";
+     Object.defineProperty(exports2, "__esModule", { value: true });
+     exports2.makeWorkletFactoryCall = makeWorkletFactoryCall;
+-    var types_12 = require("@babel/types");
++    var target_orig = require("@babel/types");
++    var types_12 = new Proxy(target_orig, {
++  get(target, prop) {
++    if (prop === 'isV8IntrinsicIdentifier' && typeof target[prop] !== 'function') {
++      return function() { return false; };
++    }
++    return target[prop];
++  }
++});
+     var types_2 = require_types();
+     var workletFactory_1 = require_workletFactory();
+     function makeWorkletFactoryCall(path, state) {
+@@ -1108,7 +1191,15 @@ var require_workletSubstitution = __commonJS({
+     exports2.processIfWithWorkletDirective = processIfWithWorkletDirective;
+     exports2.processWorklet = processWorklet;
+     exports2.substituteObjectMethodWithObjectProperty = substituteObjectMethodWithObjectProperty;
+-    var types_12 = require("@babel/types");
++    var target_orig = require("@babel/types");
++    var types_12 = new Proxy(target_orig, {
++  get(target, prop) {
++    if (prop === 'isV8IntrinsicIdentifier' && typeof target[prop] !== 'function') {
++      return function() { return false; };
++    }
++    return target[prop];
++  }
++});
+     var types_2 = require_types();
+     var utils_1 = require_utils();
+     var workletFactoryCall_1 = require_workletFactoryCall();
+@@ -1196,7 +1287,15 @@ var require_autoworkletization = __commonJS({
+     Object.defineProperty(exports2, "__esModule", { value: true });
+     exports2.processIfAutoworkletizableCallback = processIfAutoworkletizableCallback;
+     exports2.processCalleesAutoworkletizableCallbacks = processCalleesAutoworkletizableCallbacks;
+-    var types_12 = require("@babel/types");
++    var target_orig = require("@babel/types");
++    var types_12 = new Proxy(target_orig, {
++  get(target, prop) {
++    if (prop === 'isV8IntrinsicIdentifier' && typeof target[prop] !== 'function') {
++      return function() { return false; };
++    }
++    return target[prop];
++  }
++});
+     var gestureHandlerAutoworkletization_1 = require_gestureHandlerAutoworkletization();
+     var layoutAnimationAutoworkletization_1 = require_layoutAnimationAutoworkletization();
+     var objectWorklets_1 = require_objectWorklets();
+@@ -1285,7 +1384,15 @@ var require_bundleMode = __commonJS({
+     "use strict";
+     Object.defineProperty(exports2, "__esModule", { value: true });
+     exports2.toggleBundleMode = toggleBundleMode;
+-    var types_12 = require("@babel/types");
++    var target_orig = require("@babel/types");
++    var types_12 = new Proxy(target_orig, {
++  get(target, prop) {
++    if (prop === 'isV8IntrinsicIdentifier' && typeof target[prop] !== 'function') {
++      return function() { return false; };
++    }
++    return target[prop];
++  }
++});
+     function toggleBundleMode(path, state) {
+       var _a;
+       if (!state.opts.bundleMode || !((_a = state.filename) === null || _a === void 0 ? void 0 : _a.includes("workletRuntimeEntry"))) {
+@@ -1321,7 +1428,15 @@ var require_class = __commonJS({
+     exports2.processIfWorkletClass = processIfWorkletClass;
+     var generator_1 = __importDefault(require("@babel/generator"));
+     var traverse_1 = __importDefault(require("@babel/traverse"));
+-    var types_12 = require("@babel/types");
++    var target_orig = require("@babel/types");
++    var types_12 = new Proxy(target_orig, {
++  get(target, prop) {
++    if (prop === 'isV8IntrinsicIdentifier' && typeof target[prop] !== 'function') {
++      return function() { return false; };
++    }
++    return target[prop];
++  }
++});
+     var assert_1 = require("assert");
+     var transform_1 = require_transform();
+     var types_2 = require_types();
+@@ -1501,7 +1616,15 @@ var require_contextObject = __commonJS({
+     exports2.contextObjectMarker = void 0;
+     exports2.processIfWorkletContextObject = processIfWorkletContextObject;
+     exports2.isContextObject = isContextObject;
+-    var types_12 = require("@babel/types");
++    var target_orig = require("@babel/types");
++    var types_12 = new Proxy(target_orig, {
++  get(target, prop) {
++    if (prop === 'isV8IntrinsicIdentifier' && typeof target[prop] !== 'function') {
++      return function() { return false; };
++    }
++    return target[prop];
++  }
++});
+     exports2.contextObjectMarker = "__workletContextObject";
+     function processIfWorkletContextObject(path, _state) {
+       if (!isContextObject(path.node)) {
+@@ -1531,7 +1654,15 @@ var require_file = __commonJS({
+     Object.defineProperty(exports2, "__esModule", { value: true });
+     exports2.processIfWorkletFile = processIfWorkletFile;
+     exports2.isImplicitContextObject = isImplicitContextObject;
+-    var types_12 = require("@babel/types");
++    var target_orig = require("@babel/types");
++    var types_12 = new Proxy(target_orig, {
++  get(target, prop) {
++    if (prop === 'isV8IntrinsicIdentifier' && typeof target[prop] !== 'function') {
++      return function() { return false; };
++    }
++    return target[prop];
++  }
++});
+     var contextObject_12 = require_contextObject();
+     var types_2 = require_types();
+     function processIfWorkletFile(path, state) {
+@@ -1667,7 +1798,15 @@ var require_inlineStylesWarning = __commonJS({
+     "use strict";
+     Object.defineProperty(exports2, "__esModule", { value: true });
+     exports2.processInlineStylesWarning = processInlineStylesWarning;
+-    var types_12 = require("@babel/types");
++    var target_orig = require("@babel/types");
++    var types_12 = new Proxy(target_orig, {
++  get(target, prop) {
++    if (prop === 'isV8IntrinsicIdentifier' && typeof target[prop] !== 'function') {
++      return function() { return false; };
++    }
++    return target[prop];
++  }
++});
+     var assert_1 = require("assert");
+     var utils_1 = require_utils();
+     function generateInlineStylesWarning(path) {
+@@ -1747,7 +1886,15 @@ var require_webOptimization = __commonJS({
+     "use strict";
+     Object.defineProperty(exports2, "__esModule", { value: true });
+     exports2.substituteWebCallExpression = substituteWebCallExpression;
+-    var types_12 = require("@babel/types");
++    var target_orig = require("@babel/types");
++    var types_12 = new Proxy(target_orig, {
++  get(target, prop) {
++    if (prop === 'isV8IntrinsicIdentifier' && typeof target[prop] !== 'function') {
++      return function() { return false; };
++    }
++    return target[prop];
++  }
++});
+     function substituteWebCallExpression(path) {
+       const callee = path.node.callee;
+       if ((0, types_12.isIdentifier)(callee)) {

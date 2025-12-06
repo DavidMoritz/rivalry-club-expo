@@ -1,3 +1,18 @@
+// Mock react-native-worklets to avoid Babel plugin issues
+jest.mock('react-native-worklets', () => ({
+  useSharedValue: jest.fn((value) => ({ value })),
+  useAnimatedStyle: jest.fn((fn) => fn()),
+  withTiming: jest.fn((value) => value),
+  withSpring: jest.fn((value) => value),
+}));
+
+// Mock react-native-reanimated
+jest.mock('react-native-reanimated', () => {
+  const Reanimated = require('react-native-reanimated/mock');
+  Reanimated.default.call = () => {};
+  return Reanimated;
+});
+
 // Mock Expo modules
 jest.mock('expo-secure-store');
 jest.mock('@react-native-async-storage/async-storage');

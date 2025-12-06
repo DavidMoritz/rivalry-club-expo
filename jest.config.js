@@ -1,6 +1,9 @@
+process.env.REANIMATED_JEST_SKIP_WORKLETS = '1';
+
 module.exports = {
   preset: 'jest-expo',
   setupFilesAfterEnv: ['<rootDir>/jest.setup.js'],
+  testEnvironment: 'node',
   transform: {
     '^.+\\.(js|jsx|ts|tsx)$': [
       'babel-jest',

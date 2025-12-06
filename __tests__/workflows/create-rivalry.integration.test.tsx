@@ -1,5 +1,5 @@
 import { fireEvent, render, waitFor } from '@testing-library/react-native';
-import { QueryClient, QueryClientProvider } from '@tantml:query';
+import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { generateClient } from 'aws-amplify/data';
 import React from 'react';
 

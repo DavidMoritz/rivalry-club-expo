@@ -28,7 +28,6 @@ export interface MRivalry extends Rivalry {
   _mTierListB?: MTierList;
   _mUserA?: MUser;
   _mUserB?: MUser;
-  _loggedInUserId?: string;
   adjustStanding: (nudge?: number) => void;
   reverseStanding: (contest: MContest) => void;
   baseRivalry: Rivalry;
@@ -45,18 +44,11 @@ export interface MRivalry extends Rivalry {
   setMTierLists: (
     tierListConnection: ModelTierListConnection | undefined,
   ) => void;
-  setLoggedInUserId: (userId: string) => void;
   // title: string;
   tierListA?: MTierList;
   tierListB?: MTierList;
   userA?: MUser;
   userB?: MUser;
-  // Computed properties for logged-in user perspective
-  loggedInUser?: MUser;
-  otherUser?: MUser;
-  loggedInUserTierList?: MTierList;
-  otherUserTierList?: MTierList;
-  isLoggedInUserA: () => boolean;
 }
 
 export interface GetMRivalryProps {
@@ -75,7 +67,6 @@ export function getMRivalry({ rivalry }: GetMRivalryProps): MRivalry {
     _mTierListB: undefined,
     _mUserA: undefined,
     _mUserB: undefined,
-    _loggedInUserId: undefined,
 
     // setters
     set currentContest(contest: MContest | undefined) {
@@ -121,28 +112,6 @@ export function getMRivalry({ rivalry }: GetMRivalryProps): MRivalry {
     },
     get userB() {
       return this._mUserB;
-    },
-
-    // Computed properties for logged-in user perspective
-    get loggedInUser() {
-      if (!this._loggedInUserId) return this._mUserA;
-
-      return this._mUserA?.id === this._loggedInUserId ? this._mUserA : this._mUserB;
-    },
-    get otherUser() {
-      if (!this._loggedInUserId) return this._mUserB;
-
-      return this._mUserA?.id === this._loggedInUserId ? this._mUserB : this._mUserA;
-    },
-    get loggedInUserTierList() {
-      if (!this._loggedInUserId) return this._mTierListA;
-
-      return this._mUserA?.id === this._loggedInUserId ? this._mTierListA : this._mTierListB;
-    },
-    get otherUserTierList() {
-      if (!this._loggedInUserId) return this._mTierListB;
-
-      return this._mUserA?.id === this._loggedInUserId ? this._mTierListB : this._mTierListA;
     },
 
     // methods
@@ -300,14 +269,6 @@ export function getMRivalry({ rivalry }: GetMRivalryProps): MRivalry {
     },
     displayUserBName() {
       return this.userB?.displayName(this.userA || '') || 'User B';
-    },
-    isLoggedInUserA() {
-      if (!this._loggedInUserId) return true;
-
-      return this.userAId === this._loggedInUserId;
-    },
-    setLoggedInUserId(userId: string) {
-      this._loggedInUserId = userId;
     },
     fighterMoves() {
       // Fighter always makes 3 moves per stock

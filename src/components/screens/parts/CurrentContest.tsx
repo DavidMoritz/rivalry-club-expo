@@ -39,23 +39,14 @@ export function CurrentContest({
   onResolveContest
 }: CurrentContestProps): ReactNode {
   const game = useGame() as MGame;
-  const [fighterLoggedIn, setFighterLoggedIn] = useState<Fighter>();
-  const [fighterOther, setFighterOther] = useState<Fighter>();
+  const [fighterA, setFighterA] = useState<Fighter>();
+  const [fighterB, setFighterB] = useState<Fighter>();
   const [winner, setWinner] = useState<MTierSlot>();
   const [stockRemaining, setStockRemaining] = useState<string | number>(1);
 
   const rivalry = useRivalry();
   const { userAName, userBName } = useRivalryContext();
   const contest = rivalry?.currentContest;
-
-  // Get display names with fallbacks
-  const loggedInUserName = rivalry?.isLoggedInUserA()
-    ? userAName || rivalry?.loggedInUser?.firstName
-    : userBName || rivalry?.loggedInUser?.firstName;
-
-  const otherUserName = rivalry?.isLoggedInUserA()
-    ? userBName || rivalry?.otherUser?.firstName
-    : userAName || rivalry?.otherUser?.firstName;
 
   useEffect(() => {
     if (!(rivalry && contest)) {
@@ -64,14 +55,14 @@ export function CurrentContest({
 
     contest.setRivalryAndSlots(rivalry);
 
-    if (!(contest.loggedInUserTierSlot && contest.otherUserTierSlot)) {
+    if (!(contest.tierSlotA && contest.tierSlotB)) {
       return;
     }
 
     // Use baseGame which has the fighters.items structure from the cache
     const gameData = (game as any).baseGame || game;
-    setFighterLoggedIn(fighterByIdFromGame(gameData, contest.loggedInUserTierSlot.fighterId));
-    setFighterOther(fighterByIdFromGame(gameData, contest.otherUserTierSlot.fighterId));
+    setFighterA(fighterByIdFromGame(gameData, contest.tierSlotA.fighterId));
+    setFighterB(fighterByIdFromGame(gameData, contest.tierSlotB.fighterId));
   }, [contest, game, rivalry]);
 
   if (!rivalry) return null;
@@ -79,19 +70,7 @@ export function CurrentContest({
   function onPressResolve() {
     if (!(winner && onResolveContest && contest)) return;
 
-    // Calculate result based on actual A/B slots, not display order
-    const isLoggedInUserA = rivalry.isLoggedInUserA();
-    const loggedInUserWon = winner === contest?.loggedInUserTierSlot;
-
-    let resultStr: string | number;
-
-    if (isLoggedInUserA) {
-      // Logged-in user is A, so positive result means A won
-      resultStr = loggedInUserWon ? stockRemaining : `-${stockRemaining}`;
-    } else {
-      // Logged-in user is B, so negative result means B won
-      resultStr = loggedInUserWon ? `-${stockRemaining}` : stockRemaining;
-    }
+    const resultStr = winner === contest?.tierSlotA ? stockRemaining : `-${stockRemaining}`;
 
     contest.result = Number(resultStr);
 
@@ -146,34 +125,33 @@ export function CurrentContest({
             padding: 2
           }}
         >
-          {fighterLoggedIn && (
+          {fighterA && (
             <TouchableOpacity
               style={{
                 position: 'relative',
                 borderWidth: 4,
-                borderColor:
-                  winner && contest?.loggedInUserTierSlot === winner ? '#15803d' : 'transparent',
+                borderColor: winner && contest?.tierSlotA === winner ? '#15803d' : 'transparent',
                 backgroundColor:
-                  winner && contest?.loggedInUserTierSlot === winner ? '#dbeafe' : 'transparent',
+                  winner && contest?.tierSlotA === winner ? '#dbeafe' : 'transparent',
                 alignItems: 'center',
                 marginVertical: 20,
                 padding: 8,
                 borderRadius: 12
               }}
               onPress={() => {
-                setWinner(contest?.loggedInUserTierSlot);
+                setWinner(contest?.tierSlotA);
               }}
             >
               <Text
                 style={[
                   styles.currentContestUser,
-                  { color: winner && contest?.loggedInUserTierSlot === winner ? 'black' : 'white' }
+                  { color: winner && contest?.tierSlotA === winner ? 'black' : 'white' }
                 ]}
               >
-                {loggedInUserName} {rivalry.loggedInUserTierList?.prestigeDisplay}
+                {userAName || rivalry.userA?.firstName} {rivalry.tierListA?.prestigeDisplay}
               </Text>
               <CharacterDisplay
-                fighter={fighterLoggedIn}
+                fighter={fighterA}
                 hideName={true}
                 height={180}
                 width={140}
@@ -182,51 +160,48 @@ export function CurrentContest({
               <Text
                 style={{
                   fontSize: 14,
-                  color: winner && contest?.loggedInUserTierSlot === winner ? 'black' : 'white'
+                  color: winner && contest?.tierSlotA === winner ? 'black' : 'white'
                 }}
               >
-                {fighterLoggedIn.name}{' '}
+                {fighterA.name}{' '}
               </Text>
-              {winner && contest?.loggedInUserTierSlot === winner && <WinnerBadge />}
+              {winner && contest?.tierSlotA === winner && <WinnerBadge />}
             </TouchableOpacity>
           )}
 
-          {!fighterLoggedIn && !fighterOther && (
-            <Text style={{ color: '#e9d5ff' }}>Loading fighters...</Text>
-          )}
-          {(fighterLoggedIn || fighterOther) && (
+          {!fighterA && !fighterB && <Text style={{ color: '#e9d5ff' }}>Loading fighters...</Text>}
+          {(fighterA || fighterB) && (
             <View style={contestStyles.item}>
               <Text style={{ fontSize: 14, color: 'white' }}>Vs.</Text>
             </View>
           )}
-          {fighterOther && (
+          {fighterB && (
             <TouchableOpacity
               style={{
                 position: 'relative',
                 borderWidth: 4,
-                borderColor:
-                  winner && contest?.otherUserTierSlot === winner ? '#15803d' : 'transparent',
+                borderColor: winner && contest?.tierSlotB === winner ? '#15803d' : 'transparent',
                 backgroundColor:
-                  winner && contest?.otherUserTierSlot === winner ? '#dbeafe' : 'transparent',
+                  winner && contest?.tierSlotB === winner ? '#dbeafe' : 'transparent',
                 alignItems: 'center',
                 marginVertical: 20,
                 padding: 8,
                 borderRadius: 12
               }}
               onPress={() => {
-                setWinner(contest?.otherUserTierSlot);
+                setWinner(contest?.tierSlotB);
               }}
             >
               <Text
                 style={[
                   styles.currentContestUser,
-                  { color: winner && contest?.otherUserTierSlot === winner ? 'black' : 'white' }
+                  { color: winner && contest?.tierSlotB === winner ? 'black' : 'white' }
                 ]}
               >
-                {otherUserName} {rivalry.otherUserTierList?.prestigeDisplay}
+                {userBName || rivalry.userB?.firstName} {rivalry.tierListB?.prestigeDisplay}
               </Text>
               <CharacterDisplay
-                fighter={fighterOther}
+                fighter={fighterB}
                 hideName={true}
                 height={180}
                 width={140}
@@ -235,12 +210,12 @@ export function CurrentContest({
               <Text
                 style={{
                   fontSize: 14,
-                  color: winner && contest?.otherUserTierSlot === winner ? 'black' : 'white'
+                  color: winner && contest?.tierSlotB === winner ? 'black' : 'white'
                 }}
               >
-                {fighterOther.name}
+                {fighterB.name}
               </Text>
-              {winner && contest?.otherUserTierSlot === winner && <WinnerBadge />}
+              {winner && contest?.tierSlotB === winner && <WinnerBadge />}
             </TouchableOpacity>
           )}
         </View>

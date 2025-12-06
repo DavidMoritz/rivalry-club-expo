@@ -1,6 +1,6 @@
 import { useLocalSearchParams, Stack, useRouter } from 'expo-router';
 import { StatusBar } from 'expo-status-bar';
-import React, { useState, useMemo, useEffect } from 'react';
+import React, { useState, useMemo } from 'react';
 import { SafeAreaView, Text, View } from 'react-native';
 import { useQuery } from '@tanstack/react-query';
 import { generateClient } from 'aws-amplify/data';
@@ -10,7 +10,6 @@ import gameQuery from '../../../assets/cache/game-query.json';
 import { Button } from '../../../src/components/common/Button';
 import { HamburgerMenu } from '../../../src/components/common/HamburgerMenu';
 import { TierListDisplay } from '../../../src/components/screens/parts/TierListDisplay';
-import { useAuthUser } from '../../../src/hooks/useAuthUser';
 import { getMGame } from '../../../src/models/m-game';
 import { getMRivalry, MRivalry } from '../../../src/models/m-rivalry';
 import { getMUser } from '../../../src/models/m-user';
@@ -26,33 +25,9 @@ export default function TiersRoute() {
   const params = useLocalSearchParams();
   const rivalryId = params.id as string;
   const rivalryContext = useRivalryContext();
-  const { user: authUser } = useAuthUser();
 
   const [unlinked, setUnLinked] = useState<boolean>(false);
   const [rivalry, setRivalry] = useState<MRivalry | null>(null);
-  const [, forceUpdate] = useState(0);
-
-  // Set logged-in user ID when authUser or rivalry changes
-  useEffect(() => {
-    if (authUser && rivalry) {
-      const needsUpdate = rivalry._loggedInUserId !== authUser.id;
-
-      if (needsUpdate) {
-        console.log('[TiersRoute] Setting logged-in user ID:', {
-          authUserId: authUser.id,
-          rivalryUserAId: rivalry.userAId,
-          rivalryUserBId: rivalry.userBId,
-          isLoggedInUserA: rivalry.userAId === authUser.id
-        });
-        rivalry.setLoggedInUserId(authUser.id);
-        console.log('[TiersRoute] After setting, isLoggedInUserA():', rivalry.isLoggedInUserA());
-        console.log('[TiersRoute] loggedInUserTierList userId:', rivalry.loggedInUserTierList?.userId);
-        console.log('[TiersRoute] otherUserTierList userId:', rivalry.otherUserTierList?.userId);
-        // Force re-render to update the display
-        forceUpdate(prev => prev + 1);
-      }
-    }
-  }, [authUser, rivalry]);
 
   // Load game from cache - since there's only one game in the DB
   const game = useMemo(() => {
@@ -139,13 +114,6 @@ export default function TiersRoute() {
 
       setRivalry(mRivalry);
 
-      console.log('[TiersRoute] Rivalry loaded:', {
-        userAId: mRivalry.userAId,
-        userBId: mRivalry.userBId,
-        userAName: mRivalry.userA?.firstName,
-        userBName: mRivalry.userB?.firstName
-      });
-
       return mRivalry;
     }
   });
@@ -209,17 +177,17 @@ export default function TiersRoute() {
             {!isLoading && !isError && rivalry && (
               <>
                 <Text style={[darkStyles.text, { fontSize: 18, marginBottom: 8, marginTop: 16 }]}>
-                  {rivalry.loggedInUser?.firstName || rivalry.displayUserAName()} tier list
+                  {rivalry.displayUserAName()} tier list
                 </Text>
-                {rivalry.loggedInUserTierList && (
-                  <TierListDisplay tierList={rivalry.loggedInUserTierList} unlinked={unlinked} />
+                {rivalry.tierListA && (
+                  <TierListDisplay tierList={rivalry.tierListA} unlinked={unlinked} />
                 )}
 
                 <Text style={[darkStyles.text, { fontSize: 18, marginBottom: 8, marginTop: 16 }]}>
-                  {rivalry.otherUser?.firstName || rivalry.displayUserBName()} tier list
+                  {rivalry.displayUserBName()} tier list
                 </Text>
-                {rivalry.otherUserTierList && (
-                  <TierListDisplay tierList={rivalry.otherUserTierList} unlinked={unlinked} />
+                {rivalry.tierListB && (
+                  <TierListDisplay tierList={rivalry.tierListB} unlinked={unlinked} />
                 )}
 
                 <Button

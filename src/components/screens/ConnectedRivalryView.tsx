@@ -12,7 +12,6 @@ import {
   useUpdateRivalryMutation,
   useUpdateTierSlotsMutation
 } from '../../controllers/c-rivalry';
-import { useAuthUser } from '../../hooks/useAuthUser';
 import { MContest } from '../../models/m-contest';
 import { PROVISIONAL_THRESHOLD, STEPS_PER_STOCK } from '../../models/m-game';
 import { MRivalry } from '../../models/m-rivalry';
@@ -32,17 +31,9 @@ interface ConnectedRivalryViewProps {
 export function ConnectedRivalryView({ navigation }: ConnectedRivalryViewProps): JSX.Element {
   const updateRivalryProvider = useUpdateRivalry();
   const rivalry = useRivalry();
-  const { user: authUser } = useAuthUser();
 
   const [tiersReady, setTiersReady] = useState<boolean>(false);
   const [isResolvingContest, setIsResolvingContest] = useState<boolean>(false);
-
-  // Set logged-in user ID when authUser or rivalry changes
-  useEffect(() => {
-    if (authUser && rivalry) {
-      rivalry.setLoggedInUserId(authUser.id);
-    }
-  }, [authUser, rivalry]);
 
   const updateRivalryMutation = useUpdateRivalryMutation({
     rivalry

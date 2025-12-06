@@ -189,6 +189,7 @@ export function ConnectedRivalryView({ navigation }: ConnectedRivalryViewProps):
     onSuccess: (populatedRivalry: MRivalry) => {
       updateRivalryProvider(populatedRivalry);
       setIsResolvingContest(false);
+      console.log('[ConnectedRivalryView] Rivalry data loaded successfully');
       setTiersReady(true);
     }
   });

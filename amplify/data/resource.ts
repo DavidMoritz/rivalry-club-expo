@@ -82,8 +82,13 @@ const schema = a.schema({
       userId: a.id().required(),
       standing: a.integer(),
       tierSlots: a.hasMany('TierSlot', 'tierListId'),
+      createdAt: a.datetime(),
+      updatedAt: a.datetime(),
       deletedAt: a.datetime()
     })
+    .secondaryIndexes((index) => [
+      index('userId').sortKeys(['updatedAt']).queryField('tierListsByUserIdAndUpdatedAt')
+    ])
     .authorization((allow) => [allow.publicApiKey()]),
 
   // TierSlot type - represents a fighter's position in a tier list

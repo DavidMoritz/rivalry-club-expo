@@ -176,7 +176,7 @@ export const useRivalryWithAllInfoQuery = ({ rivalry, onSuccess }: RivalryQueryP
       }
       const tierLists = { items: tierListsArray };
 
-      if (tierLists.items.some(Boolean) && contests.items.some(Boolean)) {
+      if (tierLists.items.some(Boolean)) {
         // Update rivalry with fetched data
         const mRivalry = rivalry as MRivalry;
         mRivalry.userAId = rivalryData.userAId;
@@ -545,7 +545,9 @@ export const usePendingRivalriesQuery = ({ userId }: PendingRivalriesQueryProps)
       });
 
       return {
-        awaitingAcceptance: (awaitingAcceptanceData || []).map((r) => getMRivalry({ rivalry: r as any })),
+        awaitingAcceptance: (awaitingAcceptanceData || []).map((r) =>
+          getMRivalry({ rivalry: r as any })
+        ),
         initiated: (initiatedData || []).map((r) => getMRivalry({ rivalry: r as any }))
       };
     },
@@ -553,7 +555,10 @@ export const usePendingRivalriesQuery = ({ userId }: PendingRivalriesQueryProps)
   });
 };
 
-export const useCreateRivalryMutation = ({ onSuccess, onError }: CreateRivalryMutationProps = {}) => {
+export const useCreateRivalryMutation = ({
+  onSuccess,
+  onError
+}: CreateRivalryMutationProps = {}) => {
   const queryClient = useQueryClient();
 
   return useMutation({
@@ -636,7 +641,7 @@ export const useCreateRivalryMutation = ({ onSuccess, onError }: CreateRivalryMu
       ]);
 
       const tierSlotResults = await Promise.all(tierSlotPromises);
-      const tierSlotErrors = tierSlotResults.filter(r => r.errors).flatMap(r => r.errors);
+      const tierSlotErrors = tierSlotResults.filter((r) => r.errors).flatMap((r) => r.errors);
 
       if (tierSlotErrors.length > 0) {
         console.error('[useCreateRivalryMutation] Tier slot creation errors:', tierSlotErrors);
@@ -665,6 +670,119 @@ export const useAcceptRivalryMutation = ({ rivalryId, onSuccess }: AcceptRivalry
 
   return useMutation({
     mutationFn: async () => {
+      // First, get the rivalry details to know which users and game are involved
+      const { data: rivalryData, errors: rivalryFetchErrors } = await client.models.Rivalry.get({
+        id: rivalryId
+      });
+
+      if (rivalryFetchErrors || !rivalryData) {
+        throw new Error(rivalryFetchErrors?.[0]?.message || 'Failed to fetch rivalry');
+      }
+
+      const { userAId, userBId, gameId } = rivalryData;
+
+      // Fetch fighters for the game
+      const { data: fighters, errors: fightersErrors } = await client.models.Fighter.list({
+        filter: { gameId: { eq: gameId } }
+      });
+
+      if (fightersErrors || !fighters || fighters.length === 0) {
+        throw new Error('Failed to fetch fighters for game');
+      }
+
+      // Helper function to get user's most recent tier list
+      const getMostRecentTierList = async (userId: string) => {
+        const { data: tierLists } = await client.models.TierList.tierListsByUserIdAndUpdatedAt({
+          userId,
+          sortDirection: 'DESC',
+          limit: 1
+        });
+
+        return tierLists?.[0];
+      };
+
+      // Helper function to create tier list with tier slots
+      const createTierListWithSlots = async (userId: string, sourceTierList?: any) => {
+        // Create the tier list with standing = 0
+        const { data: newTierList, errors: tierListErrors } = await client.models.TierList.create({
+          rivalryId,
+          userId,
+          standing: 0
+        });
+
+        if (tierListErrors || !newTierList) {
+          throw new Error(`Failed to create tier list for user ${userId}`);
+        }
+
+        let tierSlotPromises;
+
+        if (sourceTierList) {
+          // Duplicate the source tier list's tier slots
+          // First, fetch the source tier slots
+          const { data: sourceTierSlots } = await client.models.TierSlot.list({
+            filter: { tierListId: { eq: sourceTierList.id } }
+          });
+
+          if (!sourceTierSlots || sourceTierSlots.length === 0) {
+            // Fallback to random if source has no tier slots
+            tierSlotPromises = fighters.map((fighter, index) =>
+              client.models.TierSlot.create({
+                tierListId: newTierList.id,
+                fighterId: fighter.id,
+                position: index,
+                contestCount: 0,
+                winCount: 0
+              })
+            );
+          } else {
+            // Create tier slots matching the source positions
+            tierSlotPromises = sourceTierSlots.map((slot) =>
+              client.models.TierSlot.create({
+                tierListId: newTierList.id,
+                fighterId: slot.fighterId,
+                position: slot.position,
+                contestCount: 0,
+                winCount: 0
+              })
+            );
+          }
+        } else {
+          // Create randomized tier slots
+          const shuffledFighters = [...fighters].sort(() => Math.random() - 0.5);
+          tierSlotPromises = shuffledFighters.map((fighter, index) =>
+            client.models.TierSlot.create({
+              tierListId: newTierList.id,
+              fighterId: fighter.id,
+              position: index,
+              contestCount: 0,
+              winCount: 0
+            })
+          );
+        }
+
+        const tierSlotResults = await Promise.all(tierSlotPromises);
+        const tierSlotErrors = tierSlotResults.filter((r) => r.errors).flatMap((r) => r.errors);
+
+        if (tierSlotErrors.length > 0) {
+          throw new Error(`Failed to create tier slots for user ${userId}`);
+        }
+
+        return newTierList;
+      };
+
+      // Get most recent tier lists for both users
+      const [recentTierListA, recentTierListB] = await Promise.all([
+        getMostRecentTierList(userAId),
+        getMostRecentTierList(userBId)
+      ]);
+
+      // Create tier lists for both users
+      await Promise.all([
+        createTierListWithSlots(userAId, recentTierListA),
+        createTierListWithSlots(userBId, recentTierListB)
+      ]);
+
+      // Finally, accept the rivalry
       const { data, errors } = await client.models.Rivalry.update({
         id: rivalryId,
         accepted: true

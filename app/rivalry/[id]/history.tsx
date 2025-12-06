@@ -379,6 +379,13 @@ export default function HistoryRoute() {
             }
           />
         </View>
+        {(rivalryContext.isUserA || rivalryContext.isUserB) && (
+          <View style={{ alignItems: 'center', paddingVertical: 16 }}>
+            <Text style={[styles.text, { fontSize: 14, opacity: 0.7 }]}>
+              {rivalryContext.isUserA ? 'You are User A' : 'You are User B'}
+            </Text>
+          </View>
+        )}
       </SafeAreaView>
       <StatusBar style="light" />
     </>

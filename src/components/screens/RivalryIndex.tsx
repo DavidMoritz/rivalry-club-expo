@@ -31,7 +31,8 @@ export function RivalryIndex() {
       pathname: `/rivalry/${rivalry.id}`,
       params: {
         userAName: rivalry.userAName,
-        userBName: rivalry.userBName
+        userBName: rivalry.userBName,
+        userId: user?.id
       }
     });
   }
@@ -66,8 +67,15 @@ export function RivalryIndex() {
   if (error) {
     return (
       <SafeAreaView style={[styles.container, darkStyles.container]}>
-        <View style={{ flex: 1, alignItems: 'center', justifyContent: 'center', paddingHorizontal: 16 }}>
-          <Text style={[styles.text, { fontSize: 18, fontWeight: 'bold', color: '#ef4444', marginBottom: 16 }]}>
+        <View
+          style={{ flex: 1, alignItems: 'center', justifyContent: 'center', paddingHorizontal: 16 }}
+        >
+          <Text
+            style={[
+              styles.text,
+              { fontSize: 18, fontWeight: 'bold', color: '#ef4444', marginBottom: 16 }
+            ]}
+          >
             Error
           </Text>
           <Text style={styles.text}>{error.message}</Text>
@@ -78,7 +86,14 @@ export function RivalryIndex() {
 
   return (
     <SafeAreaView style={[styles.container, darkStyles.container]} edges={['top', 'bottom']}>
-      <View style={{ paddingHorizontal: 16, paddingVertical: 16, borderBottomWidth: 1, borderBottomColor: '#333' }}>
+      <View
+        style={{
+          paddingHorizontal: 16,
+          paddingVertical: 16,
+          borderBottomWidth: 1,
+          borderBottomColor: '#333'
+        }}
+      >
         <Text style={[styles.text, { fontSize: 24, fontWeight: 'bold' }]}>
           Welcome{user?.firstName ? `, ${user.firstName}` : ''}!
         </Text>
@@ -104,7 +119,11 @@ export function RivalryIndex() {
         </TouchableOpacity>
       </View>
 
-      <RivalriesTable rivalries={rivalries} currentUserId={user?.id} onSelectRivalry={handleSelectRivalry} />
+      <RivalriesTable
+        rivalries={rivalries}
+        currentUserId={user?.id}
+        onSelectRivalry={handleSelectRivalry}
+      />
     </SafeAreaView>
   );
 }

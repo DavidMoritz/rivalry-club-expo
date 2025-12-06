@@ -16,6 +16,8 @@ export default function RivalryDetailRoute() {
   const rivalryId = params.id as string;
   const userAName = params.userAName as string | undefined;
   const userBName = params.userBName as string | undefined;
+  const userId = params.userId as string | undefined;
+  console.log('[Rivalry] USER:', userId);
 
   // Load game from cache - since there's only one game in the DB
   const game = useMemo(() => {
@@ -61,7 +63,12 @@ export default function RivalryDetailRoute() {
   return (
     <>
       <Stack.Screen options={{ headerShown: false }} />
-      <RivalryProvider rivalry={initialRivalry} userAName={userAName} userBName={userBName}>
+      <RivalryProvider
+        rivalry={initialRivalry}
+        userAName={userAName}
+        userBName={userBName}
+        userId={userId}
+      >
         <GameProviderWrapper navigation={navigation} game={game} />
         <HamburgerMenu />
       </RivalryProvider>

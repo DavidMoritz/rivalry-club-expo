@@ -195,6 +195,13 @@ export default function TiersRoute() {
                   onPress={() => setUnLinked(!unlinked)}
                   text={unlinked ? 'Unlinked' : 'Linked'}
                 />
+                {(rivalryContext.isUserA || rivalryContext.isUserB) && (
+                  <View style={{ alignItems: 'center', marginTop: 16, marginBottom: 8 }}>
+                    <Text style={[styles.text, darkStyles.text, { fontSize: 14, opacity: 0.7 }]}>
+                      {rivalryContext.isUserA ? 'You are User A' : 'You are User B'}
+                    </Text>
+                  </View>
+                )}
               </>
             )}
           </SafeAreaView>

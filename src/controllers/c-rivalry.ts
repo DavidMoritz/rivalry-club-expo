@@ -4,7 +4,7 @@ import { pick } from 'lodash';
 import type { Schema } from '../../amplify/data/resource';
 
 import { getMContest, MContest } from '../models/m-contest';
-import { MRivalry } from '../models/m-rivalry';
+import { getMRivalry, MRivalry } from '../models/m-rivalry';
 
 const client = generateClient<Schema>();
 
@@ -41,6 +41,26 @@ interface UpdateContestMutationProps extends ContestQueryBaseProps {
 
 interface UpdateCurrentContestShuffleTierSlotsMutationProps extends RivalryQueryBaseProps {
   onSuccess?: (contest: MContest) => void;
+}
+
+interface CreateRivalryMutationProps {
+  onSuccess?: (rivalry: MRivalry) => void;
+  onError?: (error: Error) => void;
+}
+
+interface CreateRivalryParams {
+  userAId: string;
+  userBId: string;
+  gameId: string;
+}
+
+interface AcceptRivalryMutationProps {
+  rivalryId: string;
+  onSuccess?: () => void;
+}
+
+interface PendingRivalriesQueryProps {
+  userId?: string;
 }
 
 /** Queries */
@@ -473,6 +493,192 @@ export const useDeleteMostRecentContestMutation = ({
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['rivalryId', rivalry?.id] });
+      onSuccess?.();
+    }
+  });
+};
+
+export const usePendingRivalriesQuery = ({ userId }: PendingRivalriesQueryProps) => {
+  return useQuery({
+    queryKey: ['pendingRivalries', userId],
+    queryFn: async () => {
+      if (!userId) return { awaitingAcceptance: [], initiated: [] };
+
+      // Fetch rivalries where user is UserB and rivalry is not accepted
+      const { data: awaitingAcceptanceData } = await client.models.Rivalry.list({
+        filter: {
+          userBId: { eq: userId },
+          accepted: { eq: false }
+        },
+        selectionSet: [
+          'id',
+          'userAId',
+          'userBId',
+          'gameId',
+          'contestCount',
+          'currentContestId',
+          'accepted',
+          'createdAt',
+          'updatedAt',
+          'deletedAt'
+        ]
+      });
+
+      // Fetch rivalries where user is UserA and rivalry is not accepted
+      const { data: initiatedData } = await client.models.Rivalry.list({
+        filter: {
+          userAId: { eq: userId },
+          accepted: { eq: false }
+        },
+        selectionSet: [
+          'id',
+          'userAId',
+          'userBId',
+          'gameId',
+          'contestCount',
+          'currentContestId',
+          'accepted',
+          'createdAt',
+          'updatedAt',
+          'deletedAt'
+        ]
+      });
+
+      return {
+        awaitingAcceptance: (awaitingAcceptanceData || []).map((r) => getMRivalry({ rivalry: r as any })),
+        initiated: (initiatedData || []).map((r) => getMRivalry({ rivalry: r as any }))
+      };
+    },
+    enabled: !!userId
+  });
+};
+
+export const useCreateRivalryMutation = ({ onSuccess, onError }: CreateRivalryMutationProps = {}) => {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: async ({ userAId, userBId, gameId }: CreateRivalryParams) => {
+      console.log('[useCreateRivalryMutation] Creating rivalry:', { userAId, userBId, gameId });
+
+      // Create the rivalry
+      const { data: rivalryData, errors: rivalryErrors } = await client.models.Rivalry.create({
+        userAId,
+        userBId,
+        gameId,
+        contestCount: 0,
+        accepted: false
+      });
+
+      if (rivalryErrors) {
+        console.error('[useCreateRivalryMutation] Rivalry creation errors:', rivalryErrors);
+        throw new Error(rivalryErrors[0]?.message || 'Failed to create rivalry');
+      }
+
+      console.log('[useCreateRivalryMutation] Rivalry created:', rivalryData?.id);
+
+      // Fetch the game's fighters to create tier lists
+      const { data: fighters, errors: fightersErrors } = await client.models.Fighter.list({
+        filter: { gameId: { eq: gameId } }
+      });
+
+      if (fightersErrors) {
+        console.error('[useCreateRivalryMutation] Fighters fetch errors:', fightersErrors);
+        throw new Error('Failed to fetch fighters');
+      }
+
+      if (!fighters || fighters.length === 0) {
+        console.error('[useCreateRivalryMutation] No fighters found for game:', gameId);
+        throw new Error('No fighters found for this game');
+      }
+
+      console.log('[useCreateRivalryMutation] Found fighters:', fighters.length);
+
+      // Create tier lists for both users
+      const [tierListAResult, tierListBResult] = await Promise.all([
+        client.models.TierList.create({
+          rivalryId: rivalryData!.id,
+          userId: userAId,
+          standing: 0
+        }),
+        client.models.TierList.create({
+          rivalryId: rivalryData!.id,
+          userId: userBId,
+          standing: 0
+        })
+      ]);
+
+      if (tierListAResult.errors || tierListBResult.errors) {
+        console.error('[useCreateRivalryMutation] Tier list creation errors:', {
+          tierListA: tierListAResult.errors,
+          tierListB: tierListBResult.errors
+        });
+        throw new Error('Failed to create tier lists');
+      }
+
+      console.log('[useCreateRivalryMutation] Tier lists created');
+
+      // Create tier slots for both users
+      const tierSlotPromises = fighters.flatMap((fighter, index) => [
+        client.models.TierSlot.create({
+          tierListId: tierListAResult.data!.id,
+          fighterId: fighter.id,
+          position: index,
+          contestCount: 0,
+          winCount: 0
+        }),
+        client.models.TierSlot.create({
+          tierListId: tierListBResult.data!.id,
+          fighterId: fighter.id,
+          position: index,
+          contestCount: 0,
+          winCount: 0
+        })
+      ]);
+
+      const tierSlotResults = await Promise.all(tierSlotPromises);
+      const tierSlotErrors = tierSlotResults.filter(r => r.errors).flatMap(r => r.errors);
+
+      if (tierSlotErrors.length > 0) {
+        console.error('[useCreateRivalryMutation] Tier slot creation errors:', tierSlotErrors);
+        throw new Error('Failed to create tier slots');
+      }
+
+      console.log('[useCreateRivalryMutation] Tier slots created:', tierSlotResults.length);
+
+      return getMRivalry({ rivalry: rivalryData as any });
+    },
+    onSuccess: (rivalry, variables) => {
+      console.log('[useCreateRivalryMutation] Success callback');
+      queryClient.invalidateQueries({ queryKey: ['pendingRivalries', variables.userAId] });
+      queryClient.invalidateQueries({ queryKey: ['usersByAwsSub'] });
+      onSuccess?.(rivalry);
+    },
+    onError: (error: Error) => {
+      console.error('[useCreateRivalryMutation] Error callback:', error);
+      onError?.(error);
+    }
+  });
+};
+
+export const useAcceptRivalryMutation = ({ rivalryId, onSuccess }: AcceptRivalryMutationProps) => {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: async () => {
+      const { data, errors } = await client.models.Rivalry.update({
+        id: rivalryId,
+        accepted: true
+      });
+
+      if (errors) {
+        throw new Error(errors[0]?.message || 'Failed to accept rivalry');
+      }
+
+      return data;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['pendingRivalries'] });
+      queryClient.invalidateQueries({ queryKey: ['usersByAwsSub'] });
       onSuccess?.();
     }
   });

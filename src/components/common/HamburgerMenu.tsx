@@ -38,6 +38,11 @@ export function HamburgerMenu() {
     router.push('/profile');
   };
 
+  const handlePendingRivalries = () => {
+    setMenuVisible(false);
+    router.push('/pending');
+  };
+
   return (
     <>
       <TouchableOpacity
@@ -115,6 +120,21 @@ export function HamburgerMenu() {
             >
               <FontAwesomeIcon icon="list" color="white" size={16} style={{ marginRight: 12 }} />
               <Text style={[darkStyles.text, { fontSize: 16 }]}>Rivalries</Text>
+            </TouchableOpacity>
+
+            <View style={{ height: 1, backgroundColor: '#475569', marginVertical: 4 }} />
+
+            <TouchableOpacity
+              onPress={handlePendingRivalries}
+              style={{
+                paddingVertical: 12,
+                paddingHorizontal: 16,
+                flexDirection: 'row',
+                alignItems: 'center'
+              }}
+            >
+              <FontAwesomeIcon icon="clock" color="white" size={16} style={{ marginRight: 12 }} />
+              <Text style={[darkStyles.text, { fontSize: 16 }]}>Pending Rivalries</Text>
             </TouchableOpacity>
 
             <View style={{ height: 1, backgroundColor: '#475569', marginVertical: 4 }} />

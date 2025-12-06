@@ -50,6 +50,7 @@ const schema = a.schema({
       game: a.belongsTo('Game', 'gameId'),
       contestCount: a.integer().required(),
       currentContestId: a.id(),
+      accepted: a.boolean(),
       contests: a.hasMany('Contest', 'rivalryId'),
       tierLists: a.hasMany('TierList', 'rivalryId'),
       deletedAt: a.datetime()

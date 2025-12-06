@@ -1,8 +1,11 @@
 import {
   faArrowLeft,
   faBars,
+  faCheck,
   faCheckCircle,
+  faClock,
   faExclamationTriangle,
+  faInbox,
   faList,
   faShuffle,
   faSignOutAlt,
@@ -30,8 +33,11 @@ export const iconsInProject = [
   faArrowLeft,
   faBars,
   // faBoxingGlove, // Pro icon - uncomment if you have Pro license
+  faCheck,
   faCheckCircle,
+  faClock,
   faExclamationTriangle,
+  faInbox,
   faList,
   faShuffle,
   faSignOutAlt,

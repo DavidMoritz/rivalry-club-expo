@@ -49,9 +49,9 @@ export function useUserRivalries(userId: string | undefined): UseUserRivalriesRe
         throw new Error(`Failed to fetch rivalries: ${errors[0].message}`);
       }
 
-      // Filter rivalries where the user is either userA or userB
+      // Filter rivalries where the user is either userA or userB and rivalry is accepted
       const userRivalries = (allRivalries || []).filter(
-        (rivalry) => rivalry.userAId === userId || rivalry.userBId === userId
+        (rivalry) => (rivalry.userAId === userId || rivalry.userBId === userId) && rivalry.accepted === true
       );
 
       // Get unique user IDs we need to fetch

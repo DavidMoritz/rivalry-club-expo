@@ -5,8 +5,7 @@ import { darkStyles, styles } from '../../../utils/styles';
 
 interface RivalryRowProps {
   updatedAt: string;
-  userAName?: string;
-  userBName?: string;
+  opponentName?: string;
   onPress: () => void;
   contestCount?: number;
 }
@@ -40,8 +39,7 @@ function formatDate(dateString: string): string {
 
 export function RivalryRow({
   updatedAt,
-  userAName,
-  userBName,
+  opponentName,
   onPress,
   contestCount = 0
 }: RivalryRowProps) {
@@ -58,7 +56,7 @@ export function RivalryRow({
       <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' }}>
         <View style={{ flex: 1 }}>
           <Text style={[styles.text, { fontSize: 18, fontWeight: '600', marginBottom: 4 }]}>
-            {userAName || 'Unknown'} vs. {userBName || 'Unknown'}
+            vs. {opponentName || 'Unknown'}
           </Text>
           <Text style={[styles.text, { fontSize: 12, color: '#999' }]}>
             Updated {updatedDisplay} • {contestCount} contest{contestCount !== 1 ? 's' : ''}

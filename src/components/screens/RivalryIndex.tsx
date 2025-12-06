@@ -104,7 +104,7 @@ export function RivalryIndex() {
         </TouchableOpacity>
       </View>
 
-      <RivalriesTable rivalries={rivalries} onSelectRivalry={handleSelectRivalry} />
+      <RivalriesTable rivalries={rivalries} currentUserId={user?.id} onSelectRivalry={handleSelectRivalry} />
     </SafeAreaView>
   );
 }

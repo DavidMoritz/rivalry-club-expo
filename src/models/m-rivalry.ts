@@ -304,7 +304,7 @@ export function getMRivalry({ rivalry }: GetMRivalryProps): MRivalry {
     isLoggedInUserA() {
       if (!this._loggedInUserId) return true;
 
-      return this._mUserA?.id === this._loggedInUserId;
+      return this.userAId === this._loggedInUserId;
     },
     setLoggedInUserId(userId: string) {
       this._loggedInUserId = userId;

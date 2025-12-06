@@ -72,14 +72,14 @@ export function getMContest(contest: Contest): MContest {
 
     // Computed properties for logged-in user perspective
     get loggedInUserTierSlot() {
-      if (!this._mRivalry?.isLoggedInUserA()) return this._mTierSlotB;
-
-      return this._mTierSlotA;
-    },
-    get otherUserTierSlot() {
-      if (!this._mRivalry?.isLoggedInUserA()) return this._mTierSlotA;
+      if (this._mRivalry?.isLoggedInUserA()) return this._mTierSlotA;
 
       return this._mTierSlotB;
+    },
+    get otherUserTierSlot() {
+      if (this._mRivalry?.isLoggedInUserA()) return this._mTierSlotB;
+
+      return this._mTierSlotA;
     },
 
     // methods

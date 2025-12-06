@@ -1,4 +1,5 @@
 import { generateClient } from 'aws-amplify/data';
+import { useRouter } from 'expo-router';
 import React, { useEffect, useState } from 'react';
 import { ScrollView, Text, TextInput, TouchableOpacity, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
@@ -9,6 +10,7 @@ import { supabase } from '../../lib/supabase';
 import { darkStyles, styles } from '../../utils/styles';
 
 export function Profile() {
+  const router = useRouter();
   const { user, isLoading: userLoading } = useAuthUser();
   const [firstName, setFirstName] = useState('');
   const [lastName, setLastName] = useState('');
@@ -43,6 +45,9 @@ export function Profile() {
     try {
       const client = generateClient<Schema>();
 
+      // Check if this is a new user (no previous first name)
+      const isNewUser = !user.firstName || user.firstName.trim() === '';
+
       const result = await client.models.User.update({
         id: user.id,
         firstName: firstName.trim(),
@@ -54,7 +59,15 @@ export function Profile() {
       }
 
       setSuccessMessage('Profile updated successfully');
-      setTimeout(() => setSuccessMessage(''), 3000);
+
+      // If this was a new user completing their profile, redirect to rivalries
+      if (isNewUser) {
+        setTimeout(() => {
+          router.replace('/rivalries');
+        }, 1000);
+      } else {
+        setTimeout(() => setSuccessMessage(''), 3000);
+      }
     } catch (error) {
       setErrorMessage(
         error instanceof Error ? error.message : 'Failed to update profile',
@@ -123,10 +136,30 @@ export function Profile() {
     );
   }
 
+  // Check if this is a new user
+  const isNewUser = !user?.firstName || user.firstName.trim() === '';
+
   return (
     <SafeAreaView style={[styles.container, darkStyles.container]} edges={['top', 'bottom']}>
       <ScrollView style={{ flex: 1 }} contentContainerStyle={{ padding: 24 }}>
         <Text style={[styles.title, { marginBottom: 24 }]}>Profile</Text>
+
+        {isNewUser && (
+          <View
+            style={{
+              backgroundColor: '#3b82f6',
+              padding: 16,
+              borderRadius: 8,
+              marginBottom: 16,
+            }}>
+            <Text style={{ color: 'white', textAlign: 'center', fontWeight: '600', marginBottom: 4 }}>
+              Welcome! 👋
+            </Text>
+            <Text style={{ color: 'white', textAlign: 'center' }}>
+              Please enter your name to get started
+            </Text>
+          </View>
+        )}
 
         {successMessage ? (
           <View

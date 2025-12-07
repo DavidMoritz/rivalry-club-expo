@@ -21,7 +21,6 @@
     "@react-native-community/netinfo": "^11.4.1",
     "@supabase/supabase-js": "^2.86.0",
     "@tanstack/react-query": "^5.90.11",
-    "amazon-cognito-identity-js": "^6.3.16",
     "aws-amplify": "^6.15.8",
     "aws-cdk-lib": "^2.231.0",
     "axios": "^1.13.2",

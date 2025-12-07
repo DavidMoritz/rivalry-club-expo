@@ -1,30 +1,30 @@
-import { useLocalSearchParams, Stack, useRouter } from 'expo-router';
+import { useLocalSearchParams, Stack } from 'expo-router';
 import { StatusBar } from 'expo-status-bar';
 import React, { useState, useMemo, useCallback } from 'react';
-import { SafeAreaView, Text, View, FlatList, ActivityIndicator } from 'react-native';
+import { SafeAreaView, Text, View, ActivityIndicator } from 'react-native';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { generateClient } from 'aws-amplify/data';
 import type { Schema } from '../../../amplify/data/resource';
 
 import gameQuery from '../../../assets/cache/game-query.json';
-import { darkStyles, styles, contestStyles } from '../../../src/utils/styles';
-import { Button } from '../../../src/components/common/Button';
+import { darkStyles, styles } from '../../../src/utils/styles';
 import { HamburgerMenu } from '../../../src/components/common/HamburgerMenu';
-import { ContestRow } from '../../../src/components/common/ContestRow';
+import { ContestHistoryTable } from '../../../src/components/screens/parts/ContestHistoryTable';
 import { getMContest, MContest } from '../../../src/models/m-contest';
 import { getMGame, MGame } from '../../../src/models/m-game';
 import { getMRivalry, MRivalry } from '../../../src/models/m-rivalry';
 import { getMUser } from '../../../src/models/m-user';
-import { useRivalryContext } from '../../../src/providers/rivalry';
+import { RivalryProvider } from '../../../src/providers/rivalry';
 import { useDeleteMostRecentContestMutation } from '../../../src/controllers/c-rivalry';
 
 const client = generateClient<Schema>();
 
 export default function HistoryRoute() {
-  const router = useRouter();
   const params = useLocalSearchParams();
   const rivalryId = params.id as string;
-  const rivalryContext = useRivalryContext();
+  const userId = params.userId as string | undefined;
+  const userAName = params.userAName as string | undefined;
+  const userBName = params.userBName as string | undefined;
   const queryClient = useQueryClient();
   const [contests, setContests] = useState<MContest[]>([]);
   const [nextToken, setNextToken] = useState<string | null>(null);
@@ -104,13 +104,13 @@ export default function HistoryRoute() {
       mRivalry.setMTierLists(tierLists as any);
 
       // Use user names from context if available, otherwise fetch
-      if (rivalryContext.userAName && rivalryContext.userBName) {
-        // Create minimal user objects with the names we have
+      if (userAName && userBName) {
+        console.log('[HistoryRoute] Using user names from context:', userAName, userBName);
         mRivalry.userA = getMUser({
-          user: { id: rivalryData.userAId, firstName: rivalryContext.userAName } as any
+          user: { id: rivalryData.userAId, firstName: userAName } as any
         });
         mRivalry.userB = getMUser({
-          user: { id: rivalryData.userBId, firstName: rivalryContext.userBName } as any
+          user: { id: rivalryData.userBId, firstName: userBName } as any
         });
       } else {
         // Load user data separately if not in context
@@ -248,16 +248,6 @@ export default function HistoryRoute() {
     }
   }, [nextToken, isLoadingMore, rivalryId, rivalry]);
 
-  const renderFooter = () => {
-    if (!isLoadingMore) return null;
-
-    return (
-      <View style={{ paddingVertical: 20, alignItems: 'center' }}>
-        <ActivityIndicator size="small" color="#fff" />
-      </View>
-    );
-  };
-
   if (isLoading || !rivalry) {
     return (
       <>
@@ -320,73 +310,23 @@ export default function HistoryRoute() {
     <>
       <Stack.Screen options={{ title: 'Contest History' }} />
       <HamburgerMenu />
-      <SafeAreaView style={[styles.container, darkStyles.container]}>
-        <View style={contestStyles.tableWrapper}>
-          <View style={{ alignSelf: 'flex-start', marginTop: -24, marginBottom: 16 }}>
-            <Button
-              onPress={() => deleteMostRecentContestMutation.mutate()}
-              text="↺ Undo Recent Contest"
-              disabled={
-                deleteMostRecentContestMutation.isPending ||
-                !contests.length ||
-                !contests.some((c) => c.result)
-              }
-            />
-          </View>
-
-          {deleteMostRecentContestMutation.isError && (
-            <View
-              style={{ marginBottom: 16, padding: 12, backgroundColor: '#7f1d1d', borderRadius: 8 }}
-            >
-              <Text style={[styles.text, { color: '#fca5a5' }]}>
-                Error reversing contest:{' '}
-                {deleteMostRecentContestMutation.error?.message || 'Unknown error'}
-              </Text>
-            </View>
-          )}
-
-          <View style={[contestStyles.row, contestStyles.tableHeaderRow]}>
-            <View style={contestStyles.item}>
-              <Text style={[contestStyles.tableHeader, { color: 'white' }]}>Date</Text>
-            </View>
-            <View style={contestStyles.item}>
-              <Text style={[contestStyles.tableHeader, { color: 'white' }]}>
-                {rivalry.displayUserAName()}
-              </Text>
-            </View>
-            <View style={contestStyles.item}>
-              <Text style={[contestStyles.tableHeader, { color: 'white' }]}>Score</Text>
-            </View>
-            <View style={contestStyles.item}>
-              <Text style={[contestStyles.tableHeader, { color: 'white' }]}>
-                {rivalry.displayUserBName()}
-              </Text>
-            </View>
-          </View>
-          <FlatList
-            data={contests}
-            keyExtractor={(item) => item.id}
-            renderItem={({ item }) => (
-              <ContestRow contest={item} game={game as MGame} rivalry={rivalry} />
-            )}
-            onEndReached={loadMore}
-            onEndReachedThreshold={0.5}
-            ListFooterComponent={renderFooter}
-            ListEmptyComponent={
-              <View style={{ paddingVertical: 40, alignItems: 'center' }}>
-                <Text style={[styles.text, { color: '#999' }]}>No contests yet</Text>
-              </View>
-            }
+      <RivalryProvider
+        rivalry={rivalry}
+        userAName={userAName}
+        userBName={userBName}
+        userId={userId}
+      >
+        <SafeAreaView style={[styles.container, darkStyles.container]}>
+          <ContestHistoryTable
+            contests={contests}
+            game={game as MGame}
+            rivalry={rivalry}
+            deleteMostRecentContestMutation={deleteMostRecentContestMutation}
+            loadMore={loadMore}
+            isLoadingMore={isLoadingMore}
           />
-        </View>
-        {(rivalryContext.isUserA || rivalryContext.isUserB) && (
-          <View style={{ alignItems: 'center', paddingVertical: 16 }}>
-            <Text style={[styles.text, { fontSize: 14, opacity: 0.7 }]}>
-              {rivalryContext.isUserA ? 'You are User A' : 'You are User B'}
-            </Text>
-          </View>
-        )}
-      </SafeAreaView>
+        </SafeAreaView>
+      </RivalryProvider>
       <StatusBar style="light" />
     </>
   );

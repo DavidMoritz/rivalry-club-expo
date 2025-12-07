@@ -54,7 +54,10 @@ export default function RivalryDetailRoute() {
           params: { userId, userAName, userBName }
         });
       } else if (screen === 'ContestHistory') {
-        router.push(`/rivalry/${rivalryId}/history`);
+        router.push({
+          pathname: `/rivalry/${rivalryId}/history`,
+          params: { userId, userAName, userBName }
+        });
       }
     },
     setOptions: (_options: { title?: string; headerTitle?: string }) => {

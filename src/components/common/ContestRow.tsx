@@ -12,9 +12,10 @@ interface ContestRowProps {
   contest: MContest;
   game: MGame;
   rivalry: MRivalry;
+  flip?: boolean;
 }
 
-export function ContestRow({ contest, game, rivalry }: ContestRowProps) {
+export function ContestRow({ contest, game, rivalry, flip }: ContestRowProps) {
   const [updatedDisplay, setUpdatedDisplay] = useState<string>('');
   const [fighterA, setFighterA] = useState<any>();
   const [fighterB, setFighterB] = useState<any>();
@@ -39,19 +40,23 @@ export function ContestRow({ contest, game, rivalry }: ContestRowProps) {
 
   if (!(contest?.result && fighterA && fighterB)) return null;
 
+  if (flip) {
+    contest.result = -contest.result;
+  }
+
   return (
     <View style={contestStyles.row}>
       <View style={contestStyles.item}>
         <Text style={{ color: 'white', fontSize: 14 }}>{updatedDisplay}</Text>
       </View>
       <View style={[contestStyles.item, contest.result > 0 ? contestStyles.winner : null]}>
-        <CharacterDisplay fighter={fighterA} hideName={true} height={75} />
+        <CharacterDisplay fighter={flip ? fighterB : fighterA} hideName={true} height={75} />
       </View>
       <View style={contestStyles.item}>
         <Text style={{ color: 'white', fontSize: 14 }}>{scoreDisplay(contest.result)}</Text>
       </View>
       <View style={[contestStyles.item, contest.result < 0 ? contestStyles.winner : null]}>
-        <CharacterDisplay fighter={fighterB} hideName={true} height={75} />
+        <CharacterDisplay fighter={flip ? fighterA : fighterB} hideName={true} height={75} />
       </View>
     </View>
   );

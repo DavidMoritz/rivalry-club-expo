@@ -1,5 +1,12 @@
-import React from 'react';
-import { FlatList, Image } from 'react-native';
+import React, { useState } from 'react';
+import {
+  Dimensions,
+  FlatList,
+  Image,
+  Modal,
+  Pressable,
+  View
+} from 'react-native';
 
 import { logoImage } from '../../../assets/images/games/ssbu';
 import { styles } from '../../utils/styles';
@@ -25,9 +32,44 @@ interface GameWithCharactersDisplayProps {
 export function GameWithCharactersDisplay({
   game,
 }: GameWithCharactersDisplayProps) {
+  const [showFullImage, setShowFullImage] = useState(false);
+  const screenWidth = Dimensions.get('window').width;
+
   return (
     <>
-      <Image style={styles.gameLogoImage} source={logoImage} />
+      <Pressable
+        onLongPress={() => setShowFullImage(true)}
+        delayLongPress={300}
+      >
+        <Image style={styles.gameLogoImage} source={logoImage} />
+      </Pressable>
+
+      <Modal
+        visible={showFullImage}
+        transparent={true}
+        animationType="fade"
+        onRequestClose={() => setShowFullImage(false)}
+      >
+        <Pressable
+          style={{
+            flex: 1,
+            backgroundColor: 'rgba(0, 0, 0, 0.9)',
+            justifyContent: 'center',
+            alignItems: 'center'
+          }}
+          onPress={() => setShowFullImage(false)}
+        >
+          <Image
+            style={{
+              width: screenWidth,
+              height: screenWidth,
+              resizeMode: 'contain'
+            }}
+            source={logoImage}
+          />
+        </Pressable>
+      </Modal>
+
       <FlatList
         key="id"
         data={game.fighters?.items || []}

@@ -103,21 +103,8 @@ export function TierListEditDisplay({ tierList, onChange }: TierListEditDisplayP
     const isSelected = selectedSlot?.id === slot.id;
 
     return (
-      <TouchableOpacity
+      <View
         key={slot.id}
-        activeOpacity={1}
-        onPress={() => {
-          if (selectedSlot && selectedSlot.id !== slot.id) {
-            // If a different slot is selected, move it here
-            handleMoveToPosition(index);
-          } else if (selectedSlot && selectedSlot.id === slot.id) {
-            // If clicking the same slot, deselect it
-            setSelectedSlot(null);
-          } else {
-            // No slot selected, select this one
-            handleSelectSlot(slot);
-          }
-        }}
         style={{
           opacity: isSelected ? 0.5 : 1,
           transform: [{ scale: isSelected ? 0.9 : 1 }],
@@ -126,8 +113,25 @@ export function TierListEditDisplay({ tierList, onChange }: TierListEditDisplayP
           borderRadius: 4
         }}
       >
-        <CharacterDisplay fighter={fighter} hideName={true} height={45} zoomMultiplier={0.65} />
-      </TouchableOpacity>
+        <CharacterDisplay
+          fighter={fighter}
+          hideName={true}
+          height={45}
+          zoomMultiplier={0.65}
+          onPress={() => {
+            if (selectedSlot && selectedSlot.id !== slot.id) {
+              // If a different slot is selected, move it here
+              handleMoveToPosition(index);
+            } else if (selectedSlot && selectedSlot.id === slot.id) {
+              // If clicking the same slot, deselect it
+              setSelectedSlot(null);
+            } else {
+              // No slot selected, select this one
+              handleSelectSlot(slot);
+            }
+          }}
+        />
+      </View>
     );
   };
 

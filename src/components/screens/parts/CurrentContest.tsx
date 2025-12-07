@@ -127,7 +127,7 @@ export function CurrentContest({
           }}
         >
           {fighterA && (
-            <TouchableOpacity
+            <View
               style={{
                 position: 'relative',
                 borderWidth: 4,
@@ -138,9 +138,6 @@ export function CurrentContest({
                 marginVertical: 20,
                 padding: 8,
                 borderRadius: 12
-              }}
-              onPress={() => {
-                setWinner(contest?.tierSlotA);
               }}
             >
               <Text
@@ -157,6 +154,9 @@ export function CurrentContest({
                 height={180}
                 width={140}
                 zoomMultiplier={1.55}
+                onPress={() => {
+                  setWinner(contest?.tierSlotA);
+                }}
               />
               <Text
                 style={{
@@ -167,7 +167,7 @@ export function CurrentContest({
                 {fighterA.name}{' '}
               </Text>
               {winner && contest?.tierSlotA === winner && <WinnerBadge />}
-            </TouchableOpacity>
+            </View>
           )}
 
           {!fighterA && !fighterB && <Text style={{ color: '#e9d5ff' }}>Loading fighters...</Text>}
@@ -177,7 +177,7 @@ export function CurrentContest({
             </View>
           )}
           {fighterB && (
-            <TouchableOpacity
+            <View
               style={{
                 position: 'relative',
                 borderWidth: 4,
@@ -188,9 +188,6 @@ export function CurrentContest({
                 marginVertical: 20,
                 padding: 8,
                 borderRadius: 12
-              }}
-              onPress={() => {
-                setWinner(contest?.tierSlotB);
               }}
             >
               <Text
@@ -207,6 +204,9 @@ export function CurrentContest({
                 height={180}
                 width={140}
                 zoomMultiplier={1.55}
+                onPress={() => {
+                  setWinner(contest?.tierSlotB);
+                }}
               />
               <Text
                 style={{
@@ -217,7 +217,7 @@ export function CurrentContest({
                 {fighterB.name}
               </Text>
               {winner && contest?.tierSlotB === winner && <WinnerBadge />}
-            </TouchableOpacity>
+            </View>
           )}
         </View>
 

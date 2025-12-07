@@ -30,16 +30,16 @@ export default function RootLayout() {
   useEffect(() => {
     async function initialize() {
       try {
-        // Give native modules time to initialize before configuring Amplify
-        // This prevents TurboModule crashes on app launch
-        await new Promise(resolve => setTimeout(resolve, 100));
+        // TEMPORARY: Skip Amplify configuration to test if it's causing the crash
+        // TODO: Re-enable after finding proper initialization method
+        console.log('[RootLayout] Skipping Amplify configuration to test crash fix');
 
-        if (!amplifyConfigured) {
-          console.log('[RootLayout] Configuring Amplify after delay...');
-          Amplify.configure(outputs);
-          amplifyConfigured = true;
-          console.log('[RootLayout] Amplify configured successfully');
-        }
+        // if (!amplifyConfigured) {
+        //   console.log('[RootLayout] Configuring Amplify after delay...');
+        //   Amplify.configure(outputs);
+        //   amplifyConfigured = true;
+        //   console.log('[RootLayout] Amplify configured successfully');
+        // }
 
         await preloadAssets();
         setAssetsLoaded(true);

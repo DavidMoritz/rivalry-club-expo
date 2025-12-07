@@ -172,8 +172,16 @@ export async function signOut() {
 export async function getCurrentUser() {
   // Bypass auth in Expo Go - return mock user based on signed-in email
   if (isExpoGo) {
-    const email = currentDevUserEmail || 'dev@expo.go';
-    const devUser = findDevUserByEmail(email) || getDefaultDevUser();
+    // Require explicit sign-in in Expo Go - don't auto-select first user
+    if (!currentDevUserEmail) {
+      throw new Error('Not signed in');
+    }
+
+    const devUser = findDevUserByEmail(currentDevUserEmail);
+
+    if (!devUser) {
+      throw new Error('Dev user not found');
+    }
 
     console.log('[Auth] Expo Go getCurrentUser:', devUser);
 

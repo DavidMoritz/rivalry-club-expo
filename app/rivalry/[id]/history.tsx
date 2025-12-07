@@ -15,7 +15,10 @@ import { getMGame, MGame } from '../../../src/models/m-game';
 import { getMRivalry, MRivalry } from '../../../src/models/m-rivalry';
 import { getMUser } from '../../../src/models/m-user';
 import { RivalryProvider } from '../../../src/providers/rivalry';
-import { useDeleteMostRecentContestMutation } from '../../../src/controllers/c-rivalry';
+import {
+  useDeleteMostRecentContestMutation,
+  useUpdateCurrentContestShuffleTierSlotsMutation
+} from '../../../src/controllers/c-rivalry';
 
 const client = generateClient<Schema>();
 
@@ -31,12 +34,27 @@ export default function HistoryRoute() {
   const [isLoadingMore, setIsLoadingMore] = useState(false);
   const [rivalry, setRivalry] = useState<MRivalry | null>(null);
 
+  const updateCurrentContestShuffleTierSlotsMutation =
+    useUpdateCurrentContestShuffleTierSlotsMutation({
+      rivalry,
+      onSuccess: (currentContest: MContest) => {
+        if (!rivalry) return;
+
+        rivalry.currentContest = currentContest;
+      }
+    });
+
   const deleteMostRecentContestMutation = useDeleteMostRecentContestMutation({
     rivalry,
     onSuccess: () => {
       // Invalidate queries to refetch contests after deletion
       queryClient.invalidateQueries({ queryKey: ['rivalryContests', rivalryId] });
       queryClient.invalidateQueries({ queryKey: ['rivalryWithInfo', rivalryId] });
+
+      // Shuffle the current contest fighters after tier list standings have been updated
+      if (rivalry?.currentContestId) {
+        updateCurrentContestShuffleTierSlotsMutation.mutate();
+      }
     }
   });
 

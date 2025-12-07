@@ -15,8 +15,8 @@ export const characterImageMap = {
   },
   bayonetta: {
     faceCenter: {
-      x: 68,
-      y: 64
+      x: 78,
+      y: 70
     },
     scale: 1.27,
     numCharacters: 1

@@ -1,5 +1,5 @@
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
-import { Amplify } from 'aws-amplify';
+// import { Amplify } from 'aws-amplify'; // COMMENTED OUT - importing this crashes the app!
 import Constants from 'expo-constants';
 import { Slot } from 'expo-router';
 import React, { useEffect, useState } from 'react';
@@ -7,7 +7,7 @@ import { View, Text, ActivityIndicator } from 'react-native';
 import 'react-native-get-random-values';
 import 'react-native-url-polyfill/auto';
 
-import outputs from '../amplify_outputs.json';
+// import outputs from '../amplify_outputs.json'; // Not needed without Amplify
 import '../global.css';
 import { preloadAssets } from '../src/utils/preloadAssets';
 

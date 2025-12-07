@@ -110,7 +110,8 @@ export function TierListEditDisplay({ tierList, onChange }: TierListEditDisplayP
           transform: [{ scale: isSelected ? 0.9 : 1 }],
           borderWidth: isSelected ? 1 : 0,
           borderColor: '#3b82f6',
-          borderRadius: 4
+          borderRadius: 4,
+          margin: isSelected ? -1 : 0
         }}
       >
         <CharacterDisplay

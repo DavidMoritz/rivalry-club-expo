@@ -4,8 +4,8 @@ import Constants from 'expo-constants';
 import { Slot } from 'expo-router';
 import React, { useEffect, useState } from 'react';
 import { View, Text, ActivityIndicator } from 'react-native';
-import 'react-native-get-random-values';
-import 'react-native-url-polyfill/auto';
+// import 'react-native-get-random-values'; // COMMENTED OUT - testing if polyfills cause crash
+// import 'react-native-url-polyfill/auto'; // COMMENTED OUT - testing if polyfills cause crash
 
 // import outputs from '../amplify_outputs.json'; // Not needed without Amplify
 import '../global.css';

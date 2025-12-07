@@ -14,6 +14,14 @@ This directory contains technical reports and documentation generated during dev
 **Summary**: Complete setup guide for Amplify Gen 2 with TypeScript-based configuration, sandbox environments, and CI/CD pipelines. Covers data schema, authentication setup, and GraphQL API usage.
 **Use when**: Setting up Amplify, configuring auth, working with GraphQL schema
 
+## Crash Analysis & Debugging Reports
+
+### crash_analysis.md
+**Topic**: TestFlight iOS crash investigation - AWS Amplify v6 TurboModule incompatibility
+**Summary**: Comprehensive analysis of 11+ TestFlight crash reports (builds 17-21) showing consistent iOS crashes within 1 second of app launch. Root cause identified as AWS Amplify v6 module import triggering React Native TurboModule void method exception bug. Documents all attempted fixes (delayed config, module-level init, 100ms delays) and critical discovery that even importing Amplify (without calling configure) causes crashes. Provides 4 solution paths including Amplify v5 downgrade (recommended), alternative auth providers, or React Native upgrade.
+**Use when**: Debugging iOS crashes, investigating TurboModule errors, evaluating auth solutions, working with AWS Amplify, troubleshooting TestFlight issues
+**Current Status**: Build 22 testing in progress - Amplify import completely removed to confirm diagnosis
+
 ## GraphQL & Debugging Reports
 
 ### GRAPHQL_DEBUG.md

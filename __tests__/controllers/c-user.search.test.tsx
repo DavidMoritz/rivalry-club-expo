@@ -22,7 +22,7 @@ describe.skip('useUserSearchQuery', () => {
       }
     });
 
-    wrapper = ({ children }: { children: React.ReactNode }) => (
+    wrapper = ({ children }) => (
       <QueryClientProvider client={queryClient}>{children}</QueryClientProvider>
     );
 

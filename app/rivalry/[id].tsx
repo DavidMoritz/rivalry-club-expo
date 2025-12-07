@@ -17,7 +17,6 @@ export default function RivalryDetailRoute() {
   const userAName = params.userAName as string | undefined;
   const userBName = params.userBName as string | undefined;
   const userId = params.userId as string | undefined;
-  console.log('[Rivalry] USER:', userId);
 
   // Load game from cache - since there's only one game in the DB
   const game = useMemo(() => {

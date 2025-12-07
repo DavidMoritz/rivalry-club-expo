@@ -31,7 +31,6 @@ export function CreateRivalry() {
 
   const { mutate: createRivalry } = useCreateRivalryMutation({
     onSuccess: () => {
-      console.log('[CreateRivalry] Rivalry created successfully');
       setCreatingRivalry(false);
       router.back();
     },
@@ -59,12 +58,6 @@ export function CreateRivalry() {
 
       return;
     }
-
-    console.log('[CreateRivalry] Creating rivalry:', {
-      userAId: user.id,
-      userBId: selectedUser.id,
-      gameId
-    });
 
     setError(null);
     setCreatingRivalry(true);

@@ -29,7 +29,6 @@ export default function Home({ onEnterClick }: HomeProps) {
   const [games, setGames] = useState<Game[]>([]);
 
   useEffect(() => {
-    console.log('[Home] Home screen mounted! Logs are working.');
     // Load game data from cached query
     const loadedGames = gameQuery.data?.listGames?.items;
     if (loadedGames?.length) {

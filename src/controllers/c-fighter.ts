@@ -14,7 +14,6 @@ export function useUpdateFighterViaApiMutation({
   return useMutation({
     mutationFn: updateFighterStats,
     onSuccess: response => {
-      console.log('Success:', response);
       onSuccess?.(response);
     },
     onError: (error: UpdateFighterResponse) => {

@@ -10,7 +10,6 @@ export async function preloadFighterImages(): Promise<void> {
   try {
     // Get all image sources from the fighterImages object
     const imageSources = Object.values(fighterImages);
-    console.log(`[preloadAssets] Starting to preload ${imageSources.length} fighter images...`);
 
     // Preload using both Asset.loadAsync and Image.prefetch for better caching
     // Asset.loadAsync works with require() modules
@@ -37,8 +36,6 @@ export async function preloadFighterImages(): Promise<void> {
     });
 
     await Promise.all([...assetPromises, ...prefetchPromises]);
-
-    console.log(`[preloadAssets] Successfully preloaded ${imageSources.length} fighter images`);
   } catch (error) {
     console.error('[preloadAssets] Error preloading fighter images:', error);
     throw error;

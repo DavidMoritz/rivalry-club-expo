@@ -44,7 +44,6 @@ try {
   try {
     await storage.setItem('test-key', 'test-value');
     const value = await storage.getItem('test-key');
-    console.log('[App] Storage test:', value === 'test-value' ? 'PASSED' : 'FAILED');
     await storage.removeItem('test-key');
   } catch (storageErr) {
     console.error('[App] Storage test failed:', storageErr);

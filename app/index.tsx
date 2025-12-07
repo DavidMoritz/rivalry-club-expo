@@ -13,7 +13,6 @@ export default function IndexRoute() {
   const router = useRouter();
 
   function handleEnterClick(game: Game) {
-    console.log('[App] Enter button clicked for game:', game.name);
     if (!game) return;
 
     // Navigate to auth screen with game data

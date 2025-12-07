@@ -33,15 +33,12 @@ export default function AuthRoute() {
 
         // If user doesn't have a first name, redirect to profile
         if (!user.firstName || user.firstName.trim() === '') {
-          console.log('[AuthRoute] User has no name, redirecting to profile');
           router.replace('/profile');
         } else {
-          console.log('[AuthRoute] User profile complete, redirecting to rivalries');
           router.replace('/rivalries');
         }
       } else {
         // New user, needs to complete profile
-        console.log('[AuthRoute] New user, redirecting to profile');
         router.replace('/profile');
       }
     } catch (error) {

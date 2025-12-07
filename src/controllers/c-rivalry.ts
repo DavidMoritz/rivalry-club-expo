@@ -440,10 +440,11 @@ export const useDeleteMostRecentContestMutation = ({
         throw new Error('No rivalry provided');
       }
 
-      // Find the most recent contest (should NOT be the current contest)
+      // Current contest is at index 0, most recent resolved contest is at index 1
+      const currentContest = rivalry.mContests[0];
       const mostRecentContest = rivalry.mContests[1];
 
-      if (!mostRecentContest) {
+      if (!currentContest || !mostRecentContest) {
         throw new Error('No contests to delete');
       }
 
@@ -453,6 +454,44 @@ export const useDeleteMostRecentContestMutation = ({
 
       // Reverse the standings using the bias
       rivalry.reverseStanding(mostRecentContest);
+
+      // Reverse the tier slot position adjustments (opposite of what was done when resolving)
+      // When resolving: tierListA adjusts by (result * STEPS_PER_STOCK * -1)
+      // When undoing: reverse that, so adjust by (result * STEPS_PER_STOCK)
+      const STEPS_PER_STOCK = 3;
+      rivalry.tierListA?.adjustTierSlotPositionBySteps(
+        mostRecentContest.tierSlotA?.position as number,
+        (mostRecentContest.result as number) * STEPS_PER_STOCK
+      );
+      rivalry.tierListB?.adjustTierSlotPositionBySteps(
+        mostRecentContest.tierSlotB?.position as number,
+        (mostRecentContest.result as number) * STEPS_PER_STOCK * -1
+      );
+
+      // Get the updated tier slot positions
+      const tierListAPositions = rivalry.tierListA?.getPositionsPojo();
+      const tierListBPositions = rivalry.tierListB?.getPositionsPojo();
+
+      // Update tier slots in parallel
+      const tierSlotUpdates = [
+        ...(tierListAPositions
+          ? Object.values(tierListAPositions).map(({ id, position }) =>
+              client.models.TierSlot.update({ id, position })
+            )
+          : []),
+        ...(tierListBPositions
+          ? Object.values(tierListBPositions).map(({ id, position }) =>
+              client.models.TierSlot.update({ id, position })
+            )
+          : [])
+      ];
+
+      const tierSlotResults = await Promise.all(tierSlotUpdates);
+      const tierSlotErrors = tierSlotResults.filter((r) => r.errors).flatMap((r) => r.errors);
+
+      if (tierSlotErrors.length > 0) {
+        throw new Error(tierSlotErrors[0]?.message || 'Failed to update tier slots');
+      }
 
       // Update both tier lists with reversed standings
       const [resultA, resultB] = await Promise.all([
@@ -470,26 +509,38 @@ export const useDeleteMostRecentContestMutation = ({
         throw new Error('Failed to update tier lists after reversal');
       }
 
-      // Delete the contest
+      // Reset the result and bias on the most recent contest (making it unresolved)
+      const { data: resetContestData, errors: resetErrors } = await client.models.Contest.update({
+        id: mostRecentContest.id,
+        result: 0,
+        bias: 0
+      });
+
+      if (resetErrors) {
+        throw new Error(resetErrors[0]?.message || 'Failed to reset contest');
+      }
+
+      // Update rivalry to point to the undone contest as the current contest
+      const { errors: rivalryUpdateErrors } = await client.models.Rivalry.update({
+        id: rivalry.id,
+        currentContestId: mostRecentContest.id,
+        contestCount: Math.max((rivalry.contestCount || 0) - 1, 0)
+      });
+
+      if (rivalryUpdateErrors) {
+        throw new Error(rivalryUpdateErrors[0]?.message || 'Failed to update rivalry');
+      }
+
+      // Delete the old current contest
       const { errors: deleteErrors } = await client.models.Contest.delete({
-        id: mostRecentContest.id
+        id: currentContest.id
       });
 
       if (deleteErrors) {
         throw new Error(deleteErrors[0]?.message || 'Failed to delete contest');
       }
 
-      // Update rivalry to decrement contest count
-      const { errors: rivalryErrors } = await client.models.Rivalry.update({
-        id: rivalry.id,
-        contestCount: Math.max((rivalry.contestCount || 0) - 1, 0)
-      });
-
-      if (rivalryErrors) {
-        throw new Error(rivalryErrors[0]?.message || 'Failed to update rivalry');
-      }
-
-      return mostRecentContest;
+      return resetContestData;
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['rivalryId', rivalry?.id] });
@@ -563,8 +614,6 @@ export const useCreateRivalryMutation = ({
 
   return useMutation({
     mutationFn: async ({ userAId, userBId, gameId }: CreateRivalryParams) => {
-      console.log('[useCreateRivalryMutation] Creating rivalry:', { userAId, userBId, gameId });
-
       // Create the rivalry
       const { data: rivalryData, errors: rivalryErrors } = await client.models.Rivalry.create({
         userAId,
@@ -578,8 +627,6 @@ export const useCreateRivalryMutation = ({
         console.error('[useCreateRivalryMutation] Rivalry creation errors:', rivalryErrors);
         throw new Error(rivalryErrors[0]?.message || 'Failed to create rivalry');
       }
-
-      console.log('[useCreateRivalryMutation] Rivalry created:', rivalryData?.id);
 
       // Fetch the game's fighters to create tier lists
       const { data: fighters, errors: fightersErrors } = await client.models.Fighter.list({
@@ -595,8 +642,6 @@ export const useCreateRivalryMutation = ({
         console.error('[useCreateRivalryMutation] No fighters found for game:', gameId);
         throw new Error('No fighters found for this game');
       }
-
-      console.log('[useCreateRivalryMutation] Found fighters:', fighters.length);
 
       // Create tier lists for both users
       const [tierListAResult, tierListBResult] = await Promise.all([
@@ -619,8 +664,6 @@ export const useCreateRivalryMutation = ({
         });
         throw new Error('Failed to create tier lists');
       }
-
-      console.log('[useCreateRivalryMutation] Tier lists created');
 
       // Create tier slots for both users
       const tierSlotPromises = fighters.flatMap((fighter, index) => [
@@ -648,12 +691,9 @@ export const useCreateRivalryMutation = ({
         throw new Error('Failed to create tier slots');
       }
 
-      console.log('[useCreateRivalryMutation] Tier slots created:', tierSlotResults.length);
-
       return getMRivalry({ rivalry: rivalryData as any });
     },
     onSuccess: (rivalry, variables) => {
-      console.log('[useCreateRivalryMutation] Success callback');
       queryClient.invalidateQueries({ queryKey: ['pendingRivalries', variables.userAId] });
       queryClient.invalidateQueries({ queryKey: ['usersByAwsSub'] });
       onSuccess?.(rivalry);

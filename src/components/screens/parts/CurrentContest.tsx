@@ -61,8 +61,10 @@ export function CurrentContest({
 
     // Use baseGame which has the fighters.items structure from the cache
     const gameData = (game as any).baseGame || game;
-    setFighterA(fighterByIdFromGame(gameData, contest.tierSlotA.fighterId));
-    setFighterB(fighterByIdFromGame(gameData, contest.tierSlotB.fighterId));
+    const foundFighterA = fighterByIdFromGame(gameData, contest.tierSlotA.fighterId);
+    const foundFighterB = fighterByIdFromGame(gameData, contest.tierSlotB.fighterId);
+    if (foundFighterA) setFighterA(foundFighterA);
+    if (foundFighterB) setFighterB(foundFighterB);
   }, [contest, game, rivalry]);
 
   if (!rivalry) return null;

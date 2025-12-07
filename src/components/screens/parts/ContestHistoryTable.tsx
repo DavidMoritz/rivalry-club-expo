@@ -17,6 +17,8 @@ interface ContestHistoryTableProps {
   deleteMostRecentContestMutation: UseMutationResult<any, Error, void, unknown>;
   loadMore: () => void;
   isLoadingMore: boolean;
+  hideUndoButton: boolean;
+  onUndoClick: () => void;
 }
 
 export function ContestHistoryTable({
@@ -25,7 +27,9 @@ export function ContestHistoryTable({
   rivalry,
   deleteMostRecentContestMutation,
   loadMore,
-  isLoadingMore
+  isLoadingMore,
+  hideUndoButton,
+  onUndoClick
 }: ContestHistoryTableProps): ReactNode {
   const { userId } = useRivalryContext();
   const isUserB = userId === rivalry.userBId;
@@ -42,17 +46,22 @@ export function ContestHistoryTable({
 
   return (
     <View style={contestStyles.tableWrapper}>
-      <View style={{ alignSelf: 'flex-start', marginTop: -24, marginBottom: 16 }}>
-        <Button
-          onPress={() => deleteMostRecentContestMutation.mutate()}
-          text="↺ Undo Recent Contest"
-          disabled={
-            deleteMostRecentContestMutation.isPending ||
-            !contests.length ||
-            !contests.some((c) => c.result)
-          }
-        />
-      </View>
+      {!hideUndoButton && (
+        <View style={{ alignSelf: 'flex-start', marginTop: -24, marginBottom: 16 }}>
+          <Button
+            onPress={onUndoClick}
+            text="↺ Undo Recent Contest"
+            disabled={
+              deleteMostRecentContestMutation.isPending ||
+              !contests.length ||
+              !contests.some((c) => c.result)
+            }
+          />
+        </View>
+      )}
+      {hideUndoButton && (
+        <View style={{ alignSelf: 'flex-start', marginTop: 35, marginBottom: 16 }} />
+      )}
 
       {deleteMostRecentContestMutation.isError && (
         <View

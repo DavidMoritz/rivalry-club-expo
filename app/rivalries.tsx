@@ -14,7 +14,6 @@ export default function RivalriesRoute() {
   useEffect(() => {
     if (!isLoading && user) {
       if (!user.firstName || user.firstName.trim() === '') {
-        console.log('[RivalriesRoute] User has no name, redirecting to profile');
         router.replace('/profile');
       }
     }

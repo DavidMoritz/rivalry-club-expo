@@ -58,12 +58,6 @@ export function ConnectedRivalryView({ navigation }: ConnectedRivalryViewProps):
       // Let useRivalryWithAllInfoQuery refetch and populate everything properly
 
       const newContestCount = (rivalry.contestCount || 0) + 1;
-      console.log(
-        '[ConnectedRivalryView] Incrementing contestCount from',
-        rivalry.contestCount,
-        'to',
-        newContestCount
-      );
       rivalry.contestCount = newContestCount;
       updateRivalryProviderAndMutation({
         currentContestId: currentContest.id,
@@ -180,7 +174,6 @@ export function ConnectedRivalryView({ navigation }: ConnectedRivalryViewProps):
     onSuccess: (populatedRivalry: MRivalry) => {
       updateRivalryProvider(populatedRivalry);
       setIsResolvingContest(false);
-      console.log('[ConnectedRivalryView] Rivalry data loaded successfully');
       setTiersReady(true);
     }
   });

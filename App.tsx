@@ -48,7 +48,6 @@ try {
   try {
     await storage.setItem('test-key', 'test-value');
     const value = await storage.getItem('test-key');
-    console.log('[App] Storage test:', value === 'test-value' ? 'PASSED' : 'FAILED');
     await storage.removeItem('test-key');
   } catch (storageErr) {
     console.error('[App] Storage test failed:', storageErr);
@@ -70,7 +69,6 @@ export default function App() {
   const [selectedGame, setSelectedGame] = useState<Game | null>(null);
 
   function handleEnterClick(game: Game) {
-    console.log('[App] Enter button clicked for game:', game.name);
     if (!game) return;
 
     setEntering(true);

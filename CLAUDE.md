@@ -4,7 +4,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## Project Overview
 
-Rivalry Club is an Expo-based React Native mobile application for managing fighting game character tier lists and rivalries between users. The app uses **Supabase for authentication** and **AWS Amplify for the GraphQL API**. It supports iOS deployment. Users can compete in "contests" where they rank game characters in tier lists, with the system tracking wins, losses, and character statistics.
+Rivalry Club is an Expo-based React Native mobile application for managing fighting game character tier lists and rivalries between users. The app uses **AWS Cognito for authentication** and **AWS Amplify for the GraphQL API**. It supports iOS deployment. Users can compete in "contests" where they rank game characters in tier lists, with the system tracking wins, losses, and character statistics.
 
 This is the primary and only version of the Rivalry Club mobile app.
 
@@ -37,16 +37,16 @@ npm test                 # Run Jest tests
 amplify push             # Push GraphQL schema changes to AWS (requires AWS authentication)
 ```
 
-### Supabase (Authentication)
-- Authentication is handled through Supabase
-- No CLI commands needed for auth changes
+### AWS Cognito (Authentication)
+- Authentication is handled through AWS Cognito
+- Configured via Amplify Gen 2 (`amplify/auth/resource.ts`)
 
 ## Architecture
 
 ### Application Flow
 
 1. **Entry Point** (`App.tsx`): The app starts with a `Home` component where users select a game
-2. **Authentication**: After game selection, users authenticate via AWS Amplify's `Authenticator` component
+2. **Authentication**: After game selection, users authenticate via custom `Auth` component using AWS Cognito
 3. **Main Navigation** (`src/components/pages/access.tsx`): Authenticated users see a native stack navigator with routes:
    - `Rivalries` → `RivalryIndex` (landing page showing user's rivalries)
    - `ConnectedRivalryView` → View specific rivalry details
@@ -112,10 +112,10 @@ src/components/
 
 ### Authentication
 
-- **Supabase** for authentication (`src/lib/supabase.ts`)
+- **AWS Cognito** for authentication (`src/lib/amplify-auth.ts`)
 - Custom `Auth` component (`src/components/screens/Auth.tsx`) for sign-in/sign-up
 - Supports email/password authentication with session management
-- **Note**: AWS Amplify is used ONLY for GraphQL API, not authentication
+- Configured via Amplify Gen 2 (`amplify/auth/resource.ts`)
 
 ## Important Conventions
 
@@ -214,12 +214,21 @@ cd ios && NO_FLIPPER=1 npx pod-install && cd -
 
 ## Test Credentials
 
-**Supabase Auth:**
+**AWS Cognito:**
 Email: t@t.t
 Password: 12345678
 
 ## Backend Services
 
-- **Authentication**: Supabase (email/password, session management)
+- **Authentication**: AWS Cognito (email/password, session management)
 - **GraphQL API**: AWS Amplify (data layer for games, fighters, rivalries, tier lists, contests)
 - **Storage**: AWS S3 (fighter images, assets)
+
+## AI Reports
+
+The `ai_reports/` directory contains technical reports and documentation generated during development.
+
+**Important**:
+- Always consult `ai_reports/index.md` when working on tasks to see if existing reports can help
+- When generating new reports, place them in `ai_reports/` (or appropriate subfolder) and update `index.md`
+- The index provides quick summaries of each report's topic and when to use it

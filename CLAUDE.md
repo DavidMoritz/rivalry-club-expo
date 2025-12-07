@@ -4,7 +4,9 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## Project Overview
 
-Rivalry Club is a React Native mobile application for managing fighting game character tier lists and rivalries between users. The app uses AWS Amplify for backend services (authentication, GraphQL API) and supports iOS deployment. Users can compete in "contests" where they rank game characters in tier lists, with the system tracking wins, losses, and character statistics.
+Rivalry Club is an Expo-based React Native mobile application for managing fighting game character tier lists and rivalries between users. The app uses **Supabase for authentication** and **AWS Amplify for the GraphQL API**. It supports iOS deployment. Users can compete in "contests" where they rank game characters in tier lists, with the system tracking wins, losses, and character statistics.
+
+This is the primary and only version of the Rivalry Club mobile app.
 
 ## Development Commands
 
@@ -30,10 +32,14 @@ npm run lint:fix         # Run ESLint with auto-fix
 npm test                 # Run Jest tests
 ```
 
-### AWS Amplify
+### AWS Amplify (GraphQL API only)
 ```bash
-amplify push             # Push schema changes to AWS (requires AWS authentication)
+amplify push             # Push GraphQL schema changes to AWS (requires AWS authentication)
 ```
+
+### Supabase (Authentication)
+- Authentication is handled through Supabase
+- No CLI commands needed for auth changes
 
 ## Architecture
 
@@ -106,9 +112,10 @@ src/components/
 
 ### Authentication
 
-- AWS Amplify Authenticator with custom theme (dark mode)
-- Custom `AuthenticatorHeader` component
-- Configuration in `src/aws-exports.ts` (auto-generated)
+- **Supabase** for authentication (`src/lib/supabase.ts`)
+- Custom `Auth` component (`src/components/screens/Auth.tsx`) for sign-in/sign-up
+- Supports email/password authentication with session management
+- **Note**: AWS Amplify is used ONLY for GraphQL API, not authentication
 
 ## Important Conventions
 
@@ -207,5 +214,12 @@ cd ios && NO_FLIPPER=1 npx pod-install && cd -
 
 ## Test Credentials
 
+**Supabase Auth:**
 Email: t@t.t
 Password: 12345678
+
+## Backend Services
+
+- **Authentication**: Supabase (email/password, session management)
+- **GraphQL API**: AWS Amplify (data layer for games, fighters, rivalries, tier lists, contests)
+- **Storage**: AWS S3 (fighter images, assets)

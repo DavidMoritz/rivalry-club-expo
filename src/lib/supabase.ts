@@ -1,4 +1,4 @@
-import { createClient } from '@supabase/supabase-js';
+import { type SupabaseClient, createClient } from '@supabase/supabase-js';
 import * as SecureStore from 'expo-secure-store';
 
 const supabaseUrl = 'https://ybmcuqkllbmqmwtpsgbj.supabase.co';
@@ -17,11 +17,26 @@ const ExpoSecureStoreAdapter = {
   },
 };
 
-export const supabase = createClient(supabaseUrl, supabaseAnonKey, {
-  auth: {
-    storage: ExpoSecureStoreAdapter,
-    autoRefreshToken: true,
-    persistSession: true,
-    detectSessionInUrl: false,
+// Lazy-load Supabase client to avoid calling SecureStore before native modules are ready
+let supabaseInstance: SupabaseClient | null = null;
+
+function getSupabase() {
+  if (!supabaseInstance) {
+    supabaseInstance = createClient(supabaseUrl, supabaseAnonKey, {
+      auth: {
+        storage: ExpoSecureStoreAdapter,
+        autoRefreshToken: true,
+        persistSession: true,
+        detectSessionInUrl: false,
+      },
+    });
+  }
+
+  return supabaseInstance;
+}
+
+export const supabase = new Proxy({} as SupabaseClient, {
+  get(_target, prop) {
+    return getSupabase()[prop as keyof SupabaseClient];
   },
 });

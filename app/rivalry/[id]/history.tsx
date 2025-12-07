@@ -17,7 +17,16 @@ import { getMUser } from '../../../src/models/m-user';
 import { RivalryProvider } from '../../../src/providers/rivalry';
 import { useDeleteMostRecentContestMutation } from '../../../src/controllers/c-rivalry';
 
-const client = generateClient<Schema>();
+// Lazy client initialization to avoid crashes when Amplify isn't configured
+let client: ReturnType<typeof generateClient<Schema>> | null = null;
+
+function getClient() {
+  if (!client) {
+    client = generateClient<Schema>();
+  }
+
+  return client;
+}
 
 export default function HistoryRoute() {
   const params = useLocalSearchParams();
@@ -59,7 +68,7 @@ export default function HistoryRoute() {
     queryKey: ['rivalryWithInfo', rivalryId],
     structuralSharing: false,
     queryFn: async () => {
-      const { data: rivalryData, errors } = await client.models.Rivalry.get(
+      const { data: rivalryData, errors } = await getClient().models.Rivalry.get(
         { id: rivalryId },
         {
           selectionSet: [
@@ -115,8 +124,8 @@ export default function HistoryRoute() {
       } else {
         // Load user data separately if not in context
         const [userAResult, userBResult] = await Promise.all([
-          client.models.User.get({ id: rivalryData.userAId }),
-          client.models.User.get({ id: rivalryData.userBId })
+          getClient().models.User.get({ id: rivalryData.userAId }),
+          getClient().models.User.get({ id: rivalryData.userBId })
         ]);
 
         if (userAResult.data) {
@@ -149,7 +158,7 @@ export default function HistoryRoute() {
           data: pageData,
           errors,
           nextToken: pageNextToken
-        } = await client.models.Contest.contestsByRivalryIdAndCreatedAt({
+        } = await getClient().models.Contest.contestsByRivalryIdAndCreatedAt({
           rivalryId: rivalryId,
           sortDirection: 'DESC', // Most recent first
           limit: 100,
@@ -206,7 +215,7 @@ export default function HistoryRoute() {
         data: contestData,
         errors,
         nextToken: newNextToken
-      } = await client.models.Contest.list({
+      } = await getClient().models.Contest.list({
         filter: { rivalryId: { eq: rivalryId } },
         limit: 100,
         nextToken

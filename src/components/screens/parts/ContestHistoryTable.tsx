@@ -1,4 +1,4 @@
-import { ReactNode } from 'react';
+import { ReactNode, useState } from 'react';
 import { ActivityIndicator, FlatList, Text, View } from 'react-native';
 import { UseMutationResult } from '@tanstack/react-query';
 
@@ -33,6 +33,24 @@ export function ContestHistoryTable({
 }: ContestHistoryTableProps): ReactNode {
   const { userId } = useRivalryContext();
   const isUserB = userId === rivalry.userBId;
+  const [fadingContestId, setFadingContestId] = useState<string | null>(null);
+
+  const handleUndoClick = () => {
+    // Get the ID of the first contest with a result (the one being deleted)
+    const contestToDelete = contests.find((c) => c.result);
+
+    if (!contestToDelete) return;
+
+    setFadingContestId(contestToDelete.id);
+
+    // Trigger the deletion immediately - it will complete around the same time as the fade
+    onUndoClick();
+
+    // Reset fading state after animation completes
+    setTimeout(() => {
+      setFadingContestId(null);
+    }, 2000);
+  };
 
   const renderFooter = () => {
     if (!isLoadingMore) return null;
@@ -49,7 +67,7 @@ export function ContestHistoryTable({
       {!hideUndoButton && (
         <View style={{ alignSelf: 'flex-start', marginTop: -24, marginBottom: 16 }}>
           <Button
-            onPress={onUndoClick}
+            onPress={handleUndoClick}
             text="↺ Undo Recent Contest"
             disabled={
               deleteMostRecentContestMutation.isPending ||
@@ -96,7 +114,13 @@ export function ContestHistoryTable({
         data={contests}
         keyExtractor={(item) => item.id}
         renderItem={({ item }) => (
-          <ContestRow contest={item} game={game} rivalry={rivalry} flip={isUserB} />
+          <ContestRow
+            contest={item}
+            game={game}
+            rivalry={rivalry}
+            flip={isUserB}
+            shouldFadeOut={fadingContestId === item.id}
+          />
         )}
         onEndReached={loadMore}
         onEndReachedThreshold={0.5}

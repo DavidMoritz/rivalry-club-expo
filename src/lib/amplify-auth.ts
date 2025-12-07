@@ -1,5 +1,4 @@
 import Constants from 'expo-constants';
-import { Amplify } from 'aws-amplify';
 import {
   signIn as authSignIn,
   signUp as authSignUp,
@@ -10,8 +9,6 @@ import {
   type SignInInput,
   type SignUpInput,
 } from 'aws-amplify/auth';
-
-import outputs from '../../amplify_outputs.json';
 
 /**
  * Check if running in Expo Go (development mode without native modules)
@@ -84,28 +81,11 @@ export function getDefaultDevUser(): DevUser {
 }
 
 /**
- * Lazy initialization flag to ensure Amplify is only configured once
- * and only when auth is actually needed (not at module load time).
- */
-let isAmplifyConfigured = false;
-
-/**
- * Ensures Amplify is configured before any auth operations.
- * This lazy initialization prevents TurboModule crashes by deferring
- * configuration until the app is fully initialized.
- */
-function ensureAmplifyConfigured() {
-  if (!isAmplifyConfigured && !isExpoGo) {
-    Amplify.configure(outputs);
-    isAmplifyConfigured = true;
-  }
-}
-
-/**
  * Sign up a new user with email and password
  */
 export async function signUp(email: string, password: string) {
-  ensureAmplifyConfigured();
+  // Amplify is configured in app/_layout.tsx after component mount
+  // No need for configuration here
 
   const signUpInput: SignUpInput = {
     username: email,
@@ -124,8 +104,6 @@ export async function signUp(email: string, password: string) {
  * Confirm sign up with verification code
  */
 export async function confirmSignUp(email: string, code: string) {
-  ensureAmplifyConfigured();
-
   return authConfirmSignUp({
     username: email,
     confirmationCode: code,
@@ -142,12 +120,9 @@ export async function signIn(email: string, password: string) {
   // Bypass auth in Expo Go - just return mock success
   if (isExpoGo) {
     currentDevUserEmail = email;
-    console.log('[Auth] Expo Go sign in with email:', email);
 
     return { isSignedIn: true, nextStep: { signInStep: 'DONE' } };
   }
-
-  ensureAmplifyConfigured();
 
   const signInInput: SignInInput = {
     username: email,
@@ -161,8 +136,6 @@ export async function signIn(email: string, password: string) {
  * Sign out the current user
  */
 export async function signOut() {
-  ensureAmplifyConfigured();
-
   return authSignOut();
 }
 
@@ -183,8 +156,6 @@ export async function getCurrentUser() {
       throw new Error('Dev user not found');
     }
 
-    console.log('[Auth] Expo Go getCurrentUser:', devUser);
-
     return {
       userId: devUser.awsSub,
       username: devUser.email,
@@ -194,8 +165,6 @@ export async function getCurrentUser() {
     };
   }
 
-  ensureAmplifyConfigured();
-
   return authGetCurrentUser();
 }
 
@@ -203,8 +172,6 @@ export async function getCurrentUser() {
  * Update the current user's password
  */
 export async function updatePassword(oldPassword: string, newPassword: string) {
-  ensureAmplifyConfigured();
-
   return authUpdatePassword({
     oldPassword,
     newPassword,

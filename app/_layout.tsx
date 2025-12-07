@@ -1,5 +1,6 @@
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { Amplify } from 'aws-amplify';
+import Constants from 'expo-constants';
 import { Slot } from 'expo-router';
 import React, { useEffect, useState } from 'react';
 import { View, Text, ActivityIndicator } from 'react-native';
@@ -12,16 +13,12 @@ import { preloadAssets } from '../src/utils/preloadAssets';
 
 const queryClient = new QueryClient();
 
-// Configure Amplify with the full outputs file
-try {
-  Amplify.configure(outputs);
-} catch (configErr) {
-  console.error('[App] Amplify.configure failed:', configErr);
-}
+const isExpoGo = Constants.appOwnership === 'expo';
 
 export default function RootLayout() {
   const [assetsLoaded, setAssetsLoaded] = useState(false);
   const [loadingError, setLoadingError] = useState<string | null>(null);
+  const [amplifyConfigured, setAmplifyConfigured] = useState(false);
 
   useEffect(() => {
     async function loadAssets() {
@@ -38,6 +35,18 @@ export default function RootLayout() {
 
     loadAssets();
   }, []);
+
+  // Configure Amplify after component mounts to avoid TurboModule crashes
+  useEffect(() => {
+    if (!amplifyConfigured) {
+      try {
+        Amplify.configure(outputs);
+        setAmplifyConfigured(true);
+      } catch (configErr) {
+        console.error('[App] Amplify.configure failed:', configErr);
+      }
+    }
+  }, [amplifyConfigured]);
 
   if (!assetsLoaded) {
     return (

@@ -18,7 +18,16 @@ import { RivalryProvider } from '../../../src/providers/rivalry';
 import { SyncedScrollViewContext, syncedScrollViewState } from '../../../src/providers/scroll-view';
 import { darkStyles, styles } from '../../../src/utils/styles';
 
-const client = generateClient<Schema>();
+// Lazy client initialization to avoid crashes when Amplify isn't configured
+let client: ReturnType<typeof generateClient<Schema>> | null = null;
+
+function getClient() {
+  if (!client) {
+    client = generateClient<Schema>();
+  }
+
+  return client;
+}
 
 export default function TiersRoute() {
   const router = useRouter();
@@ -46,7 +55,7 @@ export default function TiersRoute() {
     queryKey: ['rivalryTiers', rivalryId],
     structuralSharing: false,
     queryFn: async () => {
-      const { data: rivalryData, errors } = await client.models.Rivalry.get(
+      const { data: rivalryData, errors } = await getClient().models.Rivalry.get(
         { id: rivalryId },
         {
           selectionSet: [
@@ -94,8 +103,8 @@ export default function TiersRoute() {
       // Use user names from context if available, otherwise fetch
       // Load user data separately if not in context
       const [userAResult, userBResult] = await Promise.all([
-        client.models.User.get({ id: rivalryData.userAId }),
-        client.models.User.get({ id: rivalryData.userBId })
+        getClient().models.User.get({ id: rivalryData.userAId }),
+        getClient().models.User.get({ id: rivalryData.userBId })
       ]);
 
       if (userAResult.data) {

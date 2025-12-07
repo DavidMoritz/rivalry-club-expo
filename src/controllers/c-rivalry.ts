@@ -6,7 +6,16 @@ import type { Schema } from '../../amplify/data/resource';
 import { getMContest, MContest } from '../models/m-contest';
 import { getMRivalry, MRivalry } from '../models/m-rivalry';
 
-const client = generateClient<Schema>();
+// Lazy client initialization to avoid crashes when Amplify isn't configured (e.g., Expo Go)
+let client: ReturnType<typeof generateClient<Schema>> | null = null;
+
+function getClient() {
+  if (!client) {
+    client = generateClient<Schema>();
+  }
+
+  return client;
+}
 
 const UPDATE_RIVALRY_KEYS = ['id', 'contestCount', 'currentContestId'];
 
@@ -80,7 +89,7 @@ export const useRivalryContestsQuery = ({
         data: contests,
         errors,
         nextToken
-      } = await client.models.Contest.list({
+      } = await getClient().models.Contest.list({
         filter: { rivalryId: { eq: rivalryId } },
         limit
       });
@@ -103,7 +112,7 @@ export const useRivalryWithAllInfoQuery = ({ rivalry, onSuccess }: RivalryQueryP
     queryKey: ['rivalryId', rivalry?.id],
     queryFn: async () => {
       // Use Gen 2 client to fetch rivalry with related data
-      const { data: rivalryData, errors } = await client.models.Rivalry.get(
+      const { data: rivalryData, errors } = await getClient().models.Rivalry.get(
         { id: rivalry?.id as string },
         {
           selectionSet: [
@@ -148,7 +157,7 @@ export const useRivalryWithAllInfoQuery = ({ rivalry, onSuccess }: RivalryQueryP
         );
         if (!currentContestExists) {
           const { data: currentContestData, errors: contestErrors } =
-            await client.models.Contest.get({ id: rivalryData.currentContestId });
+            await getClient().models.Contest.get({ id: rivalryData.currentContestId });
           if (contestErrors) {
             console.error(
               '[useRivalryWithAllInfoQuery] Error fetching current contest:',
@@ -216,7 +225,7 @@ export const useCreateContestMutation = ({
       }
 
       // Create contest using Gen 2 client
-      const { data: contestData, errors } = await client.models.Contest.create({
+      const { data: contestData, errors } = await getClient().models.Contest.create({
         rivalryId: rivalry?.id as string,
         tierSlotAId: tierSlotA.id,
         tierSlotBId: tierSlotB.id,
@@ -248,7 +257,7 @@ export const useUpdateRivalryMutation = ({ rivalry }: RivalryMutationProps) => {
         ...pick(rivalry, UPDATE_RIVALRY_KEYS),
         ...overrides
       };
-      const { data, errors } = await client.models.Rivalry.update(updateInput as any);
+      const { data, errors } = await getClient().models.Rivalry.update(updateInput as any);
 
       if (errors) {
         throw new Error(errors[0]?.message || 'Failed to update rivalry');
@@ -273,7 +282,7 @@ export const useUpdateContestMutation = ({ rivalry, onSuccess }: RivalryMutation
         throw new Error('No current contest');
       }
 
-      const { data, errors } = await client.models.Contest.update({
+      const { data, errors } = await getClient().models.Contest.update({
         id: contest.id,
         result: contest.result,
         bias: contest.bias
@@ -409,7 +418,7 @@ export const useUpdateCurrentContestShuffleTierSlotsMutation = ({
         throw new Error('Unable to sample tier slots');
       }
 
-      const { data, errors } = await client.models.Contest.update({
+      const { data, errors } = await getClient().models.Contest.update({
         id: rivalry.currentContest.id,
         tierSlotAId: tierSlotA.id,
         tierSlotBId: tierSlotB.id
@@ -510,7 +519,7 @@ export const useDeleteMostRecentContestMutation = ({
       }
 
       // Reset the result and bias on the most recent contest (making it unresolved)
-      const { data: resetContestData, errors: resetErrors } = await client.models.Contest.update({
+      const { data: resetContestData, errors: resetErrors } = await getClient().models.Contest.update({
         id: mostRecentContest.id,
         result: 0,
         bias: 0
@@ -521,7 +530,7 @@ export const useDeleteMostRecentContestMutation = ({
       }
 
       // Update rivalry to point to the undone contest as the current contest
-      const { errors: rivalryUpdateErrors } = await client.models.Rivalry.update({
+      const { errors: rivalryUpdateErrors } = await getClient().models.Rivalry.update({
         id: rivalry.id,
         currentContestId: mostRecentContest.id,
         contestCount: Math.max((rivalry.contestCount || 0) - 1, 0)
@@ -532,7 +541,7 @@ export const useDeleteMostRecentContestMutation = ({
       }
 
       // Delete the old current contest
-      const { errors: deleteErrors } = await client.models.Contest.delete({
+      const { errors: deleteErrors } = await getClient().models.Contest.delete({
         id: currentContest.id
       });
 
@@ -556,7 +565,7 @@ export const usePendingRivalriesQuery = ({ userId }: PendingRivalriesQueryProps)
       if (!userId) return { awaitingAcceptance: [], initiated: [] };
 
       // Fetch rivalries where user is UserB and rivalry is not accepted
-      const { data: awaitingAcceptanceData } = await client.models.Rivalry.list({
+      const { data: awaitingAcceptanceData } = await getClient().models.Rivalry.list({
         filter: {
           userBId: { eq: userId },
           accepted: { eq: false }
@@ -576,7 +585,7 @@ export const usePendingRivalriesQuery = ({ userId }: PendingRivalriesQueryProps)
       });
 
       // Fetch rivalries where user is UserA and rivalry is not accepted
-      const { data: initiatedData } = await client.models.Rivalry.list({
+      const { data: initiatedData } = await getClient().models.Rivalry.list({
         filter: {
           userAId: { eq: userId },
           accepted: { eq: false }
@@ -615,7 +624,7 @@ export const useCreateRivalryMutation = ({
   return useMutation({
     mutationFn: async ({ userAId, userBId, gameId }: CreateRivalryParams) => {
       // Create the rivalry
-      const { data: rivalryData, errors: rivalryErrors } = await client.models.Rivalry.create({
+      const { data: rivalryData, errors: rivalryErrors } = await getClient().models.Rivalry.create({
         userAId,
         userBId,
         gameId,
@@ -629,7 +638,7 @@ export const useCreateRivalryMutation = ({
       }
 
       // Fetch the game's fighters to create tier lists
-      const { data: fighters, errors: fightersErrors } = await client.models.Fighter.list({
+      const { data: fighters, errors: fightersErrors } = await getClient().models.Fighter.list({
         filter: { gameId: { eq: gameId } }
       });
 
@@ -711,7 +720,7 @@ export const useAcceptRivalryMutation = ({ rivalryId, onSuccess }: AcceptRivalry
   return useMutation({
     mutationFn: async () => {
       // First, get the rivalry details to know which users and game are involved
-      const { data: rivalryData, errors: rivalryFetchErrors } = await client.models.Rivalry.get({
+      const { data: rivalryData, errors: rivalryFetchErrors } = await getClient().models.Rivalry.get({
         id: rivalryId
       });
 
@@ -722,7 +731,7 @@ export const useAcceptRivalryMutation = ({ rivalryId, onSuccess }: AcceptRivalry
       const { userAId, userBId, gameId } = rivalryData;
 
       // Fetch fighters for the game
-      const { data: fighters, errors: fightersErrors } = await client.models.Fighter.list({
+      const { data: fighters, errors: fightersErrors } = await getClient().models.Fighter.list({
         filter: { gameId: { eq: gameId } }
       });
 
@@ -732,7 +741,7 @@ export const useAcceptRivalryMutation = ({ rivalryId, onSuccess }: AcceptRivalry
 
       // Helper function to get user's most recent tier list
       const getMostRecentTierList = async (userId: string) => {
-        const { data: tierLists } = await client.models.TierList.tierListsByUserIdAndUpdatedAt({
+        const { data: tierLists } = await getClient().models.TierList.tierListsByUserIdAndUpdatedAt({
           userId,
           sortDirection: 'DESC',
           limit: 1
@@ -744,7 +753,7 @@ export const useAcceptRivalryMutation = ({ rivalryId, onSuccess }: AcceptRivalry
       // Helper function to create tier list with tier slots
       const createTierListWithSlots = async (userId: string, sourceTierList?: any) => {
         // Create the tier list with standing = 0
-        const { data: newTierList, errors: tierListErrors } = await client.models.TierList.create({
+        const { data: newTierList, errors: tierListErrors } = await getClient().models.TierList.create({
           rivalryId,
           userId,
           standing: 0
@@ -759,7 +768,7 @@ export const useAcceptRivalryMutation = ({ rivalryId, onSuccess }: AcceptRivalry
         if (sourceTierList) {
           // Duplicate the source tier list's tier slots
           // First, fetch the source tier slots
-          const { data: sourceTierSlots } = await client.models.TierSlot.list({
+          const { data: sourceTierSlots } = await getClient().models.TierSlot.list({
             filter: { tierListId: { eq: sourceTierList.id } }
           });
 
@@ -823,7 +832,7 @@ export const useAcceptRivalryMutation = ({ rivalryId, onSuccess }: AcceptRivalry
       ]);
 
       // Finally, accept the rivalry
-      const { data, errors } = await client.models.Rivalry.update({
+      const { data, errors } = await getClient().models.Rivalry.update({
         id: rivalryId,
         accepted: true
       });

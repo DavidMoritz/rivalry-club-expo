@@ -30,7 +30,6 @@ export function Auth({ onAuthSuccess }: AuthProps) {
       onAuthSuccess();
     } catch (err) {
       // User not authenticated, stay on auth screen
-      console.log('[Auth] No current user');
     }
   }
 

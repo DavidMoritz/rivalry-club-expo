@@ -100,11 +100,12 @@ export function CurrentContest({
             borderWidth: 1,
             borderColor: 'white',
             borderRadius: 12,
-            backgroundColor: '#334155'
+            backgroundColor: '#334155',
+            marginStart: 80
           }}
           onPress={onPressShuffle}
         >
-          <Text style={{ fontSize: 20, color: 'white' }}>🔀</Text>
+          <Text style={{ fontSize: 16, color: 'white' }}>🔀 Reshuffle</Text>
         </TouchableOpacity>
       </View>
 

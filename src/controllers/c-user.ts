@@ -5,7 +5,16 @@ import type { Schema } from '../../amplify/data/resource';
 import { MRivalry } from '../models/m-rivalry';
 import { getMUser, MUser } from '../models/m-user';
 
-const client = generateClient<Schema>();
+// Lazy client initialization to avoid crashes when Amplify isn't configured (e.g., Expo Go)
+let client: ReturnType<typeof generateClient<Schema>> | null = null;
+
+function getClient() {
+  if (!client) {
+    client = generateClient<Schema>();
+  }
+
+  return client;
+}
 
 interface UserDataQueryProps {
   rivalries: MRivalry[];
@@ -31,7 +40,7 @@ export const useUserWithRivalriesByAwsSubQuery = ({
       if (!amplifyUser?.username) return null;
 
       // Query users by awsSub using Gen 2 client
-      const { data: users, errors } = await client.models.User.list({
+      const { data: users, errors } = await getClient().models.User.list({
         filter: {
           awsSub: {
             eq: amplifyUser.username,
@@ -60,7 +69,7 @@ export const useUserWithRivalriesByAwsSubQuery = ({
         const user = users[0];
 
         // Fetch rivalries where user is userA
-        const { data: rivalriesA } = await client.models.Rivalry.list({
+        const { data: rivalriesA } = await getClient().models.Rivalry.list({
           filter: {
             userAId: {
               eq: user.id,
@@ -80,7 +89,7 @@ export const useUserWithRivalriesByAwsSubQuery = ({
         });
 
         // Fetch rivalries where user is userB
-        const { data: rivalriesB } = await client.models.Rivalry.list({
+        const { data: rivalriesB } = await getClient().models.Rivalry.list({
           filter: {
             userBId: {
               eq: user.id,
@@ -165,7 +174,7 @@ export const useUserSearchQuery = ({ searchText, currentUserId }: UserSearchQuer
       const searchLower = searchText.toLowerCase().trim();
 
       // Fetch all users (in production, you'd want server-side filtering)
-      const { data: users, errors } = await client.models.User.list({
+      const { data: users, errors } = await getClient().models.User.list({
         selectionSet: [
           'id',
           'email',

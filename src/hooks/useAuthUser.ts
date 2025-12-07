@@ -3,7 +3,7 @@ import { generateClient } from 'aws-amplify/data';
 import { useEffect, useState } from 'react';
 
 import type { Schema } from '../../amplify/data/resource';
-import { getCurrentUser, isExpoGo } from '../lib/amplify-auth';
+import { getCurrentUser } from '../lib/amplify-auth';
 
 interface AuthUser {
   id: string;
@@ -62,56 +62,10 @@ export function useAuthUser() {
         setIsLoading(true);
         setError(null);
 
-        // In Expo Go mode, use dev user based on awsSub from getCurrentUser
-        if (isExpoGo) {
-          console.log('[useAuthUser] Running in Expo Go - using dev user');
-
-          // Get the current user info (which includes awsSub from dev-users.json)
-          const currentUser = await getCurrentUser();
-          const devAwsSub = currentUser.userId;
-          const devEmail = currentUser.signInDetails?.loginId || 'dev@expo.go';
-
-          console.log('[useAuthUser] Dev user awsSub:', devAwsSub, 'email:', devEmail);
-
-          // Generate AppSync client
-          const client = generateClient<Schema>();
-
-          // Try to find existing dev user by awsSub
-          const listResult = await client.models.User.list({
-            filter: {
-              awsSub: {
-                eq: devAwsSub,
-              },
-            },
-          });
-
-          const users = listResult.data;
-
-          if (users && users.length > 0) {
-            // Dev user exists
-            console.log('[useAuthUser] Found existing dev user');
-            setUser(users[0] as AuthUser);
-          } else {
-            // Create dev user
-            console.log('[useAuthUser] Creating dev user with awsSub:', devAwsSub);
-            const createResult = await client.models.User.create({
-              email: devEmail,
-              awsSub: devAwsSub,
-              role: 0,
-            });
-
-            if (createResult.data) {
-              setUser(createResult.data as AuthUser);
-            }
-          }
-
-          setIsLoading(false);
-          return;
-        }
-
-        // Normal Cognito flow
+        // Get current user info
         const currentUser = await getCurrentUser();
         const email = currentUser.signInDetails?.loginId || '';
+        const awsSub = currentUser.userId;
 
         // Generate AppSync client
         const client = generateClient<Schema>();
@@ -120,7 +74,7 @@ export function useAuthUser() {
         const listResult = await client.models.User.list({
           filter: {
             awsSub: {
-              eq: cognitoUserId,
+              eq: awsSub,
             },
           },
         });
@@ -141,7 +95,7 @@ export function useAuthUser() {
           // Create new user in database
           const createResult = await client.models.User.create({
             email,
-            awsSub: cognitoUserId, // Store Cognito user ID (sub) in awsSub field
+            awsSub, // Store user ID (Cognito sub or dev user awsSub) in awsSub field
             role: 0, // Default role
           });
 

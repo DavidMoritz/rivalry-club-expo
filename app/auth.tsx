@@ -5,9 +5,18 @@ import { generateClient } from 'aws-amplify/data';
 import type { Schema } from '../amplify/data/resource';
 
 import { Auth } from '../src/components/screens/Auth';
-import { getCurrentUser } from '../src/lib/amplify-auth';
+import { getCurrentUser, isExpoGo } from '../src/lib/amplify-auth';
 
-const client = generateClient<Schema>();
+// Lazy client initialization to avoid crashes when Amplify isn't configured
+let client: ReturnType<typeof generateClient<Schema>> | null = null;
+
+function getClient() {
+  if (!client) {
+    client = generateClient<Schema>();
+  }
+
+  return client;
+}
 
 export default function AuthRoute() {
   const router = useRouter();
@@ -16,8 +25,15 @@ export default function AuthRoute() {
   // Check if user has completed their profile and route accordingly
   const checkUserProfileAndNavigate = async (cognitoUserId: string) => {
     try {
+      // In Expo Go, skip profile check and go directly to rivalries
+      if (isExpoGo) {
+        router.replace('/rivalries');
+
+        return;
+      }
+
       // Query for user by Cognito user ID
-      const listResult = await client.models.User.list({
+      const listResult = await getClient().models.User.list({
         filter: {
           awsSub: {
             eq: cognitoUserId
@@ -61,7 +77,6 @@ export default function AuthRoute() {
       }
     } catch (err) {
       // User not authenticated, stay on auth screen
-      console.log('[AuthRoute] No current user');
       setAuthenticated(false);
     }
   }

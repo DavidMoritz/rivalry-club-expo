@@ -1,5 +1,5 @@
-import { useEffect, useState } from 'react';
-import { Text, View } from 'react-native';
+import { useEffect, useState, useRef } from 'react';
+import { Animated, Text, View } from 'react-native';
 
 import { contestStyles } from '../../utils/styles';
 import { dateDisplay, fighterByIdFromGame, scoreDisplay } from '../../utils';
@@ -13,18 +13,30 @@ interface ContestRowProps {
   game: MGame;
   rivalry: MRivalry;
   flip?: boolean;
+  shouldFadeOut?: boolean;
 }
 
-export function ContestRow({ contest, game, rivalry, flip }: ContestRowProps) {
+export function ContestRow({ contest, game, rivalry, flip, shouldFadeOut }: ContestRowProps) {
   const [updatedDisplay, setUpdatedDisplay] = useState<string>('');
   const [fighterA, setFighterA] = useState<any>();
   const [fighterB, setFighterB] = useState<any>();
+  const fadeAnim = useRef(new Animated.Value(1)).current;
 
   useEffect(() => {
     if (!contest?.updatedAt) return;
 
     setUpdatedDisplay(dateDisplay(contest.updatedAt));
   }, [contest?.updatedAt]);
+
+  useEffect(() => {
+    if (shouldFadeOut) {
+      Animated.timing(fadeAnim, {
+        toValue: 0,
+        duration: 2000,
+        useNativeDriver: true,
+      }).start();
+    }
+  }, [shouldFadeOut, fadeAnim, contest.id]);
 
   useEffect(() => {
     const tierSlotA = rivalry?.tierListA?.slots.find(
@@ -45,7 +57,14 @@ export function ContestRow({ contest, game, rivalry, flip }: ContestRowProps) {
   }
 
   return (
-    <View style={contestStyles.row}>
+    <Animated.View
+      style={[
+        contestStyles.row,
+        {
+          opacity: fadeAnim,
+        },
+      ]}
+    >
       <View style={contestStyles.item}>
         <Text style={{ color: 'white', fontSize: 14 }}>{updatedDisplay}</Text>
       </View>
@@ -58,6 +77,6 @@ export function ContestRow({ contest, game, rivalry, flip }: ContestRowProps) {
       <View style={[contestStyles.item, contest.result < 0 ? contestStyles.winner : null]}>
         <CharacterDisplay fighter={flip ? fighterA : fighterB} hideName={true} height={75} />
       </View>
-    </View>
+    </Animated.View>
   );
 }

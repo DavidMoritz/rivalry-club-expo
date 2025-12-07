@@ -16,7 +16,11 @@ export function TierListsDisplay({ rivalry, unlinked }: TierListsDisplayProps): 
 
   return (
     <View
-      style={{ flex: 1, flexDirection: userId === rivalry.userBId ? 'column-reverse' : 'column' }}
+      style={{
+        marginTop: -45,
+        flex: 1,
+        flexDirection: userId === rivalry.userBId ? 'column-reverse' : 'column'
+      }}
     >
       <View style={{ flex: 1 }}>
         <Text style={[darkStyles.text, { fontSize: 18, marginBottom: 8, marginTop: 16 }]}>

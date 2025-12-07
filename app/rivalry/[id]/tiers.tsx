@@ -1,6 +1,6 @@
-import { useLocalSearchParams, Stack } from 'expo-router';
+import { Stack, useLocalSearchParams, useRouter } from 'expo-router';
 import { StatusBar } from 'expo-status-bar';
-import React, { useState, useMemo } from 'react';
+import React, { useMemo, useState } from 'react';
 import { SafeAreaView, Text, View } from 'react-native';
 import { useQuery } from '@tanstack/react-query';
 import { generateClient } from 'aws-amplify/data';
@@ -21,6 +21,7 @@ import { darkStyles, styles } from '../../../src/utils/styles';
 const client = generateClient<Schema>();
 
 export default function TiersRoute() {
+  const router = useRouter();
   const params = useLocalSearchParams();
   const rivalryId = params.id as string;
   const userId = params.userId as string | undefined;
@@ -114,70 +115,94 @@ export default function TiersRoute() {
     <>
       <Stack.Screen options={{ title: 'Tier Lists' }} />
       <HamburgerMenu />
-      <RivalryProvider rivalry={rivalry} userAName={userAName} userBName={userBName} userId={userId}>
+      <RivalryProvider
+        rivalry={rivalry}
+        userAName={userAName}
+        userBName={userBName}
+        userId={userId}
+      >
         <GameProvider value={game}>
           <SyncedScrollViewContext.Provider value={syncedScrollViewState}>
             <SafeAreaView style={[styles.container, darkStyles.container]}>
-            {isLoading && (
-              <View style={{ flex: 1, alignItems: 'center', justifyContent: 'center' }}>
-                <Text style={[styles.text, darkStyles.text, { fontSize: 18 }]}>
-                  Loading Tier Lists...
-                </Text>
-              </View>
-            )}
+              {isLoading && (
+                <View style={{ flex: 1, alignItems: 'center', justifyContent: 'center' }}>
+                  <Text style={[styles.text, darkStyles.text, { fontSize: 18 }]}>
+                    Loading Tier Lists...
+                  </Text>
+                </View>
+              )}
 
-            {isError && (
-              <View
-                style={{
-                  flex: 1,
-                  alignItems: 'center',
-                  justifyContent: 'center',
-                  paddingHorizontal: 16
-                }}
-              >
-                <Text
-                  style={[
-                    styles.text,
-                    darkStyles.text,
-                    { fontSize: 18, fontWeight: 'bold', color: '#ef4444', marginBottom: 16 }
-                  ]}
+              {isError && (
+                <View
+                  style={{
+                    flex: 1,
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    paddingHorizontal: 16
+                  }}
                 >
-                  Error
-                </Text>
-                <Text
-                  style={[styles.text, darkStyles.text]}
-                >{`Error loading tier lists: ${error?.message}`}</Text>
-              </View>
-            )}
+                  <Text
+                    style={[
+                      styles.text,
+                      darkStyles.text,
+                      { fontSize: 18, fontWeight: 'bold', color: '#ef4444', marginBottom: 16 }
+                    ]}
+                  >
+                    Error
+                  </Text>
+                  <Text
+                    style={[styles.text, darkStyles.text]}
+                  >{`Error loading tier lists: ${error?.message}`}</Text>
+                </View>
+              )}
 
-            {!isLoading && !isError && !rivalry && (
-              <View style={{ flex: 1, alignItems: 'center', justifyContent: 'center' }}>
-                <Text style={[styles.text, darkStyles.text, { fontSize: 18 }]}>
-                  Waiting for tier lists...
-                </Text>
-                <Text
-                  style={[
-                    styles.text,
-                    darkStyles.text,
-                    { fontSize: 12, marginTop: 8, color: '#999' }
-                  ]}
-                >
-                  Check console logs for details
-                </Text>
-              </View>
-            )}
+              {!isLoading && !isError && !rivalry && (
+                <View style={{ flex: 1, alignItems: 'center', justifyContent: 'center' }}>
+                  <Text style={[styles.text, darkStyles.text, { fontSize: 18 }]}>
+                    Waiting for tier lists...
+                  </Text>
+                  <Text
+                    style={[
+                      styles.text,
+                      darkStyles.text,
+                      { fontSize: 12, marginTop: 8, color: '#999' }
+                    ]}
+                  >
+                    Check console logs for details
+                  </Text>
+                </View>
+              )}
 
-            {!isLoading && !isError && rivalry && (
-              <>
-                <TierListsDisplay rivalry={rivalry} unlinked={unlinked} />
+              {!isLoading && !isError && rivalry && (
+                <>
+                  <View
+                    style={{
+                      width: '100%',
+                      alignItems: 'center',
+                      marginStart: 16,
+                      zIndex: 10
+                    }}
+                  >
+                    <Button
+                      style={{ width: '40%' }}
+                      onPress={() => {
+                        router.push({
+                          pathname: `/rivalry/${rivalryId}/tierListEdit`,
+                          params: { userId, userAName, userBName }
+                        });
+                      }}
+                      text="Edit Tier List"
+                    />
+                  </View>
 
-                <Button
-                  className="h-14 px-8 w-64 mt-4"
-                  onPress={() => setUnLinked(!unlinked)}
-                  text={unlinked ? 'Unlinked' : 'Linked'}
-                />
-              </>
-            )}
+                  <TierListsDisplay rivalry={rivalry} unlinked={unlinked} />
+
+                  <Button
+                    onPress={() => setUnLinked(!unlinked)}
+                    text={unlinked ? 'Unlinked' : 'Linked'}
+                  />
+                </>
+              )}
             </SafeAreaView>
           </SyncedScrollViewContext.Provider>
         </GameProvider>

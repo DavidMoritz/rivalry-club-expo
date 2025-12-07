@@ -2,6 +2,7 @@
 
 # dependencies
 node_modules/
+external/
 
 # Expo
 .expo/
@@ -45,3 +46,4 @@ yarn-error.*
 .amplify/
 node_modules/
 .env
+.claude/

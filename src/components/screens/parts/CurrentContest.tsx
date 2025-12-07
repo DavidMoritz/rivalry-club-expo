@@ -1,4 +1,3 @@
-import { FontAwesomeIcon } from '@fortawesome/react-native-fontawesome';
 import { range } from 'lodash';
 import { ReactNode, useEffect, useState } from 'react';
 import { Image, Text, TouchableOpacity, View } from 'react-native';
@@ -105,7 +104,7 @@ export function CurrentContest({
           }}
           onPress={onPressShuffle}
         >
-          <FontAwesomeIcon icon="shuffle" color="white" />
+          <Text style={{ fontSize: 20, color: 'white' }}>🔀</Text>
         </TouchableOpacity>
       </View>
 

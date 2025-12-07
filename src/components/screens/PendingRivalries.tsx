@@ -1,4 +1,3 @@
-import { FontAwesomeIcon } from '@fortawesome/react-native-fontawesome';
 import { useRouter } from 'expo-router';
 import React, { useMemo, useState } from 'react';
 import { ActivityIndicator, FlatList, Text, TouchableOpacity, View } from 'react-native';
@@ -106,7 +105,7 @@ export function PendingRivalries() {
               <ActivityIndicator size="small" color="white" />
             ) : (
               <>
-                <FontAwesomeIcon icon="check" color="white" size={14} style={{ marginRight: 8 }} />
+                <Text style={{ fontSize: 14, color: 'white', marginRight: 8 }}>✓</Text>
                 <Text style={[styles.text, { fontSize: 14, fontWeight: 'bold' }]}>Accept</Text>
               </>
             )}
@@ -148,7 +147,7 @@ export function PendingRivalries() {
 
       {awaitingAcceptance.length === 0 && initiated.length === 0 ? (
         <View style={{ flex: 1, alignItems: 'center', justifyContent: 'center', paddingHorizontal: 16 }}>
-          <FontAwesomeIcon icon="inbox" color="#666" size={48} style={{ marginBottom: 16 }} />
+          <Text style={{ fontSize: 48, color: '#666', marginBottom: 16 }}>📥</Text>
           <Text style={[styles.text, { fontSize: 18, color: '#999', textAlign: 'center' }]}>
             No pending rivalries
           </Text>

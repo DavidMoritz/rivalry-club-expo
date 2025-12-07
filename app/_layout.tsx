@@ -1,4 +1,3 @@
-import { library } from '@fortawesome/fontawesome-svg-core';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { Amplify } from 'aws-amplify';
 import { Slot } from 'expo-router';
@@ -10,7 +9,6 @@ import 'react-native-url-polyfill/auto';
 
 import outputs from '../amplify_outputs.json';
 import '../global.css';
-import { iconsInProject } from '../src/utils/icons';
 import { preloadAssets } from '../src/utils/preloadAssets';
 
 const queryClient = new QueryClient();
@@ -49,10 +47,6 @@ try {
     console.error('[App] Storage test failed:', storageErr);
   }
 })();
-
-// Register FontAwesome icons
-// @ts-ignore - FontAwesome type mismatch between packages
-library.add(...iconsInProject);
 
 export default function RootLayout() {
   const [assetsLoaded, setAssetsLoaded] = useState(false);

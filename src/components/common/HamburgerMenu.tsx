@@ -1,4 +1,3 @@
-import { FontAwesomeIcon } from '@fortawesome/react-native-fontawesome';
 import { useRouter } from 'expo-router';
 import React, { useState } from 'react';
 import { Modal, Pressable, Text, TouchableOpacity, View } from 'react-native';
@@ -57,7 +56,7 @@ export function HamburgerMenu() {
           borderRadius: 8
         }}
       >
-        <FontAwesomeIcon icon="bars" color="white" size={24} />
+        <Text style={{ fontSize: 24, color: 'white' }}>☰</Text>
       </TouchableOpacity>
 
       <Modal
@@ -98,12 +97,7 @@ export function HamburgerMenu() {
                 alignItems: 'center'
               }}
             >
-              <FontAwesomeIcon
-                icon="arrow-left"
-                color="white"
-                size={16}
-                style={{ marginRight: 12 }}
-              />
+              <Text style={{ fontSize: 16, color: 'white', marginRight: 12 }}>←</Text>
               <Text style={[darkStyles.text, { fontSize: 16 }]}>Back</Text>
             </TouchableOpacity>
 
@@ -118,7 +112,7 @@ export function HamburgerMenu() {
                 alignItems: 'center'
               }}
             >
-              <FontAwesomeIcon icon="list" color="white" size={16} style={{ marginRight: 12 }} />
+              <Text style={{ fontSize: 16, color: 'white', marginRight: 12 }}>📋</Text>
               <Text style={[darkStyles.text, { fontSize: 16 }]}>Rivalries</Text>
             </TouchableOpacity>
 
@@ -133,7 +127,7 @@ export function HamburgerMenu() {
                 alignItems: 'center'
               }}
             >
-              <FontAwesomeIcon icon="clock" color="white" size={16} style={{ marginRight: 12 }} />
+              <Text style={{ fontSize: 16, color: 'white', marginRight: 12 }}>🕐</Text>
               <Text style={[darkStyles.text, { fontSize: 16 }]}>Pending Rivalries</Text>
             </TouchableOpacity>
 
@@ -148,7 +142,7 @@ export function HamburgerMenu() {
                 alignItems: 'center'
               }}
             >
-              <FontAwesomeIcon icon="user" color="white" size={16} style={{ marginRight: 12 }} />
+              <Text style={{ fontSize: 16, color: 'white', marginRight: 12 }}>👤</Text>
               <Text style={[darkStyles.text, { fontSize: 16 }]}>Profile</Text>
             </TouchableOpacity>
 
@@ -163,12 +157,7 @@ export function HamburgerMenu() {
                 alignItems: 'center'
               }}
             >
-              <FontAwesomeIcon
-                icon="sign-out-alt"
-                color="#ef4444"
-                size={16}
-                style={{ marginRight: 12 }}
-              />
+              <Text style={{ fontSize: 16, color: '#ef4444', marginRight: 12 }}>→</Text>
               <Text style={[darkStyles.text, { fontSize: 16, color: '#ef4444' }]}>Sign Out</Text>
             </TouchableOpacity>
           </View>

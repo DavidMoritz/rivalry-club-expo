@@ -1,4 +1,3 @@
-import { library } from '@fortawesome/fontawesome-svg-core';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { Amplify } from 'aws-amplify';
 import { generateClient } from 'aws-amplify/data';
@@ -14,7 +13,6 @@ import { Access } from './src/components/screens/Access';
 import { Auth } from './src/components/screens/Auth';
 import Home from './src/components/screens/Home';
 import { supabase } from './src/lib/supabase';
-import { iconsInProject } from './src/utils/icons';
 
 const queryClient = new QueryClient();
 
@@ -53,10 +51,6 @@ try {
     console.error('[App] Storage test failed:', storageErr);
   }
 })();
-
-// Register FontAwesome icons
-// @ts-ignore - FontAwesome type mismatch between packages
-library.add(...iconsInProject);
 
 // Temporary Game type - will be replaced with GraphQL type later
 interface Game {

@@ -40,11 +40,6 @@ jest.mock('nativewind', () => ({
   styled: (component) => component,
 }));
 
-// Mock FontAwesome
-jest.mock('@fortawesome/react-native-fontawesome', () => ({
-  FontAwesomeIcon: 'FontAwesomeIcon',
-}));
-
 // Mock AWS Amplify
 jest.mock('aws-amplify/data', () => ({
   generateClient: jest.fn(),

@@ -7,6 +7,7 @@ type ComparativeName = string | MUser;
 
 export interface MUser extends User {
   fullName: string;
+  baseUser: User;
   displayName(comparativeName: ComparativeName): string;
 }
 

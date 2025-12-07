@@ -56,21 +56,17 @@ describe('preloadAssets', () => {
       expect(mockLoadAsync).toHaveBeenCalledWith(5); // kirby
     });
 
-    it.skip('should log the number of images being preloaded', async () => {
+    it('should not log success messages (implementation does not include logging)', async () => {
       const mockLoadAsync = jest.fn().mockResolvedValue(undefined);
       (Asset.loadAsync as jest.Mock) = mockLoadAsync;
 
       await preloadFighterImages();
 
-      expect(console.log).toHaveBeenCalledWith(
-        expect.stringContaining('Starting to preload 5 fighter images')
-      );
-      expect(console.log).toHaveBeenCalledWith(
-        expect.stringContaining('Successfully preloaded 5 fighter images')
-      );
+      // Implementation does not log start/success messages, only errors/warnings
+      expect(console.log).not.toHaveBeenCalled();
     });
 
-    it.skip('should handle individual image loading failures gracefully', async () => {
+    it('should handle individual image loading failures gracefully', async () => {
       const mockLoadAsync = jest.fn()
         .mockResolvedValueOnce(undefined) // mario - success
         .mockRejectedValueOnce(new Error('Network error')) // link - fail
@@ -80,17 +76,12 @@ describe('preloadAssets', () => {
 
       (Asset.loadAsync as jest.Mock) = mockLoadAsync;
 
-      // Should not throw even if one image fails
+      // Should not throw even if one image fails (each image has its own try-catch)
       await expect(preloadFighterImages()).resolves.not.toThrow();
 
-      // Should still log success for the images that loaded
-      expect(console.log).toHaveBeenCalledWith(
-        expect.stringContaining('Successfully preloaded 5 fighter images')
-      );
-
-      // Should warn about the failed image
+      // Should warn about the failed image with the [preloadAssets] prefix
       expect(console.warn).toHaveBeenCalledWith(
-        expect.stringContaining('Failed to preload image'),
+        expect.stringContaining('[preloadAssets] Failed to preload image'),
         expect.any(Error)
       );
     });

@@ -39,9 +39,7 @@ describe('MFighter Model', () => {
   });
 
   describe('game getter/setter', () => {
-    // Getter/setter behavior works in practice but has test context issues
-    // with object spread and property definition
-    it.skip('should set and get game', () => {
+    it('should set and get game', () => {
       const mFighter = getMFighter(mockFighter);
       const mGame = getMGame({
         id: 'game-123',

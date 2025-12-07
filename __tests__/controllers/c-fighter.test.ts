@@ -20,13 +20,17 @@ describe('c-fighter Controller', () => {
     jest.clearAllMocks();
   });
 
+  afterEach(() => {
+    queryClient.clear();
+  });
+
   const wrapper = ({ children }: { children: React.ReactNode }) =>
     React.createElement(QueryClientProvider, { client: queryClient }, children);
 
   describe('useUpdateFighterViaApiMutation', () => {
-    // Test assertion needs adjustment for mutation arguments
-    it.skip('should call updateFighterStats mutation', async () => {
+    it('should call updateFighterStats mutation', async () => {
       const mockResponse = { body: 'Success', statusCode: '200' };
+
       (mutations.updateFighterStats as jest.Mock).mockResolvedValue(
         mockResponse,
       );
@@ -44,14 +48,19 @@ describe('c-fighter Controller', () => {
 
       await waitFor(() => expect(result.current.isSuccess).toBe(true));
 
-      expect(mutations.updateFighterStats).toHaveBeenCalledWith({
+      expect(mutations.updateFighterStats).toHaveBeenCalledTimes(1);
+
+      // React Query passes the mutation variables as the first argument
+      const callArgs = (mutations.updateFighterStats as jest.Mock).mock.calls[0];
+
+      expect(callArgs[0]).toEqual({
         fighterId: 'fighter-123',
         didWin: true,
         tier: 'S',
       });
     });
 
-    it.skip('should call onSuccess callback on successful mutation', async () => {
+    it('should call onSuccess callback on successful mutation', async () => {
       const mockResponse = { body: 'Success', statusCode: '200' };
       const onSuccess = jest.fn();
 
@@ -75,8 +84,8 @@ describe('c-fighter Controller', () => {
       expect(onSuccess).toHaveBeenCalledWith(mockResponse);
     });
 
-    it.skip('should handle errors', async () => {
-      const mockError = { body: 'Error', statusCode: '500' };
+    it('should handle errors correctly', async () => {
+      const mockError = new Error('Network error');
 
       (mutations.updateFighterStats as jest.Mock).mockRejectedValue(mockError);
 
@@ -94,6 +103,37 @@ describe('c-fighter Controller', () => {
       await waitFor(() => expect(result.current.isError).toBe(true));
 
       expect(result.current.error).toBeDefined();
+      expect(result.current.error).toBe(mockError);
+    });
+
+    it('should pass correct mutation variables to updateFighterStats', async () => {
+      const mockResponse = { body: 'Success', statusCode: '200' };
+
+      (mutations.updateFighterStats as jest.Mock).mockResolvedValue(
+        mockResponse,
+      );
+
+      const { result } = renderHook(
+        () => useUpdateFighterViaApiMutation(),
+        { wrapper },
+      );
+
+      const mutationVariables = {
+        fighterId: 'fighter-456',
+        didWin: false,
+        tier: 'C',
+      };
+
+      result.current.mutate(mutationVariables);
+
+      await waitFor(() => expect(result.current.isSuccess).toBe(true));
+
+      expect(mutations.updateFighterStats).toHaveBeenCalledTimes(1);
+
+      // React Query passes the mutation variables as the first argument
+      const callArgs = (mutations.updateFighterStats as jest.Mock).mock.calls[0];
+
+      expect(callArgs[0]).toEqual(mutationVariables);
     });
   });
 });

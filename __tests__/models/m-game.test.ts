@@ -43,16 +43,68 @@ describe('MGame Model', () => {
       expect(mGame.abbr).toBe('T');
     });
 
+    it('should compute abbr for game with numbers', () => {
+      const gameWithNumbers: Game = {
+        ...mockGame,
+        name: 'Tekken 8',
+      };
+      const mGame = getMGame(gameWithNumbers);
+
+      expect(mGame.abbr).toBe('T8');
+    });
+
+    it('should compute abbr for game with special characters', () => {
+      const gameWithSpecialChars: Game = {
+        ...mockGame,
+        name: 'Street Fighter V: Champion Edition',
+      };
+      const mGame = getMGame(gameWithSpecialChars);
+
+      expect(mGame.abbr).toBe('SFVCE');
+    });
+
+    it('should compute abbr for game with multiple consecutive spaces', () => {
+      const gameWithSpaces: Game = {
+        ...mockGame,
+        name: 'Super  Smash  Bros',
+      };
+      const mGame = getMGame(gameWithSpaces);
+
+      // Multiple spaces create empty strings in split array, which have empty charAt(0)
+      expect(mGame.abbr).toBe('SSB');
+    });
+
     it('should return baseGame', () => {
       const mGame = getMGame(mockGame);
 
       expect(mGame.baseGame).toEqual(mockGame);
     });
 
+    it('should preserve all original Game properties', () => {
+      const mGame = getMGame(mockGame);
+
+      expect(mGame.id).toBe(mockGame.id);
+      expect(mGame.name).toBe(mockGame.name);
+      expect(mGame.createdAt).toBe(mockGame.createdAt);
+      expect(mGame.updatedAt).toBe(mockGame.updatedAt);
+    });
+
     it('should compute title correctly', () => {
       const mGame = getMGame(mockGame);
 
       expect(mGame.title).toBe('Super Smash Bros Ultimate (unofficial)');
+    });
+
+    it('should compute properties dynamically (getters)', () => {
+      const mGame = getMGame(mockGame);
+
+      // Verify computed properties are getters that recalculate
+      expect(mGame.abbr).toBe('SSBU');
+      expect(mGame.title).toBe('Super Smash Bros Ultimate (unofficial)');
+
+      // Access multiple times to ensure they're stable
+      expect(mGame.abbr).toBe('SSBU');
+      expect(mGame.abbr).toBe('SSBU');
     });
   });
 

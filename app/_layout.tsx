@@ -1,7 +1,6 @@
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { Amplify } from 'aws-amplify';
 import { Slot } from 'expo-router';
-import * as SecureStore from 'expo-secure-store';
 import React, { useEffect, useState } from 'react';
 import { View, Text, ActivityIndicator } from 'react-native';
 import 'react-native-get-random-values';
@@ -13,40 +12,12 @@ import { preloadAssets } from '../src/utils/preloadAssets';
 
 const queryClient = new QueryClient();
 
-// Configure custom storage adapter for Expo
-const storage = {
-  async setItem(key: string, value: string) {
-    await SecureStore.setItemAsync(key, value);
-  },
-  async getItem(key: string) {
-    return await SecureStore.getItemAsync(key);
-  },
-  async removeItem(key: string) {
-    await SecureStore.deleteItemAsync(key);
-  },
-  async clear() {
-    // SecureStore doesn't have a clear all method
-    // This is a limitation but shouldn't cause issues
-  }
-};
-
 // Configure Amplify with the full outputs file
 try {
   Amplify.configure(outputs);
 } catch (configErr) {
   console.error('[App] Amplify.configure failed:', configErr);
 }
-
-// Test storage
-(async () => {
-  try {
-    await storage.setItem('test-key', 'test-value');
-    const value = await storage.getItem('test-key');
-    await storage.removeItem('test-key');
-  } catch (storageErr) {
-    console.error('[App] Storage test failed:', storageErr);
-  }
-})();
 
 export default function RootLayout() {
   const [assetsLoaded, setAssetsLoaded] = useState(false);

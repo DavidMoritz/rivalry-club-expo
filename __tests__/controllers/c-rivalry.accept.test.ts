@@ -2,46 +2,55 @@ import { renderHook, waitFor } from '@testing-library/react-native';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import React from 'react';
 
-// Create mock functions BEFORE jest.mock and controller imports
-export const mockRivalryGet = jest.fn();
-export const mockRivalryUpdate = jest.fn();
-export const mockFighterList = jest.fn();
-export const mockTierListQuery = jest.fn();
-export const mockTierListCreate = jest.fn();
-export const mockTierSlotList = jest.fn();
-export const mockTierSlotCreate = jest.fn();
-
 // Mock the aws-amplify/data module
-jest.mock('aws-amplify/data', () => ({
-  generateClient: jest.fn(() => {
-    const testModule = require(__filename);
+jest.mock('aws-amplify/data', () => {
+  const mockFns = {
+    mockRivalryGet: jest.fn(),
+    mockRivalryUpdate: jest.fn(),
+    mockFighterList: jest.fn(),
+    mockTierListQuery: jest.fn(),
+    mockTierListCreate: jest.fn(),
+    mockTierSlotList: jest.fn(),
+    mockTierSlotCreate: jest.fn()
+  };
 
-    return {
+  // Store references globally for use in tests
+  (global as any).mockAcceptRivalryFns = mockFns;
+
+  return {
+    generateClient: jest.fn(() => ({
       models: {
         Rivalry: {
-          get: testModule.mockRivalryGet,
-          update: testModule.mockRivalryUpdate
+          get: mockFns.mockRivalryGet,
+          update: mockFns.mockRivalryUpdate
         },
         Fighter: {
-          list: testModule.mockFighterList
+          list: mockFns.mockFighterList
         },
         TierList: {
-          tierListsByUserIdAndUpdatedAt: testModule.mockTierListQuery,
-          create: testModule.mockTierListCreate
+          tierListsByUserIdAndUpdatedAt: mockFns.mockTierListQuery,
+          create: mockFns.mockTierListCreate
         },
         TierSlot: {
-          list: testModule.mockTierSlotList,
-          create: testModule.mockTierSlotCreate
+          list: mockFns.mockTierSlotList,
+          create: mockFns.mockTierSlotCreate
         }
       }
-    };
-  })
-}));
+    }))
+  };
+});
 
 import { useAcceptRivalryMutation } from '../../src/controllers/c-rivalry';
 
-describe.skip('useAcceptRivalryMutation', () => {
+describe('useAcceptRivalryMutation', () => {
   let queryClient: QueryClient;
+  let mockRivalryGet: jest.Mock;
+  let mockRivalryUpdate: jest.Mock;
+  let mockFighterList: jest.Mock;
+  let mockTierListQuery: jest.Mock;
+  let mockTierListCreate: jest.Mock;
+  let mockTierSlotList: jest.Mock;
+  let mockTierSlotCreate: jest.Mock;
 
   beforeEach(() => {
     queryClient = new QueryClient({
@@ -57,6 +66,16 @@ describe.skip('useAcceptRivalryMutation', () => {
         }
       }
     });
+
+    // Get references to the mocked functions
+    const globalMocks = (global as any).mockAcceptRivalryFns;
+    mockRivalryGet = globalMocks.mockRivalryGet;
+    mockRivalryUpdate = globalMocks.mockRivalryUpdate;
+    mockFighterList = globalMocks.mockFighterList;
+    mockTierListQuery = globalMocks.mockTierListQuery;
+    mockTierListCreate = globalMocks.mockTierListCreate;
+    mockTierSlotList = globalMocks.mockTierSlotList;
+    mockTierSlotCreate = globalMocks.mockTierSlotCreate;
 
     jest.clearAllMocks();
   });
@@ -124,45 +143,38 @@ describe.skip('useAcceptRivalryMutation', () => {
 
     result.current.mutate();
 
-    await waitFor(() => {
-      expect(mockRivalryGet).toHaveBeenCalledWith({
-        id: 'rivalry-1'
-      });
-    });
+    // Wait for the mutation to complete and onSuccess to be called
+    await waitFor(
+      () => {
+        if (result.current.isError) {
+          throw new Error(`Mutation failed: ${result.current.error?.message || 'Unknown error'}`);
+        }
+        expect(result.current.isSuccess).toBe(true);
+        expect(onSuccess).toHaveBeenCalled();
+      },
+      { timeout: 3000 }
+    );
 
-    await waitFor(() => {
-      expect(mockFighterList).toHaveBeenCalledWith({
-        filter: { gameId: { eq: 'game-1' } }
-      });
+    // Verify the expected API calls were made in the correct sequence
+    expect(mockRivalryGet).toHaveBeenCalledWith({ id: 'rivalry-1' });
+    expect(mockFighterList).toHaveBeenCalledWith({
+      filter: { gameId: { eq: 'game-1' } }
     });
-
-    await waitFor(() => {
-      expect(mockTierListQuery).toHaveBeenCalledWith({
-        userId: 'user-1',
-        sortDirection: 'DESC',
-        limit: 1
-      });
-      expect(mockTierListQuery).toHaveBeenCalledWith({
-        userId: 'user-2',
-        sortDirection: 'DESC',
-        limit: 1
-      });
+    expect(mockTierListQuery).toHaveBeenCalledWith({
+      userId: 'user-1',
+      sortDirection: 'DESC',
+      limit: 1
     });
-
-    await waitFor(() => {
-      expect(mockTierListCreate).toHaveBeenCalledTimes(2);
-      expect(mockTierSlotCreate).toHaveBeenCalled();
+    expect(mockTierListQuery).toHaveBeenCalledWith({
+      userId: 'user-2',
+      sortDirection: 'DESC',
+      limit: 1
     });
-
-    await waitFor(() => {
-      expect(mockRivalryUpdate).toHaveBeenCalledWith({
-        id: 'rivalry-1',
-        accepted: true
-      });
-    });
-
-    await waitFor(() => {
-      expect(onSuccess).toHaveBeenCalled();
+    expect(mockTierListCreate).toHaveBeenCalledTimes(2);
+    expect(mockTierSlotCreate).toHaveBeenCalled();
+    expect(mockRivalryUpdate).toHaveBeenCalledWith({
+      id: 'rivalry-1',
+      accepted: true
     });
   });
 
@@ -179,9 +191,7 @@ describe.skip('useAcceptRivalryMutation', () => {
 
     result.current.mutate();
 
-    await waitFor(() => {
-      expect(result.current.isError).toBe(true);
-    });
+    await waitFor(() => expect(result.current.isError).toBe(true));
   });
 
   it('should invalidate pending rivalries queries after successful acceptance', async () => {
@@ -242,13 +252,13 @@ describe.skip('useAcceptRivalryMutation', () => {
 
     result.current.mutate();
 
-    await waitFor(() => {
-      expect(invalidateQueriesSpy).toHaveBeenCalledWith({
-        queryKey: ['pendingRivalries']
-      });
-      expect(invalidateQueriesSpy).toHaveBeenCalledWith({
-        queryKey: ['usersByAwsSub']
-      });
+    await waitFor(() => expect(result.current.isSuccess).toBe(true));
+
+    expect(invalidateQueriesSpy).toHaveBeenCalledWith({
+      queryKey: ['pendingRivalries']
+    });
+    expect(invalidateQueriesSpy).toHaveBeenCalledWith({
+      queryKey: ['usersByAwsSub']
     });
   });
 
@@ -266,9 +276,7 @@ describe.skip('useAcceptRivalryMutation', () => {
 
     result.current.mutate();
 
-    await waitFor(() => {
-      expect(result.current.isError).toBe(true);
-    });
+    await waitFor(() => expect(result.current.isError).toBe(true));
 
     expect(onSuccess).not.toHaveBeenCalled();
   });
@@ -343,26 +351,25 @@ describe.skip('useAcceptRivalryMutation', () => {
 
     result.current.mutate();
 
-    await waitFor(() => {
-      expect(mockTierSlotList).toHaveBeenCalledWith({
-        filter: { tierListId: { eq: 'existing-tier-list-1' } }
-      });
+    await waitFor(() => expect(result.current.isSuccess).toBe(true));
+
+    // Verify that the existing tier list slots were fetched
+    expect(mockTierSlotList).toHaveBeenCalledWith({
+      filter: { tierListId: { eq: 'existing-tier-list-1' } }
     });
 
-    await waitFor(() => {
-      // Verify that tier slots were created with the same positions as the existing tier list
-      expect(mockTierSlotCreate).toHaveBeenCalledWith(
-        expect.objectContaining({
-          fighterId: 'fighter-2',
-          position: 0
-        })
-      );
-      expect(mockTierSlotCreate).toHaveBeenCalledWith(
-        expect.objectContaining({
-          fighterId: 'fighter-1',
-          position: 1
-        })
-      );
-    });
+    // Verify that tier slots were created with the same positions as the existing tier list
+    expect(mockTierSlotCreate).toHaveBeenCalledWith(
+      expect.objectContaining({
+        fighterId: 'fighter-2',
+        position: 0
+      })
+    );
+    expect(mockTierSlotCreate).toHaveBeenCalledWith(
+      expect.objectContaining({
+        fighterId: 'fighter-1',
+        position: 1
+      })
+    );
   });
 });

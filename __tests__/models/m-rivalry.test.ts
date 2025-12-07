@@ -1,8 +1,14 @@
-import { Contest, Rivalry, TierList } from '../../src/API';
+import type { Schema } from '../../amplify/data/resource';
 import { getMContest } from '../../src/models/m-contest';
 import { getMRivalry } from '../../src/models/m-rivalry';
 import { getMTierList, TIERS } from '../../src/models/m-tier-list';
 import { getMUser } from '../../src/models/m-user';
+
+// Extract Gen 2 types
+type Rivalry = Schema['Rivalry']['type'];
+type Contest = Schema['Contest']['type'];
+type TierList = Schema['TierList']['type'];
+type User = Schema['User']['type'];
 
 describe('MRivalry Model', () => {
   const mockRivalry: Rivalry = {
@@ -388,6 +394,10 @@ describe('MRivalry Model', () => {
     });
 
     describe('1-stock win reversal', () => {
+      // Skipped: Test has incorrect expectations. With 1-stock wins, only ONE player moves.
+      // With nudge=1, only the loser moves up. Winner stays at same standing.
+      // These tests were originally skipped because the expectations don't match the actual
+      // game logic implementation in adjustStanding().
       it.skip('should reverse 1-stock win with positive nudge (bias=1)', () => {
         const mRivalry = getMRivalry({ rivalry: mockRivalry });
         const initialStandingA = 3;
@@ -426,6 +436,7 @@ describe('MRivalry Model', () => {
         expect(mRivalry.tierListB?.standing).toBe(initialStandingB);
       });
 
+      // Skipped: Same issue as above - test expects both players to move, but only one moves.
       it.skip('should reverse 1-stock win with negative nudge (bias=-1)', () => {
         const mRivalry = getMRivalry({ rivalry: mockRivalry });
         const initialStandingA = 3;
@@ -585,6 +596,8 @@ describe('MRivalry Model', () => {
         expect(mRivalry.tierListB?.standing).toBe(initialStandingB);
       });
 
+      // Skipped: This test may have similar issues with expectations.
+      // TODO: Investigate if this can be enabled with corrected expectations.
       it.skip('should correctly reverse 3-stock win with bias=-1', () => {
         const mRivalry = getMRivalry({ rivalry: mockRivalry });
         const initialStandingA = 5;
@@ -596,7 +609,7 @@ describe('MRivalry Model', () => {
         const contest = getMContest({
           __typename: 'Contest',
           id: 'contest-123',
-          rivalryId: 'slot-user-a',
+          rivalryId: 'rivalry-123',
           tierSlotAId: 'slot-user-a',
           tierSlotBId: 'slot-user-b',
           result: 3, // A wins by 3 stocks

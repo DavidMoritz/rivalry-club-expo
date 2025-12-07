@@ -13,7 +13,6 @@ import { getMRivalry } from '../../src/models/m-rivalry';
 describe('RivalryProvider', () => {
   const mockRivalry = getMRivalry({
     rivalry: {
-      __typename: 'Rivalry',
       id: 'rivalry-123',
       userAId: 'user-a',
       userBId: 'user-b',
@@ -21,7 +20,7 @@ describe('RivalryProvider', () => {
       contestCount: 10,
       createdAt: '2024-01-01',
       updatedAt: '2024-01-01',
-    },
+    } as any,
   });
 
   it('should provide rivalry context to children', () => {
@@ -61,7 +60,6 @@ describe('RivalryProvider', () => {
   it('should allow updating rivalry', () => {
     const newRivalry = getMRivalry({
       rivalry: {
-        __typename: 'Rivalry',
         id: 'rivalry-456',
         userAId: 'user-c',
         userBId: 'user-d',
@@ -69,7 +67,7 @@ describe('RivalryProvider', () => {
         contestCount: 5,
         createdAt: '2024-01-02',
         updatedAt: '2024-01-02',
-      },
+      } as any,
     });
 
     const TestComponent = () => {
@@ -297,7 +295,6 @@ describe('RivalryProvider', () => {
     it('should update isUserA/isUserB when rivalry changes', () => {
       const newRivalry = getMRivalry({
         rivalry: {
-          __typename: 'Rivalry',
           id: 'rivalry-456',
           userAId: 'user-c',
           userBId: 'user-d',
@@ -305,7 +302,7 @@ describe('RivalryProvider', () => {
           contestCount: 5,
           createdAt: '2024-01-02',
           updatedAt: '2024-01-02',
-        },
+        } as any,
       });
 
       const TestComponent = () => {
@@ -346,7 +343,6 @@ describe('RivalryProvider', () => {
       // Create a rivalry without userIds (simulating initial load with just ID)
       const initialRivalry = getMRivalry({
         rivalry: {
-          __typename: 'Rivalry',
           id: 'rivalry-123',
           gameId: 'game-123',
           contestCount: 0,
@@ -406,7 +402,6 @@ describe('RivalryProvider', () => {
     it('should handle multiple updates to the same rivalry object', () => {
       const rivalry = getMRivalry({
         rivalry: {
-          __typename: 'Rivalry',
           id: 'rivalry-123',
           userAId: 'user-a',
           userBId: 'user-b',
@@ -414,7 +409,7 @@ describe('RivalryProvider', () => {
           contestCount: 0,
           createdAt: '2024-01-01',
           updatedAt: '2024-01-01',
-        },
+        } as any,
       });
 
       const TestComponent = () => {
@@ -455,6 +450,157 @@ describe('RivalryProvider', () => {
 
       expect(getByTestId('is-user-a').props.children).toBe('false');
       expect(getByTestId('is-user-b').props.children).toBe('true');
+    });
+  });
+
+  describe('userAName and userBName', () => {
+    it('should provide userAName and userBName through context', () => {
+      const TestComponent = () => {
+        const { userAName, userBName } = useRivalryContext();
+
+        return (
+          <>
+            <Text testID="user-a-name">{userAName || 'No name A'}</Text>
+            <Text testID="user-b-name">{userBName || 'No name B'}</Text>
+          </>
+        );
+      };
+
+      const { getByTestId } = render(
+        <RivalryProvider
+          rivalry={mockRivalry}
+          userAName="Alice"
+          userBName="Bob"
+        >
+          <TestComponent />
+        </RivalryProvider>,
+      );
+
+      expect(getByTestId('user-a-name').props.children).toBe('Alice');
+      expect(getByTestId('user-b-name').props.children).toBe('Bob');
+    });
+
+    it('should handle when no user names are provided', () => {
+      const TestComponent = () => {
+        const { userAName, userBName } = useRivalryContext();
+
+        return (
+          <>
+            <Text testID="user-a-name">{userAName || 'No name A'}</Text>
+            <Text testID="user-b-name">{userBName || 'No name B'}</Text>
+          </>
+        );
+      };
+
+      const { getByTestId } = render(
+        <RivalryProvider rivalry={mockRivalry}>
+          <TestComponent />
+        </RivalryProvider>,
+      );
+
+      expect(getByTestId('user-a-name').props.children).toBe('No name A');
+      expect(getByTestId('user-b-name').props.children).toBe('No name B');
+    });
+
+    it('should allow updating user names through updateRivalry', () => {
+      const TestComponent = () => {
+        const { userAName, userBName } = useRivalryContext();
+        const updateRivalry = useUpdateRivalry();
+
+        return (
+          <>
+            <Text testID="user-a-name">{userAName || 'No name A'}</Text>
+            <Text testID="user-b-name">{userBName || 'No name B'}</Text>
+            <Button
+              testID="update-button"
+              title="Update Names"
+              onPress={() =>
+                updateRivalry(mockRivalry, 'Charlie', 'Diana')
+              }
+            />
+          </>
+        );
+      };
+
+      const { getByTestId } = render(
+        <RivalryProvider rivalry={mockRivalry} userAName="Alice" userBName="Bob">
+          <TestComponent />
+        </RivalryProvider>,
+      );
+
+      expect(getByTestId('user-a-name').props.children).toBe('Alice');
+      expect(getByTestId('user-b-name').props.children).toBe('Bob');
+
+      fireEvent.press(getByTestId('update-button'));
+
+      expect(getByTestId('user-a-name').props.children).toBe('Charlie');
+      expect(getByTestId('user-b-name').props.children).toBe('Diana');
+    });
+
+    it('should allow updating only userAName', () => {
+      const TestComponent = () => {
+        const { userAName, userBName } = useRivalryContext();
+        const updateRivalry = useUpdateRivalry();
+
+        return (
+          <>
+            <Text testID="user-a-name">{userAName || 'No name A'}</Text>
+            <Text testID="user-b-name">{userBName || 'No name B'}</Text>
+            <Button
+              testID="update-button"
+              title="Update A"
+              onPress={() => updateRivalry(mockRivalry, 'Eve', undefined)}
+            />
+          </>
+        );
+      };
+
+      const { getByTestId } = render(
+        <RivalryProvider rivalry={mockRivalry} userAName="Alice" userBName="Bob">
+          <TestComponent />
+        </RivalryProvider>,
+      );
+
+      expect(getByTestId('user-a-name').props.children).toBe('Alice');
+      expect(getByTestId('user-b-name').props.children).toBe('Bob');
+
+      fireEvent.press(getByTestId('update-button'));
+
+      expect(getByTestId('user-a-name').props.children).toBe('Eve');
+      expect(getByTestId('user-b-name').props.children).toBe('Bob');
+    });
+
+    it('should allow updating only userBName', () => {
+      const TestComponent = () => {
+        const { userAName, userBName } = useRivalryContext();
+        const updateRivalry = useUpdateRivalry();
+
+        return (
+          <>
+            <Text testID="user-a-name">{userAName || 'No name A'}</Text>
+            <Text testID="user-b-name">{userBName || 'No name B'}</Text>
+            <Button
+              testID="update-button"
+              title="Update B"
+              onPress={() => updateRivalry(mockRivalry, undefined, 'Frank')}
+            />
+          </>
+        );
+      };
+
+      const { getByTestId } = render(
+        <RivalryProvider rivalry={mockRivalry} userAName="Alice" userBName="Bob">
+          <TestComponent />
+        </RivalryProvider>,
+      );
+
+      expect(getByTestId('user-a-name').props.children).toBe('Alice');
+      expect(getByTestId('user-b-name').props.children).toBe('Bob');
+
+      fireEvent.press(getByTestId('update-button'));
+
+      expect(getByTestId('user-a-name').props.children).toBe('Alice');
+      expect(getByTestId('user-b-name').props.children).toBe('Frank');
     });
   });
 });

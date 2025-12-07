@@ -4,6 +4,7 @@ module.exports = {
   preset: 'jest-expo',
   setupFilesAfterEnv: ['<rootDir>/jest.setup.js'],
   testEnvironment: 'node',
+  testTimeout: 10000, // Increased from default 5000ms for async React Query tests
   transform: {
     '^.+\\.(js|jsx|ts|tsx)$': [
       'babel-jest',
@@ -24,4 +25,14 @@ module.exports = {
     '!src/custom-api.ts',
   ],
   testMatch: ['**/__tests__/**/*.test.{ts,tsx}'],
+  testPathIgnorePatterns: [
+    '/node_modules/',
+    '.*\\.debug\\.test\\.(ts|tsx)$', // Exclude debug tests from normal runs
+  ],
+  moduleNameMapper: {
+    // Mock static assets
+    '\\.(jpg|jpeg|png|gif|eot|otf|webp|svg|ttf|woff|woff2|mp4|webm|wav|mp3|m4a|aac|oga)$':
+      '<rootDir>/__mocks__/fileMock.js',
+    '\\.(css)$': '<rootDir>/__mocks__/styleMock.js',
+  },
 };

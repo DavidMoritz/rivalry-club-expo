@@ -1,10 +1,12 @@
-import { TierList, TierSlot } from '../../src/API';
+import type { Schema } from '../../amplify/data/resource';
 import { getMTierList, TIERS } from '../../src/models/m-tier-list';
+
+type TierList = Schema['TierList']['type'];
+type TierSlot = Schema['TierSlot']['type'];
 
 describe('MTierList Model', () => {
   const createMockTierSlots = (count: number): TierSlot[] => {
     return new Array(count).fill(null).map((_, i) => ({
-      __typename: 'TierSlot' as const,
       id: `slot-${i}`,
       tierListId: 'tier-list-123',
       fighterId: `fighter-${i}`,
@@ -13,11 +15,10 @@ describe('MTierList Model', () => {
       winCount: 0,
       createdAt: '2024-01-01',
       updatedAt: '2024-01-01',
-    }));
+    } as TierSlot));
   };
 
-  const mockTierList: TierList = {
-    __typename: 'TierList',
+  const mockTierList = {
     id: 'tier-list-123',
     rivalryId: 'rivalry-123',
     userId: 'user-123',
@@ -25,10 +26,9 @@ describe('MTierList Model', () => {
     createdAt: '2024-01-01',
     updatedAt: '2024-01-01',
     tierSlots: {
-      __typename: 'ModelTierSlotConnection',
       items: createMockTierSlots(21), // 3 slots per tier * 7 tiers
     },
-  };
+  } as any as TierList;
 
   describe('getMTierList', () => {
     it('should create an MTierList from a TierList object', () => {

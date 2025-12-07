@@ -1,3 +1,6 @@
+// Import @testing-library/jest-native matchers for enhanced assertions
+import '@testing-library/jest-native/extend-expect';
+
 // Mock react-native-worklets to avoid Babel plugin issues
 jest.mock('react-native-worklets', () => ({
   useSharedValue: jest.fn((value) => ({ value })),
@@ -56,10 +59,12 @@ jest.mock('@supabase/supabase-js', () => ({
   createClient: jest.fn(),
 }));
 
-// Suppress console logs in tests
-global.console = {
-  ...console,
-  log: jest.fn(),
-  error: jest.fn(),
-  warn: jest.fn(),
-};
+// Suppress console logs in tests (unless in verbose mode)
+if (!process.argv.includes('--verbose')) {
+  global.console = {
+    ...console,
+    log: jest.fn(),
+    error: jest.fn(),
+    warn: jest.fn(),
+  };
+}

@@ -11,19 +11,22 @@ export interface MFighter extends Fighter {
 }
 
 export function getMFighter(fighter: Fighter): MFighter {
-  return {
+  const mFighter = {
     ...fighter,
-    _mGame: null,
+    _mGame: null as MGame | null,
     baseFighter: fighter,
+  };
 
-    set game(mGame: MGame) {
+  Object.defineProperty(mFighter, 'game', {
+    get(): MGame | null {
+      return this._mGame;
+    },
+    set(mGame: MGame) {
       this._mGame = mGame;
     },
+    enumerable: true,
+    configurable: true,
+  });
 
-    get game(): MGame | null {
-      if (this._mGame) return this._mGame;
-
-      return null;
-    },
-  };
+  return mFighter as MFighter;
 }

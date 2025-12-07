@@ -1,24 +1,41 @@
-import { fireEvent, render, waitFor } from '@testing-library/react-native';
+import { fireEvent, render, screen, waitFor } from '@testing-library/react-native';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
-import { generateClient } from 'aws-amplify/data';
 import React from 'react';
 
 import { CreateRivalry } from '../../src/components/screens/CreateRivalry';
+import * as cRivalry from '../../src/controllers/c-rivalry';
+import * as cUser from '../../src/controllers/c-user';
 
 // Mock dependencies
-jest.mock('aws-amplify/data');
 jest.mock('expo-router');
 jest.mock('../../src/hooks/useAuthUser');
 jest.mock('../../src/providers/game');
+jest.mock('../../src/controllers/c-user');
+jest.mock('../../src/controllers/c-rivalry');
 
-const mockGenerateClient = generateClient as jest.MockedFunction<typeof generateClient>;
 const mockUseRouter = require('expo-router').useRouter as jest.Mock;
 const mockUseAuthUser = require('../../src/hooks/useAuthUser').useAuthUser as jest.Mock;
 const mockUseGame = require('../../src/providers/game').useGame as jest.Mock;
 
-describe.skip('Create Rivalry Integration Test', () => {
+describe('Create Rivalry Integration Test', () => {
   let queryClient: QueryClient;
   let mockRouter: any;
+  let mockCreateRivalryMutate: jest.Mock;
+  const mockUsers = [
+    {
+      id: 'user-2',
+      email: 'jane@example.com',
+      firstName: 'Jane',
+      lastName: 'Smith',
+      role: 0,
+      awsSub: 'aws-2',
+      createdAt: new Date().toISOString(),
+      updatedAt: new Date().toISOString(),
+      deletedAt: null,
+      fullName: 'Jane Smith',
+      displayName: jest.fn().mockReturnValue('Jane')
+    }
+  ];
 
   beforeEach(() => {
     queryClient = new QueryClient({
@@ -47,165 +64,119 @@ describe.skip('Create Rivalry Integration Test', () => {
       name: 'Super Smash Bros. Ultimate'
     });
 
+    // Mock user search to respond to searchText - return users when searchText includes 'jane'
+    (cUser.useUserSearchQuery as jest.Mock).mockImplementation(({ searchText }) => ({
+      data: searchText && searchText.toLowerCase().includes('jane') ? mockUsers : [],
+      isLoading: false
+    }));
+
+    // Mock rivalry creation mutation
+    mockCreateRivalryMutate = jest.fn();
+    (cRivalry.useCreateRivalryMutation as jest.Mock).mockReturnValue({
+      mutate: mockCreateRivalryMutate,
+      isLoading: false,
+      isSuccess: false,
+      error: null
+    });
+  });
+
+  afterEach(() => {
     jest.clearAllMocks();
   });
 
   it('should complete the full rivalry creation workflow', async () => {
-    const mockUsers = [
-      {
-        id: 'user-2',
-        email: 'jane@example.com',
-        firstName: 'Jane',
-        lastName: 'Smith',
-        role: 0,
-        awsSub: 'aws-2',
-        createdAt: new Date().toISOString(),
-        updatedAt: new Date().toISOString(),
-        deletedAt: null
-      }
-    ];
-
-    const mockRivalry = {
-      id: 'rivalry-1',
-      userAId: 'user-1',
-      userBId: 'user-2',
-      gameId: 'game-1',
-      contestCount: 0,
-      currentContestId: null,
-      accepted: false
-    };
-
-    const mockFighters = [
-      { id: 'fighter-1', name: 'Mario', gameId: 'game-1' },
-      { id: 'fighter-2', name: 'Link', gameId: 'game-1' }
-    ];
-
-    const mockClient = {
-      models: {
-        User: {
-          list: jest.fn().mockResolvedValue({ data: mockUsers, errors: null })
-        },
-        Rivalry: {
-          create: jest.fn().mockResolvedValue({ data: mockRivalry, errors: null })
-        },
-        Fighter: {
-          list: jest.fn().mockResolvedValue({ data: mockFighters, errors: null })
-        },
-        TierList: {
-          create: jest.fn().mockResolvedValue({ data: { id: 'tierlist-1' }, errors: null })
-        },
-        TierSlot: {
-          create: jest.fn().mockResolvedValue({ data: {}, errors: null })
-        }
-      }
-    };
-
-    mockGenerateClient.mockReturnValue(mockClient as any);
-
-    const { getByPlaceholderText, getByText } = render(
+    const { getByPlaceholderText, rerender } = render(
       <QueryClientProvider client={queryClient}>
         <CreateRivalry />
       </QueryClientProvider>
     );
 
-    // Step 1: Enter search text
+    // Enter search text
     const searchInput = getByPlaceholderText('Search by name or email...');
     fireEvent.changeText(searchInput, 'jane');
 
-    // Step 2: Wait for search results
-    await waitFor(() => {
-      expect(mockClient.models.User.list).toHaveBeenCalled();
-    });
+    // Force a rerender to apply the mock with new searchText
+    rerender(
+      <QueryClientProvider client={queryClient}>
+        <CreateRivalry />
+      </QueryClientProvider>
+    );
 
-    // Step 3: Select user from results
-    const userItem = await waitFor(() => getByText('Jane Smith'));
+    // Wait for user to appear in results
+    const userItem = await screen.findByText('Jane Smith', {}, { timeout: 3000 });
+    
+    // Select user from results
     fireEvent.press(userItem);
 
-    // Step 4: Click "Initiate Rivalry" button
-    const createButton = await waitFor(() => getByText('Initiate Rivalry'));
+    // Wait for and click the "Initiate Rivalry" button
+    const createButton = await screen.findByText('Initiate Rivalry');
+    
+    // Setup mutation to call onSuccess callback
+    mockCreateRivalryMutate.mockImplementation((params) => {
+      const { onSuccess } = (cRivalry.useCreateRivalryMutation as jest.Mock).mock.calls[0][0] || {};
+      if (onSuccess) {
+        onSuccess({ id: 'rivalry-1', ...params });
+      }
+    });
+
     fireEvent.press(createButton);
 
-    // Step 5: Verify rivalry creation
+    // Verify rivalry creation was called with correct params
     await waitFor(() => {
-      expect(mockClient.models.Rivalry.create).toHaveBeenCalledWith({
+      expect(mockCreateRivalryMutate).toHaveBeenCalledWith({
         userAId: 'user-1',
         userBId: 'user-2',
-        gameId: 'game-1',
-        contestCount: 0,
-        accepted: false
+        gameId: 'game-1'
       });
     });
 
-    // Step 6: Verify tier lists creation
-    await waitFor(() => {
-      expect(mockClient.models.TierList.create).toHaveBeenCalledTimes(2);
-    });
-
-    // Step 7: Verify tier slots creation (2 fighters × 2 users = 4 slots)
-    await waitFor(() => {
-      expect(mockClient.models.TierSlot.create).toHaveBeenCalledTimes(4);
-    });
-
-    // Step 8: Verify navigation back
+    // Verify navigation back after success
     await waitFor(() => {
       expect(mockRouter.back).toHaveBeenCalled();
     });
   });
 
   it('should display error when rivalry creation fails', async () => {
-    const mockUsers = [
-      {
-        id: 'user-2',
-        email: 'jane@example.com',
-        firstName: 'Jane',
-        lastName: 'Smith',
-        role: 0,
-        awsSub: 'aws-2',
-        createdAt: new Date().toISOString(),
-        updatedAt: new Date().toISOString(),
-        deletedAt: null
-      }
-    ];
-
-    const mockClient = {
-      models: {
-        User: {
-          list: jest.fn().mockResolvedValue({ data: mockUsers, errors: null })
-        },
-        Rivalry: {
-          create: jest.fn().mockResolvedValue({
-            data: null,
-            errors: [{ message: 'Database error' }]
-          })
+    // Setup mutation to call onError callback
+    (cRivalry.useCreateRivalryMutation as jest.Mock).mockReturnValue({
+      mutate: (params: any) => {
+        const { onError } = (cRivalry.useCreateRivalryMutation as jest.Mock).mock.calls[0][0] || {};
+        if (onError) {
+          onError(new Error('Failed to create rivalry'));
         }
-      }
-    };
+      },
+      isLoading: false,
+      isSuccess: false,
+      error: null
+    });
 
-    mockGenerateClient.mockReturnValue(mockClient as any);
-
-    const { getByPlaceholderText, getByText, findByText } = render(
+    const { getByPlaceholderText } = render(
       <QueryClientProvider client={queryClient}>
         <CreateRivalry />
       </QueryClientProvider>
     );
 
-    // Enter search and select user
+    // Enter search - mock will return users when 'jane' is in search
     const searchInput = getByPlaceholderText('Search by name or email...');
     fireEvent.changeText(searchInput, 'jane');
 
-    const userItem = await waitFor(() => getByText('Jane Smith'));
+    // Wait for user to appear
+    const userItem = await screen.findByText('Jane Smith');
     fireEvent.press(userItem);
 
     // Attempt to create rivalry
-    const createButton = await waitFor(() => getByText('Initiate Rivalry'));
+    const createButton = await screen.findByText('Initiate Rivalry');
     fireEvent.press(createButton);
 
-    // Verify error is displayed
-    const errorMessage = await findByText(/Error:/);
+    // Verify error message is displayed
+    const errorMessage = await screen.findByText(/Error:.*Failed to create rivalry/);
     expect(errorMessage).toBeTruthy();
+    
+    // Router back should NOT be called on error
+    expect(mockRouter.back).not.toHaveBeenCalled();
   });
 
-  it('should not allow creation without selecting a user', async () => {
+  it('should not allow creation without selecting a user', () => {
     const { queryByText } = render(
       <QueryClientProvider client={queryClient}>
         <CreateRivalry />

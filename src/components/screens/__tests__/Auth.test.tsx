@@ -3,21 +3,18 @@ import React from 'react';
 
 import { Auth } from '../Auth';
 
-// Mock Supabase
-const mockSignInWithPassword = jest.fn();
+// Mock AWS Amplify Auth
+const mockSignIn = jest.fn();
 const mockSignUp = jest.fn();
-const mockGetSession = jest.fn();
-const mockOnAuthStateChange = jest.fn();
+const mockGetCurrentUser = jest.fn();
+const mockConfirmSignUp = jest.fn();
 
-jest.mock('../../../lib/supabase', () => ({
-  supabase: {
-    auth: {
-      signInWithPassword: (...args: any[]) => mockSignInWithPassword(...args),
-      signUp: (...args: any[]) => mockSignUp(...args),
-      getSession: () => mockGetSession(),
-      onAuthStateChange: (...args: any[]) => mockOnAuthStateChange(...args)
-    }
-  }
+jest.mock('../../../lib/amplify-auth', () => ({
+  signIn: (...args: any[]) => mockSignIn(...args),
+  signUp: (...args: any[]) => mockSignUp(...args),
+  getCurrentUser: () => mockGetCurrentUser(),
+  confirmSignUp: (...args: any[]) => mockConfirmSignUp(...args),
+  isExpoGo: false,
 }));
 
 describe('Auth Component', () => {
@@ -27,10 +24,7 @@ describe('Auth Component', () => {
     jest.clearAllMocks();
 
     // Default mock implementations
-    mockGetSession.mockResolvedValue({ data: { session: null } });
-    mockOnAuthStateChange.mockReturnValue({
-      data: { subscription: { unsubscribe: jest.fn() } }
-    });
+    mockGetCurrentUser.mockRejectedValue(new Error('Not authenticated'));
   });
 
   describe('Initial Render', () => {

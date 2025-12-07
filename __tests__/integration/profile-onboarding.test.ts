@@ -11,7 +11,6 @@ import { act, render, waitFor } from '@testing-library/react-native';
 import type { Schema } from '../../amplify/data/resource';
 import { Auth } from '../../src/components/screens/Auth';
 import { Profile } from '../../src/components/screens/Profile';
-import { supabase } from '../../src/lib/supabase';
 
 // Mock the dependencies
 jest.mock('expo-router', () => ({
@@ -19,14 +18,13 @@ jest.mock('expo-router', () => ({
   useLocalSearchParams: jest.fn(() => ({})),
 }));
 
-jest.mock('../../src/lib/supabase', () => ({
-  supabase: {
-    auth: {
-      getSession: jest.fn(),
-      onAuthStateChange: jest.fn(),
-      updateUser: jest.fn(),
-    },
-  },
+jest.mock('../../src/lib/amplify-auth', () => ({
+  getCurrentUser: jest.fn(),
+  signIn: jest.fn(),
+  signUp: jest.fn(),
+  confirmSignUp: jest.fn(),
+  updatePassword: jest.fn(),
+  isExpoGo: false,
 }));
 
 jest.mock('aws-amplify/data', () => ({
@@ -40,7 +38,6 @@ jest.mock('../../src/hooks/useAuthUser', () => ({
 describe('Profile Onboarding Flow - Integration Tests', () => {
   let mockRouter: any;
   let mockClient: any;
-  let mockSupabaseAuth: any;
 
   beforeEach(() => {
     mockRouter = {
@@ -58,21 +55,8 @@ describe('Profile Onboarding Flow - Integration Tests', () => {
       },
     };
 
-    mockSupabaseAuth = {
-      getSession: jest.fn(),
-      onAuthStateChange: jest.fn(() => ({
-        data: {
-          subscription: {
-            unsubscribe: jest.fn(),
-          },
-        },
-      })),
-      updateUser: jest.fn(),
-    };
-
     (useRouter as jest.Mock).mockReturnValue(mockRouter);
     (generateClient as jest.Mock).mockReturnValue(mockClient);
-    (supabase.auth as any) = mockSupabaseAuth;
 
     // Clear all mock calls
     jest.clearAllMocks();

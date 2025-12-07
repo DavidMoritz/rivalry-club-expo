@@ -17,8 +17,19 @@ jest.mock('react-native-reanimated', () => {
 });
 
 // Mock Expo modules
-jest.mock('expo-secure-store');
-jest.mock('@react-native-async-storage/async-storage');
+jest.mock('@react-native-async-storage/async-storage', () => ({
+  __esModule: true,
+  default: {
+    getItem: jest.fn(() => Promise.resolve(null)),
+    setItem: jest.fn(() => Promise.resolve()),
+    removeItem: jest.fn(() => Promise.resolve()),
+    clear: jest.fn(() => Promise.resolve()),
+    getAllKeys: jest.fn(() => Promise.resolve([])),
+    multiGet: jest.fn(() => Promise.resolve([])),
+    multiSet: jest.fn(() => Promise.resolve()),
+    multiRemove: jest.fn(() => Promise.resolve()),
+  },
+}));
 jest.mock('@react-native-community/netinfo');
 jest.mock('expo-status-bar');
 
@@ -52,11 +63,6 @@ jest.mock('aws-amplify', () => ({
   Amplify: {
     configure: jest.fn(),
   },
-}));
-
-// Mock Supabase
-jest.mock('@supabase/supabase-js', () => ({
-  createClient: jest.fn(),
 }));
 
 // Suppress console logs in tests (unless in verbose mode)

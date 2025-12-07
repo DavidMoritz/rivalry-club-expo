@@ -19,15 +19,12 @@ jest.mock('../../../hooks/useAuthUser', () => ({
   useAuthUser: () => mockUseAuthUser()
 }));
 
-// Mock Supabase
-const mockUpdateUser = jest.fn();
+// Mock AWS Amplify Auth
+const mockUpdatePassword = jest.fn();
 
-jest.mock('../../../lib/supabase', () => ({
-  supabase: {
-    auth: {
-      updateUser: (...args: any[]) => mockUpdateUser(...args)
-    }
-  }
+jest.mock('../../../lib/amplify-auth', () => ({
+  updatePassword: (...args: any[]) => mockUpdatePassword(...args),
+  isExpoGo: false,
 }));
 
 // Mock AWS Amplify
@@ -48,8 +45,9 @@ describe('Profile Component', () => {
     jest.clearAllMocks();
     jest.useFakeTimers();
 
-    // Default mock
-    mockUpdateUser.mockResolvedValue({ error: null });
+    // Default mocks
+    mockUpdatePassword.mockResolvedValue({ error: null });
+    mockUserUpdate.mockResolvedValue({ data: {}, errors: [] });
   });
 
   afterEach(() => {

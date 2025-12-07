@@ -128,11 +128,8 @@ export default function TierListEditRoute() {
     onSuccess: () => {
       setHasChanges(false);
 
-      // Navigate back to tiers page
-      router.push({
-        pathname: `/rivalry/${rivalryId}/tiers`,
-        params: { userId, userAName, userBName }
-      });
+      // Navigate back
+      router.back();
     }
   });
 

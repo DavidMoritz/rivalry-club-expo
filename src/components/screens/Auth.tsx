@@ -43,6 +43,10 @@ export function Auth({ onAuthSuccess }: AuthProps) {
       onAuthSuccess();
     } catch (err: any) {
       console.error('[Auth] Sign in error:', err);
+      console.error('[Auth] Error name:', err?.name);
+      console.error('[Auth] Error message:', err?.message);
+      console.error('[Auth] Error underlyingError:', err?.underlyingError);
+      console.error('[Auth] Full error object:', JSON.stringify(err, null, 2));
 
       // Handle Cognito error codes
       if (err.name === 'NotAuthorizedException') {
@@ -86,7 +90,9 @@ export function Auth({ onAuthSuccess }: AuthProps) {
       if (err.name === 'UsernameExistsException') {
         setError('An account with this email already exists');
       } else if (err.name === 'InvalidPasswordException') {
-        setError('Password must be at least 8 characters with uppercase, lowercase, numbers, and symbols');
+        setError(
+          'Password must be at least 8 characters with uppercase, lowercase, numbers, and symbols'
+        );
       } else {
         setError(err?.message || 'Sign up failed. Please try again.');
       }
@@ -102,9 +108,13 @@ export function Auth({ onAuthSuccess }: AuthProps) {
     try {
       await confirmSignUp(email.trim(), verificationCode.trim());
 
-      // After successful verification, sign in automatically
-      await signIn(email.trim(), password.trim());
-      onAuthSuccess();
+      // After successful verification, redirect to sign-in screen
+      setNeedsVerification(false);
+      setIsSignUp(false);
+      setVerificationCode('');
+      setPassword('');
+      setConfirmPassword('');
+      setError('Account verified! Please sign in with your password.');
     } catch (err: any) {
       console.error('[Auth] Verification error:', err);
 
@@ -131,8 +141,34 @@ export function Auth({ onAuthSuccess }: AuthProps) {
         {needsVerification ? (
           <>
             <Text style={styles.text} className="mb-6 text-center">
-              We sent a verification code to {email}. Please enter it below.
+              Please enter your email and the verification code we sent you.
             </Text>
+
+            <View className="w-full mb-5">
+              <Text style={styles.text} className="mb-2 text-base font-medium">
+                Email
+              </Text>
+              <TextInput
+                className="w-full rounded-lg text-base"
+                style={[
+                  styles.text,
+                  {
+                    paddingHorizontal: 16,
+                    paddingVertical: 14,
+                    backgroundColor: '#2d3748',
+                    borderWidth: 2,
+                    borderColor: '#4a5568'
+                  }
+                ]}
+                placeholder="Enter your email"
+                placeholderTextColor="#a0aec0"
+                value={email}
+                onChangeText={setEmail}
+                keyboardType="email-address"
+                autoCapitalize="none"
+                autoCorrect={false}
+              />
+            </View>
 
             <View className="w-full mb-5">
               <Text style={styles.text} className="mb-2 text-base font-medium">
@@ -180,8 +216,8 @@ export function Auth({ onAuthSuccess }: AuthProps) {
                 marginBottom: 16
               }}
               onPress={handleVerifyCode}
-              disabled={loading || !verificationCode}
-              accessibilityState={{ disabled: loading || !verificationCode }}
+              disabled={loading || !verificationCode || !email}
+              accessibilityState={{ disabled: loading || !verificationCode || !email }}
             >
               <Text style={{ color: 'white', fontSize: 18, fontWeight: 'bold' }}>
                 {loading ? 'Verifying...' : 'Verify'}
@@ -196,9 +232,7 @@ export function Auth({ onAuthSuccess }: AuthProps) {
               }}
               style={{ marginTop: 8 }}
             >
-              <Text style={{ color: '#22d3ee', fontSize: 16 }}>
-                Back to Sign Up
-              </Text>
+              <Text style={{ color: '#22d3ee', fontSize: 16 }}>Back to Sign Up</Text>
             </TouchableOpacity>
           </>
         ) : (
@@ -282,7 +316,14 @@ export function Auth({ onAuthSuccess }: AuthProps) {
             )}
 
             {error && (
-              <Text style={styles.text} className="mb-4 text-center text-red-400">
+              <Text
+                style={styles.text}
+                className={`mb-4 text-center ${
+                  error.includes('verified') || error.includes('success')
+                    ? 'text-green-400'
+                    : 'text-red-400'
+                }`}
+              >
                 {error}
               </Text>
             )}
@@ -319,6 +360,18 @@ export function Auth({ onAuthSuccess }: AuthProps) {
             >
               <Text style={{ color: '#22d3ee', fontSize: 16 }}>
                 {isSignUp ? 'Already have an account? Sign In' : "Don't have an account? Sign Up"}
+              </Text>
+            </TouchableOpacity>
+
+            <TouchableOpacity
+              onPress={() => {
+                setNeedsVerification(true);
+                setError(null);
+              }}
+              style={{ marginTop: 12 }}
+            >
+              <Text style={{ color: '#a0aec0', fontSize: 16 }}>
+                Have a confirmation code? Verify
               </Text>
             </TouchableOpacity>
           </>

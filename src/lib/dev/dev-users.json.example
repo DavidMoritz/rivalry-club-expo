@@ -1,0 +1,10 @@
+{
+  "users": [
+    {
+      "email": "dev@expo.go",
+      "awsSub": "expo-go-dev-user",
+      "firstName": "Dev",
+      "lastName": "User"
+    }
+  ]
+}

@@ -47,3 +47,6 @@ yarn-error.*
 node_modules/
 .env
 .claude/
+
+# Dev users config (local test users)
+src/lib/dev/dev-users.json

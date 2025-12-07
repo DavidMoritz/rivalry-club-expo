@@ -41,7 +41,7 @@ yarn-error.*
 /android
 
 # Amplify Gen 2
-amplify_outputs.json
+# amplify_outputs.json  # Temporarily included for EAS build
 .amplify/
 node_modules/
 .env

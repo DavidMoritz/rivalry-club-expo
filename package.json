@@ -9,6 +9,7 @@
     "web": "expo start --web",
     "amplify:sandbox": "npx ampx sandbox",
     "amplify:deploy": "npx ampx pipeline-deploy",
+    "build:ios": "eas build --platform ios --profile production --non-interactive --auto-submit",
     "test": "jest",
     "test:watch": "jest --watch",
     "test:coverage": "jest --coverage",

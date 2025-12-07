@@ -6,9 +6,24 @@ Modern rebuild of Rivalry Club using Expo and current Amplify/GraphQL standards.
 
 ```bash
 npm install
-npm run ios     # Run on iOS
+npm run ios     # Run on iOS simulator
 npm run android # Run on Android
 ```
+
+## 🚀 Production Build & Deploy
+
+**To build and submit to App Store (TestFlight):**
+
+```bash
+npm run build:ios
+```
+
+This will:
+- Build the iOS app for production
+- Automatically submit to App Store Connect
+- No prompts or manual steps required
+
+The build will appear in TestFlight within ~15 minutes after the build completes.
 
 ## Project Structure
 

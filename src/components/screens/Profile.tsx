@@ -6,7 +6,7 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 
 import type { Schema } from '../../../amplify/data/resource';
 import { useAuthUser } from '../../hooks/useAuthUser';
-import { supabase } from '../../lib/supabase';
+import { updatePassword } from '../../lib/amplify-auth';
 import { darkStyles, styles } from '../../utils/styles';
 
 export function Profile() {
@@ -102,24 +102,22 @@ export function Profile() {
     setIsChangingPassword(true);
 
     try {
-      const { error } = await supabase.auth.updateUser({
-        password: newPassword,
-      });
-
-      if (error) {
-        throw error;
-      }
+      await updatePassword(currentPassword, newPassword);
 
       setSuccessMessage('Password changed successfully');
       setCurrentPassword('');
       setNewPassword('');
       setConfirmPassword('');
       setTimeout(() => setSuccessMessage(''), 3000);
-    } catch (error) {
-      if (error instanceof Error) {
-        setErrorMessage(error.message);
+    } catch (error: any) {
+      console.error('[Profile] Password change error:', error);
+
+      if (error.name === 'NotAuthorizedException') {
+        setErrorMessage('Current password is incorrect');
+      } else if (error.name === 'InvalidPasswordException') {
+        setErrorMessage('Password must be at least 8 characters with uppercase, lowercase, numbers, and symbols');
       } else {
-        setErrorMessage('Failed to change password');
+        setErrorMessage(error?.message || 'Failed to change password');
       }
     } finally {
       setIsChangingPassword(false);

@@ -1,8 +1,9 @@
+import { Hub } from 'aws-amplify/utils';
 import { generateClient } from 'aws-amplify/data';
 import { useEffect, useState } from 'react';
 
 import type { Schema } from '../../amplify/data/resource';
-import { supabase } from '../lib/supabase';
+import { getCurrentUser } from '../lib/amplify-auth';
 
 interface AuthUser {
   id: string;
@@ -14,38 +15,45 @@ interface AuthUser {
 }
 
 /**
- * Custom hook that manages user creation and retrieval after Supabase authentication.
+ * Custom hook that manages user creation and retrieval after Cognito authentication.
  *
  * Flow:
- * 1. Gets the authenticated Supabase user
- * 2. Queries the AppSync database for a User record matching the Supabase user ID
- * 3. If no User exists, creates one with the Supabase user's email and ID
+ * 1. Gets the authenticated Cognito user
+ * 2. Queries the AppSync database for a User record matching the Cognito user ID (sub)
+ * 3. If no User exists, creates one with the Cognito user's email and ID
  * 4. Returns the User record
  */
 export function useAuthUser() {
   const [user, setUser] = useState<AuthUser | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<Error | null>(null);
-  const [supabaseUserId, setSupabaseUserId] = useState<string | null>(null);
+  const [cognitoUserId, setCognitoUserId] = useState<string | null>(null);
 
-  // Listen for auth changes from Supabase
+  // Listen for auth changes from Cognito
   useEffect(() => {
-    supabase.auth.getSession().then(({ data: { session } }) => {
-      setSupabaseUserId(session?.user?.id || null);
+    getCurrentUser()
+      .then((user) => setCognitoUserId(user.userId))
+      .catch(() => setCognitoUserId(null));
+
+    const hubListener = Hub.listen('auth', ({ payload }) => {
+      switch (payload.event) {
+        case 'signedIn':
+          getCurrentUser()
+            .then((user) => setCognitoUserId(user.userId))
+            .catch(() => setCognitoUserId(null));
+          break;
+        case 'signedOut':
+          setCognitoUserId(null);
+          break;
+      }
     });
 
-    const {
-      data: { subscription },
-    } = supabase.auth.onAuthStateChange((_event, session) => {
-      setSupabaseUserId(session?.user?.id || null);
-    });
-
-    return () => subscription.unsubscribe();
+    return () => hubListener();
   }, []);
 
   useEffect(() => {
     async function fetchOrCreateUser() {
-      if (!supabaseUserId) {
+      if (!cognitoUserId) {
         setIsLoading(false);
         return;
       }
@@ -54,20 +62,18 @@ export function useAuthUser() {
         setIsLoading(true);
         setError(null);
 
-        // Get Supabase user email
-        const {
-          data: { user: supabaseUser },
-        } = await supabase.auth.getUser();
-        const email = supabaseUser?.email || '';
+        // Get Cognito user attributes
+        const currentUser = await getCurrentUser();
+        const email = currentUser.signInDetails?.loginId || '';
 
         // Generate AppSync client
         const client = generateClient<Schema>();
 
-        // Query for existing user by Supabase user ID (stored in awsSub field)
+        // Query for existing user by Cognito user ID (stored in awsSub field)
         const listResult = await client.models.User.list({
           filter: {
             awsSub: {
-              eq: supabaseUserId,
+              eq: cognitoUserId,
             },
           },
         });
@@ -88,7 +94,7 @@ export function useAuthUser() {
           // Create new user in database
           const createResult = await client.models.User.create({
             email,
-            awsSub: supabaseUserId, // Store Supabase user ID in awsSub field
+            awsSub: cognitoUserId, // Store Cognito user ID (sub) in awsSub field
             role: 0, // Default role
           });
 
@@ -114,7 +120,7 @@ export function useAuthUser() {
     }
 
     fetchOrCreateUser();
-  }, [supabaseUserId]);
+  }, [cognitoUserId]);
 
   return {
     user,

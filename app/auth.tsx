@@ -1,27 +1,26 @@
-import { useLocalSearchParams, useRouter } from 'expo-router';
+import { useRouter } from 'expo-router';
 import { StatusBar } from 'expo-status-bar';
 import React, { useEffect, useState } from 'react';
 import { generateClient } from 'aws-amplify/data';
 import type { Schema } from '../amplify/data/resource';
 
 import { Auth } from '../src/components/screens/Auth';
-import { supabase } from '../src/lib/supabase';
+import { getCurrentUser } from '../src/lib/amplify-auth';
 
 const client = generateClient<Schema>();
 
 export default function AuthRoute() {
   const router = useRouter();
-  const params = useLocalSearchParams();
   const [authenticated, setAuthenticated] = useState(false);
 
   // Check if user has completed their profile and route accordingly
-  const checkUserProfileAndNavigate = async (supabaseUserId: string) => {
+  const checkUserProfileAndNavigate = async (cognitoUserId: string) => {
     try {
-      // Query for user by Supabase user ID
+      // Query for user by Cognito user ID
       const listResult = await client.models.User.list({
         filter: {
           awsSub: {
-            eq: supabaseUserId
+            eq: cognitoUserId
           }
         }
       });
@@ -48,40 +47,37 @@ export default function AuthRoute() {
     }
   };
 
-  // Listen for auth state changes from Supabase
+  // Check auth status on mount
   useEffect(() => {
-    // Check initial session
-    supabase.auth.getSession().then(({ data: { session } }) => {
-      if (session?.user) {
-        setAuthenticated(true);
-        checkUserProfileAndNavigate(session.user.id);
-      }
-    });
+    checkAuthStatus();
+  }, []);
 
-    // Subscribe to auth changes
-    const {
-      data: { subscription }
-    } = supabase.auth.onAuthStateChange((_event, session) => {
-      if (session?.user) {
+  async function checkAuthStatus() {
+    try {
+      const user = await getCurrentUser();
+      if (user?.userId) {
         setAuthenticated(true);
-        checkUserProfileAndNavigate(session.user.id);
-      } else {
-        setAuthenticated(false);
+        await checkUserProfileAndNavigate(user.userId);
       }
-    });
-
-    return () => subscription.unsubscribe();
-  }, [router]);
+    } catch (err) {
+      // User not authenticated, stay on auth screen
+      console.log('[AuthRoute] No current user');
+      setAuthenticated(false);
+    }
+  }
 
   return (
     <>
       <Auth
         onAuthSuccess={async () => {
-          const {
-            data: { session }
-          } = await supabase.auth.getSession();
-          if (session?.user) {
-            await checkUserProfileAndNavigate(session.user.id);
+          try {
+            const user = await getCurrentUser();
+            if (user?.userId) {
+              await checkUserProfileAndNavigate(user.userId);
+            }
+          } catch (err) {
+            console.error('[AuthRoute] Error getting user after auth:', err);
+            router.replace('/profile');
           }
         }}
       />

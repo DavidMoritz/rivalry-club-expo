@@ -2,7 +2,7 @@ import { useRouter } from 'expo-router';
 import React, { useState } from 'react';
 import { Modal, Pressable, Text, TouchableOpacity, View } from 'react-native';
 
-import { supabase } from '../../lib/supabase';
+import { signOut } from '../../lib/amplify-auth';
 import { darkStyles } from '../../utils/styles';
 
 export function HamburgerMenu() {
@@ -11,8 +11,8 @@ export function HamburgerMenu() {
 
   const handleSignOut = async () => {
     try {
-      // Sign out from Supabase
-      await supabase.auth.signOut();
+      // Sign out from Cognito
+      await signOut();
 
       setMenuVisible(false);
       // Navigate to home screen

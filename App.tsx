@@ -1,27 +1,17 @@
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
-import { Amplify } from 'aws-amplify';
-import { generateClient } from 'aws-amplify/data';
+import { Hub } from 'aws-amplify/utils';
 import { StatusBar } from 'expo-status-bar';
 import React, { useEffect, useState } from 'react';
 import 'react-native-get-random-values';
 import 'react-native-url-polyfill/auto';
 
-import outputs from './amplify_outputs.json';
 import './global.css';
 import { Access } from './src/components/screens/Access';
 import { Auth } from './src/components/screens/Auth';
 import Home from './src/components/screens/Home';
-import { supabase } from './src/lib/supabase';
+import { getCurrentUser } from './src/lib/amplify-auth';
 
 const queryClient = new QueryClient();
-
-// Configure Amplify with the full outputs file
-// We're using Supabase for auth, but Amplify for the GraphQL API
-try {
-  Amplify.configure(outputs);
-} catch (configErr) {
-  console.error('[App] Amplify.configure failed:', configErr);
-}
 
 // Temporary Game type - will be replaced with GraphQL type later
 interface Game {
@@ -55,21 +45,26 @@ export default function App() {
 function AuthenticatedApp({ selectedGame }: { selectedGame: Game | null }) {
   const [authenticated, setAuthenticated] = useState(false);
 
-  // Listen for auth state changes from Supabase
+  // Listen for auth state changes from Cognito
   useEffect(() => {
     // Check initial session
-    supabase.auth.getSession().then(({ data: { session } }) => {
-      setAuthenticated(!!session);
+    getCurrentUser()
+      .then(() => setAuthenticated(true))
+      .catch(() => setAuthenticated(false));
+
+    // Subscribe to auth changes via Amplify Hub
+    const hubListener = Hub.listen('auth', ({ payload }) => {
+      switch (payload.event) {
+        case 'signedIn':
+          setAuthenticated(true);
+          break;
+        case 'signedOut':
+          setAuthenticated(false);
+          break;
+      }
     });
 
-    // Subscribe to auth changes
-    const {
-      data: { subscription }
-    } = supabase.auth.onAuthStateChange((_event, session) => {
-      setAuthenticated(!!session);
-    });
-
-    return () => subscription.unsubscribe();
+    return () => hubListener();
   }, []);
 
   if (!authenticated) {

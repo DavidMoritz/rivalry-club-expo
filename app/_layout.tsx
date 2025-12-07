@@ -17,42 +17,52 @@ const isExpoGo = Constants.appOwnership === 'expo';
 
 // Configure Amplify immediately at module load time, BEFORE any React components render
 // This prevents TurboModule crashes when components try to use AWS Amplify auth
-try {
-  console.log('[_layout module] Configuring Amplify at module load...');
-  Amplify.configure(outputs);
-  console.log('[_layout module] Amplify configured successfully');
-} catch (err) {
-  console.error('[_layout module] Amplify configuration failed:', err);
-  // In Expo Go mode, this might fail but auth will be bypassed anyway
-}
+// IMPORTANT: Do NOT configure Amplify at module load time in React Native!
+// Amplify.configure calls native modules that aren't ready until after app initialization
+// We'll configure it in RootLayout after a delay to ensure native modules are ready
+let amplifyConfigured = false;
 
 export default function RootLayout() {
   const [assetsLoaded, setAssetsLoaded] = useState(false);
   const [loadingError, setLoadingError] = useState<string | null>(null);
+  const [isReady, setIsReady] = useState(false);
 
   useEffect(() => {
-    async function loadAssets() {
+    async function initialize() {
       try {
+        // Give native modules time to initialize before configuring Amplify
+        // This prevents TurboModule crashes on app launch
+        await new Promise(resolve => setTimeout(resolve, 100));
+
+        if (!amplifyConfigured) {
+          console.log('[RootLayout] Configuring Amplify after delay...');
+          Amplify.configure(outputs);
+          amplifyConfigured = true;
+          console.log('[RootLayout] Amplify configured successfully');
+        }
+
         await preloadAssets();
         setAssetsLoaded(true);
+        setIsReady(true);
       } catch (error) {
-        console.error('[RootLayout] Error preloading assets:', error);
+        console.error('[RootLayout] Initialization error:', error);
         setLoadingError(error instanceof Error ? error.message : 'Unknown error');
-        // Still show the app even if preloading fails
+        // Still show the app even if initialization fails
         setAssetsLoaded(true);
+        setIsReady(true);
       }
     }
 
-    loadAssets();
+    initialize();
   }, []);
 
-  // Show loading screen while assets load
-  if (!assetsLoaded) {
+  // Show loading screen until fully initialized
+  if (!isReady) {
     return (
       <View style={{ flex: 1, backgroundColor: '#000', alignItems: 'center', justifyContent: 'center' }}>
         <ActivityIndicator size="large" color="#fff" />
         <Text style={{ color: '#fff', marginTop: 16, fontSize: 16 }}>
-          Loading assets...
+          Initializing...
         </Text>
       </View>
     );

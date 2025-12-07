@@ -15,11 +15,20 @@ const queryClient = new QueryClient();
 
 const isExpoGo = Constants.appOwnership === 'expo';
 
+// Configure Amplify immediately at module load time, BEFORE any React components render
+// This prevents TurboModule crashes when components try to use AWS Amplify auth
+try {
+  console.log('[_layout module] Configuring Amplify at module load...');
+  Amplify.configure(outputs);
+  console.log('[_layout module] Amplify configured successfully');
+} catch (err) {
+  console.error('[_layout module] Amplify configuration failed:', err);
+  // In Expo Go mode, this might fail but auth will be bypassed anyway
+}
+
 export default function RootLayout() {
   const [assetsLoaded, setAssetsLoaded] = useState(false);
   const [loadingError, setLoadingError] = useState<string | null>(null);
-  const [amplifyConfigured, setAmplifyConfigured] = useState(false);
-  const [amplifyError, setAmplifyError] = useState<string | null>(null);
 
   useEffect(() => {
     async function loadAssets() {
@@ -37,32 +46,13 @@ export default function RootLayout() {
     loadAssets();
   }, []);
 
-  // Configure Amplify synchronously on mount to avoid race conditions with hooks
-  useEffect(() => {
-    if (!amplifyConfigured) {
-      try {
-        console.log('[RootLayout] Configuring Amplify...');
-        Amplify.configure(outputs);
-        console.log('[RootLayout] Amplify configured successfully');
-        setAmplifyConfigured(true);
-      } catch (configErr) {
-        const errorMsg = configErr instanceof Error ? configErr.message : 'Unknown error';
-        console.error('[RootLayout] Amplify.configure failed:', errorMsg);
-        setAmplifyError(errorMsg);
-        // Set as configured even on error to prevent infinite loading
-        // In Expo Go mode, auth will be bypassed anyway
-        setAmplifyConfigured(true);
-      }
-    }
-  }, [amplifyConfigured]);
-
-  // Show loading screen while assets or Amplify are loading
-  if (!assetsLoaded || !amplifyConfigured) {
+  // Show loading screen while assets load
+  if (!assetsLoaded) {
     return (
       <View style={{ flex: 1, backgroundColor: '#000', alignItems: 'center', justifyContent: 'center' }}>
         <ActivityIndicator size="large" color="#fff" />
         <Text style={{ color: '#fff', marginTop: 16, fontSize: 16 }}>
-          {!assetsLoaded ? 'Loading assets...' : 'Initializing...'}
+          Loading assets...
         </Text>
       </View>
     );
@@ -70,10 +60,6 @@ export default function RootLayout() {
 
   if (loadingError) {
     console.warn('[RootLayout] Assets failed to preload, but continuing anyway:', loadingError);
-  }
-
-  if (amplifyError) {
-    console.warn('[RootLayout] Amplify configuration had errors, but continuing:', amplifyError);
   }
 
   return (

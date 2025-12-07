@@ -49,7 +49,10 @@ export default function RivalryDetailRoute() {
     navigate: (screen: string) => {
       // Map old screen names to new routes
       if (screen === 'RivalryTiersView') {
-        router.push(`/rivalry/${rivalryId}/tiers`);
+        router.push({
+          pathname: `/rivalry/${rivalryId}/tiers`,
+          params: { userId, userAName, userBName }
+        });
       } else if (screen === 'ContestHistory') {
         router.push(`/rivalry/${rivalryId}/history`);
       }

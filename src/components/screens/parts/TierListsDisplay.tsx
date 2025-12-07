@@ -1,0 +1,35 @@
+import { ReactNode } from 'react';
+import { Text, View } from 'react-native';
+
+import { MRivalry } from '../../../models/m-rivalry';
+import { useRivalryContext } from '../../../providers/rivalry';
+import { darkStyles } from '../../../utils/styles';
+import { TierListDisplay } from './TierListDisplay';
+
+interface TierListsDisplayProps {
+  rivalry: MRivalry;
+  unlinked: boolean;
+}
+
+export function TierListsDisplay({ rivalry, unlinked }: TierListsDisplayProps): ReactNode {
+  const { userId } = useRivalryContext();
+
+  return (
+    <View
+      style={{ flex: 1, flexDirection: userId === rivalry.userBId ? 'column-reverse' : 'column' }}
+    >
+      <View style={{ flex: 1 }}>
+        <Text style={[darkStyles.text, { fontSize: 18, marginBottom: 8, marginTop: 16 }]}>
+          {rivalry.displayUserAName()} tier list
+        </Text>
+        {rivalry.tierListA && <TierListDisplay tierList={rivalry.tierListA} unlinked={unlinked} />}
+      </View>
+      <View style={{ flex: 1 }}>
+        <Text style={[darkStyles.text, { fontSize: 18, marginBottom: 8, marginTop: 16 }]}>
+          {rivalry.displayUserBName()} tier list
+        </Text>
+        {rivalry.tierListB && <TierListDisplay tierList={rivalry.tierListB} unlinked={unlinked} />}
+      </View>
+    </View>
+  );
+}

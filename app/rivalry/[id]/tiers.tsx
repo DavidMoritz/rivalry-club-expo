@@ -1,4 +1,4 @@
-import { useLocalSearchParams, Stack, useRouter } from 'expo-router';
+import { useLocalSearchParams, Stack } from 'expo-router';
 import { StatusBar } from 'expo-status-bar';
 import React, { useState, useMemo } from 'react';
 import { SafeAreaView, Text, View } from 'react-native';
@@ -9,22 +9,23 @@ import type { Schema } from '../../../amplify/data/resource';
 import gameQuery from '../../../assets/cache/game-query.json';
 import { Button } from '../../../src/components/common/Button';
 import { HamburgerMenu } from '../../../src/components/common/HamburgerMenu';
-import { TierListDisplay } from '../../../src/components/screens/parts/TierListDisplay';
+import { TierListsDisplay } from '../../../src/components/screens/parts/TierListsDisplay';
 import { getMGame } from '../../../src/models/m-game';
 import { getMRivalry, MRivalry } from '../../../src/models/m-rivalry';
 import { getMUser } from '../../../src/models/m-user';
 import { GameProvider } from '../../../src/providers/game';
-import { useRivalryContext } from '../../../src/providers/rivalry';
+import { RivalryProvider } from '../../../src/providers/rivalry';
 import { SyncedScrollViewContext, syncedScrollViewState } from '../../../src/providers/scroll-view';
 import { darkStyles, styles } from '../../../src/utils/styles';
 
 const client = generateClient<Schema>();
 
 export default function TiersRoute() {
-  const router = useRouter();
   const params = useLocalSearchParams();
   const rivalryId = params.id as string;
-  const rivalryContext = useRivalryContext();
+  const userId = params.userId as string | undefined;
+  const userAName = params.userAName as string | undefined;
+  const userBName = params.userBName as string | undefined;
 
   const [unlinked, setUnLinked] = useState<boolean>(false);
   const [rivalry, setRivalry] = useState<MRivalry | null>(null);
@@ -90,26 +91,17 @@ export default function TiersRoute() {
       mRivalry.setMTierLists(tierLists as any);
 
       // Use user names from context if available, otherwise fetch
-      if (rivalryContext.userAName && rivalryContext.userBName) {
-        mRivalry.userA = getMUser({
-          user: { id: rivalryData.userAId, firstName: rivalryContext.userAName } as any
-        });
-        mRivalry.userB = getMUser({
-          user: { id: rivalryData.userBId, firstName: rivalryContext.userBName } as any
-        });
-      } else {
-        // Load user data separately if not in context
-        const [userAResult, userBResult] = await Promise.all([
-          client.models.User.get({ id: rivalryData.userAId }),
-          client.models.User.get({ id: rivalryData.userBId })
-        ]);
+      // Load user data separately if not in context
+      const [userAResult, userBResult] = await Promise.all([
+        client.models.User.get({ id: rivalryData.userAId }),
+        client.models.User.get({ id: rivalryData.userBId })
+      ]);
 
-        if (userAResult.data) {
-          mRivalry.userA = getMUser({ user: userAResult.data as any });
-        }
-        if (userBResult.data) {
-          mRivalry.userB = getMUser({ user: userBResult.data as any });
-        }
+      if (userAResult.data) {
+        mRivalry.userA = getMUser({ user: userAResult.data as any });
+      }
+      if (userBResult.data) {
+        mRivalry.userB = getMUser({ user: userBResult.data as any });
       }
 
       setRivalry(mRivalry);
@@ -122,9 +114,10 @@ export default function TiersRoute() {
     <>
       <Stack.Screen options={{ title: 'Tier Lists' }} />
       <HamburgerMenu />
-      <GameProvider value={game}>
-        <SyncedScrollViewContext.Provider value={syncedScrollViewState}>
-          <SafeAreaView style={[styles.container, darkStyles.container]}>
+      <RivalryProvider rivalry={rivalry} userAName={userAName} userBName={userBName} userId={userId}>
+        <GameProvider value={game}>
+          <SyncedScrollViewContext.Provider value={syncedScrollViewState}>
+            <SafeAreaView style={[styles.container, darkStyles.container]}>
             {isLoading && (
               <View style={{ flex: 1, alignItems: 'center', justifyContent: 'center' }}>
                 <Text style={[styles.text, darkStyles.text, { fontSize: 18 }]}>
@@ -176,37 +169,19 @@ export default function TiersRoute() {
 
             {!isLoading && !isError && rivalry && (
               <>
-                <Text style={[darkStyles.text, { fontSize: 18, marginBottom: 8, marginTop: 16 }]}>
-                  {rivalry.displayUserAName()} tier list
-                </Text>
-                {rivalry.tierListA && (
-                  <TierListDisplay tierList={rivalry.tierListA} unlinked={unlinked} />
-                )}
-
-                <Text style={[darkStyles.text, { fontSize: 18, marginBottom: 8, marginTop: 16 }]}>
-                  {rivalry.displayUserBName()} tier list
-                </Text>
-                {rivalry.tierListB && (
-                  <TierListDisplay tierList={rivalry.tierListB} unlinked={unlinked} />
-                )}
+                <TierListsDisplay rivalry={rivalry} unlinked={unlinked} />
 
                 <Button
                   className="h-14 px-8 w-64 mt-4"
                   onPress={() => setUnLinked(!unlinked)}
                   text={unlinked ? 'Unlinked' : 'Linked'}
                 />
-                {(rivalryContext.isUserA || rivalryContext.isUserB) && (
-                  <View style={{ alignItems: 'center', marginTop: 16, marginBottom: 8 }}>
-                    <Text style={[styles.text, darkStyles.text, { fontSize: 14, opacity: 0.7 }]}>
-                      {rivalryContext.isUserA ? 'You are User A' : 'You are User B'}
-                    </Text>
-                  </View>
-                )}
               </>
             )}
-          </SafeAreaView>
-        </SyncedScrollViewContext.Provider>
-      </GameProvider>
+            </SafeAreaView>
+          </SyncedScrollViewContext.Provider>
+        </GameProvider>
+      </RivalryProvider>
       <StatusBar style="light" />
     </>
   );

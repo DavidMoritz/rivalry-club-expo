@@ -2,8 +2,8 @@ import { FontAwesomeIcon } from '@fortawesome/react-native-fontawesome';
 import { range } from 'lodash';
 import { ReactNode, useEffect, useState } from 'react';
 import { Image, Text, TouchableOpacity, View } from 'react-native';
+import { Schema } from '../../../../amplify/data/resource';
 
-import { Fighter } from '../../../API';
 import { contestStyles, styles } from '../../../utils/styles';
 import { MContest } from '../../../models/m-contest';
 import { MGame, STOCK } from '../../../models/m-game';
@@ -39,13 +39,13 @@ export function CurrentContest({
   onResolveContest
 }: CurrentContestProps): ReactNode {
   const game = useGame() as MGame;
-  const [fighterA, setFighterA] = useState<Fighter>();
-  const [fighterB, setFighterB] = useState<Fighter>();
+  const [fighterA, setFighterA] = useState<Schema['Fighter']['type']>();
+  const [fighterB, setFighterB] = useState<Schema['Fighter']['type']>();
   const [winner, setWinner] = useState<MTierSlot>();
   const [stockRemaining, setStockRemaining] = useState<string | number>(1);
 
   const rivalry = useRivalry();
-  const { userAName, userBName } = useRivalryContext();
+  const { userAName, userBName, isUserB } = useRivalryContext();
   const contest = rivalry?.currentContest;
 
   useEffect(() => {
@@ -118,7 +118,7 @@ export function CurrentContest({
       >
         <View
           style={{
-            flexDirection: 'row',
+            flexDirection: isUserB ? 'row-reverse' : 'row',
             alignItems: 'center',
             justifyContent: 'space-between',
             marginVertical: 6,

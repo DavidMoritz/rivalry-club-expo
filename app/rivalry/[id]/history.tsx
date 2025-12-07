@@ -325,7 +325,7 @@ export default function HistoryRoute() {
           <View style={{ alignSelf: 'flex-start', marginTop: -24, marginBottom: 16 }}>
             <Button
               onPress={() => deleteMostRecentContestMutation.mutate()}
-              text="↺ Reverse Recent Contest"
+              text="↺ Undo Recent Contest"
               disabled={
                 deleteMostRecentContestMutation.isPending ||
                 !contests.length ||

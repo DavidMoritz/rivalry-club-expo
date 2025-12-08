@@ -261,11 +261,11 @@ export function ConnectedRivalryView({ navigation }: ConnectedRivalryViewProps):
 
       {!rivalry?.currentContest && (
         <Button
-          className="h-14 px-8 w-64"
           text="+ Create new contest"
           onPress={() => {
             createContestMutation.mutate();
           }}
+          style={{ height: 56, paddingHorizontal: 32, width: 256 }}
         />
       )}
 

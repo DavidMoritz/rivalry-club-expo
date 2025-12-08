@@ -132,26 +132,28 @@ export function Auth({ onAuthSuccess }: AuthProps) {
 
   return (
     <SafeAreaView style={[styles.container, darkStyles.container]} edges={['top', 'bottom']}>
-      <View className="flex-1 items-center justify-center px-8">
-        <Text style={styles.title} className="mb-12">
+      <View style={{ flex: 1, alignItems: 'center', justifyContent: 'center', paddingHorizontal: 32 }}>
+        <Text style={[styles.title, { marginBottom: 48 }]}>
           {needsVerification ? 'Verify Email' : isSignUp ? 'Sign Up' : 'Sign In'}
         </Text>
 
         {needsVerification ? (
           <>
-            <Text style={styles.text} className="mb-6 text-center">
+            <Text style={[styles.text, { marginBottom: 24, textAlign: 'center' }]}>
               Please enter your email and the verification code we sent you.
             </Text>
 
-            <View className="w-full mb-5">
-              <Text style={styles.text} className="mb-2 text-base font-medium">
+            <View style={{ width: '100%', marginBottom: 20 }}>
+              <Text style={[styles.text, { marginBottom: 8, fontSize: 16, fontWeight: '500' }]}>
                 Email
               </Text>
               <TextInput
-                className="w-full rounded-lg text-base"
                 style={[
                   styles.text,
                   {
+                    width: '100%',
+                    borderRadius: 8,
+                    fontSize: 16,
                     paddingHorizontal: 16,
                     paddingVertical: 14,
                     backgroundColor: '#2d3748',
@@ -169,15 +171,17 @@ export function Auth({ onAuthSuccess }: AuthProps) {
               />
             </View>
 
-            <View className="w-full mb-5">
-              <Text style={styles.text} className="mb-2 text-base font-medium">
+            <View style={{ width: '100%', marginBottom: 20 }}>
+              <Text style={[styles.text, { marginBottom: 8, fontSize: 16, fontWeight: '500' }]}>
                 Verification Code
               </Text>
               <TextInput
-                className="w-full rounded-lg text-base"
                 style={[
                   styles.text,
                   {
+                    width: '100%',
+                    borderRadius: 8,
+                    fontSize: 16,
                     paddingHorizontal: 16,
                     paddingVertical: 14,
                     backgroundColor: '#2d3748',
@@ -195,7 +199,7 @@ export function Auth({ onAuthSuccess }: AuthProps) {
             </View>
 
             {error && (
-              <Text style={styles.text} className="mb-4 text-center text-red-400">
+              <Text style={[styles.text, { marginBottom: 16, textAlign: 'center', color: '#f87171' }]}>
                 {error}
               </Text>
             )}
@@ -236,15 +240,17 @@ export function Auth({ onAuthSuccess }: AuthProps) {
           </>
         ) : (
           <>
-            <View className="w-full mb-5">
-              <Text style={styles.text} className="mb-2 text-base font-medium">
+            <View style={{ width: '100%', marginBottom: 20 }}>
+              <Text style={[styles.text, { marginBottom: 8, fontSize: 16, fontWeight: '500' }]}>
                 Email
               </Text>
               <TextInput
-                className="w-full rounded-lg text-base"
                 style={[
                   styles.text,
                   {
+                    width: '100%',
+                    borderRadius: 8,
+                    fontSize: 16,
                     paddingHorizontal: 16,
                     paddingVertical: 14,
                     backgroundColor: '#2d3748',
@@ -262,15 +268,17 @@ export function Auth({ onAuthSuccess }: AuthProps) {
               />
             </View>
 
-            <View className="w-full mb-5">
-              <Text style={styles.text} className="mb-2 text-base font-medium">
+            <View style={{ width: '100%', marginBottom: 20 }}>
+              <Text style={[styles.text, { marginBottom: 8, fontSize: 16, fontWeight: '500' }]}>
                 Password
               </Text>
               <TextInput
-                className="w-full rounded-lg text-base"
                 style={[
                   styles.text,
                   {
+                    width: '100%',
+                    borderRadius: 8,
+                    fontSize: 16,
                     paddingHorizontal: 16,
                     paddingVertical: 14,
                     backgroundColor: '#2d3748',
@@ -288,15 +296,17 @@ export function Auth({ onAuthSuccess }: AuthProps) {
             </View>
 
             {isSignUp && (
-              <View className="w-full mb-5">
-                <Text style={styles.text} className="mb-2 text-base font-medium">
+              <View style={{ width: '100%', marginBottom: 20 }}>
+                <Text style={[styles.text, { marginBottom: 8, fontSize: 16, fontWeight: '500' }]}>
                   Confirm Password
                 </Text>
                 <TextInput
-                  className="w-full rounded-lg text-base"
                   style={[
                     styles.text,
                     {
+                      width: '100%',
+                      borderRadius: 8,
+                      fontSize: 16,
                       paddingHorizontal: 16,
                       paddingVertical: 14,
                       backgroundColor: '#2d3748',
@@ -316,12 +326,14 @@ export function Auth({ onAuthSuccess }: AuthProps) {
 
             {error && (
               <Text
-                style={styles.text}
-                className={`mb-4 text-center ${
-                  error.includes('verified') || error.includes('success')
-                    ? 'text-green-400'
-                    : 'text-red-400'
-                }`}
+                style={[
+                  styles.text,
+                  {
+                    marginBottom: 16,
+                    textAlign: 'center',
+                    color: error.includes('verified') || error.includes('success') ? '#4ade80' : '#f87171'
+                  }
+                ]}
               >
                 {error}
               </Text>

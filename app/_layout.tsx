@@ -8,7 +8,6 @@ import 'react-native-get-random-values';
 import 'react-native-url-polyfill/auto';
 
 import outputs from '../amplify_outputs.json';
-import '../global.css';
 import { preloadAssets } from '../src/utils/preloadAssets';
 
 const queryClient = new QueryClient();

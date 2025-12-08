@@ -15,18 +15,18 @@ export function RivalryView({ navigation }: RivalryViewProps): JSX.Element {
   return (
     <>
       <Button
-        className="h-12 px-12 w-64"
         onPress={() => {
           navigation.navigate('RivalryTiersView');
         }}
         text="View Tier Lists"
+        style={{ height: 48, paddingHorizontal: 48, width: 256 }}
       />
       <Button
-        className="h-12 px-12 w-64"
         onPress={() => {
           navigation.navigate('ContestHistory');
         }}
         text={`View ${rivalry?.contestCount || 0} Contests`}
+        style={{ height: 48, paddingHorizontal: 48, width: 256 }}
       />
     </>
   );

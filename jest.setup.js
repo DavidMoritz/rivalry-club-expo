@@ -1,14 +1,6 @@
 // Import @testing-library/jest-native matchers for enhanced assertions
 import '@testing-library/jest-native/extend-expect';
 
-// Mock react-native-worklets to avoid Babel plugin issues
-jest.mock('react-native-worklets', () => ({
-  useSharedValue: jest.fn((value) => ({ value })),
-  useAnimatedStyle: jest.fn((fn) => fn()),
-  withTiming: jest.fn((value) => value),
-  withSpring: jest.fn((value) => value),
-}));
-
 // Mock react-native-reanimated
 jest.mock('react-native-reanimated', () => {
   const Reanimated = require('react-native-reanimated/mock');
@@ -47,11 +39,6 @@ jest.mock('react-native-safe-area-context', () => ({
   SafeAreaView: 'SafeAreaView',
   SafeAreaProvider: ({ children }) => children,
   useSafeAreaInsets: () => ({ top: 0, bottom: 0, left: 0, right: 0 }),
-}));
-
-// Mock NativeWind
-jest.mock('nativewind', () => ({
-  styled: (component) => component,
 }));
 
 // Mock AWS Amplify

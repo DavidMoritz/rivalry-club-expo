@@ -5,7 +5,6 @@ import React, { useEffect, useState } from 'react';
 import 'react-native-get-random-values';
 import 'react-native-url-polyfill/auto';
 
-import './global.css';
 import { Access } from './src/components/screens/Access';
 import { Auth } from './src/components/screens/Auth';
 import Home from './src/components/screens/Home';

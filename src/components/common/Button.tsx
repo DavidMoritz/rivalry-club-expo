@@ -1,44 +1,30 @@
-import { Text, TouchableOpacity, ViewStyle } from 'react-native';
-import { twMerge } from 'tailwind-merge';
+import { StyleSheet, Text, TouchableOpacity, ViewStyle } from 'react-native';
 import { styles } from '../../utils/styles';
 
 type ButtonProps = {
-  className?: string;
   disabled?: boolean;
   leftContent?: React.ReactNode;
   onPress: () => void;
   rightContent?: React.ReactNode;
   style?: ViewStyle;
   text: string;
-  textClassName?: string;
+  textStyle?: ViewStyle;
 };
 
 export function Button({
-  className,
   disabled = false,
   leftContent,
   onPress,
   rightContent,
   style,
   text,
-  textClassName
+  textStyle
 }: ButtonProps) {
   return (
     <TouchableOpacity
-      className={twMerge(
-        'self-center my-2 text-center justify-center items-center bg-purple-900 border rounded-full border-slate-300 h-9',
-        disabled && 'opacity-50',
-        className
-      )}
       style={[
-        {
-          backgroundColor: '#6b21a8',
-          paddingHorizontal: 24,
-          paddingVertical: 12,
-          borderRadius: 8,
-          marginTop: 16,
-          alignItems: 'center'
-        },
+        buttonStyles.button,
+        disabled && buttonStyles.disabled,
         style
       ]}
       onPress={onPress}
@@ -46,8 +32,11 @@ export function Button({
     >
       {leftContent && leftContent}
       <Text
-        style={[styles.text, { fontSize: 16, fontWeight: 'bold' }]}
-        className={twMerge('px-3 py-1 text-white', textClassName)}
+        style={[
+          styles.text,
+          buttonStyles.text,
+          textStyle
+        ]}
       >
         {text}
       </Text>
@@ -55,3 +44,29 @@ export function Button({
     </TouchableOpacity>
   );
 }
+
+const buttonStyles = StyleSheet.create({
+  button: {
+    alignSelf: 'center',
+    marginVertical: 8,
+    justifyContent: 'center',
+    alignItems: 'center',
+    backgroundColor: '#6b21a8',
+    borderWidth: 1,
+    borderColor: '#cbd5e1',
+    borderRadius: 25,
+    height: 36,
+    paddingHorizontal: 24,
+    paddingVertical: 12
+  },
+  disabled: {
+    opacity: 0.5
+  },
+  text: {
+    paddingHorizontal: 12,
+    paddingVertical: 4,
+    color: 'white',
+    fontSize: 16,
+    fontWeight: 'bold'
+  }
+});

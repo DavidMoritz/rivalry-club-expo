@@ -52,8 +52,8 @@ export default function Home({ onEnterClick }: HomeProps) {
       <SafeAreaView
         style={[styles.container, isDarkMode ? darkStyles.container : lightStyles.container]}
       >
-        <View className="flex-1 items-center justify-center">
-          <Text className="text-white text-xl">Loading games...</Text>
+        <View style={{ flex: 1, alignItems: 'center', justifyContent: 'center' }}>
+          <Text style={{ color: 'white', fontSize: 20 }}>Loading games...</Text>
         </View>
       </SafeAreaView>
     );
@@ -80,8 +80,7 @@ export default function Home({ onEnterClick }: HomeProps) {
         <Button
           text="Enter"
           onPress={() => onEnterClick(games[0])}
-          className="w-1/2"
-          style={{ marginTop: 4, marginBottom: 8 }}
+          style={{ marginTop: 4, marginBottom: 8, width: '50%' }}
         />
       </View>
       <View style={styles.viewLower}>

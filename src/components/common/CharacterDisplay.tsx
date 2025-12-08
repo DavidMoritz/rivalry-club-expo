@@ -5,9 +5,9 @@ import {
   Modal,
   Pressable,
   Text,
-  View
+  View,
+  ViewStyle
 } from 'react-native';
-import { twMerge } from 'tailwind-merge';
 
 import { styles } from '../../utils/styles';
 import { sourceCase } from '../../utils';
@@ -24,14 +24,14 @@ interface Fighter {
 interface CharacterDisplayProps {
   fighter: Fighter;
   hideName?: boolean;
-  className?: string;
+  style?: ViewStyle;
   height?: number;
   width?: number;
   zoomMultiplier?: number;
   onPress?: () => void;
 }
 
-export function CharacterDisplay({ fighter, hideName, className, height, width, zoomMultiplier, onPress }: CharacterDisplayProps) {
+export function CharacterDisplay({ fighter, hideName, style, height, width, zoomMultiplier, onPress }: CharacterDisplayProps) {
   const [showFullImage, setShowFullImage] = useState(false);
   const screenWidth = Dimensions.get('window').width;
 
@@ -47,7 +47,7 @@ export function CharacterDisplay({ fighter, hideName, className, height, width, 
     <>
       <View
         key={fighter.id}
-        style={
+        style={[
           height !== undefined || width !== undefined
             ? {
                 height: displayHeight,
@@ -56,9 +56,9 @@ export function CharacterDisplay({ fighter, hideName, className, height, width, 
                 justifyContent: 'center',
                 overflow: 'hidden'
               }
-            : styles.fighterWrapper
-        }
-        className={className}
+            : styles.fighterWrapper,
+          style
+        ]}
       >
         <Pressable
           onPress={onPress}

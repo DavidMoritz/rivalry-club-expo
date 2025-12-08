@@ -105,9 +105,9 @@ src/components/
 
 ### Styling
 
-- **NativeWind v4**: Tailwind CSS for React Native (configured in `tailwind.config.js`)
-- Uses `className` prop with Tailwind utility classes
-- Global styles in `global.css`
+- **React Native StyleSheet**: Uses React Native's built-in `StyleSheet.create()` for component styling
+- Inline styles for component-specific styling needs
+- Global styles in `src/utils/styles.ts` (`styles`, `darkStyles`, `lightStyles`)
 - Dark mode enabled by default (see `isDarkMode` in components)
 
 ### Authentication
@@ -119,19 +119,13 @@ src/components/
 
 ## Important Conventions
 
-### ESLint Rules
+### Code Style
 
-The project has strict ESLint rules configured in `.eslintrc.js`:
+The project follows these conventions:
 
-- **Import sorting**: Uses `simple-import-sort` plugin - imports must be ordered
-- **Padding lines**: Required blank lines before/after blocks, functions, returns, throws
-- **Newline before return**: Always required
-- **No inline styles**: Prefer NativeWind classes
-- **Unused vars**: Allowed if prefixed with `_`
-- **Single quotes**: Enforced
-- **Trailing commas**: Required
-
-Auto-generated files are ignored: `src/API.ts`, `src/aws*`, `src/graphql/**/*`
+- **Styling**: Uses React Native StyleSheet and inline styles (no CSS-in-JS libraries)
+- **Single quotes**: Preferred for strings
+- **Trailing commas**: Recommended for multi-line structures
 
 ### TypeScript
 

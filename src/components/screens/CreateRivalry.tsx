@@ -3,12 +3,12 @@ import React, { useState } from 'react';
 import { ActivityIndicator, FlatList, Text, TextInput, TouchableOpacity, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
-import { useCreateRivalryMutation } from '../../controllers/c-rivalry';
+import { useAcceptRivalryMutation, useCreateRivalryMutation } from '../../controllers/c-rivalry';
 import { useUserSearchQuery } from '../../controllers/c-user';
 import { useAuthUser } from '../../hooks/useAuthUser';
 import { MUser } from '../../models/m-user';
 import { useGame } from '../../providers/game';
-import { useAllRivalriesUpdate } from '../../providers/all-rivalries';
+import { useAllRivalries, useAllRivalriesUpdate } from '../../providers/all-rivalries';
 import { darkStyles, styles } from '../../utils/styles';
 
 export function CreateRivalry() {
@@ -30,7 +30,8 @@ export function CreateRivalry() {
     currentUserId: user?.id
   });
 
-  const { addRivalry } = useAllRivalriesUpdate();
+  const { rivalries } = useAllRivalries();
+  const { addRivalry, updateRivalry } = useAllRivalriesUpdate();
 
   const { mutate: createRivalry } = useCreateRivalryMutation({
     onSuccess: (newRivalry) => {
@@ -52,7 +53,28 @@ export function CreateRivalry() {
     }
   });
 
-  const handleCreateRivalry = () => {
+  const { mutate: acceptRivalry } = useAcceptRivalryMutation({
+    onSuccess: () => {
+      // Update the rivalry to accepted in the provider
+      if (selectedUser && user) {
+        const rivalryToAccept = rivalries.find(
+          (r) => r.userAId === selectedUser.id && r.userBId === user.id && !r.accepted
+        );
+        if (rivalryToAccept) {
+          updateRivalry(rivalryToAccept.id, { accepted: true });
+        }
+      }
+      setCreatingRivalry(false);
+      router.back();
+    },
+    onError: (err) => {
+      console.error('[CreateRivalry] Error accepting rivalry:', err);
+      setError(err.message || 'Failed to accept rivalry');
+      setCreatingRivalry(false);
+    }
+  });
+
+  const handleCreateOrAcceptRivalry = () => {
     if (!selectedUser || !user || !gameId) {
       console.warn('[CreateRivalry] Missing required data:', {
         selectedUser: selectedUser?.id,
@@ -73,29 +95,83 @@ export function CreateRivalry() {
     setError(null);
     setCreatingRivalry(true);
 
-    createRivalry({
-      userAId: user.id,
-      userBId: selectedUser.id,
-      gameId
-    });
+    // Check if this is accepting an existing rivalry request
+    const pendingRivalry = rivalries.find(
+      (r) => r.userAId === selectedUser.id && r.userBId === user.id && !r.accepted
+    );
+
+    if (pendingRivalry) {
+      // Accept the existing rivalry
+      acceptRivalry(pendingRivalry.id);
+    } else {
+      // Create a new rivalry
+      createRivalry({
+        userAId: user.id,
+        userBId: selectedUser.id,
+        gameId
+      });
+    }
   };
 
-  const renderUserItem = ({ item }: { item: MUser }) => (
-    <TouchableOpacity
-      onPress={() => setSelectedUser(item)}
-      style={{
-        paddingVertical: 16,
-        paddingHorizontal: 16,
-        borderBottomWidth: 1,
-        borderBottomColor: '#333',
-        backgroundColor: selectedUser?.id === item.id ? '#374151' : 'transparent'
-      }}
-    >
-      <Text style={[styles.text, { fontSize: 16, fontWeight: 'bold' }]}>
-        {item.firstName} {item.lastName}
-      </Text>
-    </TouchableOpacity>
-  );
+  const renderUserItem = ({ item }: { item: MUser }) => {
+    // Find if there's an existing rivalry with this user
+    const existingRivalry = rivalries.find(
+      (r) => r.userAId === item.id || r.userBId === item.id
+    );
+
+    // Determine badge to show (mutually exclusive, in priority order)
+    let badge: { text: string; color: string } | null = null;
+    let isDisabled = false;
+
+    if (existingRivalry?.accepted) {
+      // Priority 1: Active rivalry exists
+      badge = { text: 'Active Rivalry', color: '#10b981' };
+      isDisabled = true; // Can't select someone you already have an active rivalry with
+    } else if (existingRivalry && existingRivalry.userAId === item.id && existingRivalry.userBId === user?.id) {
+      // Priority 2: This user initiated a rivalry with the logged-in user (needs acceptance)
+      badge = { text: 'Awaiting Your Acceptance', color: '#fbbf24' };
+      isDisabled = false; // Allow selection to accept
+    } else if (existingRivalry && existingRivalry.userAId === user?.id && existingRivalry.userBId === item.id) {
+      // Priority 3: Logged-in user already initiated a rivalry with this person
+      badge = { text: 'Rivalry Initiated', color: '#6b7280' };
+      isDisabled = true; // Can't initiate another rivalry until they accept
+    }
+
+    return (
+      <TouchableOpacity
+        onPress={() => !isDisabled && setSelectedUser(item)}
+        disabled={isDisabled}
+        style={{
+          paddingVertical: 16,
+          paddingHorizontal: 16,
+          borderBottomWidth: 1,
+          borderBottomColor: '#333',
+          backgroundColor: selectedUser?.id === item.id ? '#374151' : 'transparent',
+          opacity: isDisabled ? 0.5 : 1
+        }}
+      >
+        <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' }}>
+          <Text style={[styles.text, { fontSize: 16, fontWeight: 'bold' }]}>
+            {item.firstName} {item.lastName}
+          </Text>
+          {badge && (
+            <View
+              style={{
+                paddingHorizontal: 8,
+                paddingVertical: 4,
+                borderRadius: 4,
+                backgroundColor: `${badge.color}20`
+              }}
+            >
+              <Text style={[styles.text, { fontSize: 12, color: badge.color }]}>
+                {badge.text}
+              </Text>
+            </View>
+          )}
+        </View>
+      </TouchableOpacity>
+    );
+  };
 
   return (
     <SafeAreaView style={[styles.container, darkStyles.container]} edges={['top', 'bottom']}>
@@ -166,39 +242,49 @@ export function CreateRivalry() {
           />
         )}
 
-        {selectedUser && (
-          <View
-            style={{
-              padding: 16,
-              borderTopWidth: 1,
-              borderTopColor: '#333',
-              backgroundColor: '#0f172a'
-            }}
-          >
-            <Text style={[styles.text, { fontSize: 14, color: '#999', marginBottom: 8 }]}>
-              Challenging {selectedUser.firstName} {selectedUser.lastName}
-            </Text>
-            <TouchableOpacity
-              onPress={handleCreateRivalry}
-              disabled={creatingRivalry}
+        {selectedUser && (() => {
+          // Determine if this is accepting an existing rivalry
+          const pendingRivalry = rivalries.find(
+            (r) => r.userAId === selectedUser.id && r.userBId === user?.id && !r.accepted
+          );
+          const isAccepting = !!pendingRivalry;
+
+          return (
+            <View
               style={{
-                backgroundColor: creatingRivalry ? '#475569' : '#6b21a8',
-                paddingHorizontal: 24,
-                paddingVertical: 12,
-                borderRadius: 8,
-                alignItems: 'center'
+                padding: 16,
+                borderTopWidth: 1,
+                borderTopColor: '#333',
+                backgroundColor: '#0f172a'
               }}
             >
-              {creatingRivalry ? (
-                <ActivityIndicator color="white" />
-              ) : (
-                <Text style={[styles.text, { fontSize: 16, fontWeight: 'bold' }]}>
-                  Initiate Rivalry
-                </Text>
-              )}
-            </TouchableOpacity>
-          </View>
-        )}
+              <Text style={[styles.text, { fontSize: 14, color: '#999', marginBottom: 8 }]}>
+                {isAccepting
+                  ? `Accept rivalry from ${selectedUser.firstName} ${selectedUser.lastName}`
+                  : `Challenging ${selectedUser.firstName} ${selectedUser.lastName}`}
+              </Text>
+              <TouchableOpacity
+                onPress={handleCreateOrAcceptRivalry}
+                disabled={creatingRivalry}
+                style={{
+                  backgroundColor: creatingRivalry ? '#475569' : isAccepting ? '#fbbf24' : '#6b21a8',
+                  paddingHorizontal: 24,
+                  paddingVertical: 12,
+                  borderRadius: 8,
+                  alignItems: 'center'
+                }}
+              >
+                {creatingRivalry ? (
+                  <ActivityIndicator color="white" />
+                ) : (
+                  <Text style={[styles.text, { fontSize: 16, fontWeight: 'bold' }]}>
+                    {isAccepting ? 'Accept Rivalry' : 'Initiate Rivalry'}
+                  </Text>
+                )}
+              </TouchableOpacity>
+            </View>
+          );
+        })()}
       </View>
     </SafeAreaView>
   );

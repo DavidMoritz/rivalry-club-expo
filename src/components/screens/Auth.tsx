@@ -168,6 +168,7 @@ export function Auth({ onAuthSuccess }: AuthProps) {
                 keyboardType="email-address"
                 autoCapitalize="none"
                 autoCorrect={false}
+                secureTextEntry={false}
               />
             </View>
 

@@ -1,12 +1,5 @@
 import React, { useState } from 'react';
-import {
-  Dimensions,
-  FlatList,
-  Image,
-  Modal,
-  Pressable,
-  View
-} from 'react-native';
+import { Dimensions, FlatList, Image, Modal, Pressable, View } from 'react-native';
 
 import { logoImage } from '../../../assets/images/games/ssbu';
 import { styles } from '../../utils/styles';
@@ -29,18 +22,13 @@ interface GameWithCharactersDisplayProps {
   game: Game;
 }
 
-export function GameWithCharactersDisplay({
-  game,
-}: GameWithCharactersDisplayProps) {
+export function GameWithCharactersDisplay({ game }: GameWithCharactersDisplayProps) {
   const [showFullImage, setShowFullImage] = useState(false);
   const screenWidth = Dimensions.get('window').width;
 
   return (
     <>
-      <Pressable
-        onLongPress={() => setShowFullImage(true)}
-        delayLongPress={300}
-      >
+      <Pressable onLongPress={() => setShowFullImage(true)} delayLongPress={300}>
         <Image style={styles.gameLogoImage} source={logoImage} />
       </Pressable>
 

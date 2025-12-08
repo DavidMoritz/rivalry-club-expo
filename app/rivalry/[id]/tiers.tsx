@@ -193,7 +193,7 @@ export default function TiersRoute() {
                     }}
                   >
                     <Button
-                      style={{ width: '40%' }}
+                      style={{ width: '40%', paddingVertical: 4, paddingHorizontal: 0 }}
                       onPress={() => {
                         router.push({
                           pathname: `/rivalry/${rivalryId}/tierListEdit`,
@@ -209,6 +209,7 @@ export default function TiersRoute() {
                   <Button
                     onPress={() => setUnLinked(!unlinked)}
                     text={unlinked ? 'Unlinked' : 'Linked'}
+                    style={{ paddingVertical: 0 }}
                   />
                 </>
               )}

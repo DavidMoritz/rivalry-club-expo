@@ -80,7 +80,7 @@ export default function Home({ onEnterClick }: HomeProps) {
         <Button
           text="Enter"
           onPress={() => onEnterClick(games[0])}
-          style={{ marginTop: 4, marginBottom: 8, width: '50%' }}
+          style={{ marginTop: 4, marginBottom: 8, width: '50%', paddingVertical: 0 }}
         />
       </View>
       <View style={styles.viewLower}>

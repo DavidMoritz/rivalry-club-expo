@@ -22,24 +22,12 @@ export function Button({
 }: ButtonProps) {
   return (
     <TouchableOpacity
-      style={[
-        buttonStyles.button,
-        disabled && buttonStyles.disabled,
-        style
-      ]}
+      style={[buttonStyles.button, disabled && buttonStyles.disabled, style]}
       onPress={onPress}
       disabled={disabled}
     >
       {leftContent && leftContent}
-      <Text
-        style={[
-          styles.text,
-          buttonStyles.text,
-          textStyle
-        ]}
-      >
-        {text}
-      </Text>
+      <Text style={[styles.text, buttonStyles.text, textStyle]}>{text}</Text>
       {rightContent && rightContent}
     </TouchableOpacity>
   );

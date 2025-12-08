@@ -31,17 +31,9 @@ export default function RootLayout() {
       try {
         if (!amplifyConfigured) {
           console.log('[RootLayout] Configuring Amplify...');
-          console.log('[RootLayout] Amplify outputs:', JSON.stringify(outputs, null, 2));
-
-          try {
-            Amplify.configure(outputs);
-            amplifyConfigured = true;
-            console.log('[RootLayout] Amplify configured successfully');
-          } catch (amplifyError) {
-            console.error('[RootLayout] Amplify configuration FAILED:', amplifyError);
-            console.error('[RootLayout] Error details:', JSON.stringify(amplifyError, Object.getOwnPropertyNames(amplifyError)));
-            throw amplifyError;
-          }
+          Amplify.configure(outputs);
+          amplifyConfigured = true;
+          console.log('[RootLayout] Amplify configured successfully');
         }
 
         await preloadAssets();
@@ -49,7 +41,6 @@ export default function RootLayout() {
         setIsReady(true);
       } catch (error) {
         console.error('[RootLayout] Initialization error:', error);
-        console.error('[RootLayout] Error stack:', error instanceof Error ? error.stack : 'No stack');
         setLoadingError(error instanceof Error ? error.message : 'Unknown error');
         // Still show the app even if initialization fails
         setAssetsLoaded(true);

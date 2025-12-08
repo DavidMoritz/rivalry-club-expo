@@ -259,7 +259,7 @@ export function ConnectedRivalryView({ navigation }: ConnectedRivalryViewProps):
           />
         )}
 
-      {!rivalry?.currentContest && (
+      {tiersReady && !rivalry?.currentContest && (
         <Button
           text="+ Create new contest"
           onPress={() => {
@@ -270,6 +270,12 @@ export function ConnectedRivalryView({ navigation }: ConnectedRivalryViewProps):
       )}
 
       {tiersReady && <RivalryView navigation={navigation} />}
+
+      {!tiersReady && !isLoading && !isError && (
+        <View style={{ flex: 1, alignItems: 'center', justifyContent: 'center' }}>
+          <Text style={[styles.text, darkStyles.text, { fontSize: 18 }]}>Preparing Tiers...</Text>
+        </View>
+      )}
     </SafeAreaView>
   );
 }

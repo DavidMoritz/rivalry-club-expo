@@ -5,7 +5,7 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 
 import { useAuthUser } from '../../hooks/useAuthUser';
 import { useUserRivalries } from '../../hooks/useUserRivalries';
-import { useAllRivalriesUpdate } from '../../providers/all-rivalries';
+import { useAllRivalries, useAllRivalriesUpdate } from '../../providers/all-rivalries';
 import { darkStyles, styles } from '../../utils/styles';
 import { RivalriesTable } from './parts/RivalriesTable';
 
@@ -30,10 +30,10 @@ export function RivalryIndex() {
 
   // Populate the AllRivalriesProvider when rivalries are loaded
   useEffect(() => {
-    if (allRivalries && allRivalries.length > 0) {
-      setRivalries(allRivalries as any);
+    if (allRivalries && user?.id) {
+      setRivalries(allRivalries as any, user.id);
     }
-  }, [allRivalries, setRivalries]);
+  }, [allRivalries, user?.id, setRivalries]);
 
   function handleSelectRivalry(rivalry: Rivalry) {
     // Navigate to rivalry detail view using Expo Router with user names

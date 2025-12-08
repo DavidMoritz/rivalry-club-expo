@@ -8,6 +8,7 @@ import 'react-native-get-random-values';
 import 'react-native-url-polyfill/auto';
 
 import outputs from '../amplify_outputs.json';
+import { AllRivalriesProvider } from '../src/providers/all-rivalries';
 import { preloadAssets } from '../src/utils/preloadAssets';
 
 const queryClient = new QueryClient();
@@ -67,9 +68,12 @@ export default function RootLayout() {
     console.warn('[RootLayout] Assets failed to preload, but continuing anyway:', loadingError);
   }
 
+  // Don't pass userId here - let RivalryIndex handle it with the correct user.id
   return (
     <QueryClientProvider client={queryClient}>
-      <Slot />
+      <AllRivalriesProvider>
+        <Slot />
+      </AllRivalriesProvider>
     </QueryClientProvider>
   );
 }

@@ -17,10 +17,11 @@ interface AllRivalriesContextValue {
 }
 
 interface AllRivalriesUpdateContextValue {
-  setRivalries: (rivalries: RivalryWithUsers[]) => void;
+  setRivalries: (rivalries: RivalryWithUsers[], userId?: string) => void;
   addRivalry: (rivalry: RivalryWithUsers) => void;
   updateRivalry: (rivalryId: string, updates: Partial<RivalryWithUsers>) => void;
   removeRivalry: (rivalryId: string) => void;
+  setUserId: (userId: string) => void;
 }
 
 const AllRivalriesContext = createContext<AllRivalriesContextValue>({
@@ -36,7 +37,8 @@ const AllRivalriesUpdateContext = createContext<AllRivalriesUpdateContextValue>(
   setRivalries: () => undefined,
   addRivalry: () => undefined,
   updateRivalry: () => undefined,
-  removeRivalry: () => undefined
+  removeRivalry: () => undefined,
+  setUserId: () => undefined
 });
 
 export const useAllRivalries = () => useContext(AllRivalriesContext);
@@ -50,9 +52,17 @@ export const AllRivalriesProvider = ({
   userId?: string;
 }) => {
   const [rivalries, setRivalriesState] = useState<RivalryWithUsers[]>([]);
+  const [currentUserId, setCurrentUserId] = useState<string | undefined>(userId);
 
-  const setRivalries = useCallback((newRivalries: RivalryWithUsers[]) => {
+  const setRivalries = useCallback((newRivalries: RivalryWithUsers[], newUserId?: string) => {
     setRivalriesState(newRivalries);
+    if (newUserId) {
+      setCurrentUserId(newUserId);
+    }
+  }, []);
+
+  const setUserId = useCallback((newUserId: string) => {
+    setCurrentUserId(newUserId);
   }, []);
 
   const addRivalry = useCallback((rivalry: RivalryWithUsers) => {
@@ -80,7 +90,7 @@ export const AllRivalriesProvider = ({
 
   // Compute derived data
   const { pendingRivalries, acceptedRivalries } = useMemo(() => {
-    if (!userId) {
+    if (!currentUserId) {
       return {
         pendingRivalries: { awaitingAcceptance: [], initiated: [] },
         acceptedRivalries: []
@@ -92,12 +102,12 @@ export const AllRivalriesProvider = ({
 
     return {
       pendingRivalries: {
-        awaitingAcceptance: pending.filter(r => r.userBId === userId),
-        initiated: pending.filter(r => r.userAId === userId)
+        awaitingAcceptance: pending.filter(r => r.userBId === currentUserId),
+        initiated: pending.filter(r => r.userAId === currentUserId)
       },
       acceptedRivalries: accepted
     };
-  }, [rivalries, userId]);
+  }, [rivalries, currentUserId]);
 
   const contextValue = useMemo(
     () => ({
@@ -113,9 +123,10 @@ export const AllRivalriesProvider = ({
       setRivalries,
       addRivalry,
       updateRivalry,
-      removeRivalry
+      removeRivalry,
+      setUserId
     }),
-    [setRivalries, addRivalry, updateRivalry, removeRivalry]
+    [setRivalries, addRivalry, updateRivalry, removeRivalry, setUserId]
   );
 
   return (

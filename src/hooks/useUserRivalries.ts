@@ -54,7 +54,7 @@ export function useUserRivalries(userId: string | undefined): UseUserRivalriesRe
 
       // Filter rivalries where the user is either userA or userB (both accepted and pending)
       const userRivalries = (allRivalries || []).filter(
-        (rivalry) => (rivalry.userAId === userId || rivalry.userBId === userId)
+        (rivalry) => rivalry.userAId === userId || rivalry.userBId === userId
       );
 
       // Separate accepted rivalries for the return value (backwards compatibility)
@@ -69,9 +69,7 @@ export function useUserRivalries(userId: string | undefined): UseUserRivalriesRe
       });
 
       // Fetch all users in parallel
-      const userPromises = Array.from(userIds).map((id) =>
-        client.models.User.get({ id })
-      );
+      const userPromises = Array.from(userIds).map((id) => client.models.User.get({ id }));
 
       const userResults = await Promise.all(userPromises);
 

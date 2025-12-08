@@ -6,6 +6,8 @@ import {
   getCurrentUser as authGetCurrentUser,
   updatePassword as authUpdatePassword,
   confirmSignUp as authConfirmSignUp,
+  resetPassword as authResetPassword,
+  confirmResetPassword as authConfirmResetPassword,
   type SignInInput,
   type SignUpInput,
 } from 'aws-amplify/auth';
@@ -174,6 +176,26 @@ export async function getCurrentUser() {
 export async function updatePassword(oldPassword: string, newPassword: string) {
   return authUpdatePassword({
     oldPassword,
+    newPassword,
+  });
+}
+
+/**
+ * Request a password reset for a user
+ */
+export async function resetPassword(email: string) {
+  return authResetPassword({
+    username: email,
+  });
+}
+
+/**
+ * Confirm password reset with code
+ */
+export async function confirmResetPassword(email: string, code: string, newPassword: string) {
+  return authConfirmResetPassword({
+    username: email,
+    confirmationCode: code,
     newPassword,
   });
 }

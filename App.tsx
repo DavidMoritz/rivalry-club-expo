@@ -9,6 +9,7 @@ import { Access } from './src/components/screens/Access';
 import { Auth } from './src/components/screens/Auth';
 import Home from './src/components/screens/Home';
 import { getCurrentUser } from './src/lib/amplify-auth';
+import { AllRivalriesProvider } from './src/providers/all-rivalries';
 
 const queryClient = new QueryClient();
 
@@ -41,14 +42,18 @@ export default function App() {
   return <AuthenticatedApp selectedGame={selectedGame} />;
 }
 
-function AuthenticatedApp({ selectedGame }: { selectedGame: Game | null }) {
+function AuthenticatedApp({ selectedGame }: { selectedGame: Game | null}) {
   const [authenticated, setAuthenticated] = useState(false);
+  const [userId, setUserId] = useState<string | undefined>(undefined);
 
   // Listen for auth state changes from Cognito
   useEffect(() => {
     // Check initial session
     getCurrentUser()
-      .then(() => setAuthenticated(true))
+      .then((user) => {
+        setAuthenticated(true);
+        setUserId(user.userId);
+      })
       .catch(() => setAuthenticated(false));
 
     // Subscribe to auth changes via Amplify Hub
@@ -56,9 +61,11 @@ function AuthenticatedApp({ selectedGame }: { selectedGame: Game | null }) {
       switch (payload.event) {
         case 'signedIn':
           setAuthenticated(true);
+          getCurrentUser().then((user) => setUserId(user.userId));
           break;
         case 'signedOut':
           setAuthenticated(false);
+          setUserId(undefined);
           break;
       }
     });
@@ -77,7 +84,9 @@ function AuthenticatedApp({ selectedGame }: { selectedGame: Game | null }) {
 
   return (
     <QueryClientProvider client={queryClient}>
-      <Access selectedGame={selectedGame} />
+      <AllRivalriesProvider userId={userId}>
+        <Access selectedGame={selectedGame} />
+      </AllRivalriesProvider>
       <StatusBar style="light" />
     </QueryClientProvider>
   );

@@ -10,12 +10,14 @@ interface RivalryWithUsers {
   gameId: string;
   contestCount: number;
   updatedAt: string;
+  accepted?: boolean;
   userAName?: string;
   userBName?: string;
 }
 
 interface UseUserRivalriesResult {
   rivalries: RivalryWithUsers[];
+  allRivalries: RivalryWithUsers[];
   isLoading: boolean;
   error: Error | null;
   refetch: () => void;
@@ -26,6 +28,7 @@ interface UseUserRivalriesResult {
  */
 export function useUserRivalries(userId: string | undefined): UseUserRivalriesResult {
   const [rivalries, setRivalries] = useState<RivalryWithUsers[]>([]);
+  const [allRivalries, setAllRivalries] = useState<RivalryWithUsers[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<Error | null>(null);
 
@@ -49,10 +52,13 @@ export function useUserRivalries(userId: string | undefined): UseUserRivalriesRe
         throw new Error(`Failed to fetch rivalries: ${errors[0].message}`);
       }
 
-      // Filter rivalries where the user is either userA or userB and rivalry is accepted
+      // Filter rivalries where the user is either userA or userB (both accepted and pending)
       const userRivalries = (allRivalries || []).filter(
-        (rivalry) => (rivalry.userAId === userId || rivalry.userBId === userId) && rivalry.accepted === true
+        (rivalry) => (rivalry.userAId === userId || rivalry.userBId === userId)
       );
+
+      // Separate accepted rivalries for the return value (backwards compatibility)
+      const acceptedRivalries = userRivalries.filter((rivalry) => rivalry.accepted === true);
 
       // Get unique user IDs we need to fetch
       const userIds = new Set<string>();
@@ -78,8 +84,21 @@ export function useUserRivalries(userId: string | undefined): UseUserRivalriesRe
         }
       });
 
-      // Map rivalries with user names
-      const rivalriesWithUsers: RivalryWithUsers[] = userRivalries.map((rivalry) => ({
+      // Map ALL rivalries (accepted and pending) with user names
+      const allRivalriesWithUsers: RivalryWithUsers[] = userRivalries.map((rivalry) => ({
+        id: rivalry.id,
+        userAId: rivalry.userAId,
+        userBId: rivalry.userBId,
+        gameId: rivalry.gameId,
+        contestCount: rivalry.contestCount || 0,
+        updatedAt: rivalry.updatedAt,
+        accepted: rivalry.accepted,
+        userAName: userMap.get(rivalry.userAId),
+        userBName: userMap.get(rivalry.userBId)
+      }));
+
+      // Map only accepted rivalries for backwards compatibility
+      const acceptedRivalriesWithUsers: RivalryWithUsers[] = acceptedRivalries.map((rivalry) => ({
         id: rivalry.id,
         userAId: rivalry.userAId,
         userBId: rivalry.userBId,
@@ -91,11 +110,12 @@ export function useUserRivalries(userId: string | undefined): UseUserRivalriesRe
       }));
 
       // Sort by most recently updated
-      rivalriesWithUsers.sort((a, b) => {
+      acceptedRivalriesWithUsers.sort((a, b) => {
         return new Date(b.updatedAt).getTime() - new Date(a.updatedAt).getTime();
       });
 
-      setRivalries(rivalriesWithUsers);
+      setRivalries(acceptedRivalriesWithUsers);
+      setAllRivalries(allRivalriesWithUsers);
     } catch (err) {
       console.error('[useUserRivalries] Error:', err);
       setError(err instanceof Error ? err : new Error('Unknown error'));
@@ -110,6 +130,7 @@ export function useUserRivalries(userId: string | undefined): UseUserRivalriesRe
 
   return {
     rivalries,
+    allRivalries,
     isLoading,
     error,
     refetch: fetchRivalries

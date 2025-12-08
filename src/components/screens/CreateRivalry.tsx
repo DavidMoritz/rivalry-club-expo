@@ -8,6 +8,7 @@ import { useUserSearchQuery } from '../../controllers/c-user';
 import { useAuthUser } from '../../hooks/useAuthUser';
 import { MUser } from '../../models/m-user';
 import { useGame } from '../../providers/game';
+import { useAllRivalriesUpdate } from '../../providers/all-rivalries';
 import { darkStyles, styles } from '../../utils/styles';
 
 export function CreateRivalry() {
@@ -29,8 +30,18 @@ export function CreateRivalry() {
     currentUserId: user?.id
   });
 
+  const { addRivalry } = useAllRivalriesUpdate();
+
   const { mutate: createRivalry } = useCreateRivalryMutation({
-    onSuccess: () => {
+    onSuccess: (newRivalry) => {
+      // Add the newly created rivalry to the provider with user names
+      if (newRivalry && selectedUser && user) {
+        addRivalry({
+          ...newRivalry as any,
+          userAName: `${user.firstName || ''} ${user.lastName || ''}`.trim() || user.email,
+          userBName: `${selectedUser.firstName || ''} ${selectedUser.lastName || ''}`.trim() || selectedUser.email
+        });
+      }
       setCreatingRivalry(false);
       router.back();
     },

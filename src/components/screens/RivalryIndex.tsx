@@ -1,10 +1,11 @@
 import { useRouter } from 'expo-router';
-import React from 'react';
+import React, { useEffect } from 'react';
 import { Text, TouchableOpacity, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
 import { useAuthUser } from '../../hooks/useAuthUser';
 import { useUserRivalries } from '../../hooks/useUserRivalries';
+import { useAllRivalriesUpdate } from '../../providers/all-rivalries';
 import { darkStyles, styles } from '../../utils/styles';
 import { RivalriesTable } from './parts/RivalriesTable';
 
@@ -21,9 +22,18 @@ export function RivalryIndex() {
   const { user, isLoading: userLoading, error: userError } = useAuthUser();
   const {
     rivalries,
+    allRivalries,
     isLoading: rivalriesLoading,
     error: rivalriesError
   } = useUserRivalries(user?.id);
+  const { setRivalries } = useAllRivalriesUpdate();
+
+  // Populate the AllRivalriesProvider when rivalries are loaded
+  useEffect(() => {
+    if (allRivalries && allRivalries.length > 0) {
+      setRivalries(allRivalries as any);
+    }
+  }, [allRivalries, setRivalries]);
 
   function handleSelectRivalry(rivalry: Rivalry) {
     // Navigate to rivalry detail view using Expo Router with user names

@@ -4,6 +4,7 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 
 import { confirmSignUp, getCurrentUser, signIn, signUp } from '../../lib/amplify-auth';
 import { darkStyles, styles } from '../../utils/styles';
+import { ForgotPassword } from './ForgotPassword';
 
 interface AuthProps {
   onAuthSuccess: () => void;
@@ -16,6 +17,7 @@ export function Auth({ onAuthSuccess }: AuthProps) {
   const [verificationCode, setVerificationCode] = useState('');
   const [isSignUp, setIsSignUp] = useState(false);
   const [needsVerification, setNeedsVerification] = useState(false);
+  const [showForgotPassword, setShowForgotPassword] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
 
@@ -128,6 +130,16 @@ export function Auth({ onAuthSuccess }: AuthProps) {
     } finally {
       setLoading(false);
     }
+  }
+
+  // Show forgot password screen if requested
+  if (showForgotPassword) {
+    return (
+      <ForgotPassword
+        onBack={() => setShowForgotPassword(false)}
+        initialEmail={email}
+      />
+    );
   }
 
   return (
@@ -374,6 +386,20 @@ export function Auth({ onAuthSuccess }: AuthProps) {
                 {isSignUp ? 'Already have an account? Sign In' : "Don't have an account? Sign Up"}
               </Text>
             </TouchableOpacity>
+
+            {!isSignUp && (
+              <TouchableOpacity
+                onPress={() => {
+                  setShowForgotPassword(true);
+                  setError(null);
+                }}
+                style={{ marginTop: 12 }}
+              >
+                <Text style={{ color: '#a0aec0', fontSize: 16 }}>
+                  Forgot Password?
+                </Text>
+              </TouchableOpacity>
+            )}
 
             <TouchableOpacity
               onPress={() => {

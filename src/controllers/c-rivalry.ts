@@ -64,8 +64,8 @@ interface CreateRivalryParams {
 }
 
 interface AcceptRivalryMutationProps {
-  rivalryId: string;
   onSuccess?: () => void;
+  onError?: (error: Error) => void;
 }
 
 interface PendingRivalriesQueryProps {
@@ -714,11 +714,15 @@ export const useCreateRivalryMutation = ({
   });
 };
 
-export const useAcceptRivalryMutation = ({ rivalryId, onSuccess }: AcceptRivalryMutationProps) => {
+export const useAcceptRivalryMutation = ({ onSuccess, onError }: AcceptRivalryMutationProps) => {
   const queryClient = useQueryClient();
 
   return useMutation({
-    mutationFn: async () => {
+    mutationFn: async (rivalryId: string) => {
+      if (!rivalryId) {
+        throw new Error('Rivalry ID is required');
+      }
+
       // First, get the rivalry details to know which users and game are involved
       const { data: rivalryData, errors: rivalryFetchErrors } = await getClient().models.Rivalry.get({
         id: rivalryId
@@ -847,6 +851,10 @@ export const useAcceptRivalryMutation = ({ rivalryId, onSuccess }: AcceptRivalry
       queryClient.invalidateQueries({ queryKey: ['pendingRivalries'] });
       queryClient.invalidateQueries({ queryKey: ['usersByAwsSub'] });
       onSuccess?.();
+    },
+    onError: (error: Error) => {
+      console.error('[useAcceptRivalryMutation] Mutation failed:', error);
+      onError?.(error);
     }
   });
 };

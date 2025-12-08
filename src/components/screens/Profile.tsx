@@ -1,7 +1,7 @@
 import { generateClient } from 'aws-amplify/data';
 import { useRouter } from 'expo-router';
 import React, { useEffect, useState } from 'react';
-import { ScrollView, Text, TextInput, TouchableOpacity, View } from 'react-native';
+import { KeyboardAvoidingView, Platform, ScrollView, Text, TextInput, TouchableOpacity, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
 import type { Schema } from '../../../amplify/data/resource';
@@ -139,8 +139,15 @@ export function Profile() {
 
   return (
     <SafeAreaView style={[styles.container, darkStyles.container]} edges={['top', 'bottom']}>
-      <ScrollView style={{ flex: 1 }} contentContainerStyle={{ padding: 24 }}>
-        <Text style={[styles.title, { marginBottom: 24 }]}>Profile</Text>
+      <KeyboardAvoidingView
+        behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+        style={{ flex: 1 }}
+        keyboardVerticalOffset={0}>
+        <ScrollView
+          style={{ flex: 1 }}
+          contentContainerStyle={{ padding: 24 }}
+          keyboardShouldPersistTaps="handled">
+          <Text style={[styles.title, { marginBottom: 24 }]}>Profile</Text>
 
         {isNewUser && (
           <View
@@ -374,7 +381,8 @@ export function Profile() {
             </Text>
           </TouchableOpacity>
         </View>
-      </ScrollView>
+        </ScrollView>
+      </KeyboardAvoidingView>
     </SafeAreaView>
   );
 }

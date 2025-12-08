@@ -1,13 +1,12 @@
 import { useRouter } from 'expo-router';
-import React, { useMemo, useState } from 'react';
+import React, { useState } from 'react';
 import { ActivityIndicator, FlatList, Text, TouchableOpacity, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
-import { useAcceptRivalryMutation, usePendingRivalriesQuery } from '../../controllers/c-rivalry';
-import { useUserDataQuery } from '../../controllers/c-user';
+import { useAcceptRivalryMutation } from '../../controllers/c-rivalry';
 import { useAuthUser } from '../../hooks/useAuthUser';
 import { MRivalry } from '../../models/m-rivalry';
-import { getMUser } from '../../models/m-user';
+import { useAllRivalries, useAllRivalriesUpdate } from '../../providers/all-rivalries';
 import { darkStyles, styles } from '../../utils/styles';
 
 export function PendingRivalries() {
@@ -15,56 +14,37 @@ export function PendingRivalries() {
   const { user } = useAuthUser();
   const [acceptingRivalryId, setAcceptingRivalryId] = useState<string | null>(null);
 
-  const { data: pendingRivalries, isLoading, refetch } = usePendingRivalriesQuery({
-    userId: user?.id
-  });
-
-  const allRivalries = [
-    ...(pendingRivalries?.awaitingAcceptance || []),
-    ...(pendingRivalries?.initiated || [])
-  ];
-
-  const { data: users } = useUserDataQuery({
-    rivalries: allRivalries as MRivalry[]
-  });
-
-  // Populate user data into rivalries
-  const rivalriesWithUsers = useMemo(() => {
-    if (!users || users.length === 0) return allRivalries;
-
-    return allRivalries.map((rivalry) => {
-      const userAData = users.find((u) => u?.id === rivalry.userAId);
-      const userBData = users.find((u) => u?.id === rivalry.userBId);
-
-      if (userAData) {
-        rivalry.userA = getMUser({ user: userAData as any });
-      }
-      if (userBData) {
-        rivalry.userB = getMUser({ user: userBData as any });
-      }
-
-      return rivalry;
-    });
-  }, [users, pendingRivalries]);
+  const { pendingRivalries } = useAllRivalries();
+  const { updateRivalry } = useAllRivalriesUpdate();
 
   const { mutate: acceptRivalry } = useAcceptRivalryMutation({
-    rivalryId: acceptingRivalryId || '',
     onSuccess: () => {
+      // Update the rivalry in the provider to mark it as accepted
+      if (acceptingRivalryId) {
+        updateRivalry(acceptingRivalryId, { accepted: true });
+      }
       setAcceptingRivalryId(null);
-      refetch();
+    },
+    onError: (error) => {
+      console.error('[PendingRivalries] Failed to accept rivalry:', error);
+      setAcceptingRivalryId(null);
+      // TODO: Show error toast to user
     }
   });
 
   const handleAcceptRivalry = (rivalryId: string) => {
+    if (!rivalryId) {
+      console.error('[PendingRivalries] Cannot accept rivalry with empty ID');
+      return;
+    }
     setAcceptingRivalryId(rivalryId);
-    acceptRivalry();
+    acceptRivalry(rivalryId);
   };
 
-  const renderRivalryItem = ({ item, isAwaitingAcceptance }: { item: MRivalry; isAwaitingAcceptance: boolean }) => {
-    const otherUser = item.userAId === user?.id ? item.userB : item.userA;
-    const otherUserName = otherUser
-      ? `${otherUser.firstName || ''} ${otherUser.lastName || ''}`.trim() || otherUser.email
-      : 'Unknown User';
+  const renderRivalryItem = ({ item, isAwaitingAcceptance }: { item: any; isAwaitingAcceptance: boolean }) => {
+    const isUserA = item.userAId === user?.id;
+    const otherUserName = isUserA ? item.userBName : item.userAName;
+    const displayName = otherUserName || 'Unknown User';
 
     return (
       <View
@@ -81,7 +61,7 @@ export function PendingRivalries() {
         <View style={{ flex: 1 }}>
           <Text style={[styles.text, { fontSize: 16, fontWeight: 'bold' }]}>
             {isAwaitingAcceptance ? 'Challenge from ' : 'Sent to '}
-            {otherUserName}
+            {displayName}
           </Text>
           <Text style={[styles.text, { fontSize: 14, color: '#999', marginTop: 4 }]}>
             {isAwaitingAcceptance ? 'Waiting for you to accept' : 'Waiting for acceptance'}
@@ -115,24 +95,7 @@ export function PendingRivalries() {
     );
   };
 
-  if (isLoading) {
-    return (
-      <SafeAreaView style={[styles.container, darkStyles.container]}>
-        <View style={{ flex: 1, alignItems: 'center', justifyContent: 'center' }}>
-          <ActivityIndicator size="large" color="#6b21a8" />
-          <Text style={[styles.text, { fontSize: 18, marginTop: 16 }]}>
-            Loading pending rivalries...
-          </Text>
-        </View>
-      </SafeAreaView>
-    );
-  }
-
-  // Separate rivalries into awaiting and initiated using the populated data
-  const awaitingAcceptance = rivalriesWithUsers.filter(
-    (r) => r.userBId === user?.id && !r.accepted
-  );
-  const initiated = rivalriesWithUsers.filter((r) => r.userAId === user?.id && !r.accepted);
+  const { awaitingAcceptance, initiated } = pendingRivalries;
 
   return (
     <SafeAreaView style={[styles.container, darkStyles.container]} edges={['top', 'bottom']}>

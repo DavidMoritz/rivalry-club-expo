@@ -41,6 +41,10 @@ yarn-error.*
 /ios
 /android
 
+# iOS builds
+ios_builds/
+*.ipa
+
 # Amplify Gen 2
 # amplify_outputs.json  # Temporarily included for EAS build
 .amplify/

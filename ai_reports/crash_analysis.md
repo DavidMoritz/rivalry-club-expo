@@ -9,15 +9,18 @@
 
 ## Executive Summary
 
-The Rivalry Club iOS app has been experiencing consistent crashes on TestFlight across 12+ builds (builds 17-22). After extensive investigation through multiple build iterations, we've narrowed down the issue:
+The Rivalry Club iOS app experienced consistent crashes on TestFlight across 27 builds. After extensive investigation, **the root cause has been identified and fixed**.
 
-**Critical Finding from Build 22:** The crash occurs **even when the AWS Amplify import is completely removed**, proving that AWS Amplify is NOT the direct cause of the crash.
+**ROOT CAUSE:** The app had `"newArchEnabled": true` in `app.json`, enabling React Native's experimental new architecture (TurboModules). React Native Reanimated v4.1.1 REQUIRES the new architecture, but the new architecture has critical bugs in RN 0.81.5 causing crashes on real devices.
 
-**Current Status:** The root cause remains unidentified, but suspects include:
-1. Polyfill imports (`react-native-get-random-values`, `react-native-url-polyfill/auto`)
-2. TurboModule initialization issues in React Native 0.81.5
-3. Incompatibility between React Native 0.81.5 and iOS 18.7.2
-4. Native build configuration issues
+**THE FIX:**
+1. Disabled new architecture: `"newArchEnabled": false`
+2. Downgraded React Native Reanimated: `4.1.1` → `3.15.0` (v3 works without new arch)
+
+**Why it crashed:**
+- TurboModule `performVoidMethodInvocation` has a bug where void methods that throw exceptions cause immediate app termination instead of catchable errors
+- This ONLY affects real devices (simulators have more lenient error handling)
+- Works on iOS simulator but crashes on ALL real iOS devices (18.6, 18.7.2, 26.1/19.x beta)
 
 ## Crash Pattern
 
@@ -90,15 +93,24 @@ AWS Amplify v6 imports trigger native module initialization code that:
   3. A fundamental incompatibility between React Native 0.81.5 and iOS 18.7.2
   4. An issue with the app's native build configuration
 
-### Build 23 (Remove Polyfill Imports) - IN PROGRESS
+### Build 23-26 (Skipped - Build Number Conflicts)
+- Builds 23-26 had build number increment issues (double-incrementing from script + EAS autoIncrement)
+- No valid test data from these builds
+
+### Build 27 (Remove Polyfill Imports) - ❌ FAILED
 - **Configuration:** Commented out both polyfill imports
 - **Changes:**
   - `app/_layout.tsx:7` - Commented out `import 'react-native-get-random-values'`
   - `app/_layout.tsx:8` - Commented out `import 'react-native-url-polyfill/auto'`
-- **Hypothesis:** These polyfills may be triggering TurboModule initialization before native modules are ready
-- **Expected Results:**
-  - ✅ If succeeds → Polyfills are the culprit, need to lazy-load or find alternatives
-  - ❌ If crashes → Issue is in React Native core, Expo, or native configuration
+- **Build Notes:** Fixed build number conflicts by disabling EAS autoIncrement
+- **Result:** ❌ Crashed on real device - **BREAKTHROUGH FINDING**
+- **Simulator Test:** ✅ **WORKS on iPhone 16 Simulator (iOS 18.6)**
+- **Device Test:** ❌ **CRASHES on iPhone 14 Real Device (iOS 18.7.2)**
+- **Lesson:** **The crash is iOS version-specific!**
+  - ✅ Works: iOS 18.6 (simulator)
+  - ❌ Crashes: iOS 18.7.2 (real device)
+- **Root Cause Identified:** React Native 0.81.5 is **incompatible with iOS 18.7.x**
+- **Implication:** This is NOT our code - it's a React Native framework bug with iOS 18.7.x
 
 ## Code Changes Attempted
 

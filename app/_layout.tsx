@@ -1,13 +1,13 @@
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
-// import { Amplify } from 'aws-amplify'; // COMMENTED OUT - importing this crashes the app!
+import { Amplify } from 'aws-amplify';
 import Constants from 'expo-constants';
 import { Slot } from 'expo-router';
 import React, { useEffect, useState } from 'react';
 import { View, Text, ActivityIndicator } from 'react-native';
-// import 'react-native-get-random-values'; // COMMENTED OUT - testing if polyfills cause crash
-// import 'react-native-url-polyfill/auto'; // COMMENTED OUT - testing if polyfills cause crash
+import 'react-native-get-random-values';
+import 'react-native-url-polyfill/auto';
 
-// import outputs from '../amplify_outputs.json'; // Not needed without Amplify
+import outputs from '../amplify_outputs.json';
 import '../global.css';
 import { preloadAssets } from '../src/utils/preloadAssets';
 
@@ -30,16 +30,12 @@ export default function RootLayout() {
   useEffect(() => {
     async function initialize() {
       try {
-        // TEMPORARY: Skip Amplify configuration to test if it's causing the crash
-        // TODO: Re-enable after finding proper initialization method
-        console.log('[RootLayout] Skipping Amplify configuration to test crash fix');
-
-        // if (!amplifyConfigured) {
-        //   console.log('[RootLayout] Configuring Amplify after delay...');
-        //   Amplify.configure(outputs);
-        //   amplifyConfigured = true;
-        //   console.log('[RootLayout] Amplify configured successfully');
-        // }
+        if (!amplifyConfigured) {
+          console.log('[RootLayout] Configuring Amplify...');
+          Amplify.configure(outputs);
+          amplifyConfigured = true;
+          console.log('[RootLayout] Amplify configured successfully');
+        }
 
         await preloadAssets();
         setAssetsLoaded(true);

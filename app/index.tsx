@@ -22,9 +22,13 @@ export default function IndexRoute() {
     });
   }
 
+  function handleHowToPlayClick() {
+    router.push('/how-to-play');
+  }
+
   return (
     <>
-      <Home onEnterClick={handleEnterClick} />
+      <Home onEnterClick={handleEnterClick} onHowToPlayClick={handleHowToPlayClick} />
       <StatusBar style="light" />
     </>
   );

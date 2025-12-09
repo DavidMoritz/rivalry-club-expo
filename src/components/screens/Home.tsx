@@ -32,9 +32,10 @@ interface Fighter {
 
 interface HomeProps {
   onEnterClick: (game: Game) => void;
+  onHowToPlayClick?: () => void;
 }
 
-export default function Home({ onEnterClick }: HomeProps) {
+export default function Home({ onEnterClick, onHowToPlayClick }: HomeProps) {
   const [games, setGames] = useState<Game[]>([]);
 
   useEffect(() => {
@@ -107,6 +108,14 @@ export default function Home({ onEnterClick }: HomeProps) {
                   Professor Fandango
                 </Text>
               </TouchableOpacity>
+
+              {onHowToPlayClick && (
+                <Button
+                  text="How to Play"
+                  onPress={onHowToPlayClick}
+                  style={{ marginTop: 26, width: '60%', paddingVertical: 0 }}
+                />
+              )}
             </View>
           }
         />

@@ -64,6 +64,7 @@ export function GameWithCharactersDisplay({ game }: GameWithCharactersDisplayPro
         renderItem={({ item }) => item && <CharacterDisplay fighter={item} />}
         style={styles.fightersContainer}
         numColumns={3}
+        columnWrapperStyle={{ justifyContent: 'space-around' }}
         keyExtractor={(item) => item?.id || ''}
       />
     </>

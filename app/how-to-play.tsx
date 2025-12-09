@@ -4,6 +4,7 @@ import { ScrollView, Text, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
 import { HamburgerMenu } from '../src/components/common/HamburgerMenu';
+import { Button } from '../src/components/common/Button';
 import { darkStyles, styles } from '../src/utils/styles';
 
 export default function HowToPlay() {
@@ -29,7 +30,12 @@ export default function HowToPlay() {
           <Text style={[styles.text, { fontSize: 32, fontWeight: 'bold', marginBottom: 8 }]}>
             Rivalry Club
           </Text>
-          <Text style={[styles.text, { fontSize: 16, color: '#6b21a8' }]}>How to Play</Text>
+          <Text style={[styles.text, { fontSize: 16, color: '#ab61e8' }]}>How to Play</Text>
+          <Button
+            text="← Home"
+            onPress={() => router.push('/')}
+            style={{ marginTop: 16, width: 140, paddingVertical: 0 }}
+          />
         </View>
 
         {/* Introduction */}
@@ -48,7 +54,7 @@ export default function HowToPlay() {
           <Text
             style={[
               styles.text,
-              { fontSize: 20, fontWeight: 'bold', color: '#6b21a8', marginBottom: 12 }
+              { fontSize: 20, fontWeight: 'bold', color: '#ab61e8', marginBottom: 12 }
             ]}
           >
             1. Create an Account
@@ -64,7 +70,7 @@ export default function HowToPlay() {
           <Text
             style={[
               styles.text,
-              { fontSize: 20, fontWeight: 'bold', color: '#6b21a8', marginBottom: 12 }
+              { fontSize: 20, fontWeight: 'bold', color: '#ab61e8', marginBottom: 12 }
             ]}
           >
             2. Start a Rivalry
@@ -72,9 +78,28 @@ export default function HowToPlay() {
           <Text style={[styles.text, { fontSize: 16, lineHeight: 24, marginBottom: 12 }]}>
             After creating your accounts:
           </Text>
-          <Text style={[styles.text, { fontSize: 16, lineHeight: 24, marginLeft: 16 }]}>
+          <Text
+            style={[
+              styles.text,
+              { fontSize: 16, lineHeight: 24, marginLeft: 16, marginBottom: 12 }
+            ]}
+          >
             • Tap "Create New Rivalry"{'\n'}• Search for and select your opponent{'\n'}• Choose your
             game (currently Super Smash Ultimate){'\n'}• Your tier lists will be randomly generated
+          </Text>
+          <Text
+            style={[
+              styles.text,
+              {
+                fontSize: 16,
+                lineHeight: 24,
+                fontStyle: 'italic',
+                color: '#bb8cf6'
+              }
+            ]}
+          >
+            Pro Tip: Type "npc" in the search to instantly find test opponents and try out Rivalry
+            Club solo!
           </Text>
         </View>
 
@@ -83,21 +108,22 @@ export default function HowToPlay() {
           <Text
             style={[
               styles.text,
-              { fontSize: 20, fontWeight: 'bold', color: '#6b21a8', marginBottom: 12 }
+              { fontSize: 20, fontWeight: 'bold', color: '#ab61e8', marginBottom: 12 }
             ]}
           >
             3. Edit Your Tier List
           </Text>
           <Text style={[styles.text, { fontSize: 16, lineHeight: 24, marginBottom: 12 }]}>
-            Most tiers (S, A, B, C, D, E) contain 12 characters, while F Tier contains 14 characters.
-            Rank characters from your best in S Tier down to your worst in F Tier.
+            Most tiers (S, A, B, C, D, E) contain 12 characters, while F Tier contains 14
+            characters. Rank characters from your best in S Tier down to your worst in F Tier.
           </Text>
           <Text style={[styles.text, { fontSize: 16, lineHeight: 24, marginBottom: 12 }]}>
             To edit your tier list:
           </Text>
           <Text style={[styles.text, { fontSize: 16, lineHeight: 24, marginLeft: 16 }]}>
-            • Scroll to the bottom of your rivalry page{'\n'}• Tap "Edit Tier List"{'\n'}• Drag
-            characters to reorder them{'\n'}• Tap "Save" when finished
+            • Scroll to the bottom of your rivalry page{'\n'}• Tap "Edit Tier List"{'\n'}• Tap a
+            character icon, then tap the spot where you want it to go{'\n'}• Tap "Save" when
+            finished
           </Text>
         </View>
 
@@ -106,7 +132,7 @@ export default function HowToPlay() {
           <Text
             style={[
               styles.text,
-              { fontSize: 20, fontWeight: 'bold', color: '#6b21a8', marginBottom: 12 }
+              { fontSize: 20, fontWeight: 'bold', color: '#ab61e8', marginBottom: 12 }
             ]}
           >
             4. Play Contests
@@ -142,7 +168,7 @@ export default function HowToPlay() {
           <Text
             style={[
               styles.text,
-              { fontSize: 20, fontWeight: 'bold', color: '#6b21a8', marginBottom: 12 }
+              { fontSize: 20, fontWeight: 'bold', color: '#ab61e8', marginBottom: 12 }
             ]}
           >
             5. How Tiers Change
@@ -169,7 +195,7 @@ export default function HowToPlay() {
           <Text
             style={[
               styles.text,
-              { fontSize: 20, fontWeight: 'bold', color: '#6b21a8', marginBottom: 12 }
+              { fontSize: 20, fontWeight: 'bold', color: '#ab61e8', marginBottom: 12 }
             ]}
           >
             6. Character Movement Within Tiers
@@ -186,7 +212,7 @@ export default function HowToPlay() {
           <Text
             style={[
               styles.text,
-              { fontSize: 20, fontWeight: 'bold', color: '#6b21a8', marginBottom: 12 }
+              { fontSize: 20, fontWeight: 'bold', color: '#ab61e8', marginBottom: 12 }
             ]}
           >
             7. Prestige = Bragging Rights
@@ -212,7 +238,7 @@ export default function HowToPlay() {
           <Text
             style={[
               styles.text,
-              { fontSize: 20, fontWeight: 'bold', color: '#6b21a8', marginBottom: 12 }
+              { fontSize: 20, fontWeight: 'bold', color: '#ab61e8', marginBottom: 12 }
             ]}
           >
             8. Tips & Features
@@ -246,10 +272,22 @@ export default function HowToPlay() {
           >
             Ready to Play?
           </Text>
-          <Text style={[styles.text, { fontSize: 16, lineHeight: 24, textAlign: 'center' }]}>
+          <Text
+            style={[
+              styles.text,
+              { fontSize: 16, lineHeight: 24, textAlign: 'center', marginBottom: 20 }
+            ]}
+          >
             Now that you know the rules, create your first rivalry and experience Super Smash
             Ultimate in a whole new way!
           </Text>
+          <View style={{ alignItems: 'center' }}>
+            <Button
+              text="← Home"
+              onPress={() => router.push('/')}
+              style={{ width: 140, paddingVertical: 0 }}
+            />
+          </View>
         </View>
       </ScrollView>
     </SafeAreaView>

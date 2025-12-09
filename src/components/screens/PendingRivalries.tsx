@@ -14,7 +14,7 @@ export function PendingRivalries() {
   const { user } = useAuthUser();
   const [acceptingRivalryId, setAcceptingRivalryId] = useState<string | null>(null);
 
-  const { pendingRivalries } = useAllRivalries();
+  const { pendingRivalries, rivalries } = useAllRivalries();
   const { updateRivalry } = useAllRivalriesUpdate();
 
   const { mutate: acceptRivalry } = useAcceptRivalryMutation({
@@ -22,6 +22,21 @@ export function PendingRivalries() {
       // Update the rivalry in the provider to mark it as accepted
       if (acceptingRivalryId) {
         updateRivalry(acceptingRivalryId, { accepted: true });
+
+        // Find the accepted rivalry to get user names for navigation
+        const acceptedRivalry = pendingRivalries.awaitingAcceptance.find(r => r.id === acceptingRivalryId);
+
+        if (acceptedRivalry) {
+          // Navigate to the rivalry page
+          router.push({
+            pathname: `/rivalry/${acceptingRivalryId}`,
+            params: {
+              userAName: acceptedRivalry.userAName,
+              userBName: acceptedRivalry.userBName,
+              userId: user?.id
+            }
+          });
+        }
       }
       setAcceptingRivalryId(null);
     },
@@ -39,6 +54,18 @@ export function PendingRivalries() {
     }
     setAcceptingRivalryId(rivalryId);
     acceptRivalry(rivalryId);
+  };
+
+  const handleCreateRivalry = () => {
+    // Get gameId from the first rivalry, or use the default game
+    // TODO: In the future, let users select from multiple games
+    const gameId = rivalries[0]?.gameId || '73ed69cf-2775-43d6-bece-aed10da3e25a';
+
+    // Navigate to create rivalry screen using Expo Router
+    router.push({
+      pathname: '/rivalry/create',
+      params: { gameId }
+    });
   };
 
   const renderRivalryItem = ({ item, isAwaitingAcceptance }: { item: any; isAwaitingAcceptance: boolean }) => {
@@ -106,6 +133,24 @@ export function PendingRivalries() {
         <Text style={[styles.text, { marginTop: 4, color: '#999' }]}>
           Challenges waiting for acceptance
         </Text>
+
+        {awaitingAcceptance.length === 0 && initiated.length === 0 && (
+          <TouchableOpacity
+            onPress={handleCreateRivalry}
+            style={{
+              backgroundColor: '#6b21a8',
+              paddingHorizontal: 24,
+              paddingVertical: 12,
+              borderRadius: 8,
+              marginTop: 16,
+              alignItems: 'center'
+            }}
+          >
+            <Text style={[styles.text, { fontSize: 16, fontWeight: 'bold' }]}>
+              Create New Rivalry
+            </Text>
+          </TouchableOpacity>
+        )}
       </View>
 
       {awaitingAcceptance.length === 0 && initiated.length === 0 ? (

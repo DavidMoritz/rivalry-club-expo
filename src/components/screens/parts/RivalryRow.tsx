@@ -59,7 +59,7 @@ export function RivalryRow({
             vs. {opponentName || 'Unknown'}
           </Text>
           <Text style={[styles.text, { fontSize: 12, color: '#999' }]}>
-            Updated {updatedDisplay} • {contestCount} contest{contestCount !== 1 ? 's' : ''}
+            {updatedDisplay} • {contestCount} contest{contestCount !== 1 ? 's' : ''}
           </Text>
         </View>
         <View

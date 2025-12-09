@@ -89,8 +89,8 @@ export default function HowToPlay() {
             3. Edit Your Tier List
           </Text>
           <Text style={[styles.text, { fontSize: 16, lineHeight: 24, marginBottom: 12 }]}>
-            Each tier (S, A, B, C, D, E, F) contains 12 characters. Rank characters from your best
-            in S Tier down to your worst in F Tier.
+            Most tiers (S, A, B, C, D, E) contain 12 characters, while F Tier contains 14 characters.
+            Rank characters from your best in S Tier down to your worst in F Tier.
           </Text>
           <Text style={[styles.text, { fontSize: 16, lineHeight: 24, marginBottom: 12 }]}>
             To edit your tier list:

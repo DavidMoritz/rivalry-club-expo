@@ -19,8 +19,6 @@ import { CharacterDisplay } from '../../common/CharacterDisplay';
 
 type TierSlot = Schema['TierSlot']['type'];
 
-const fightersPerTier = 12;
-
 interface TierListEditDisplayProps {
   tierList: MTierList;
   onChange: () => void;
@@ -139,8 +137,9 @@ export function TierListEditDisplay({ tierList, onChange }: TierListEditDisplayP
   return (
     <ScrollView style={{ flex: 1 }}>
       {TIERS.map((tier, tierIndex) => {
-        const startIdx = tierIndex * fightersPerTier;
-        const endIdx = startIdx + fightersPerTier;
+        // Calculate cumulative start index based on previous tiers' fighter counts
+        const startIdx = TIERS.slice(0, tierIndex).reduce((sum, t) => sum + t.fightersCount, 0);
+        const endIdx = startIdx + tier.fightersCount;
         const tierSlots = allSlots.slice(startIdx, endIdx);
 
         return (
@@ -161,10 +160,10 @@ export function TierListEditDisplay({ tierList, onChange }: TierListEditDisplayP
                   alignItems: 'center',
                   borderRightWidth: 2,
                   borderRightColor: '#1f2937',
-                  backgroundColor: '#1f2937'
+                  backgroundColor: 'rgb(31, 41, 55, 0.2)'
                 }}
               >
-                <Text style={{ fontSize: 32, fontWeight: 'bold', color: 'white' }}>
+                <Text style={{ fontSize: 32, fontWeight: 'bold', color: 'black', opacity: 1 }}>
                   {tier.label}
                 </Text>
               </View>

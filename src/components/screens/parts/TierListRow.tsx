@@ -35,10 +35,11 @@ const TierListRow: React.FC<TierListRowProps> = (props) => {
           alignItems: 'center',
           borderRightWidth: 2,
           borderRightColor: '#1f2937',
-          backgroundColor: '#1f2937'
+          backgroundColor: 'rgb(31, 41, 55, 0.2)',
+          marginRight: 4
         }}
       >
-        <Text style={{ fontSize: 32, fontWeight: 'bold', color: 'white' }}>{props.label}</Text>
+        <Text style={{ fontSize: 32, fontWeight: 'bold', color: 'black' }}>{props.label}</Text>
       </View>
       <View style={{ flex: 1, paddingVertical: 4 }}>
         <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: 4 }}>

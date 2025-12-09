@@ -8,8 +8,6 @@ import TierListRow from './TierListRow';
 
 type TierSlot = Schema['TierSlot']['type'];
 
-const fightersPerTier = 12;
-
 export function TierListDisplay({
   tierList,
   unlinked = false,
@@ -30,7 +28,7 @@ export function TierListDisplay({
     setTierSlotsSorted(
       tiersWithSlots.map(tier => ({
         ...tier,
-        slots: allSorted.splice(0, fightersPerTier),
+        slots: allSorted.splice(0, tier.fightersCount),
       })),
     );
   }, [tierList]);

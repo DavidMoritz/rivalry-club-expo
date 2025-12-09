@@ -30,14 +30,27 @@ export interface MTierList extends TierList {
   title: string;
 }
 
+// TODO: Make this dynamic based on the game's fighter count
+// For now, hard-coded to 86 (SSBU)
+export const FIGHTER_COUNT = 86;
+
+// Calculate fighters per tier: evenly distributed, with F tier getting the remainder
+const baseFightersPerTier = Math.floor(FIGHTER_COUNT / 7);
+const remainderFighters = FIGHTER_COUNT % 7;
+
 export const TIERS = [
-  { label: 'S', position: 0, color: 'hsl(0, 100%, 75%)' },
-  { label: 'A', position: 1, color: 'hsl(30, 100%, 75%)' },
-  { label: 'B', position: 2, color: 'hsl(45, 100%, 75%)' },
-  { label: 'C', position: 3, color: 'hsl(60, 100%, 75%)' },
-  { label: 'D', position: 4, color: 'hsl(90, 100%, 75%)' },
-  { label: 'E', position: 5, color: 'hsl(120, 100%, 75%)' },
-  { label: 'F', position: 6, color: 'hsl(180, 100%, 75%)' }
+  { label: 'S', position: 0, color: 'hsl(0, 100%, 75%)', fightersCount: baseFightersPerTier },
+  { label: 'A', position: 1, color: 'hsl(30, 100%, 75%)', fightersCount: baseFightersPerTier },
+  { label: 'B', position: 2, color: 'hsl(45, 100%, 75%)', fightersCount: baseFightersPerTier },
+  { label: 'C', position: 3, color: 'hsl(60, 100%, 75%)', fightersCount: baseFightersPerTier },
+  { label: 'D', position: 4, color: 'hsl(90, 100%, 75%)', fightersCount: baseFightersPerTier },
+  { label: 'E', position: 5, color: 'hsl(120, 100%, 75%)', fightersCount: baseFightersPerTier },
+  {
+    label: 'F',
+    position: 6,
+    color: 'hsl(180, 100%, 75%)',
+    fightersCount: baseFightersPerTier + remainderFighters
+  }
 ] as const;
 
 export type Tier = (typeof TIERS)[number];

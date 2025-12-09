@@ -42,6 +42,11 @@ export function HamburgerMenu() {
     router.push('/pending');
   };
 
+  const handleHowToPlay = () => {
+    setMenuVisible(false);
+    router.push('/how-to-play');
+  };
+
   return (
     <>
       <TouchableOpacity
@@ -144,6 +149,21 @@ export function HamburgerMenu() {
             >
               <Text style={{ fontSize: 16, color: 'white', marginRight: 12 }}>👤</Text>
               <Text style={[darkStyles.text, { fontSize: 16 }]}>Profile</Text>
+            </TouchableOpacity>
+
+            <View style={{ height: 1, backgroundColor: '#475569', marginVertical: 4 }} />
+
+            <TouchableOpacity
+              onPress={handleHowToPlay}
+              style={{
+                paddingVertical: 12,
+                paddingHorizontal: 16,
+                flexDirection: 'row',
+                alignItems: 'center'
+              }}
+            >
+              <Text style={{ fontSize: 16, color: 'white', marginRight: 12 }}>❓</Text>
+              <Text style={[darkStyles.text, { fontSize: 16 }]}>How to Play</Text>
             </TouchableOpacity>
 
             <View style={{ height: 1, backgroundColor: '#475569', marginVertical: 4 }} />

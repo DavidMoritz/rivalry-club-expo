@@ -1,6 +1,6 @@
 import { generateClient } from 'aws-amplify/data';
 import { useRouter } from 'expo-router';
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import { KeyboardAvoidingView, Platform, ScrollView, Text, TextInput, TouchableOpacity, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
@@ -12,6 +12,7 @@ import { darkStyles, styles } from '../../utils/styles';
 export function Profile() {
   const router = useRouter();
   const { user, isLoading: userLoading } = useAuthUser();
+  const scrollViewRef = useRef<ScrollView>(null);
   const [firstName, setFirstName] = useState('');
   const [lastName, setLastName] = useState('');
   const [currentPassword, setCurrentPassword] = useState('');
@@ -108,6 +109,10 @@ export function Profile() {
       setCurrentPassword('');
       setNewPassword('');
       setConfirmPassword('');
+
+      // Scroll to top to show the success message
+      scrollViewRef.current?.scrollTo({ y: 0, animated: true });
+
       setTimeout(() => setSuccessMessage(''), 3000);
     } catch (error: any) {
       console.error('[Profile] Password change error:', error);
@@ -119,6 +124,9 @@ export function Profile() {
       } else {
         setErrorMessage(error?.message || 'Failed to change password');
       }
+
+      // Scroll to top to show the error message
+      scrollViewRef.current?.scrollTo({ y: 0, animated: true });
     } finally {
       setIsChangingPassword(false);
     }
@@ -144,6 +152,7 @@ export function Profile() {
         style={{ flex: 1 }}
         keyboardVerticalOffset={0}>
         <ScrollView
+          ref={scrollViewRef}
           style={{ flex: 1 }}
           contentContainerStyle={{ padding: 24 }}
           keyboardShouldPersistTaps="handled">

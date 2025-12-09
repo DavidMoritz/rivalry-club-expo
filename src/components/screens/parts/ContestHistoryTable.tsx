@@ -65,8 +65,9 @@ export function ContestHistoryTable({
   return (
     <View style={contestStyles.tableWrapper}>
       {!hideUndoButton && (
-        <View style={{ alignSelf: 'flex-start', marginTop: -24, marginBottom: 16 }}>
+        <View style={{ alignSelf: 'flex-start', marginTop: -14 }}>
           <Button
+            style={{ paddingVertical: 0 }}
             onPress={handleUndoClick}
             text="↺ Undo Recent Contest"
             disabled={

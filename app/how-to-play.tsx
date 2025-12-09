@@ -189,18 +189,21 @@ export default function HowToPlay() {
               { fontSize: 20, fontWeight: 'bold', color: '#6b21a8', marginBottom: 12 }
             ]}
           >
-            7. Prestige System
+            7. Prestige = Bragging Rights
           </Text>
           <Text style={[styles.text, { fontSize: 16, lineHeight: 24, marginBottom: 12 }]}>
-            If a player moves below F Tier, they gain a Prestige level (shown as +1, +2, etc.).
+            If a player moves below F Tier, he gains a Prestige level (shown as +1, +2, etc.). Each
+            prestige level adds a 20% damage handicap against him.
           </Text>
           <Text style={[styles.text, { fontSize: 16, lineHeight: 24, marginBottom: 12 }]}>
-            <Text style={{ fontWeight: 'bold' }}>Handicap Bonus:</Text> Each prestige level adds a
-            20% damage handicap in your favor. This handicap applies until you're forced back up to
-            your regular tier list.
+            For example: If a player has +2 prestige over his rival, it means he'll have an
+            approximately equal chance of winning or losing when playing with a 40% damage handicap.
+            These are the bragging rights inherent in prestige!
           </Text>
           <Text style={[styles.text, { fontSize: 16, lineHeight: 24 }]}>
-            Prestige is your reward for dominating the competition!
+            If his rival thinks he is better, he will have to prove it by winning more to force the
+            prestige down and remove the handicap. The handicap applies until the player is forced
+            back up to his regular tier list.
           </Text>
         </View>
 

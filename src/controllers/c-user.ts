@@ -172,6 +172,7 @@ export const useUserSearchQuery = ({ searchText, currentUserId }: UserSearchQuer
       }
 
       const searchLower = searchText.toLowerCase().trim();
+      const isNpcSearch = searchLower === 'np' || searchLower.includes('npc');
 
       // Fetch all users (in production, you'd want server-side filtering)
       const { data: users, errors } = await getClient().models.User.list({
@@ -193,9 +194,22 @@ export const useUserSearchQuery = ({ searchText, currentUserId }: UserSearchQuer
         throw new Error(errors[0]?.message || 'Failed to fetch users');
       }
 
-      // Filter and score users based on search relevance
-      const scoredUsers = users
-        .filter((user) => user.id !== currentUserId && !user.deletedAt)
+      // Separate NPC users (role = 13) from other users
+      const npcUsers = users.filter((user) => user.role === 13 && user.id !== currentUserId && !user.deletedAt);
+      const regularUsers = users.filter((user) => user.role !== 13 && user.id !== currentUserId && !user.deletedAt);
+
+      let finalResults: MUser[] = [];
+
+      // If NPC search, add 5 random NPCs at the top
+      if (isNpcSearch && npcUsers.length > 0) {
+        // Shuffle and take 5 random NPCs
+        const shuffledNpcs = [...npcUsers].sort(() => Math.random() - 0.5);
+        const randomNpcs = shuffledNpcs.slice(0, 5).map((user) => getMUser({ user: user as any }));
+        finalResults.push(...randomNpcs);
+      }
+
+      // Filter and score regular users based on search relevance
+      const scoredUsers = regularUsers
         .map((user) => {
           const firstName = (user.firstName || '').toLowerCase();
           const lastName = (user.lastName || '').toLowerCase();
@@ -243,7 +257,10 @@ export const useUserSearchQuery = ({ searchText, currentUserId }: UserSearchQuer
         .sort((a, b) => b.score - a.score)
         .map(({ user }) => getMUser({ user: user as any }));
 
-      return scoredUsers;
+      // Add regular search results after NPCs
+      finalResults.push(...scoredUsers);
+
+      return finalResults;
     },
     enabled: searchText.trim().length >= 2
   });

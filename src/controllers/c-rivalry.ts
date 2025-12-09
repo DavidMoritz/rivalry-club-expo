@@ -815,6 +815,136 @@ export const useCreateRivalryMutation = ({
   });
 };
 
+export const useCreateNpcRivalryMutation = ({
+  onSuccess,
+  onError
+}: CreateRivalryMutationProps = {}) => {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: async ({ userAId, userBId, gameId }: CreateRivalryParams) => {
+      // Create the rivalry with accepted = true for NPCs
+      const { data: rivalryData, errors: rivalryErrors } = await getClient().models.Rivalry.create({
+        userAId,
+        userBId,
+        gameId,
+        contestCount: 0,
+        accepted: true // Auto-accept for NPCs
+      });
+
+      if (rivalryErrors) {
+        console.error('[useCreateNpcRivalryMutation] Rivalry creation errors:', rivalryErrors);
+        throw new Error(rivalryErrors[0]?.message || 'Failed to create NPC rivalry');
+      }
+
+      // Fetch all fighters for the game
+      const { data: fighters, errors: fightersErrors } = await getClient().models.Fighter.list({
+        filter: { gameId: { eq: gameId } }
+      });
+
+      if (fightersErrors || !fighters || fighters.length === 0) {
+        throw new Error('Failed to fetch fighters');
+      }
+
+      // Create randomized tier slot data for userA
+      const shuffledFightersA = [...fighters].sort(() => Math.random() - 0.5);
+      const tierSlotDataA = shuffledFightersA.map((fighter, index) => ({
+        fighterId: fighter.id,
+        position: index
+      }));
+
+      // Create randomized tier slot data for userB (NPC) - different order
+      const shuffledFightersB = [...fighters].sort(() => Math.random() - 0.5);
+      const tierSlotDataB = shuffledFightersB.map((fighter, index) => ({
+        fighterId: fighter.id,
+        position: index
+      }));
+
+      // Create tier list for userA
+      const { data: tierListAData, errors: tierListAErrors } =
+        await getClient().models.TierList.create({
+          rivalryId: rivalryData!.id,
+          userId: userAId,
+          standing: 0
+        });
+
+      if (tierListAErrors || !tierListAData) {
+        throw new Error('Failed to create tier list for userA');
+      }
+
+      // Create tier list for userB (NPC)
+      const { data: tierListBData, errors: tierListBErrors } =
+        await getClient().models.TierList.create({
+          rivalryId: rivalryData!.id,
+          userId: userBId,
+          standing: 0
+        });
+
+      if (tierListBErrors || !tierListBData) {
+        throw new Error('Failed to create tier list for userB');
+      }
+
+      // Create tier slots for both users in batches
+      const BATCH_SIZE = 10;
+      const allTierSlotErrors: any[] = [];
+
+      // Create tier slots for userA
+      for (let i = 0; i < tierSlotDataA.length; i += BATCH_SIZE) {
+        const batch = tierSlotDataA.slice(i, i + BATCH_SIZE);
+        const tierSlotPromises = batch.map((slot) =>
+          client.models.TierSlot.create({
+            tierListId: tierListAData.id,
+            fighterId: slot.fighterId,
+            position: slot.position,
+            contestCount: 0,
+            winCount: 0
+          })
+        );
+
+        const tierSlotResults = await Promise.all(tierSlotPromises);
+        const tierSlotErrors = tierSlotResults.filter((r) => r.errors).flatMap((r) => r.errors);
+        allTierSlotErrors.push(...tierSlotErrors);
+      }
+
+      // Create tier slots for userB (NPC)
+      for (let i = 0; i < tierSlotDataB.length; i += BATCH_SIZE) {
+        const batch = tierSlotDataB.slice(i, i + BATCH_SIZE);
+        const tierSlotPromises = batch.map((slot) =>
+          client.models.TierSlot.create({
+            tierListId: tierListBData.id,
+            fighterId: slot.fighterId,
+            position: slot.position,
+            contestCount: 0,
+            winCount: 0
+          })
+        );
+
+        const tierSlotResults = await Promise.all(tierSlotPromises);
+        const tierSlotErrors = tierSlotResults.filter((r) => r.errors).flatMap((r) => r.errors);
+        allTierSlotErrors.push(...tierSlotErrors);
+      }
+
+      if (allTierSlotErrors.length > 0) {
+        console.error('[useCreateNpcRivalryMutation] Tier slot creation errors:', allTierSlotErrors);
+        throw new Error(
+          `Failed to create ${allTierSlotErrors.length} tier slots`
+        );
+      }
+
+      return getMRivalry({ rivalry: rivalryData as any });
+    },
+    onSuccess: (rivalry, variables) => {
+      queryClient.invalidateQueries({ queryKey: ['pendingRivalries', variables.userAId] });
+      queryClient.invalidateQueries({ queryKey: ['usersByAwsSub'] });
+      onSuccess?.(rivalry);
+    },
+    onError: (error: Error) => {
+      console.error('[useCreateNpcRivalryMutation] Error callback:', error);
+      onError?.(error);
+    }
+  });
+};
+
 export const useAcceptRivalryMutation = ({ onSuccess, onError }: AcceptRivalryMutationProps) => {
   const queryClient = useQueryClient();
 

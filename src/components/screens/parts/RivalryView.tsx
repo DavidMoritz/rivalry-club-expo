@@ -11,6 +11,8 @@ interface RivalryViewProps {
 
 export function RivalryView({ navigation }: RivalryViewProps): JSX.Element {
   const rivalry = useRivalry();
+  const displayCount = Math.max((rivalry?.contestCount ?? 1) - 1, 0);
+  const displayContest = displayCount === 1 ? 'Contest' : 'Contests';
 
   return (
     <>
@@ -25,7 +27,7 @@ export function RivalryView({ navigation }: RivalryViewProps): JSX.Element {
         onPress={() => {
           navigation.navigate('ContestHistory');
         }}
-        text={`View ${rivalry?.contestCount || 0} Contests`}
+        text={`View ${displayCount} ${displayContest}`}
         style={{ height: 48, paddingHorizontal: 48, width: 256 }}
       />
     </>

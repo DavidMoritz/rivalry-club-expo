@@ -45,7 +45,9 @@ const marth = require('./fighters/marth.png');
 const mega_man = require('./fighters/mega_man.png');
 const meta_knight = require('./fighters/meta_knight.png');
 const mewtwo = require('./fighters/mewtwo.png');
-const mii_fighters = require('./fighters/mii_fighters.png');
+const mii_brawler = require('./fighters/mii_brawler.png');
+const mii_gunner = require('./fighters/mii_gunner.png');
+const mii_swordfighter = require('./fighters/mii_swordfighter.png');
 const min_min = require('./fighters/min_min.png');
 const mr_game_watch = require('./fighters/mr_game_watch.png');
 const ness = require('./fighters/ness.png');
@@ -139,7 +141,9 @@ export const fighterImages: DynamicImages = {
   mega_man,
   meta_knight,
   mewtwo,
-  mii_fighters,
+  mii_brawler,
+  mii_gunner,
+  mii_swordfighter,
   min_min,
   mr_game_watch,
   ness,

@@ -46,7 +46,9 @@ const marth = require('./professor_fandango/marth.jpg');
 const mega_man = require('./professor_fandango/mega_man.jpg');
 const meta_knight = require('./professor_fandango/meta_knight.jpg');
 const mewtwo = require('./professor_fandango/mewtwo.jpg');
-const mii_fighters = require('./professor_fandango/mii_fighters.jpg');
+const mii_brawler = require('./professor_fandango/mii_brawler.jpg');
+const mii_gunner = require('./professor_fandango/mii_gunner.jpg');
+const mii_swordfighter = require('./professor_fandango/mii_swordfighter.jpg');
 const min_min = require('./professor_fandango/min_min.jpg');
 const mr_game_watch = require('./professor_fandango/mr_game_watch.jpg');
 const ness = require('./professor_fandango/ness.jpg');
@@ -150,7 +152,9 @@ export const fighterImages: DynamicImages = {
   mega_man,
   meta_knight,
   mewtwo,
-  mii_fighters,
+  mii_brawler,
+  mii_gunner,
+  mii_swordfighter,
   min_min,
   mr_game_watch,
   ness,

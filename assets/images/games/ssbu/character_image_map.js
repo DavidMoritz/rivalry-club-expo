@@ -357,13 +357,29 @@ export const characterImageMap = {
     scale: 0.88,
     numCharacters: 1
   },
-  mii_fighters: {
+  mii_brawler: {
     faceCenter: {
-      x: 131,
-      y: 101
+      x: 144,
+      y: 78
     },
-    scale: 0.55,
-    numCharacters: 3
+    scale: 0.88,
+    numCharacters: 1
+  },
+  mii_gunner: {
+    faceCenter: {
+      x: 134,
+      y: 92
+    },
+    scale: 0.88,
+    numCharacters: 1
+  },
+  mii_swordfighter: {
+    faceCenter: {
+      x: 124,
+      y: 74
+    },
+    scale: 0.88,
+    numCharacters: 1
   },
   min_min: {
     faceCenter: {

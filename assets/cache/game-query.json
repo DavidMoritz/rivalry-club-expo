@@ -276,158 +276,168 @@
               },
               {
                 "id": "483d2085-6301-11ee-a22d-169ccb685861",
-                "name": "Mii Fighters",
+                "name": "Mii Brawler",
                 "gamePosition": 54
+              },
+              {
+                "id": "483d2106-6301-11ee-a22d-169ccb685861",
+                "name": "Mii Gunner",
+                "gamePosition": 55
+              },
+              {
+                "id": "483d2187-6301-11ee-a22d-169ccb685861",
+                "name": "Mii Swordfighter",
+                "gamePosition": 56
               },
               {
                 "id": "483d210b-6301-11ee-a22d-169ccb685861",
                 "name": "Palutena",
-                "gamePosition": 55
+                "gamePosition": 57
               },
               {
                 "id": "483d2191-6301-11ee-a22d-169ccb685861",
                 "name": "Pac-man",
-                "gamePosition": 56
+                "gamePosition": 58
               },
               {
                 "id": "483d221a-6301-11ee-a22d-169ccb685861",
                 "name": "Robin",
-                "gamePosition": 57
+                "gamePosition": 59
               },
               {
                 "id": "483d22a0-6301-11ee-a22d-169ccb685861",
                 "name": "Shulk",
-                "gamePosition": 58
+                "gamePosition": 60
               },
               {
                 "id": "483d232b-6301-11ee-a22d-169ccb685861",
                 "name": "Bowser Jr.",
-                "gamePosition": 59
+                "gamePosition": 61
               },
               {
                 "id": "483d23ae-6301-11ee-a22d-169ccb685861",
                 "name": "Duck Hunt",
-                "gamePosition": 60
+                "gamePosition": 62
               },
               {
                 "id": "483d2434-6301-11ee-a22d-169ccb685861",
                 "name": "Ryu",
-                "gamePosition": 61
+                "gamePosition": 63
               },
               {
                 "id": "483d24b8-6301-11ee-a22d-169ccb685861",
                 "name": "Ken",
-                "gamePosition": 62
+                "gamePosition": 64
               },
               {
                 "id": "483d253f-6301-11ee-a22d-169ccb685861",
                 "name": "Cloud",
-                "gamePosition": 63
+                "gamePosition": 65
               },
               {
                 "id": "483d25c3-6301-11ee-a22d-169ccb685861",
                 "name": "Corrin",
-                "gamePosition": 64
+                "gamePosition": 66
               },
               {
                 "id": "483d264d-6301-11ee-a22d-169ccb685861",
                 "name": "Bayonetta",
-                "gamePosition": 65
+                "gamePosition": 67
               },
               {
                 "id": "483d26d3-6301-11ee-a22d-169ccb685861",
                 "name": "Inkling",
-                "gamePosition": 66
+                "gamePosition": 68
               },
               {
                 "id": "483d27d7-6301-11ee-a22d-169ccb685861",
                 "name": "Ridley",
-                "gamePosition": 67
+                "gamePosition": 69
               },
               {
                 "id": "483d287a-6301-11ee-a22d-169ccb685861",
                 "name": "Simon",
-                "gamePosition": 68
+                "gamePosition": 70
               },
               {
                 "id": "483d2910-6301-11ee-a22d-169ccb685861",
                 "name": "Richter",
-                "gamePosition": 69
+                "gamePosition": 71
               },
               {
                 "id": "483d299e-6301-11ee-a22d-169ccb685861",
                 "name": "King K. Rool",
-                "gamePosition": 70
+                "gamePosition": 72
               },
               {
                 "id": "483d2a28-6301-11ee-a22d-169ccb685861",
                 "name": "Isabelle",
-                "gamePosition": 71
+                "gamePosition": 73
               },
               {
                 "id": "483d2ab5-6301-11ee-a22d-169ccb685861",
                 "name": "Incineroar",
-                "gamePosition": 72
+                "gamePosition": 74
               },
               {
                 "id": "483d2b88-6301-11ee-a22d-169ccb685861",
                 "name": "Piranha Plant",
-                "gamePosition": 73
+                "gamePosition": 75
               },
               {
                 "id": "483d2c1c-6301-11ee-a22d-169ccb685861",
                 "name": "Joker",
-                "gamePosition": 74
+                "gamePosition": 76
               },
               {
                 "id": "483d2ca9-6301-11ee-a22d-169ccb685861",
                 "name": "Hero",
-                "gamePosition": 75
+                "gamePosition": 77
               },
               {
                 "id": "483d2dfc-6301-11ee-a22d-169ccb685861",
                 "name": "Banjo & Kazooie",
-                "gamePosition": 76
+                "gamePosition": 78
               },
               {
                 "id": "483d2e91-6301-11ee-a22d-169ccb685861",
                 "name": "Terry",
-                "gamePosition": 77
+                "gamePosition": 79
               },
               {
                 "id": "483d2f1a-6301-11ee-a22d-169ccb685861",
                 "name": "Byleth",
-                "gamePosition": 78
+                "gamePosition": 80
               },
               {
                 "id": "483d2fa3-6301-11ee-a22d-169ccb685861",
                 "name": "Min Min",
-                "gamePosition": 79
+                "gamePosition": 81
               },
               {
                 "id": "483d3032-6301-11ee-a22d-169ccb685861",
                 "name": "Steve",
-                "gamePosition": 80
+                "gamePosition": 82
               },
               {
                 "id": "483d30ba-6301-11ee-a22d-169ccb685861",
                 "name": "Sephiroth",
-                "gamePosition": 81
+                "gamePosition": 83
               },
               {
                 "id": "483d3143-6301-11ee-a22d-169ccb685861",
                 "name": "Pyra / Mythra",
-                "gamePosition": 82
+                "gamePosition": 84
               },
               {
                 "id": "483d3267-6301-11ee-a22d-169ccb685861",
                 "name": "Kazuya",
-                "gamePosition": 83
+                "gamePosition": 85
               },
               {
                 "id": "483d32f9-6301-11ee-a22d-169ccb685861",
                 "name": "Sora",
-                "gamePosition": 84
+                "gamePosition": 86
               }
             ]
           }

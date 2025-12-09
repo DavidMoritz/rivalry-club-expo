@@ -73,12 +73,15 @@ export function useUserRivalries(userId: string | undefined): UseUserRivalriesRe
 
       const userResults = await Promise.all(userPromises);
 
-      // Create a map of userId -> firstName
+      // Create a map of userId -> full name (firstName + lastName)
       const userMap = new Map<string, string>();
 
       userResults.forEach((result) => {
         if (result.data) {
-          userMap.set(result.data.id, result.data.firstName || result.data.email);
+          const fullName = result.data.firstName && result.data.lastName
+            ? `${result.data.firstName} ${result.data.lastName}`
+            : result.data.firstName || result.data.email;
+          userMap.set(result.data.id, fullName);
         }
       });
 

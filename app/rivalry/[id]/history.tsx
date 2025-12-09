@@ -115,11 +115,23 @@ export default function HistoryRoute() {
 
       // Use user names from context if available, otherwise fetch
       if (userAName && userBName) {
+        // Split full names into first and last names
+        const [firstNameA, ...lastNamePartsA] = userAName.split(' ');
+        const [firstNameB, ...lastNamePartsB] = userBName.split(' ');
+
         mRivalry.userA = getMUser({
-          user: { id: rivalryData.userAId, firstName: userAName } as any
+          user: {
+            id: rivalryData.userAId,
+            firstName: firstNameA,
+            lastName: lastNamePartsA.join(' ')
+          } as any
         });
         mRivalry.userB = getMUser({
-          user: { id: rivalryData.userBId, firstName: userBName } as any
+          user: {
+            id: rivalryData.userBId,
+            firstName: firstNameB,
+            lastName: lastNamePartsB.join(' ')
+          } as any
         });
       } else {
         // Load user data separately if not in context

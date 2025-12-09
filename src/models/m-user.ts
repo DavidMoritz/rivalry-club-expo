@@ -35,19 +35,34 @@ export function getMUser({ user }: GetMUserProps): MUser {
           ? (comparativeName as MUser).fullName
           : comparativeName;
 
-      if (user.firstName !== compName.split(' ')[0]) {
+      const compFirstName = compName.split(' ')[0];
+      const compLastName = compName.split(' ')[1] || '';
+
+      // If first names are different, just use first name
+      if (user.firstName !== compFirstName) {
         return user.firstName || '';
       }
 
+      // If full names are identical, use ID to distinguish
       if (_fullName === compName) return `${user.firstName} #${user.id}`;
 
-      const compNameArr = compName.split('');
+      const lastName = user.lastName || '';
 
-      return _fullName.split('').reduce((nameToShow, char) => {
-        if (char !== compNameArr.shift()) return `${nameToShow}${char}.`;
+      // Find the minimum number of last name characters needed to distinguish
+      let charsNeeded = 1;
+      while (
+        charsNeeded <= Math.max(lastName.length, compLastName.length) &&
+        lastName.substring(0, charsNeeded) === compLastName.substring(0, charsNeeded)
+      ) {
+        charsNeeded++;
+      }
 
-        return nameToShow + char;
-      }, '');
+      // If we've exhausted both last names and they're still equal, use ID
+      if (charsNeeded > lastName.length && charsNeeded > compLastName.length) {
+        return `${user.firstName} #${user.id}`;
+      }
+
+      return `${user.firstName} ${lastName.substring(0, charsNeeded)}.`;
     },
   };
 }

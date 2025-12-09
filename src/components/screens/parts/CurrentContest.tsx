@@ -147,7 +147,7 @@ export function CurrentContest({
                   { color: winner && contest?.tierSlotA === winner ? 'black' : 'white' }
                 ]}
               >
-                {userAName || rivalry.userA?.firstName} {rivalry.tierListA?.prestigeDisplay}
+                {rivalry.displayUserAName()} {rivalry.tierListA?.prestigeDisplay}
               </Text>
               <CharacterDisplay
                 fighter={fighterA}
@@ -197,7 +197,7 @@ export function CurrentContest({
                   { color: winner && contest?.tierSlotB === winner ? 'black' : 'white' }
                 ]}
               >
-                {userBName || rivalry.userB?.firstName} {rivalry.tierListB?.prestigeDisplay}
+                {rivalry.displayUserBName()} {rivalry.tierListB?.prestigeDisplay}
               </Text>
               <CharacterDisplay
                 fighter={fighterB}

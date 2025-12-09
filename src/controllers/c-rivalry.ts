@@ -141,14 +141,20 @@ export const useRivalryWithAllInfoQuery = ({ rivalry, onSuccess }: RivalryQueryP
         throw new Error('Rivalry not found');
       }
 
-      // Convert Gen 2 LazyLoader data structures to our model format
-      // In Gen 2, relationships are LazyLoaders - we need to resolve them
-      const contestsArray: any[] = [];
-      if (rivalryData.contests) {
-        for await (const contest of rivalryData.contests) {
-          contestsArray.push(contest);
-        }
+      // Fetch the most recent contests using the GSI for better sorting
+      // This ensures we get the actual most recent contests, not a random subset
+      const { data: recentContests, errors: contestErrors } =
+        await getClient().models.Contest.contestsByRivalryIdAndCreatedAt({
+          rivalryId: rivalryData.id,
+          sortDirection: 'DESC',
+          limit: 50
+        });
+
+      if (contestErrors) {
+        console.error('[useRivalryWithAllInfoQuery] Error fetching contests:', contestErrors);
       }
+
+      const contestsArray = recentContests || [];
 
       // If we have a currentContestId but it's not in the contests array, fetch it separately
       if (rivalryData.currentContestId) {
@@ -156,12 +162,12 @@ export const useRivalryWithAllInfoQuery = ({ rivalry, onSuccess }: RivalryQueryP
           (c) => c.id === rivalryData.currentContestId
         );
         if (!currentContestExists) {
-          const { data: currentContestData, errors: contestErrors } =
+          const { data: currentContestData, errors: currentContestErrors } =
             await getClient().models.Contest.get({ id: rivalryData.currentContestId });
-          if (contestErrors) {
+          if (currentContestErrors) {
             console.error(
               '[useRivalryWithAllInfoQuery] Error fetching current contest:',
-              contestErrors
+              currentContestErrors
             );
           } else if (currentContestData) {
             contestsArray.unshift(currentContestData as any);
@@ -195,6 +201,24 @@ export const useRivalryWithAllInfoQuery = ({ rivalry, onSuccess }: RivalryQueryP
         mRivalry.currentContestId = rivalryData.currentContestId;
         mRivalry.setMContests(contests as any);
         mRivalry.setMTierLists(tierLists as any);
+
+        // Fetch user data separately
+        const { getMUser } = await import('../models/m-user');
+
+        const { data: userAData } = await getClient().models.User.get({
+          id: rivalryData.userAId
+        });
+        if (userAData) {
+          mRivalry.userA = getMUser({ user: userAData as any });
+        }
+
+        const { data: userBData } = await getClient().models.User.get({
+          id: rivalryData.userBId
+        });
+        if (userBData) {
+          mRivalry.userB = getMUser({ user: userBData as any });
+        }
+
         onSuccess?.(mRivalry);
       } else {
         console.warn(

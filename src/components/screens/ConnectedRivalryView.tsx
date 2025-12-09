@@ -193,13 +193,22 @@ export function ConnectedRivalryView({ navigation }: ConnectedRivalryViewProps):
       style={[styles.container, darkStyles.container, { flex: 1, padding: 16 }]}
       edges={['top', 'bottom']}
     >
-      {createContestMutation.isPending && (
+      {/* Priority 1: Resolving Contest */}
+      {isResolvingContest && (
+        <View style={{ flex: 1, alignItems: 'center', justifyContent: 'center' }}>
+          <Text style={[styles.text, darkStyles.text, { fontSize: 18 }]}>Resolving Contest...</Text>
+        </View>
+      )}
+
+      {/* Priority 2: Creating Contest */}
+      {!isResolvingContest && createContestMutation.isPending && (
         <View style={{ flex: 1, alignItems: 'center', justifyContent: 'center' }}>
           <Text style={[styles.text, darkStyles.text, { fontSize: 18 }]}>Creating Contest...</Text>
         </View>
       )}
 
-      {createContestMutation.isError && (
+      {/* Errors */}
+      {!isResolvingContest && !createContestMutation.isPending && createContestMutation.isError && (
         <View
           style={{ flex: 1, alignItems: 'center', justifyContent: 'center', paddingHorizontal: 16 }}
         >
@@ -218,13 +227,13 @@ export function ConnectedRivalryView({ navigation }: ConnectedRivalryViewProps):
         </View>
       )}
 
-      {isLoading && (
+      {!isResolvingContest && !createContestMutation.isPending && isLoading && (
         <View style={{ flex: 1, alignItems: 'center', justifyContent: 'center' }}>
           <Text style={[styles.text, darkStyles.text, { fontSize: 18 }]}>Loading Rivalry...</Text>
         </View>
       )}
 
-      {isError && (
+      {!isResolvingContest && !createContestMutation.isPending && isError && (
         <View
           style={{ flex: 1, alignItems: 'center', justifyContent: 'center', paddingHorizontal: 16 }}
         >
@@ -240,12 +249,6 @@ export function ConnectedRivalryView({ navigation }: ConnectedRivalryViewProps):
           <Text
             style={[styles.text, darkStyles.text]}
           >{`Error loading rivalry: ${error.message}`}</Text>
-        </View>
-      )}
-
-      {isResolvingContest && (
-        <View style={{ flex: 1, alignItems: 'center', justifyContent: 'center' }}>
-          <Text style={[styles.text, darkStyles.text, { fontSize: 18 }]}>Resolving Contest...</Text>
         </View>
       )}
 
@@ -271,11 +274,16 @@ export function ConnectedRivalryView({ navigation }: ConnectedRivalryViewProps):
 
       {tiersReady && <RivalryView navigation={navigation} />}
 
-      {!tiersReady && !isLoading && !isError && (
-        <View style={{ flex: 1, alignItems: 'center', justifyContent: 'center' }}>
-          <Text style={[styles.text, darkStyles.text, { fontSize: 18 }]}>Preparing Tiers...</Text>
-        </View>
-      )}
+      {/* Priority 3: Preparing Tiers */}
+      {!isResolvingContest &&
+        !createContestMutation.isPending &&
+        !tiersReady &&
+        !isLoading &&
+        !isError && (
+          <View style={{ flex: 1, alignItems: 'center', justifyContent: 'center' }}>
+            <Text style={[styles.text, darkStyles.text, { fontSize: 18 }]}>Preparing Tiers...</Text>
+          </View>
+        )}
     </SafeAreaView>
   );
 }

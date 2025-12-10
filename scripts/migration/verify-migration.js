@@ -20,13 +20,24 @@ const cognitoClient = new CognitoIdentityProviderClient({ region: REGION });
 
 async function verifyTable(modelName, tableName, expectedCount) {
   try {
-    const command = new ScanCommand({
-      TableName: tableName,
-      Select: 'COUNT'
-    });
+    let totalCount = 0;
+    let lastEvaluatedKey = undefined;
 
-    const response = await docClient.send(command);
-    const actualCount = response.Count;
+    // Paginate through all results
+    do {
+      const command = new ScanCommand({
+        TableName: tableName,
+        Select: 'COUNT',
+        ExclusiveStartKey: lastEvaluatedKey
+      });
+
+      const response = await docClient.send(command);
+      totalCount += response.Count || 0;
+      lastEvaluatedKey = response.LastEvaluatedKey;
+
+    } while (lastEvaluatedKey);
+
+    const actualCount = totalCount;
 
     if (actualCount === expectedCount) {
       console.log(`✅ ${modelName}: ${actualCount} items (matches backup)`);

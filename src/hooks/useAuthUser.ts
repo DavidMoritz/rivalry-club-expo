@@ -59,12 +59,9 @@ export function useAuthUser() {
 
         const client = generateClient<Schema>();
 
-        console.log('[useAuthUser] cognitoUserId:', cognitoUserId);
-
         // Check if user is authenticated with Cognito
         if (cognitoUserId) {
           // COGNITO USER FLOW
-          console.log('[useAuthUser] Using COGNITO flow');
           const currentUser = await getCurrentUser();
           const email = currentUser.signInDetails?.loginId || '';
           const awsSub = currentUser.userId;
@@ -112,24 +109,17 @@ export function useAuthUser() {
           }
         } else {
           // ANONYMOUS USER FLOW
-          console.log('[useAuthUser] Using ANONYMOUS flow');
           const uuid = await getOrCreateUserUuid();
-          console.log('[useAuthUser] UUID:', uuid);
 
           // Query for existing user by ID (the UUID)
           const getResult = await client.models.User.get({ id: uuid });
-          console.log('[useAuthUser] Existing user found:', !!getResult.data);
 
           if (getResult.data) {
             // User already exists
-            console.log('[useAuthUser] Using existing anonymous user');
             setUser(getResult.data as AuthUser);
           } else {
             // Create new anonymous user
-            console.log('[useAuthUser] Creating new anonymous user');
             const displayName = generateDisplayName(uuid);
-            console.log('[useAuthUser] Display name:', displayName);
-
             const createResult = await client.models.User.create({
               id: uuid,
               email: `${displayName}@anonymous.local`, // Placeholder email

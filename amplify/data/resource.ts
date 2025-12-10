@@ -51,6 +51,8 @@ const schema = a.schema({
       contestCount: a.integer().required(),
       currentContestId: a.id(),
       accepted: a.boolean(),
+      hiddenByA: a.boolean(),
+      hiddenByB: a.boolean(),
       contests: a.hasMany('Contest', 'rivalryId'),
       tierLists: a.hasMany('TierList', 'rivalryId'),
       deletedAt: a.datetime()

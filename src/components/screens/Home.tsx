@@ -49,13 +49,6 @@ export default function Home({ onEnterClick, onHowToPlayClick }: HomeProps) {
       setGames(loadedGames as Game[]);
     }
   }, []);
-
-  useEffect(() => {
-    if (user) {
-      console.log('[Home] User ready:', user.firstName, 'ID:', user.id);
-    }
-  }, [user]);
-
   const isDarkMode = true;
 
   if (!games.length) {

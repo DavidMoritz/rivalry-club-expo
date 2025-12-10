@@ -1111,3 +1111,49 @@ export const useAcceptRivalryMutation = ({ onSuccess, onError }: AcceptRivalryMu
     }
   });
 };
+
+interface HideRivalryMutationProps {
+  onSuccess?: () => void;
+  onError?: (error: Error) => void;
+}
+
+export const useHideRivalryMutation = ({ onSuccess, onError }: HideRivalryMutationProps = {}) => {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: async ({
+      rivalryId,
+      userId,
+      isUserA
+    }: {
+      rivalryId: string;
+      userId: string;
+      isUserA: boolean;
+    }) => {
+      if (!rivalryId) {
+        throw new Error('Rivalry ID is required');
+      }
+
+      const updateField = isUserA ? { hiddenByA: true } : { hiddenByB: true };
+
+      const { data, errors } = await getClient().models.Rivalry.update({
+        id: rivalryId,
+        ...updateField
+      });
+
+      if (errors) {
+        throw new Error(errors[0]?.message || 'Failed to hide rivalry');
+      }
+
+      return data;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['usersByAwsSub'] });
+      onSuccess?.();
+    },
+    onError: (error: Error) => {
+      console.error('[useHideRivalryMutation] Mutation failed:', error);
+      onError?.(error);
+    }
+  });
+};

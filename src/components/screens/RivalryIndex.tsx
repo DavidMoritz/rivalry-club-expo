@@ -1,5 +1,5 @@
-import { useRouter } from 'expo-router';
-import React, { useEffect } from 'react';
+import { useRouter, useFocusEffect } from 'expo-router';
+import React, { useEffect, useCallback, useState, useMemo } from 'react';
 import { Text, TouchableOpacity, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
@@ -15,6 +15,8 @@ interface Rivalry {
   userAName?: string;
   userBName?: string;
   contestCount?: number;
+  hiddenByA?: boolean;
+  hiddenByB?: boolean;
 }
 
 export function RivalryIndex() {
@@ -24,9 +26,19 @@ export function RivalryIndex() {
     rivalries,
     allRivalries,
     isLoading: rivalriesLoading,
-    error: rivalriesError
+    error: rivalriesError,
+    refetch
   } = useUserRivalries(user?.id);
   const { setRivalries } = useAllRivalriesUpdate();
+  const [showHiddenRivalries, setShowHiddenRivalries] = useState(false);
+
+  // Refetch rivalries when the screen comes into focus
+  useFocusEffect(
+    useCallback(() => {
+      refetch();
+      setShowHiddenRivalries(false);
+    }, [refetch])
+  );
 
   // Populate the AllRivalriesProvider when rivalries are loaded
   useEffect(() => {
@@ -34,6 +46,14 @@ export function RivalryIndex() {
       setRivalries(allRivalries as any, user.id);
     }
   }, [allRivalries, user?.id, setRivalries]);
+
+  // Check if there are any hidden rivalries
+  const hasHiddenRivalries = useMemo(() => {
+    return rivalries.some((rivalry) => {
+      const isUserA = rivalry.userAId === user?.id;
+      return isUserA ? rivalry.hiddenByA : rivalry.hiddenByB;
+    });
+  }, [rivalries, user?.id]);
 
   function handleSelectRivalry(rivalry: Rivalry) {
     // Navigate to rivalry detail view using Expo Router with user names
@@ -135,11 +155,38 @@ export function RivalryIndex() {
         </TouchableOpacity>
       </View>
 
+      {showHiddenRivalries && (
+        <View style={{ paddingHorizontal: 16, paddingTop: 8 }}>
+          <Text style={[styles.text, { fontSize: 18, fontWeight: 'bold', color: '#999' }]}>
+            Hidden Rivalries
+          </Text>
+        </View>
+      )}
       <RivalriesTable
         rivalries={rivalries}
         currentUserId={user?.id}
         onSelectRivalry={handleSelectRivalry}
+        showHidden={showHiddenRivalries}
       />
+
+      {hasHiddenRivalries && (
+        <View style={{ paddingHorizontal: 16, paddingBottom: 16 }}>
+          <TouchableOpacity
+            onPress={() => setShowHiddenRivalries(!showHiddenRivalries)}
+            style={{
+              backgroundColor: '#374151',
+              paddingHorizontal: 24,
+              paddingVertical: 12,
+              borderRadius: 8,
+              alignItems: 'center'
+            }}
+          >
+            <Text style={[styles.text, { fontSize: 16, fontWeight: 'bold' }]}>
+              Show {!showHiddenRivalries && 'Hidden '}Rivalries
+            </Text>
+          </TouchableOpacity>
+        </View>
+      )}
     </SafeAreaView>
   );
 }

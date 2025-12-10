@@ -1,5 +1,5 @@
 import { generateClient } from 'aws-amplify/data';
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useCallback } from 'react';
 
 import type { Schema } from '../../amplify/data/resource';
 
@@ -11,6 +11,8 @@ interface RivalryWithUsers {
   contestCount: number;
   updatedAt: string;
   accepted?: boolean;
+  hiddenByA?: boolean;
+  hiddenByB?: boolean;
   userAName?: string;
   userBName?: string;
 }
@@ -32,7 +34,7 @@ export function useUserRivalries(userId: string | undefined): UseUserRivalriesRe
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<Error | null>(null);
 
-  async function fetchRivalries() {
+  const fetchRivalries = useCallback(async () => {
     if (!userId) {
       setIsLoading(false);
 
@@ -94,6 +96,8 @@ export function useUserRivalries(userId: string | undefined): UseUserRivalriesRe
         contestCount: rivalry.contestCount || 0,
         updatedAt: rivalry.updatedAt,
         accepted: rivalry.accepted,
+        hiddenByA: rivalry.hiddenByA,
+        hiddenByB: rivalry.hiddenByB,
         userAName: userMap.get(rivalry.userAId),
         userBName: userMap.get(rivalry.userBId)
       }));
@@ -106,6 +110,8 @@ export function useUserRivalries(userId: string | undefined): UseUserRivalriesRe
         gameId: rivalry.gameId,
         contestCount: rivalry.contestCount || 0,
         updatedAt: rivalry.updatedAt,
+        hiddenByA: rivalry.hiddenByA,
+        hiddenByB: rivalry.hiddenByB,
         userAName: userMap.get(rivalry.userAId),
         userBName: userMap.get(rivalry.userBId)
       }));
@@ -123,11 +129,11 @@ export function useUserRivalries(userId: string | undefined): UseUserRivalriesRe
     } finally {
       setIsLoading(false);
     }
-  }
+  }, [userId]);
 
   useEffect(() => {
     fetchRivalries();
-  }, [userId]);
+  }, [fetchRivalries]);
 
   return {
     rivalries,

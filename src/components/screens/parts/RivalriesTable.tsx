@@ -14,24 +14,42 @@ interface Rivalry {
   userAName?: string;
   userBName?: string;
   contestCount?: number;
+  hiddenByA?: boolean;
+  hiddenByB?: boolean;
 }
 
 interface RivalriesTableProps {
   rivalries: Rivalry[];
   currentUserId?: string;
   onSelectRivalry: (rivalry: Rivalry) => void;
+  showHidden?: boolean;
 }
 
-export function RivalriesTable({ rivalries, currentUserId, onSelectRivalry }: RivalriesTableProps) {
+export function RivalriesTable({
+  rivalries,
+  currentUserId,
+  onSelectRivalry,
+  showHidden = false
+}: RivalriesTableProps) {
   const router = useRouter();
   const { pendingRivalries } = useAllRivalries();
   const hasPendingRivalries = pendingRivalries.awaitingAcceptance.length > 0;
 
+  // Filter rivalries based on showHidden prop
+  const visibleRivalries = rivalries.filter((rivalry) => {
+    const isUserA = rivalry.userAId === currentUserId;
+    const isHidden = isUserA ? rivalry.hiddenByA : rivalry.hiddenByB;
+
+    // If showHidden is true, show only hidden rivalries
+    // If showHidden is false, show only non-hidden rivalries
+    return showHidden ? isHidden : !isHidden;
+  });
+
   return (
     <>
-      {rivalries && rivalries.length > 0 && (
+      {visibleRivalries && visibleRivalries.length > 0 && (
         <FlatList
-          data={rivalries}
+          data={visibleRivalries}
           keyExtractor={(item) => item.id}
           renderItem={({ item }) => {
             // Determine opponent's name based on current user
@@ -71,7 +89,7 @@ export function RivalriesTable({ rivalries, currentUserId, onSelectRivalry }: Ri
         </View>
       )}
 
-      {(!rivalries || rivalries.length === 0) && (
+      {(!visibleRivalries || visibleRivalries.length === 0) && (
         <View style={{ paddingHorizontal: 16, paddingBottom: 16 }}>
           <TouchableOpacity
             onPress={() => router.push('/how-to-play')}

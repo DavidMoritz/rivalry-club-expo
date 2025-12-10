@@ -39,49 +39,36 @@ export function generateDisplayName(uuid: string): string {
 export async function getOrCreateUserUuid(): Promise<string> {
   // If a UUID operation is already in progress, wait for it
   if (uuidPromise) {
-    console.log('[user-identity] ⏳ UUID operation already in progress, waiting...');
     return uuidPromise;
   }
 
   // Start a new UUID operation
   uuidPromise = (async () => {
     try {
-      console.log('[user-identity] Getting or creating UUID...');
-
       // Try AsyncStorage first (faster)
       let uuid = await AsyncStorage.getItem(UUID_STORAGE_KEY);
 
       if (uuid) {
-        console.log('[user-identity] ✅ Found UUID in AsyncStorage:', uuid);
         return uuid;
       }
-
-      console.log('[user-identity] UUID not in AsyncStorage, checking Keychain...');
 
       // Try Keychain (persists across reinstalls)
       uuid = await SecureStore.getItemAsync(UUID_KEYCHAIN_KEY);
 
       if (uuid) {
-        console.log('[user-identity] ✅ Found UUID in Keychain (survived app reinstall):', uuid);
         // Restore to AsyncStorage for faster future access
         await AsyncStorage.setItem(UUID_STORAGE_KEY, uuid);
-        console.log('[user-identity] Restored UUID to AsyncStorage');
         return uuid;
       }
 
-      console.log('[user-identity] UUID not found anywhere, generating new one...');
-
       // Generate new UUID
       uuid = generateUuid();
-      console.log('[user-identity] 🆕 Generated new UUID:', uuid);
 
       // Store in both locations
       await Promise.all([
         SecureStore.setItemAsync(UUID_KEYCHAIN_KEY, uuid),
-        AsyncStorage.setItem(UUID_STORAGE_KEY, uuid),
+        AsyncStorage.setItem(UUID_STORAGE_KEY, uuid)
       ]);
-
-      console.log('[user-identity] ✅ Saved new UUID to Keychain and AsyncStorage');
 
       return uuid;
     } catch (error) {
@@ -103,7 +90,7 @@ export async function updateStoredUuid(newUuid: string): Promise<void> {
   try {
     await Promise.all([
       SecureStore.setItemAsync(UUID_KEYCHAIN_KEY, newUuid),
-      AsyncStorage.setItem(UUID_STORAGE_KEY, newUuid),
+      AsyncStorage.setItem(UUID_STORAGE_KEY, newUuid)
     ]);
   } catch (error) {
     console.error('Error updating stored UUID:', error);
@@ -144,16 +131,13 @@ export async function getStoredUuid(): Promise<string | null> {
  */
 export async function clearStoredUuid(): Promise<void> {
   try {
-    console.log('[user-identity] 🗑️ Clearing stored UUID from Keychain and AsyncStorage...');
-
     // Clear the promise lock
     uuidPromise = null;
 
     await Promise.all([
       SecureStore.deleteItemAsync(UUID_KEYCHAIN_KEY),
-      AsyncStorage.removeItem(UUID_STORAGE_KEY),
+      AsyncStorage.removeItem(UUID_STORAGE_KEY)
     ]);
-    console.log('[user-identity] ✅ UUID cleared successfully');
   } catch (error) {
     console.error('[user-identity] ❌ Error clearing stored UUID:', error);
     throw error;

@@ -125,6 +125,8 @@ export const useRivalryWithAllInfoQuery = ({ rivalry, onSuccess }: RivalryQueryP
             'createdAt',
             'updatedAt',
             'deletedAt',
+            'hiddenByA',
+            'hiddenByB',
             'contests.*',
             'tierLists.*',
             'tierLists.tierSlots.*'
@@ -199,6 +201,8 @@ export const useRivalryWithAllInfoQuery = ({ rivalry, onSuccess }: RivalryQueryP
         mRivalry.gameId = rivalryData.gameId;
         mRivalry.contestCount = rivalryData.contestCount;
         mRivalry.currentContestId = rivalryData.currentContestId;
+        mRivalry.hiddenByA = rivalryData.hiddenByA;
+        mRivalry.hiddenByB = rivalryData.hiddenByB;
         mRivalry.setMContests(contests as any);
         mRivalry.setMTierLists(tierLists as any);
 

@@ -18,18 +18,34 @@ export function RivalryView({ navigation }: RivalryViewProps) {
   const { user } = useAuthUser();
   const displayCount = Math.max((rivalry?.contestCount ?? 1) - 1, 0);
   const displayContest = displayCount === 1 ? 'Contest' : 'Contests';
-
-  const isUserA = rivalry?.userAId === user?.id;
-  const isCurrentlyHidden = isUserA ? rivalry?.hiddenByA : rivalry?.hiddenByB;
+  const [isCurrentlyHidden, setIsCurrentlyHidden] = React.useState<boolean>(false);
 
   const hideRivalryMutation = useHideRivalryMutation({
     onSuccess: () => {
       // Only navigate back to /rivalries when hiding (not when unhiding)
       if (!isCurrentlyHidden) {
         router.push('/rivalries');
+      } else {
+        // If unhiding, just update the local state
+        setIsCurrentlyHidden(false);
       }
     }
   });
+
+  //add useEffect to update isCurrentlyHidden when rivalry changes
+  React.useEffect(() => {
+    if (!rivalry || !user?.id) return;
+
+    const isUserA = rivalry?.userAId === user?.id;
+    const updatedHiddenState = isUserA ? rivalry?.hiddenByA : rivalry?.hiddenByB;
+    console.log('RivalryView - rivalry changed, updatedHiddenState:', updatedHiddenState);
+    setIsCurrentlyHidden(updatedHiddenState ?? false);
+  }, [rivalry, user?.id]);
+
+  //add useEfffect to log isCurrentlyHidden when it changes
+  React.useEffect(() => {
+    console.log('RivalryView - isCurrentlyHidden changed:', isCurrentlyHidden);
+  }, [isCurrentlyHidden]);
 
   const handleToggleHideRivalry = () => {
     if (!rivalry?.id || !user?.id) return;
@@ -37,7 +53,7 @@ export function RivalryView({ navigation }: RivalryViewProps) {
     hideRivalryMutation.mutate({
       rivalryId: rivalry.id,
       userId: user.id,
-      isUserA,
+      isUserA: rivalry.userAId === user.id,
       hidden: !isCurrentlyHidden
     });
   };

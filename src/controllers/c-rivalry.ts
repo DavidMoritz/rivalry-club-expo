@@ -341,11 +341,11 @@ export const useUpdateContestTierListsMutation = ({
 
       // Update both tier lists
       const [resultA, resultB] = await Promise.all([
-        client.models.TierList.update({
+        getClient().models.TierList.update({
           id: rivalry.tierListA.id,
           standing: rivalry.tierListA.standing
         }),
-        client.models.TierList.update({
+        getClient().models.TierList.update({
           id: rivalry.tierListB.id,
           standing: rivalry.tierListB.standing
         })
@@ -384,7 +384,7 @@ export const useUpdateTierSlotsMutation = ({
 
       // Update all tier slots in parallel
       const updates = Object.values(positionsPojo).map(({ id, position }) =>
-        client.models.TierSlot.update({ id, position })
+        getClient().models.TierSlot.update({ id, position })
       );
 
       const results = await Promise.all(updates);
@@ -509,12 +509,12 @@ export const useDeleteMostRecentContestMutation = ({
       const tierSlotUpdates = [
         ...(tierListAPositions
           ? Object.values(tierListAPositions).map(({ id, position }) =>
-              client.models.TierSlot.update({ id, position })
+              getClient().models.TierSlot.update({ id, position })
             )
           : []),
         ...(tierListBPositions
           ? Object.values(tierListBPositions).map(({ id, position }) =>
-              client.models.TierSlot.update({ id, position })
+              getClient().models.TierSlot.update({ id, position })
             )
           : [])
       ];
@@ -528,11 +528,11 @@ export const useDeleteMostRecentContestMutation = ({
 
       // Update both tier lists with reversed standings
       const [resultA, resultB] = await Promise.all([
-        client.models.TierList.update({
+        getClient().models.TierList.update({
           id: rivalry.tierListA!.id,
           standing: rivalry.tierListA!.standing
         }),
-        client.models.TierList.update({
+        getClient().models.TierList.update({
           id: rivalry.tierListB!.id,
           standing: rivalry.tierListB!.standing
         })
@@ -776,7 +776,7 @@ export const useCreateRivalryMutation = ({
       for (let i = 0; i < tierSlotData.length; i += BATCH_SIZE) {
         const batch = tierSlotData.slice(i, i + BATCH_SIZE);
         const tierSlotPromises = batch.map((slot) =>
-          client.models.TierSlot.create({
+          getClient().models.TierSlot.create({
             tierListId: tierListAData.id,
             fighterId: slot.fighterId,
             position: slot.position,
@@ -892,7 +892,7 @@ export const useCreateNpcRivalryMutation = ({
       for (let i = 0; i < tierSlotDataA.length; i += BATCH_SIZE) {
         const batch = tierSlotDataA.slice(i, i + BATCH_SIZE);
         const tierSlotPromises = batch.map((slot) =>
-          client.models.TierSlot.create({
+          getClient().models.TierSlot.create({
             tierListId: tierListAData.id,
             fighterId: slot.fighterId,
             position: slot.position,
@@ -910,7 +910,7 @@ export const useCreateNpcRivalryMutation = ({
       for (let i = 0; i < tierSlotDataB.length; i += BATCH_SIZE) {
         const batch = tierSlotDataB.slice(i, i + BATCH_SIZE);
         const tierSlotPromises = batch.map((slot) =>
-          client.models.TierSlot.create({
+          getClient().models.TierSlot.create({
             tierListId: tierListBData.id,
             fighterId: slot.fighterId,
             position: slot.position,
@@ -1064,7 +1064,7 @@ export const useAcceptRivalryMutation = ({ onSuccess, onError }: AcceptRivalryMu
       for (let i = 0; i < tierSlotData.length; i += BATCH_SIZE) {
         const batch = tierSlotData.slice(i, i + BATCH_SIZE);
         const tierSlotPromises = batch.map((slot) =>
-          client.models.TierSlot.create({
+          getClient().models.TierSlot.create({
             tierListId: tierListBData.id,
             fighterId: slot.fighterId,
             position: slot.position,

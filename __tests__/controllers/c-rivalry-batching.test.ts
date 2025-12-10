@@ -13,9 +13,11 @@ jest.mock('aws-amplify/data', () => {
     mockRivalryCreate: jest.fn(),
     mockRivalryGet: jest.fn(),
     mockRivalryUpdate: jest.fn(),
+    mockRivalryList: jest.fn(),
     mockFighterList: jest.fn(),
     mockTierListCreate: jest.fn(),
     mockTierListQuery: jest.fn(),
+    mockTierListList: jest.fn(),
     mockTierSlotCreate: jest.fn(),
     mockTierSlotList: jest.fn()
   };
@@ -29,14 +31,16 @@ jest.mock('aws-amplify/data', () => {
         Rivalry: {
           create: mockFns.mockRivalryCreate,
           get: mockFns.mockRivalryGet,
-          update: mockFns.mockRivalryUpdate
+          update: mockFns.mockRivalryUpdate,
+          list: mockFns.mockRivalryList || jest.fn()
         },
         Fighter: {
           list: mockFns.mockFighterList
         },
         TierList: {
           create: mockFns.mockTierListCreate,
-          tierListsByUserIdAndUpdatedAt: mockFns.mockTierListQuery
+          tierListsByUserIdAndUpdatedAt: mockFns.mockTierListQuery,
+          list: mockFns.mockTierListList || jest.fn()
         },
         TierSlot: {
           create: mockFns.mockTierSlotCreate,
@@ -122,6 +126,13 @@ describe('Batched Tier Slot Creation', () => {
         errors: null
       });
 
+      // Mock Rivalry.list for template search (should return empty for this test)
+      const mockRivalryList = jest.fn().mockResolvedValue({
+        data: [],
+        errors: null
+      });
+      (global as any).mockBatchingFns.mockRivalryList = mockRivalryList;
+
       mockTierListCreate.mockResolvedValue({
         data: { id: 'tier-list-1' },
         errors: null
@@ -163,13 +174,14 @@ describe('Batched Tier Slot Creation', () => {
       await mutatePromise;
 
       // Verify tier slot creation was called the correct number of times
-      // 82 fighters × 2 tier slots (one for each user) = 164 total tier slots
-      expect(mockTierSlotCreate).toHaveBeenCalledTimes(164);
+      // 82 fighters × 1 tier list (userA only) = 82 total tier slots
+      // useCreateRivalryMutation only creates tier slots for the initiator (userA)
+      expect(mockTierSlotCreate).toHaveBeenCalledTimes(82);
 
       // Verify batching: with batch size of 10, we should see gaps in creation times
       // Each batch should be created in parallel, then the next batch starts
       // This is a proxy test - we verify all calls happened
-      expect(tierSlotCreationOrder.length).toBe(164);
+      expect(tierSlotCreationOrder.length).toBe(82);
     });
 
     it('should handle small fighter lists without batching issues', async () => {
@@ -232,8 +244,8 @@ describe('Batched Tier Slot Creation', () => {
 
       await mutatePromise;
 
-      // 5 fighters × 2 tier slots = 10 total
-      expect(mockTierSlotCreate).toHaveBeenCalledTimes(10);
+      // 5 fighters × 1 tier list (userA only) = 5 total
+      expect(mockTierSlotCreate).toHaveBeenCalledTimes(5);
     });
   });
 
@@ -266,6 +278,13 @@ describe('Batched Tier Slot Creation', () => {
         data: mockFighters,
         errors: null
       });
+
+      // Mock Rivalry.list for template search (should return empty for this test)
+      const mockRivalryList = jest.fn().mockResolvedValue({
+        data: [],
+        errors: null
+      });
+      (global as any).mockBatchingFns.mockRivalryList = mockRivalryList;
 
       mockTierListQuery.mockResolvedValue({
         data: []
@@ -300,8 +319,9 @@ describe('Batched Tier Slot Creation', () => {
 
       await mutatePromise;
 
-      // 82 fighters × 2 tier lists = 164 total tier slots
-      expect(mockTierSlotCreate).toHaveBeenCalledTimes(164);
+      // 82 fighters × 1 tier list (userB only) = 82 total tier slots
+      // useAcceptRivalryMutation only creates tier slots for the accepter (userB)
+      expect(mockTierSlotCreate).toHaveBeenCalledTimes(82);
     });
   });
 

@@ -10,8 +10,10 @@ jest.mock('aws-amplify/data', () => {
     mockRivalryUpdate: jest.fn(),
     mockContestCreate: jest.fn(),
     mockContestUpdate: jest.fn(),
+    mockContestsByRivalryIdAndCreatedAt: jest.fn(),
     mockTierListUpdate: jest.fn(),
-    mockTierSlotUpdate: jest.fn()
+    mockTierSlotUpdate: jest.fn(),
+    mockUserGet: jest.fn()
   };
 
   // Store references globally for use in tests
@@ -26,13 +28,17 @@ jest.mock('aws-amplify/data', () => {
         },
         Contest: {
           create: mockFns.mockContestCreate,
-          update: mockFns.mockContestUpdate
+          update: mockFns.mockContestUpdate,
+          contestsByRivalryIdAndCreatedAt: mockFns.mockContestsByRivalryIdAndCreatedAt
         },
         TierList: {
           update: mockFns.mockTierListUpdate
         },
         TierSlot: {
           update: mockFns.mockTierSlotUpdate
+        },
+        User: {
+          get: mockFns.mockUserGet
         }
       }
     }))
@@ -55,8 +61,10 @@ describe('c-rivalry Controller', () => {
   let mockRivalryUpdate: jest.Mock;
   let mockContestCreate: jest.Mock;
   let mockContestUpdate: jest.Mock;
+  let mockContestsByRivalryIdAndCreatedAt: jest.Mock;
   let mockTierListUpdate: jest.Mock;
   let mockTierSlotUpdate: jest.Mock;
+  let mockUserGet: jest.Mock;
 
   let mockRivalry: ReturnType<typeof getMRivalry>;
 
@@ -74,8 +82,10 @@ describe('c-rivalry Controller', () => {
     mockRivalryUpdate = globalMocks.mockRivalryUpdate;
     mockContestCreate = globalMocks.mockContestCreate;
     mockContestUpdate = globalMocks.mockContestUpdate;
+    mockContestsByRivalryIdAndCreatedAt = globalMocks.mockContestsByRivalryIdAndCreatedAt;
     mockTierListUpdate = globalMocks.mockTierListUpdate;
     mockTierSlotUpdate = globalMocks.mockTierSlotUpdate;
+    mockUserGet = globalMocks.mockUserGet;
 
     // Recreate mockRivalry for each test
     mockRivalry = getMRivalry({
@@ -205,6 +215,25 @@ describe('c-rivalry Controller', () => {
               })()
             };
           })()
+        },
+        errors: null
+      }));
+
+      // Mock the Contest query
+      mockContestsByRivalryIdAndCreatedAt.mockResolvedValue({
+        data: [],
+        errors: null
+      });
+
+      // Mock User.get for both users
+      mockUserGet.mockImplementation(async ({ id }) => ({
+        data: {
+          id,
+          email: `${id}@test.com`,
+          firstName: id,
+          lastName: 'User',
+          role: 0,
+          awsSub: `aws-${id}`
         },
         errors: null
       }));

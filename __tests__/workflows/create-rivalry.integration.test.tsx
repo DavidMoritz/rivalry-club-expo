@@ -7,13 +7,21 @@ import * as cRivalry from '../../src/controllers/c-rivalry';
 import * as cUser from '../../src/controllers/c-user';
 
 // Mock dependencies
-jest.mock('expo-router');
+jest.mock('expo-router', () => ({
+  useRouter: jest.fn(),
+  useLocalSearchParams: jest.fn()
+}));
 jest.mock('../../src/hooks/useAuthUser');
 jest.mock('../../src/providers/game');
+jest.mock('../../src/providers/all-rivalries', () => ({
+  useAllRivalries: jest.fn(() => ({ rivalries: [] })),
+  useAllRivalriesUpdate: jest.fn(() => ({ addRivalry: jest.fn(), updateRivalry: jest.fn() }))
+}));
 jest.mock('../../src/controllers/c-user');
 jest.mock('../../src/controllers/c-rivalry');
 
 const mockUseRouter = require('expo-router').useRouter as jest.Mock;
+const mockUseLocalSearchParams = require('expo-router').useLocalSearchParams as jest.Mock;
 const mockUseAuthUser = require('../../src/hooks/useAuthUser').useAuthUser as jest.Mock;
 const mockUseGame = require('../../src/providers/game').useGame as jest.Mock;
 
@@ -47,6 +55,7 @@ describe('Create Rivalry Integration Test', () => {
 
     mockRouter = { back: jest.fn(), push: jest.fn() };
     mockUseRouter.mockReturnValue(mockRouter);
+    mockUseLocalSearchParams.mockReturnValue({});
 
     mockUseAuthUser.mockReturnValue({
       user: {
@@ -78,6 +87,22 @@ describe('Create Rivalry Integration Test', () => {
       isSuccess: false,
       error: null
     });
+
+    // Mock accept rivalry mutation
+    (cRivalry.useAcceptRivalryMutation as jest.Mock).mockReturnValue({
+      mutate: jest.fn(),
+      isLoading: false,
+      isSuccess: false,
+      error: null
+    });
+
+    // Mock NPC rivalry mutation
+    (cRivalry.useCreateNpcRivalryMutation as jest.Mock).mockReturnValue({
+      mutate: jest.fn(),
+      isLoading: false,
+      isSuccess: false,
+      error: null
+    });
   });
 
   afterEach(() => {
@@ -92,7 +117,7 @@ describe('Create Rivalry Integration Test', () => {
     );
 
     // Enter search text
-    const searchInput = getByPlaceholderText('Search by name or email...');
+    const searchInput = getByPlaceholderText(/Type 'npc' or search by name/);
     fireEvent.changeText(searchInput, 'jane');
 
     // Force a rerender to apply the mock with new searchText
@@ -157,7 +182,7 @@ describe('Create Rivalry Integration Test', () => {
     );
 
     // Enter search - mock will return users when 'jane' is in search
-    const searchInput = getByPlaceholderText('Search by name or email...');
+    const searchInput = getByPlaceholderText(/Type 'npc' or search by name/);
     fireEvent.changeText(searchInput, 'jane');
 
     // Wait for user to appear

@@ -16,7 +16,7 @@ export function HamburgerMenu() {
 
       setMenuVisible(false);
       // Navigate to home screen
-      router.replace('/');
+      router.replace('/auth');
     } catch (error) {
       console.error('Error signing out:', error);
     }

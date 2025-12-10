@@ -52,10 +52,16 @@ export function RivalryIndex() {
     // TODO: In the future, let users select from multiple games
     const gameId = rivalries[0]?.gameId || '73ed69cf-2775-43d6-bece-aed10da3e25a';
 
+    // Check if user has no rivalries (accepted or pending)
+    const hasNoRivalries = allRivalries.length === 0;
+
     // Navigate to create rivalry screen using Expo Router
     router.push({
       pathname: '/rivalry/create',
-      params: { gameId }
+      params: {
+        gameId,
+        autoSearchNpc: hasNoRivalries ? 'true' : undefined
+      }
     });
   }
 

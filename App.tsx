@@ -43,28 +43,28 @@ export default function App() {
 }
 
 function AuthenticatedApp({ selectedGame }: { selectedGame: Game | null}) {
-  const [authenticated, setAuthenticated] = useState(false);
   const [userId, setUserId] = useState<string | undefined>(undefined);
 
-  // Listen for auth state changes from Cognito
+  console.log('[App] AuthenticatedApp rendering - NO AUTH SCREEN, going straight to Access');
+
+  // Listen for auth state changes from Cognito (optional - users start as anonymous)
   useEffect(() => {
     // Check initial session
     getCurrentUser()
       .then((user) => {
-        setAuthenticated(true);
         setUserId(user.userId);
       })
-      .catch(() => setAuthenticated(false));
+      .catch(() => {
+        // No Cognito session - user is anonymous, userId will be set by useAuthUser
+      });
 
     // Subscribe to auth changes via Amplify Hub
     const hubListener = Hub.listen('auth', ({ payload }) => {
       switch (payload.event) {
         case 'signedIn':
-          setAuthenticated(true);
           getCurrentUser().then((user) => setUserId(user.userId));
           break;
         case 'signedOut':
-          setAuthenticated(false);
           setUserId(undefined);
           break;
       }
@@ -73,15 +73,7 @@ function AuthenticatedApp({ selectedGame }: { selectedGame: Game | null}) {
     return () => hubListener();
   }, []);
 
-  if (!authenticated) {
-    return (
-      <>
-        <Auth onAuthSuccess={() => setAuthenticated(true)} />
-        <StatusBar style="light" />
-      </>
-    );
-  }
-
+  // No Auth screen - users start as anonymous and can optionally link accounts later
   return (
     <QueryClientProvider client={queryClient}>
       <AllRivalriesProvider userId={userId}>

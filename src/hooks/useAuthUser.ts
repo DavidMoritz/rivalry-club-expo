@@ -4,6 +4,7 @@ import { useEffect, useState } from 'react';
 
 import type { Schema } from '../../amplify/data/resource';
 import { getCurrentUser } from '../lib/amplify-auth';
+import { getOrCreateUserUuid, generateDisplayName } from '../lib/user-identity';
 
 interface AuthUser {
   id: string;
@@ -15,13 +16,12 @@ interface AuthUser {
 }
 
 /**
- * Custom hook that manages user creation and retrieval after Cognito authentication.
+ * Custom hook that manages user creation and retrieval.
  *
  * Flow:
- * 1. Gets the authenticated Cognito user
- * 2. Queries the AppSync database for a User record matching the Cognito user ID (sub)
- * 3. If no User exists, creates one with the Cognito user's email and ID
- * 4. Returns the User record
+ * 1. Anonymous users: Creates a user with a UUID stored in Keychain
+ * 2. Cognito users: Gets the authenticated Cognito user and finds/creates their DB record
+ * 3. Returns the User record
  */
 export function useAuthUser() {
   const [user, setUser] = useState<AuthUser | null>(null);
@@ -53,63 +53,104 @@ export function useAuthUser() {
 
   useEffect(() => {
     async function fetchOrCreateUser() {
-      if (!cognitoUserId) {
-        setIsLoading(false);
-        return;
-      }
-
       try {
         setIsLoading(true);
         setError(null);
 
-        // Get current user info
-        const currentUser = await getCurrentUser();
-        const email = currentUser.signInDetails?.loginId || '';
-        const awsSub = currentUser.userId;
-
-        // Generate AppSync client
         const client = generateClient<Schema>();
 
-        // Query for existing user by Cognito user ID (stored in awsSub field)
-        const listResult = await client.models.User.list({
-          filter: {
-            awsSub: {
-              eq: awsSub,
-            },
-          },
-        });
+        console.log('[useAuthUser] cognitoUserId:', cognitoUserId);
 
-        // AWS Amplify v6 returns { data: User[], errors: Error[] }
-        const users = listResult.data;
-        const queryErrors = listResult.errors;
+        // Check if user is authenticated with Cognito
+        if (cognitoUserId) {
+          // COGNITO USER FLOW
+          console.log('[useAuthUser] Using COGNITO flow');
+          const currentUser = await getCurrentUser();
+          const email = currentUser.signInDetails?.loginId || '';
+          const awsSub = currentUser.userId;
 
-        if (queryErrors && queryErrors.length > 0) {
-          throw new Error(`Query failed: ${queryErrors[0].message}`);
-        }
-
-        if (users && users.length > 0) {
-          // User exists in database
-          const foundUser = users[0];
-          setUser(foundUser as AuthUser);
-        } else {
-          // Create new user in database
-          const createResult = await client.models.User.create({
-            email,
-            awsSub, // Store user ID (Cognito sub or dev user awsSub) in awsSub field
-            role: 0, // Default role
+          // Query for existing user by Cognito awsSub
+          const listResult = await client.models.User.list({
+            filter: {
+              awsSub: {
+                eq: awsSub
+              }
+            }
           });
 
-          const newUser = createResult.data;
-          const errors = createResult.errors;
+          const users = listResult.data;
+          const queryErrors = listResult.errors;
 
-          if (errors && errors.length > 0) {
-            throw new Error(`Failed to create user: ${errors[0].message}`);
+          if (queryErrors && queryErrors.length > 0) {
+            throw new Error(`Query failed: ${queryErrors[0].message}`);
           }
 
-          if (newUser) {
-            setUser(newUser as AuthUser);
+          if (users && users.length > 0) {
+            // User exists in database
+            const foundUser = users[0];
+            setUser(foundUser as AuthUser);
           } else {
-            throw new Error('User creation returned no data');
+            // Create new user in database
+            const createResult = await client.models.User.create({
+              email,
+              awsSub,
+              role: 0 // Default role for Cognito users
+            });
+
+            const newUser = createResult.data;
+            const errors = createResult.errors;
+
+            if (errors && errors.length > 0) {
+              throw new Error(`Failed to create user: ${errors[0].message}`);
+            }
+
+            if (newUser) {
+              setUser(newUser as AuthUser);
+            } else {
+              throw new Error('User creation returned no data');
+            }
+          }
+        } else {
+          // ANONYMOUS USER FLOW
+          console.log('[useAuthUser] Using ANONYMOUS flow');
+          const uuid = await getOrCreateUserUuid();
+          console.log('[useAuthUser] UUID:', uuid);
+
+          // Query for existing user by ID (the UUID)
+          const getResult = await client.models.User.get({ id: uuid });
+          console.log('[useAuthUser] Existing user found:', !!getResult.data);
+
+          if (getResult.data) {
+            // User already exists
+            console.log('[useAuthUser] Using existing anonymous user');
+            setUser(getResult.data as AuthUser);
+          } else {
+            // Create new anonymous user
+            console.log('[useAuthUser] Creating new anonymous user');
+            const displayName = generateDisplayName(uuid);
+            console.log('[useAuthUser] Display name:', displayName);
+
+            const createResult = await client.models.User.create({
+              id: uuid,
+              email: `${displayName}@anonymous.local`, // Placeholder email
+              firstName: displayName,
+              lastName: ' ', // Empty space as requested
+              role: 9, // Anonymous user role
+              awsSub: 'anonymous' // Placeholder awsSub
+            });
+
+            const newUser = createResult.data;
+            const errors = createResult.errors;
+
+            if (errors && errors.length > 0) {
+              throw new Error(`Failed to create user: ${errors[0].message}`);
+            }
+
+            if (newUser) {
+              setUser(newUser as AuthUser);
+            } else {
+              throw new Error('User creation returned no data');
+            }
           }
         }
       } catch (err) {
@@ -126,6 +167,6 @@ export function useAuthUser() {
   return {
     user,
     isLoading,
-    error,
+    error
   };
 }

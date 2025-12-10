@@ -15,9 +15,9 @@ export default function IndexRoute() {
   function handleEnterClick(game: Game) {
     if (!game) return;
 
-    // Navigate to auth screen with game data
+    // Navigate directly to rivalries (anonymous users auto-created)
     router.push({
-      pathname: '/auth',
+      pathname: '/rivalries',
       params: { gameId: game.id, gameName: game.name }
     });
   }

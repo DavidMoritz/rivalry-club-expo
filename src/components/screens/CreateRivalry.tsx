@@ -1,5 +1,5 @@
 import { useLocalSearchParams, useRouter } from 'expo-router';
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { ActivityIndicator, FlatList, Text, TextInput, TouchableOpacity, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
@@ -28,6 +28,13 @@ export function CreateRivalry() {
   // Try to get game from context first, then from params
   const gameId = gameFromContext?.id || (params.gameId as string);
   const gameName = gameFromContext?.name || (params.gameName as string) || 'this game';
+
+  // Auto-search for NPC if this is a first-time user
+  useEffect(() => {
+    if (params.autoSearchNpc === 'true') {
+      setSearchText('npc');
+    }
+  }, [params.autoSearchNpc]);
 
   const { data: searchResults = [], isLoading: isSearching } = useUserSearchQuery({
     searchText,

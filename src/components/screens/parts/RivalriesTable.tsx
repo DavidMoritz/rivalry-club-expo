@@ -72,12 +72,22 @@ export function RivalriesTable({ rivalries, currentUserId, onSelectRivalry }: Ri
       )}
 
       {(!rivalries || rivalries.length === 0) && (
-        <View
-          style={{ flex: 1, alignItems: 'center', justifyContent: 'center', paddingHorizontal: 32 }}
-        >
-          <Text style={[styles.text, { fontSize: 16, textAlign: 'center', color: '#999' }]}>
-            No rivalries found. Create your first rivalry to get started!
-          </Text>
+        <View style={{ paddingHorizontal: 16, paddingBottom: 16 }}>
+          <TouchableOpacity
+            onPress={() => router.push('/how-to-play')}
+            style={{
+              backgroundColor: '#fbbf24',
+              paddingHorizontal: 24,
+              paddingVertical: 12,
+              marginTop: 20,
+              borderRadius: 8,
+              alignItems: 'center'
+            }}
+          >
+            <Text style={[styles.text, { fontSize: 16, fontWeight: 'bold', color: '#222' }]}>
+              How to Play
+            </Text>
+          </TouchableOpacity>
         </View>
       )}
     </>

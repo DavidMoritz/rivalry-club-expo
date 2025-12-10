@@ -16,6 +16,7 @@ import { darkStyles, lightStyles, styles } from '../../utils/styles';
 import { s3Favicons } from '../../utils';
 import { Button } from '../common/Button';
 import { GameWithCharactersDisplay } from './GameWithCharactersDisplay';
+import { useAuthUser } from '../../hooks/useAuthUser';
 
 // Temporary Game type - will be replaced with GraphQL type later
 interface Game {
@@ -38,6 +39,9 @@ interface HomeProps {
 export default function Home({ onEnterClick, onHowToPlayClick }: HomeProps) {
   const [games, setGames] = useState<Game[]>([]);
 
+  // Initialize user immediately on home screen (creates anonymous user in background)
+  const { user } = useAuthUser();
+
   useEffect(() => {
     // Load game data from cached query
     const loadedGames = gameQuery.data?.listGames?.items;
@@ -45,6 +49,12 @@ export default function Home({ onEnterClick, onHowToPlayClick }: HomeProps) {
       setGames(loadedGames as Game[]);
     }
   }, []);
+
+  useEffect(() => {
+    if (user) {
+      console.log('[Home] User ready:', user.firstName, 'ID:', user.id);
+    }
+  }, [user]);
 
   const isDarkMode = true;
 

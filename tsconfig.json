@@ -9,5 +9,8 @@
     "**/*.tsx",
     "**/*.json",
     "nativewind-env.d.ts"
+  ],
+  "exclude": [
+    "amplify"
   ]
 }

@@ -20,20 +20,25 @@ export function RivalryView({ navigation }: RivalryViewProps) {
   const displayContest = displayCount === 1 ? 'Contest' : 'Contests';
 
   const isUserA = rivalry?.userAId === user?.id;
+  const isCurrentlyHidden = isUserA ? rivalry?.hiddenByA : rivalry?.hiddenByB;
 
   const hideRivalryMutation = useHideRivalryMutation({
     onSuccess: () => {
-      router.push('/rivalries');
+      // Only navigate back to /rivalries when hiding (not when unhiding)
+      if (!isCurrentlyHidden) {
+        router.push('/rivalries');
+      }
     }
   });
 
-  const handleHideRivalry = () => {
+  const handleToggleHideRivalry = () => {
     if (!rivalry?.id || !user?.id) return;
 
     hideRivalryMutation.mutate({
       rivalryId: rivalry.id,
       userId: user.id,
-      isUserA
+      isUserA,
+      hidden: !isCurrentlyHidden
     });
   };
 
@@ -54,8 +59,8 @@ export function RivalryView({ navigation }: RivalryViewProps) {
         style={{ height: 48, paddingHorizontal: 48, width: 256 }}
       />
       <Button
-        onPress={handleHideRivalry}
-        text="Hide Rivalry"
+        onPress={handleToggleHideRivalry}
+        text={isCurrentlyHidden ? 'Unhide Rivalry' : 'Hide Rivalry'}
         style={{
           height: 48,
           paddingHorizontal: 48,

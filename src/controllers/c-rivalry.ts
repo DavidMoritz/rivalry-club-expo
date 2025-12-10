@@ -1124,17 +1124,19 @@ export const useHideRivalryMutation = ({ onSuccess, onError }: HideRivalryMutati
     mutationFn: async ({
       rivalryId,
       userId,
-      isUserA
+      isUserA,
+      hidden
     }: {
       rivalryId: string;
       userId: string;
       isUserA: boolean;
+      hidden: boolean;
     }) => {
       if (!rivalryId) {
         throw new Error('Rivalry ID is required');
       }
 
-      const updateField = isUserA ? { hiddenByA: true } : { hiddenByB: true };
+      const updateField = isUserA ? { hiddenByA: hidden } : { hiddenByB: hidden };
 
       const { data, errors } = await getClient().models.Rivalry.update({
         id: rivalryId,
@@ -1142,7 +1144,7 @@ export const useHideRivalryMutation = ({ onSuccess, onError }: HideRivalryMutati
       });
 
       if (errors) {
-        throw new Error(errors[0]?.message || 'Failed to hide rivalry');
+        throw new Error(errors[0]?.message || 'Failed to update rivalry visibility');
       }
 
       return data;

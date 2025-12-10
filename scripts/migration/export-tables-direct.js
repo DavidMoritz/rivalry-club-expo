@@ -1,71 +1,36 @@
 #!/usr/bin/env node
 
 /**
- * Export all data from Amplify Gen 2 Sandbox DynamoDB tables
- * This script safely exports all records from all tables to JSON files
+ * Direct export of DynamoDB tables using explicit table names
  */
 
 const { DynamoDBClient } = require('@aws-sdk/client-dynamodb');
 const { DynamoDBDocumentClient, ScanCommand } = require('@aws-sdk/lib-dynamodb');
-const { CloudFormationClient, DescribeStackResourcesCommand } = require('@aws-sdk/client-cloudformation');
 const fs = require('fs');
 const path = require('path');
 
 const REGION = 'us-east-1';
 const BACKUP_DIR = path.join(__dirname, '../../data-backup');
 
-// Initialize AWS clients
+// Use the API ID we found: eufbm2g2krhd3kvltqwnkdayb4
+const API_ID = 'eufbm2g2krhd3kvltqwnkdayb4';
+const ENV_SUFFIX = 'NONE';
+
 const dynamoClient = new DynamoDBClient({ region: REGION });
 const docClient = DynamoDBDocumentClient.from(dynamoClient);
-const cfnClient = new CloudFormationClient({ region: REGION });
 
-// Model names from your schema
-const MODEL_NAMES = ['Game', 'Fighter', 'User', 'Rivalry', 'Contest', 'TierList', 'TierSlot'];
+const TABLES = {
+  'Game': `Game-${API_ID}-${ENV_SUFFIX}`,
+  'Fighter': `Fighter-${API_ID}-${ENV_SUFFIX}`,
+  'User': `User-${API_ID}-${ENV_SUFFIX}`,
+  'Rivalry': `Rivalry-${API_ID}-${ENV_SUFFIX}`,
+  'Contest': `Contest-${API_ID}-${ENV_SUFFIX}`,
+  'TierList': `TierList-${API_ID}-${ENV_SUFFIX}`,
+  'TierSlot': `TierSlot-${API_ID}-${ENV_SUFFIX}`
+};
 
-// IMPORTANT: Also export the original Cognito backup for awsSub mapping
-// This is needed to map old awsSub values to new ones after Cognito migration
-
-/**
- * Find the sandbox CloudFormation stack
- */
-async function findSandboxStack() {
-  console.log('🔍 Searching for sandbox CloudFormation stack...');
-
-  // The stack name pattern for sandbox is: amplify-{project}-{username}-sandbox-{id}
-  const stackNamePattern = 'amplify-rivalryclubexpo-davidmoritz-sandbox';
-
-  return 'amplify-rivalryclubexpo-davidmoritz-sandbox-68bbd7792c';
-}
-
-/**
- * Get DynamoDB table names from CloudFormation stack
- */
-async function getTableNames(stackName) {
-  console.log(`📋 Fetching table names from stack: ${stackName}`);
-
-  try {
-    const command = new DescribeStackResourcesCommand({
-      StackName: stackName
-    });
-
-    const response = await cfnClient.send(command);
-    const tableNames = response.StackResources
-      .filter(resource => resource.ResourceType === 'AWS::DynamoDB::Table')
-      .map(resource => resource.PhysicalResourceId);
-
-    console.log(`✅ Found ${tableNames.length} DynamoDB tables`);
-    return tableNames;
-  } catch (error) {
-    console.error('❌ Error fetching table names:', error.message);
-    throw error;
-  }
-}
-
-/**
- * Export all items from a DynamoDB table
- */
-async function exportTable(tableName) {
-  console.log(`\n📦 Exporting table: ${tableName}`);
+async function exportTable(modelName, tableName) {
+  console.log(`\n📦 Exporting ${modelName} from: ${tableName}`);
 
   let items = [];
   let lastEvaluatedKey = undefined;
@@ -87,35 +52,19 @@ async function exportTable(tableName) {
 
       console.log(`  📊 Scan ${scanCount}: Retrieved ${response.Items?.length || 0} items (Total: ${items.length})`);
 
-      // Add a small delay to avoid throttling
       if (lastEvaluatedKey) {
         await new Promise(resolve => setTimeout(resolve, 100));
       }
     } while (lastEvaluatedKey);
 
-    console.log(`✅ Exported ${items.length} items from ${tableName}`);
+    console.log(`✅ Exported ${items.length} items from ${modelName}`);
     return items;
   } catch (error) {
-    console.error(`❌ Error exporting ${tableName}:`, error.message);
+    console.error(`❌ Error exporting ${modelName}:`, error.message);
     throw error;
   }
 }
 
-/**
- * Determine model name from table name
- */
-function getModelNameFromTable(tableName) {
-  for (const modelName of MODEL_NAMES) {
-    if (tableName.includes(modelName)) {
-      return modelName;
-    }
-  }
-  return 'Unknown';
-}
-
-/**
- * Save data to JSON file
- */
 function saveToFile(modelName, data, tableName) {
   const timestamp = new Date().toISOString().replace(/[:.]/g, '-');
   const filename = `${modelName}-${timestamp}.json`;
@@ -135,35 +84,22 @@ function saveToFile(modelName, data, tableName) {
   return filepath;
 }
 
-/**
- * Main export function
- */
 async function main() {
-  console.log('🚀 Starting Amplify Sandbox Data Export');
-  console.log('=' .repeat(60));
+  console.log('🚀 Starting DynamoDB Data Export');
+  console.log('='.repeat(60));
+  console.log(`📋 API ID: ${API_ID}`);
+  console.log(`📋 Environment: ${ENV_SUFFIX}`);
+  console.log('='.repeat(60));
 
-  // Ensure backup directory exists
   if (!fs.existsSync(BACKUP_DIR)) {
     fs.mkdirSync(BACKUP_DIR, { recursive: true });
   }
 
   try {
-    // Find the sandbox stack
-    const stackName = await findSandboxStack();
-
-    // Get all table names
-    const tableNames = await getTableNames(stackName);
-
-    if (tableNames.length === 0) {
-      console.log('⚠️  No tables found in the stack');
-      return;
-    }
-
-    // Export each table
     const exportResults = [];
-    for (const tableName of tableNames) {
-      const modelName = getModelNameFromTable(tableName);
-      const items = await exportTable(tableName);
+
+    for (const [modelName, tableName] of Object.entries(TABLES)) {
+      const items = await exportTable(modelName, tableName);
       const filepath = saveToFile(modelName, items, tableName);
 
       exportResults.push({
@@ -174,7 +110,7 @@ async function main() {
       });
     }
 
-    // Create summary
+    // Summary
     console.log('\n' + '='.repeat(60));
     console.log('📊 EXPORT SUMMARY');
     console.log('='.repeat(60));
@@ -193,6 +129,8 @@ async function main() {
     const summaryFile = path.join(BACKUP_DIR, 'export-summary.json');
     fs.writeFileSync(summaryFile, JSON.stringify({
       exportDate: new Date().toISOString(),
+      apiId: API_ID,
+      environment: ENV_SUFFIX,
       totalItems,
       totalTables: exportResults.length,
       results: exportResults
@@ -206,5 +144,4 @@ async function main() {
   }
 }
 
-// Run the export
 main().catch(console.error);

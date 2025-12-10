@@ -12,8 +12,8 @@ const fs = require('fs');
 const path = require('path');
 
 const REGION = 'us-east-1';
-const SANDBOX_USER_POOL_ID = 'us-east-1_nYamFUrp4'; // From amplify_outputs.json
-const PRODUCTION_USER_POOL_ID = 'REPLACE_WITH_PRODUCTION_POOL_ID'; // From amplify_outputs.production.json
+const SANDBOX_USER_POOL_ID = 'us-east-1_nYamFUrp4'; // Sandbox User Pool
+const PRODUCTION_USER_POOL_ID = 'us-east-1_8f6RCLauy'; // Production User Pool
 const BACKUP_DIR = path.join(__dirname, '../../data-backup');
 
 const cognitoClient = new CognitoIdentityProviderClient({ region: REGION });

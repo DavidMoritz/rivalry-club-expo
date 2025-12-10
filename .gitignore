@@ -54,3 +54,7 @@ node_modules/
 
 # Dev users config (local test users)
 src/lib/dev/dev-users.json
+
+# Data transfer
+sandbox-backup-20251210-094300.tar.gz
+data-backup/

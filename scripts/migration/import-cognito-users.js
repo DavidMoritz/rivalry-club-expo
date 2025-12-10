@@ -35,11 +35,14 @@ function findCognitoBackup() {
  */
 async function createUser(user) {
   try {
+    // Filter out 'sub' attribute - Cognito will generate a new one
+    const filteredAttributes = user.attributes.filter(attr => attr.Name !== 'sub');
+
     // Create user
     const createCommand = new AdminCreateUserCommand({
       UserPoolId: PRODUCTION_USER_POOL_ID,
       Username: user.email,
-      UserAttributes: user.attributes,
+      UserAttributes: filteredAttributes,
       MessageAction: 'SUPPRESS' // Don't send welcome email
     });
 

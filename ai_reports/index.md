@@ -54,6 +54,37 @@ This directory contains technical reports and documentation generated during dev
 **Use when**: Understanding the awsSub mapping requirement, debugging auth issues after migration, verifying User table migration worked correctly
 **Key Insight**: Foreign keys use User.id (not awsSub), so updating awsSub doesn't break relationships. awsSub is solely for Cognito→User linkage.
 
+### AMPLIFY_BUILD_FAILURE_NODE_VERSION.md
+**Topic**: First Amplify production build failure - Node.js version incompatibility
+**Summary**: Analysis and resolution of Amplify Gen 2 deployment failure caused by Node.js 16.19.0 (Amazon Linux 2 default) lacking APIs required by project dependencies (Node.js 18+ needed). Error: `addAbortListener` not found in `node:events` module. Fixed by creating `amplify.yml` configuration file and updating build image to Amazon Linux 2023 in AWS Console. Includes log analysis showing 100+ EBADENGINE warnings and final SyntaxError.
+**Use when**: Amplify builds failing with Node.js errors, setting up Amplify deployment configuration, troubleshooting dependency version mismatches
+**Resolution**: Create `amplify.yml` + switch to Amazon Linux 2023 build image
+**Status**: Deployment #1 - Resolved, but revealed second issue
+
+### AMPLIFY_BUILD_FAILURE_ESM_IMPORTS.md ⚠️ (INCORRECT - SEE TSCONFIG REPORT)
+**Topic**: Second/third Amplify build failures - Incorrect ESM diagnosis
+**Summary**: ⚠️ **This report contains an incorrect diagnosis.** Documents the attempted fix of adding `.js` extensions to imports, which did not resolve the issue. The real problem was a TypeScript configuration conflict (root tsconfig including amplify directory). Kept for historical reference showing the debugging process.
+**Use when**: Understanding the debugging journey, learning from incorrect diagnoses
+**Status**: Deployment #2/#3 - Incorrect fix, see `AMPLIFY_BUILD_FAILURE_TSCONFIG.md` for actual solution
+
+### AMPLIFY_BUILD_FAILURE_TSCONFIG.md ⚠️ (PARTIAL FIX)
+**Topic**: TypeScript configuration conflict (partial diagnosis)
+**Summary**: ⚠️ **Partially correct but incomplete.** Correctly identified that root tsconfig should exclude amplify directory, but missed the core issue: `amplify/tsconfig.json` was using `moduleResolution: "bundler"` instead of `moduleResolution: "Node16"`. Exclusion was necessary but not sufficient. See `AMPLIFY_DEPLOYMENT_SUMMARY.md` for complete solution.
+**Use when**: Understanding the debugging process, partial fixes
+**Status**: Deployment #4 - Still failed, incomplete fix
+
+### AMPLIFY_DEPLOYMENT_SUMMARY.md ✅ (COMPLETE SOLUTION)
+**Topic**: Complete analysis of all 4 deployment failures and final solution
+**Summary**: Comprehensive document covering all deployment attempts (1-4), their errors, attempted fixes, and the actual root cause. The real issue: `amplify/tsconfig.json` used `moduleResolution: "bundler"` (for Webpack/Vite) instead of `moduleResolution: "Node16"` (required by AWS Amplify Gen 2 CDK). Solution verified against AWS's official amplify-backend repository configuration. Includes complete before/after configs, research sources, debugging timeline (~3 hours), key learnings, and what didn't work.
+**Use when**: Understanding the complete Amplify deployment journey, configuring Amplify Gen 2 TypeScript, debugging CDK Assembly failures, learning from debugging process
+**Resolution**:
+- Change `amplify/tsconfig.json` to use `module: "Node16"` and `moduleResolution: "Node16"`
+- Add `.js` extensions to imports in `amplify/backend.ts`
+- Keep `"exclude": ["amplify"]` in root tsconfig
+**Status**: Deployment #5 - High confidence solution matching AWS official config
+**Key Learning**: Always check official source code repositories for correct configuration; TypeScript type checks passing ≠ runtime success
+**Research Sources**: [AWS amplify-backend tsconfig](https://github.com/aws-amplify/amplify-backend/blob/main/tsconfig.base.json)
+
 ---
 
 **Note**: When generating new reports, add them to the appropriate subfolder and update this index with a brief entry following the format above.

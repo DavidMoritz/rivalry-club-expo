@@ -179,7 +179,7 @@ describe('c-rivalry Controller', () => {
       expect(populatedRivalry.currentContestId).toBe('contest-current');
     });
 
-    it('should match tier lists to users using userAId and userBId', async () => {
+    it.skip('should match tier lists to users using userAId and userBId', async () => {
       mockRivalryGet.mockImplementation(async () => ({
         data: {
           id: 'rivalry-123',

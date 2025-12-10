@@ -33,6 +33,7 @@ export function Profile() {
   const [successMessage, setSuccessMessage] = useState('');
   const [errorMessage, setErrorMessage] = useState('');
   const [isUpdating, setIsUpdating] = useState(false);
+  const [viewChangePassword, setViewChangePassword] = useState(false);
   const [isChangingPassword, setIsChangingPassword] = useState(false);
   const [showLinkAccountModal, setShowLinkAccountModal] = useState(false);
   const [showCreateAccountModal, setShowCreateAccountModal] = useState(false);
@@ -436,7 +437,35 @@ export function Profile() {
             )}
           </View>
 
-          {user?.awsSub !== 'anonymous' && (
+          {user?.awsSub !== 'anonymous' && !viewChangePassword && (
+            <View
+              style={{
+                borderTopWidth: 1,
+                borderTopColor: '#374151',
+                paddingTop: 32
+              }}
+            >
+              <TouchableOpacity
+                style={{
+                  backgroundColor: '#6b21a8',
+                  paddingHorizontal: 32,
+                  paddingVertical: 16,
+                  borderRadius: 25,
+                  borderWidth: 1,
+                  borderColor: '#cbd5e1',
+                  width: '100%',
+                  alignItems: 'center',
+                  marginTop: 8
+                }}
+                onPress={() => setViewChangePassword(true)}
+              >
+                <Text style={{ color: 'white', fontSize: 18, fontWeight: 'bold' }}>
+                  Change Password
+                </Text>
+              </TouchableOpacity>
+            </View>
+          )}
+          {viewChangePassword && (
             <View
               style={{
                 borderTopWidth: 1,

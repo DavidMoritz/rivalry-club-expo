@@ -6,7 +6,7 @@
 echo "🔍 Checking for backend changes..."
 
 # If not in Amplify build environment, always deploy
-if [ -z "$CODEBUILD_RESOLVED_SOURCE_VERSION" ]; then
+if [ -z "$AWS_APP_ID" ] || [ -z "$AWS_BRANCH" ]; then
   echo "⚠️  Not in Amplify build environment, proceeding with deployment"
   exit 0
 fi

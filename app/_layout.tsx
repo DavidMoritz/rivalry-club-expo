@@ -55,11 +55,11 @@ export default function RootLayout() {
   // Show loading screen until fully initialized
   if (!isReady) {
     return (
-      <View style={{ flex: 1, backgroundColor: '#000', alignItems: 'center', justifyContent: 'center' }}>
+      <View
+        style={{ flex: 1, backgroundColor: '#000', alignItems: 'center', justifyContent: 'center' }}
+      >
         <ActivityIndicator size="large" color="#fff" />
-        <Text style={{ color: '#fff', marginTop: 16, fontSize: 16 }}>
-          Initializing...
-        </Text>
+        <Text style={{ color: '#fff', marginTop: 16, fontSize: 16 }}>Initializing...</Text>
       </View>
     );
   }

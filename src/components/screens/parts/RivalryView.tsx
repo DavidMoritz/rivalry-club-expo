@@ -60,21 +60,22 @@ export function RivalryView({ navigation }: RivalryViewProps) {
           navigation.navigate('RivalryTiersView');
         }}
         text="View Tier Lists"
-        style={{ height: 48, paddingHorizontal: 48, width: 256 }}
+        style={{ height: 48, paddingHorizontal: 0, paddingVertical: 0, width: 256 }}
       />
       <Button
         onPress={() => {
           navigation.navigate('ContestHistory');
         }}
         text={`View ${displayCount} ${displayContest}`}
-        style={{ height: 48, paddingHorizontal: 48, width: 256 }}
+        style={{ height: 48, paddingHorizontal: 0, paddingVertical: 0, width: 256 }}
       />
       <Button
         onPress={handleToggleHideRivalry}
         text={isCurrentlyHidden ? 'Unhide Rivalry' : 'Hide Rivalry'}
         style={{
           height: 48,
-          paddingHorizontal: 48,
+          paddingHorizontal: 0,
+          paddingVertical: 0,
           width: 256,
           backgroundColor: '#dc2626'
         }}

@@ -262,7 +262,7 @@ export function ConnectedRivalryView({ navigation }: ConnectedRivalryViewProps):
           />
         )}
 
-      {tiersReady && !rivalry?.currentContest && (
+      {tiersReady && !rivalry?.currentContest && !createContestMutation.isPending && (
         <Button
           text="+ Create new contest"
           onPress={() => {
@@ -272,7 +272,7 @@ export function ConnectedRivalryView({ navigation }: ConnectedRivalryViewProps):
         />
       )}
 
-      {tiersReady && <RivalryView navigation={navigation} />}
+      {tiersReady && !createContestMutation.isPending && <RivalryView navigation={navigation} />}
 
       {/* Priority 3: Preparing Tiers */}
       {!isResolvingContest &&

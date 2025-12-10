@@ -1,6 +1,7 @@
 import { useRouter } from 'expo-router';
 import React, { useState } from 'react';
 import { Modal, Pressable, Text, TouchableOpacity, View } from 'react-native';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import { signOut } from '../../lib/amplify-auth';
 import { darkStyles } from '../../utils/styles';
@@ -8,6 +9,7 @@ import { darkStyles } from '../../utils/styles';
 export function HamburgerMenu() {
   const router = useRouter();
   const [menuVisible, setMenuVisible] = useState(false);
+  const insets = useSafeAreaInsets();
 
   const handleSignOut = async () => {
     try {
@@ -53,7 +55,7 @@ export function HamburgerMenu() {
         onPress={() => setMenuVisible(true)}
         style={{
           position: 'absolute',
-          top: 60,
+          top: insets.top + 12,
           right: 16,
           zIndex: 100,
           padding: 12,
@@ -80,7 +82,7 @@ export function HamburgerMenu() {
           <View
             style={{
               position: 'absolute',
-              top: 104,
+              top: insets.top + 64,
               right: 16,
               backgroundColor: '#1e293b',
               borderRadius: 8,

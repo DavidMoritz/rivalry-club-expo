@@ -65,7 +65,7 @@ export function ContestHistoryTable({
   return (
     <View style={contestStyles.tableWrapper}>
       {!hideUndoButton && (
-        <View style={{ alignSelf: 'flex-start', marginTop: -14 }}>
+        <View style={{ alignSelf: 'flex-start', marginBottom: 8, marginTop: -14 }}>
           <Button
             style={{ paddingVertical: 0 }}
             onPress={handleUndoClick}
@@ -78,9 +78,7 @@ export function ContestHistoryTable({
           />
         </View>
       )}
-      {hideUndoButton && (
-        <View style={{ alignSelf: 'flex-start', marginTop: 35, marginBottom: 16 }} />
-      )}
+      {hideUndoButton && <View style={{ alignSelf: 'flex-start', marginBottom: 8 }} />}
 
       {deleteMostRecentContestMutation.isError && (
         <View

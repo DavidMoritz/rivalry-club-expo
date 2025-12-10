@@ -395,8 +395,11 @@ export function Profile() {
                   <Text style={{ color: '#1f2937', fontSize: 16, fontWeight: 'bold' }}>
                     Link Existing Account
                   </Text>
-                  <Text style={{ color: '#1f2937', fontSize: 12, marginTop: 2 }}>
-                    Already have an account? Restore your data
+                  <Text
+                    style={{ color: '#1f2937', fontSize: 12, marginTop: 2, textAlign: 'center' }}
+                  >
+                    Already have an account? Restore your data. This will remove all data for{' '}
+                    {user?.email.split('@')[0] ?? 'this profile'}.
                   </Text>
                 </TouchableOpacity>
 

@@ -1,7 +1,8 @@
 import { useLocalSearchParams, Stack } from 'expo-router';
 import { StatusBar } from 'expo-status-bar';
 import React, { useState, useMemo, useCallback } from 'react';
-import { SafeAreaView, Text, View, ActivityIndicator } from 'react-native';
+import { Text, View, ActivityIndicator } from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { generateClient } from 'aws-amplify/data';
 import type { Schema } from '../../../amplify/data/resource';
@@ -342,17 +343,19 @@ export default function HistoryRoute() {
         userBName={userBName}
         userId={userId}
       >
-        <SafeAreaView style={[styles.container, darkStyles.container]}>
-          <ContestHistoryTable
-            contests={contests}
-            game={game as MGame}
-            rivalry={rivalry}
-            deleteMostRecentContestMutation={deleteMostRecentContestMutation}
-            loadMore={loadMore}
-            isLoadingMore={isLoadingMore}
-            hideUndoButton={hideUndoButton}
-            onUndoClick={handleUndoClick}
-          />
+        <SafeAreaView style={[styles.container, darkStyles.container]} edges={['left', 'right', 'bottom']}>
+          <View style={{ paddingTop: 72 }}>
+            <ContestHistoryTable
+              contests={contests}
+              game={game as MGame}
+              rivalry={rivalry}
+              deleteMostRecentContestMutation={deleteMostRecentContestMutation}
+              loadMore={loadMore}
+              isLoadingMore={isLoadingMore}
+              hideUndoButton={hideUndoButton}
+              onUndoClick={handleUndoClick}
+            />
+          </View>
         </SafeAreaView>
       </RivalryProvider>
       <StatusBar style="light" />

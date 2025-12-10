@@ -439,6 +439,20 @@
               "isRequired": false,
               "attributes": []
             },
+            "hiddenByA": {
+              "name": "hiddenByA",
+              "isArray": false,
+              "type": "Boolean",
+              "isRequired": false,
+              "attributes": []
+            },
+            "hiddenByB": {
+              "name": "hiddenByB",
+              "isArray": false,
+              "type": "Boolean",
+              "isRequired": false,
+              "attributes": []
+            },
             "contests": {
               "name": "contests",
               "isArray": true,

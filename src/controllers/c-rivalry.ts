@@ -201,8 +201,8 @@ export const useRivalryWithAllInfoQuery = ({ rivalry, onSuccess }: RivalryQueryP
         mRivalry.gameId = rivalryData.gameId;
         mRivalry.contestCount = rivalryData.contestCount;
         mRivalry.currentContestId = rivalryData.currentContestId;
-        mRivalry.hiddenByA = rivalryData.hiddenByA;
-        mRivalry.hiddenByB = rivalryData.hiddenByB;
+        mRivalry.hiddenByA = rivalryData.hiddenByA ?? false;
+        mRivalry.hiddenByB = rivalryData.hiddenByB ?? false;
         mRivalry.setMContests(contests as any);
         mRivalry.setMTierLists(tierLists as any);
 

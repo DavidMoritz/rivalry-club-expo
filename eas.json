@@ -12,7 +12,8 @@
       "distribution": "internal"
     },
     "production": {
-      "autoIncrement": false
+      "autoIncrement": false,
+      "prebuildCommand": "bash scripts/eas-prebuild-production.sh"
     }
   },
   "submit": {

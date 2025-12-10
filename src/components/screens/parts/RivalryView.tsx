@@ -38,14 +38,9 @@ export function RivalryView({ navigation }: RivalryViewProps) {
 
     const isUserA = rivalry?.userAId === user?.id;
     const updatedHiddenState = isUserA ? rivalry?.hiddenByA : rivalry?.hiddenByB;
-    console.log('RivalryView - rivalry changed, updatedHiddenState:', updatedHiddenState);
+
     setIsCurrentlyHidden(updatedHiddenState ?? false);
   }, [rivalry, user?.id]);
-
-  //add useEfffect to log isCurrentlyHidden when it changes
-  React.useEffect(() => {
-    console.log('RivalryView - isCurrentlyHidden changed:', isCurrentlyHidden);
-  }, [isCurrentlyHidden]);
 
   const handleToggleHideRivalry = () => {
     if (!rivalry?.id || !user?.id) return;

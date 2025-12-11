@@ -56,37 +56,43 @@ export function TierListEditDisplay({ tierList, onChange }: TierListEditDisplayP
     fromIndex: number,
     toIndex: number,
     isFromUnknown = false,
-    shiftDirection: 'up' | 'down' = 'down'
+    shiftDirection: 'up' | 'down' = 'down',
+    customPositionedSlots?: MTierSlot[],
+    customUnknownSlots?: MTierSlot[]
   ): boolean => {
     if (!isFromUnknown && fromIndex === toIndex) return false;
+
+    // Use custom arrays if provided (for when we've already updated state)
+    const currentPositionedSlots = customPositionedSlots || positionedSlots;
+    const currentUnknownSlots = customUnknownSlots || unknownSlots;
 
     console.log('[moveSlot] START', {
       fromIndex,
       toIndex,
       isFromUnknown,
       shiftDirection,
-      positionedSlotsLength: positionedSlots.length,
+      positionedSlotsLength: currentPositionedSlots.length,
       selectedSlotId: selectedSlot?.id
     });
 
     LayoutAnimation.configureNext(LayoutAnimation.Presets.easeInEaseOut);
 
     let newSlots: MTierSlot[];
-    let newUnknownSlots = [...unknownSlots];
+    let newUnknownSlots = [...currentUnknownSlots];
 
     if (isFromUnknown) {
       // Moving from unknown tier to positioned tier
-      const unknownIndex = unknownSlots.findIndex((s) => s.id === selectedSlot?.id);
+      const unknownIndex = currentUnknownSlots.findIndex((s) => s.id === selectedSlot?.id);
       if (unknownIndex === -1) return false;
 
       const [movedSlot] = newUnknownSlots.splice(unknownIndex, 1);
 
       // Handle collision: check if there's already a slot at toIndex
-      const existingSlotAtPosition = positionedSlots.find((s) => s.position === toIndex);
+      const existingSlotAtPosition = currentPositionedSlots.find((s) => s.position === toIndex);
 
       if (existingSlotAtPosition) {
         // There's a collision - cascade positions until finding an empty slot
-        const occupiedPositions = new Set(positionedSlots.map((s) => s.position));
+        const occupiedPositions = new Set(currentPositionedSlots.map((s) => s.position));
 
         if (shiftDirection === 'down') {
           // Find the first available position starting from toIndex
@@ -104,7 +110,7 @@ export function TierListEditDisplay({ tierList, onChange }: TierListEditDisplayP
           }
 
           // Only shift fighters between toIndex and firstAvailablePos (consecutive occupied positions)
-          const fightersToShift = positionedSlots.filter(
+          const fightersToShift = currentPositionedSlots.filter(
             (s) => (s.position ?? 0) >= toIndex && (s.position ?? 0) < firstAvailablePos
           );
 
@@ -122,7 +128,7 @@ export function TierListEditDisplay({ tierList, onChange }: TierListEditDisplayP
           }
 
           // Apply the position changes
-          newSlots = positionedSlots.map((slot) => {
+          newSlots = currentPositionedSlots.map((slot) => {
             const oldPos = slot.position ?? 0;
             if (newPositionMap.has(oldPos)) {
               return { ...slot, position: newPositionMap.get(oldPos)! };
@@ -145,7 +151,7 @@ export function TierListEditDisplay({ tierList, onChange }: TierListEditDisplayP
           }
 
           // Only shift fighters between firstAvailablePos and toIndex (consecutive occupied positions)
-          const fightersToShift = positionedSlots.filter(
+          const fightersToShift = currentPositionedSlots.filter(
             (s) => (s.position ?? 0) > firstAvailablePos && (s.position ?? 0) <= toIndex
           );
 
@@ -163,7 +169,7 @@ export function TierListEditDisplay({ tierList, onChange }: TierListEditDisplayP
           }
 
           // Apply the position changes
-          newSlots = positionedSlots.map((slot) => {
+          newSlots = currentPositionedSlots.map((slot) => {
             const oldPos = slot.position ?? 0;
             if (newPositionMap.has(oldPos)) {
               return { ...slot, position: newPositionMap.get(oldPos)! };
@@ -173,7 +179,7 @@ export function TierListEditDisplay({ tierList, onChange }: TierListEditDisplayP
         }
       } else {
         // No collision - just use existing slots
-        newSlots = [...positionedSlots];
+        newSlots = [...currentPositionedSlots];
       }
 
       // Set the slot's position to the target position
@@ -235,26 +241,55 @@ export function TierListEditDisplay({ tierList, onChange }: TierListEditDisplayP
     const fromIndex = positionedSlots.findIndex((s) => s.id === selectedSlot.id);
     const isFromUnknown = fromIndex === -1;
 
-    // Only allow moving FROM unknown tier
+    // If the selected fighter has a position, temporarily remove it
+    let updatedPositioned = positionedSlots;
+    let updatedUnknown = unknownSlots;
+    let originalPosition: number | null = null;
+
     if (!isFromUnknown) {
-      // If a positioned fighter is selected and user clicks another fighter, just deselect
-      console.log('[handleMoveToPosition] Positioned fighter selected, deselecting');
-      setSelectedSlot(null);
-      return;
+      originalPosition = selectedSlot.position;
+      console.log('[handleMoveToPosition] Removing positioned fighter before move', {
+        fighterId: selectedSlot.id,
+        oldPosition: originalPosition
+      });
+
+      // Remove fighter from positioned slots
+      updatedPositioned = positionedSlots.filter((s) => s.id !== selectedSlot.id);
+      const removedFighter = { ...selectedSlot, position: null };
+      updatedUnknown = [...unknownSlots, removedFighter];
+
+      // Update the selected slot to have null position
+      selectedSlot.position = null;
     }
 
-    // Moving from unknown tier to positioned tier (clicking on a positioned fighter)
+    // Now treat as moving from unknown tier (clicking on a positioned fighter)
     // Try 'down' direction first (shift fighters down to make room)
-    let success = moveSlot(-1, toIndex, true, 'down');
+    let success = moveSlot(-1, toIndex, true, 'down', updatedPositioned, updatedUnknown);
 
     // If that failed (no room going down), try 'up' direction
     if (!success) {
       console.log('[handleMoveToPosition] Shift down failed, trying shift up');
-      success = moveSlot(-1, toIndex, true, 'up');
+      success = moveSlot(-1, toIndex, true, 'up', updatedPositioned, updatedUnknown);
     }
 
-    if (!success) {
-      console.warn('[handleMoveToPosition] Both shift directions failed - no room to place fighter');
+    // If both directions failed and we had a positioned fighter, restore it
+    if (!success && originalPosition !== null) {
+      console.warn('[handleMoveToPosition] Both shift directions failed - restoring fighter to original position', {
+        fighterId: selectedSlot.id,
+        originalPosition
+      });
+
+      // Restore the fighter to its original position
+      selectedSlot.position = originalPosition;
+      const restoredPositioned = [...updatedPositioned, selectedSlot].sort(
+        (a, b) => (a.position || 0) - (b.position || 0)
+      );
+      const restoredUnknown = updatedUnknown.filter((s) => s.id !== selectedSlot.id);
+
+      setPositionedSlots(restoredPositioned);
+      setUnknownSlots(restoredUnknown);
+    } else if (!success) {
+      console.warn('[handleMoveToPosition] Move failed - no room to place fighter');
     }
 
     // Clear selection after move
@@ -264,6 +299,28 @@ export function TierListEditDisplay({ tierList, onChange }: TierListEditDisplayP
   const handleTierLabelClick = (tierIndex: number) => {
     if (!selectedSlot) return;
 
+    // If the selected fighter has a position, temporarily remove it
+    const fromIndex = positionedSlots.findIndex((s) => s.id === selectedSlot.id);
+    const isFromUnknown = fromIndex === -1;
+
+    let updatedPositioned = positionedSlots;
+    let updatedUnknown = unknownSlots;
+    let originalPosition: number | null = null;
+
+    if (!isFromUnknown) {
+      originalPosition = selectedSlot.position;
+      console.log('[handleTierLabelClick] Removing positioned fighter before move', {
+        fighterId: selectedSlot.id,
+        oldPosition: originalPosition
+      });
+
+      // Remove fighter from positioned slots
+      updatedPositioned = positionedSlots.filter((s) => s.id !== selectedSlot.id);
+      const removedFighter = { ...selectedSlot, position: null };
+      updatedUnknown = [...unknownSlots, removedFighter];
+      selectedSlot.position = null;
+    }
+
     // Calculate the start index of the clicked tier (0-based position)
     const targetPosition = TIERS.slice(0, tierIndex).reduce((sum, t) => sum + t.fightersCount, 0);
 
@@ -271,12 +328,29 @@ export function TierListEditDisplay({ tierList, onChange }: TierListEditDisplayP
       tierIndex,
       targetPosition,
       selectedSlot: selectedSlot.id,
-      positionedSlotsCount: positionedSlots.length
+      positionedSlotsCount: updatedPositioned.length
     });
 
-    // Move the unknown fighter to the start of the tier
+    // Move the fighter to the start of the tier
     // Shift existing characters DOWN (higher positions) to make room
-    moveSlot(-1, targetPosition, true, 'down');
+    const success = moveSlot(-1, targetPosition, true, 'down', updatedPositioned, updatedUnknown);
+
+    // If move failed and we had a positioned fighter, restore it
+    if (!success && originalPosition !== null) {
+      console.warn('[handleTierLabelClick] Move failed - restoring fighter to original position', {
+        fighterId: selectedSlot.id,
+        originalPosition
+      });
+
+      selectedSlot.position = originalPosition;
+      const restoredPositioned = [...updatedPositioned, selectedSlot].sort(
+        (a, b) => (a.position || 0) - (b.position || 0)
+      );
+      const restoredUnknown = updatedUnknown.filter((s) => s.id !== selectedSlot.id);
+
+      setPositionedSlots(restoredPositioned);
+      setUnknownSlots(restoredUnknown);
+    }
 
     // Clear selection after move
     setSelectedSlot(null);
@@ -285,9 +359,27 @@ export function TierListEditDisplay({ tierList, onChange }: TierListEditDisplayP
   const handleTierBackgroundClick = (tierIndex: number) => {
     if (!selectedSlot) return;
 
-    // Check if selected slot is from unknown tier
-    const isFromUnknown = unknownSlots.findIndex((s) => s.id === selectedSlot.id) !== -1;
-    if (!isFromUnknown) return; // Only allow moving unknown fighters via tier background
+    // If the selected fighter has a position, temporarily remove it
+    const fromIndex = positionedSlots.findIndex((s) => s.id === selectedSlot.id);
+    const isFromUnknown = fromIndex === -1;
+
+    let updatedPositioned = positionedSlots;
+    let updatedUnknown = unknownSlots;
+    let originalPosition: number | null = null;
+
+    if (!isFromUnknown) {
+      originalPosition = selectedSlot.position;
+      console.log('[handleTierBackgroundClick] Removing positioned fighter before move', {
+        fighterId: selectedSlot.id,
+        oldPosition: originalPosition
+      });
+
+      // Remove fighter from positioned slots
+      updatedPositioned = positionedSlots.filter((s) => s.id !== selectedSlot.id);
+      const removedFighter = { ...selectedSlot, position: null };
+      updatedUnknown = [...unknownSlots, removedFighter];
+      selectedSlot.position = null;
+    }
 
     // Calculate the end index of the clicked tier (0-based position)
     const tierStartPosition = TIERS.slice(0, tierIndex).reduce(
@@ -301,12 +393,29 @@ export function TierListEditDisplay({ tierList, onChange }: TierListEditDisplayP
       tierStartPosition,
       targetPosition,
       selectedSlot: selectedSlot.id,
-      positionedSlotsCount: positionedSlots.length
+      positionedSlotsCount: updatedPositioned.length
     });
 
-    // Move the unknown fighter to the end of the tier
+    // Move the fighter to the end of the tier
     // Shift existing characters UP (lower positions) to make room
-    moveSlot(-1, targetPosition, true, 'up');
+    const success = moveSlot(-1, targetPosition, true, 'up', updatedPositioned, updatedUnknown);
+
+    // If move failed and we had a positioned fighter, restore it
+    if (!success && originalPosition !== null) {
+      console.warn('[handleTierBackgroundClick] Move failed - restoring fighter to original position', {
+        fighterId: selectedSlot.id,
+        originalPosition
+      });
+
+      selectedSlot.position = originalPosition;
+      const restoredPositioned = [...updatedPositioned, selectedSlot].sort(
+        (a, b) => (a.position || 0) - (b.position || 0)
+      );
+      const restoredUnknown = updatedUnknown.filter((s) => s.id !== selectedSlot.id);
+
+      setPositionedSlots(restoredPositioned);
+      setUnknownSlots(restoredUnknown);
+    }
 
     // Clear selection after move
     setSelectedSlot(null);
@@ -359,11 +468,10 @@ export function TierListEditDisplay({ tierList, onChange }: TierListEditDisplayP
         const startIdx = TIERS.slice(0, tierIndex).reduce((sum, t) => sum + t.fightersCount, 0);
         const endIdx = startIdx + tier.fightersCount;
 
-        // Check if an unknown fighter is selected
-        const isUnknownSelected =
-          selectedSlot && unknownSlots.findIndex((s) => s.id === selectedSlot.id) !== -1;
-        const TierLabelContainer = isUnknownSelected ? TouchableOpacity : View;
-        const TierBackgroundContainer = isUnknownSelected ? TouchableOpacity : View;
+        // Check if any fighter is selected (positioned or unknown)
+        const isAnyFighterSelected = !!selectedSlot;
+        const TierLabelContainer = isAnyFighterSelected ? TouchableOpacity : View;
+        const TierBackgroundContainer = isAnyFighterSelected ? TouchableOpacity : View;
 
         return (
           <View key={tier.label}>
@@ -383,11 +491,11 @@ export function TierListEditDisplay({ tierList, onChange }: TierListEditDisplayP
                   alignItems: 'center',
                   borderRightWidth: 2,
                   borderRightColor: '#1f2937',
-                  backgroundColor: isUnknownSelected
+                  backgroundColor: isAnyFighterSelected
                     ? 'rgba(31, 41, 55, 0.5)'
                     : 'rgb(31, 41, 55, 0.2)'
                 }}
-                onPress={isUnknownSelected ? () => handleTierLabelClick(tierIndex) : undefined}
+                onPress={isAnyFighterSelected ? () => handleTierLabelClick(tierIndex) : undefined}
               >
                 <Text style={{ fontSize: 32, fontWeight: 'bold', color: 'black', opacity: 1 }}>
                   {tier.label}
@@ -402,7 +510,7 @@ export function TierListEditDisplay({ tierList, onChange }: TierListEditDisplayP
                   flexWrap: 'wrap',
                   gap: 4
                 }}
-                onPress={isUnknownSelected ? () => handleTierBackgroundClick(tierIndex) : undefined}
+                onPress={isAnyFighterSelected ? () => handleTierBackgroundClick(tierIndex) : undefined}
               >
                 {Array.from({ length: endIdx - startIdx }, (_, i) => {
                   const position = startIdx + i;

@@ -87,53 +87,129 @@ export async function ensureTierListIntegrity(
 ): Promise<boolean> {
   // Check if we have exactly FIGHTER_COUNT tier slots
   if (tierList.slots.length === FIGHTER_COUNT) {
-    return true; // Already complete
+    return false; // No changes needed
   }
 
   console.warn(
     `[ensureTierListIntegrity] TierList ${tierList.id} has ${tierList.slots.length} slots, expected ${FIGHTER_COUNT}. Checking DB...`
   );
 
-  // Re-fetch tier slots from DB to confirm
-  const { data: tierSlots, errors: tierSlotsErrors } = await getClient().models.TierSlot.list({
-    filter: { tierListId: { eq: tierList.id } }
-  });
+  // Re-fetch tier list with tier slots from DB using the relationship (proper index usage)
+  const { data: tierListData, errors: tierListErrors } = await getClient().models.TierList.get(
+    { id: tierList.id },
+    {
+      selectionSet: ['id', 'tierSlots.*']
+    }
+  );
 
-  if (tierSlotsErrors || !tierSlots) {
-    console.error('[ensureTierListIntegrity] Failed to fetch tier slots from DB');
+  if (tierListErrors || !tierListData) {
+    console.error('[ensureTierListIntegrity] Failed to fetch tier list from DB');
     return false;
   }
 
-  // If DB also shows missing slots, we need to create them
-  if (tierSlots.length < FIGHTER_COUNT) {
-    console.warn(
-      `[ensureTierListIntegrity] DB confirms ${tierSlots.length} slots. Creating missing slots...`
+  // Extract tier slots from the relationship
+  const tierSlotsArray: any[] = [];
+  if (tierListData.tierSlots) {
+    for await (const tierSlot of tierListData.tierSlots) {
+      tierSlotsArray.push(tierSlot);
+    }
+  }
+
+  const tierSlots = tierSlotsArray;
+  console.warn(`[ensureTierListIntegrity] DB confirms ${tierSlots.length} slots.`);
+
+  // Fetch all fighters for the game to validate against
+  const { data: fighters, errors: fightersErrors } = await getClient().models.Fighter.list({
+    filter: { gameId: { eq: gameId } }
+  });
+
+  if (fightersErrors || !fighters || fighters.length === 0) {
+    console.error('[ensureTierListIntegrity] Failed to fetch fighters');
+    return false;
+  }
+
+  // STEP 1: Handle duplicates - group by fighterId and keep best slot
+  const slotsByFighter = new Map<string, typeof tierSlots>();
+  for (const slot of tierSlots) {
+    const existing = slotsByFighter.get(slot.fighterId);
+    if (!existing) {
+      slotsByFighter.set(slot.fighterId, [slot]);
+    } else {
+      existing.push(slot);
+    }
+  }
+
+  console.log(
+    `[ensureTierListIntegrity] Grouped ${tierSlots.length} slots into ${slotsByFighter.size} unique fighters`
+  );
+
+  const slotsToDelete: string[] = [];
+  const keptSlots = new Map<string, (typeof tierSlots)[0]>();
+
+  for (const [fighterId, slots] of slotsByFighter) {
+    if (slots.length === 1) {
+      // No duplicates for this fighter
+      keptSlots.set(fighterId, slots[0]);
+    } else {
+      // Duplicates found! Keep the one with a position, or highest contestCount
+      console.warn(
+        `[ensureTierListIntegrity] Found ${slots.length} duplicate slots for fighter ${fighterId}:`,
+        slots.map((s) => ({ id: s.id, position: s.position, contestCount: s.contestCount }))
+      );
+
+      const slotWithPosition = slots.find((s) => s.position != null);
+      const bestSlot =
+        slotWithPosition ||
+        slots.reduce((best, current) =>
+          (current.contestCount || 0) > (best.contestCount || 0) ? current : best
+        );
+
+      keptSlots.set(fighterId, bestSlot);
+
+      // Mark others for deletion
+      for (const slot of slots) {
+        if (slot.id !== bestSlot.id) {
+          slotsToDelete.push(slot.id);
+        }
+      }
+    }
+  }
+
+  // STEP 2: Delete duplicate slots
+  if (slotsToDelete.length > 0) {
+    console.log(
+      `[ensureTierListIntegrity] Deleting ${slotsToDelete.length} duplicate tier slots...`
     );
 
-    // Fetch all fighters for the game
-    const { data: fighters, errors: fightersErrors } = await getClient().models.Fighter.list({
-      filter: { gameId: { eq: gameId } }
-    });
+    const deletePromises = slotsToDelete.map((id) =>
+      getClient().models.TierSlot.delete({ id })
+    );
 
-    if (fightersErrors || !fighters || fighters.length === 0) {
-      console.error('[ensureTierListIntegrity] Failed to fetch fighters');
+    const deleteResults = await Promise.all(deletePromises);
+    const deleteErrors = deleteResults.filter((r) => r.errors).flatMap((r) => r.errors);
+
+    if (deleteErrors.length > 0) {
+      console.error('[ensureTierListIntegrity] Failed to delete some duplicates:', deleteErrors);
       return false;
     }
 
-    // Identify missing fighters
-    const existingFighterIds = new Set(tierSlots.map((ts) => ts.fighterId));
-    const missingFighters = fighters.filter((f) => !existingFighterIds.has(f.id));
+    console.log(`[ensureTierListIntegrity] Successfully deleted ${slotsToDelete.length} duplicates`);
+  }
 
-    if (missingFighters.length === 0) {
-      console.warn('[ensureTierListIntegrity] No missing fighters found, but slot count mismatch');
-      return true;
-    }
+  // STEP 3: Identify missing fighters
+  const existingFighterIds = new Set(keptSlots.keys());
+  const missingFighters = fighters.filter((f) => !existingFighterIds.has(f.id));
 
+  console.log(
+    `[ensureTierListIntegrity] Existing fighters: ${existingFighterIds.size}, Total fighters in game: ${fighters.length}, Missing: ${missingFighters.length}`
+  );
+
+  // STEP 4: Create missing tier slots
+  if (missingFighters.length > 0) {
     console.log(
       `[ensureTierListIntegrity] Creating ${missingFighters.length} missing tier slots with position: null`
     );
 
-    // Create missing tier slots
     const createPromises = missingFighters.map((fighter) =>
       getClient().models.TierSlot.create({
         tierListId: tierList.id,
@@ -155,11 +231,24 @@ export async function ensureTierListIntegrity(
     console.log(
       `[ensureTierListIntegrity] Successfully created ${missingFighters.length} tier slots`
     );
-    return true;
   }
 
-  // DB confirms correct count
-  return true;
+  // STEP 5: Validate final count
+  // keptSlots already excludes duplicates, so we don't subtract slotsToDelete
+  const finalCount = keptSlots.size + missingFighters.length;
+
+  console.log(
+    `[ensureTierListIntegrity] Final calculation: keptSlots=${keptSlots.size}, missing=${missingFighters.length}, deleted=${slotsToDelete.length}, total=${finalCount}`
+  );
+
+  if (finalCount !== FIGHTER_COUNT) {
+    console.error(
+      `[ensureTierListIntegrity] Final count mismatch: ${finalCount} slots, expected ${FIGHTER_COUNT}`
+    );
+  }
+
+  // Return true if we made any changes (deleted duplicates or created missing slots)
+  return slotsToDelete.length > 0 || missingFighters.length > 0;
 }
 
 /** Queries */
@@ -316,19 +405,25 @@ export const useRivalryWithAllInfoQuery = ({ rivalry, onSuccess }: RivalryQueryP
         // FAIL-SAFE: Ensure tier lists have complete tier slots (86 per tier list)
         let needsRefresh = false;
         if (mRivalry.tierListA) {
-          const integrityA = await ensureTierListIntegrity(mRivalry.tierListA, rivalryData.gameId);
-          if (integrityA && mRivalry.tierListA.slots.length < FIGHTER_COUNT) {
+          const madeChangesA = await ensureTierListIntegrity(
+            mRivalry.tierListA,
+            rivalryData.gameId
+          );
+          if (madeChangesA) {
             needsRefresh = true;
           }
         }
         if (mRivalry.tierListB) {
-          const integrityB = await ensureTierListIntegrity(mRivalry.tierListB, rivalryData.gameId);
-          if (integrityB && mRivalry.tierListB.slots.length < FIGHTER_COUNT) {
+          const madeChangesB = await ensureTierListIntegrity(
+            mRivalry.tierListB,
+            rivalryData.gameId
+          );
+          if (madeChangesB) {
             needsRefresh = true;
           }
         }
 
-        // If we created missing tier slots, re-fetch to get updated data
+        // If we made changes (deleted duplicates or created missing slots), re-fetch to get updated data
         if (needsRefresh) {
           console.log(
             '[useRivalryWithAllInfoQuery] Re-fetching rivalry after creating missing tier slots'
@@ -921,10 +1016,20 @@ export const useCreateRivalryMutation = ({
         const templateTierList = tierLists?.[0];
 
         if (templateTierList) {
-          // Get the tier slots from the template tier list
-          const { data: templateTierSlots } = await getClient().models.TierSlot.list({
-            filter: { tierListId: { eq: templateTierList.id } }
-          });
+          // Get the tier slots from the template tier list using the relationship
+          const { data: tierListData } = await getClient().models.TierList.get(
+            { id: templateTierList.id },
+            { selectionSet: ['id', 'tierSlots.*'] }
+          );
+
+          const templateTierSlotsArray: any[] = [];
+          if (tierListData?.tierSlots) {
+            for await (const tierSlot of tierListData.tierSlots) {
+              templateTierSlotsArray.push(tierSlot);
+            }
+          }
+
+          const templateTierSlots = templateTierSlotsArray;
 
           if (templateTierSlots && templateTierSlots.length > 0) {
             // Use the template tier slots
@@ -1251,10 +1356,20 @@ export const useAcceptRivalryMutation = ({ onSuccess, onError }: AcceptRivalryMu
         const templateTierList = tierLists?.[0];
 
         if (templateTierList) {
-          // Get the tier slots from the template tier list
-          const { data: templateTierSlots } = await getClient().models.TierSlot.list({
-            filter: { tierListId: { eq: templateTierList.id } }
-          });
+          // Get the tier slots from the template tier list using the relationship
+          const { data: tierListData } = await getClient().models.TierList.get(
+            { id: templateTierList.id },
+            { selectionSet: ['id', 'tierSlots.*'] }
+          );
+
+          const templateTierSlotsArray: any[] = [];
+          if (tierListData?.tierSlots) {
+            for await (const tierSlot of tierListData.tierSlots) {
+              templateTierSlotsArray.push(tierSlot);
+            }
+          }
+
+          const templateTierSlots = templateTierSlotsArray;
 
           if (templateTierSlots && templateTierSlots.length > 0) {
             // Use the template tier slots

@@ -5,7 +5,7 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 
 import type { Schema } from '../../../amplify/data/resource';
 import { signIn, getCurrentUser } from '../../lib/amplify-auth';
-import { updateStoredUuid } from '../../lib/user-identity';
+import { updateStoredUuid, storeFirstName } from '../../lib/user-identity';
 import { darkStyles, styles } from '../../utils/styles';
 
 interface LinkAccountModalProps {
@@ -55,6 +55,12 @@ export function LinkAccountModal({ visible, currentUserId, onClose, onSuccess }:
 
         // Update stored UUID to the existing user's ID
         await updateStoredUuid(existingUser.id);
+
+        // Store the existing user's firstName locally so they never see "Player_${shortId}" again
+        if (existingUser.firstName && existingUser.firstName.trim() !== '') {
+          await storeFirstName(existingUser.firstName.trim());
+          console.log('[LinkAccountModal] Stored existing user firstName:', existingUser.firstName);
+        }
 
         // Success! The app will reload with the existing user
         onSuccess();

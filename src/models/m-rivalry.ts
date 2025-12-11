@@ -133,12 +133,21 @@ export function getMRivalry({ rivalry }: GetMRivalryProps): MRivalry {
       // NEW: Position unknown fighters BEFORE adjusting positions
       const result = this.currentContest.result as number;
 
+      console.log(`[Contest Resolution] Result: ${result} (${result > 0 ? 'Winner: B' : 'Winner: A'}), POSITION_BIAS: ${POSITION_BIAS}`);
+
       // Position unknown fighter for winner
       if (winner.tierSlot.position === null || winner.tierSlot.position === undefined) {
         const enemyPosition = loser.tierSlot.position ?? MIDPOINT;
         const offset = Math.abs(result) * POSITION_BIAS; // result is 1, 2, or 3
         const calculatedPosition = enemyPosition - offset; // winner moves UP (lower position number)
+        console.log(
+          `[Contest Resolution] Winner (${winner.tierSlot.fighterId}) is UNKNOWN - enemyPosition: ${enemyPosition}, offset: ${offset} (${result} stocks * ${POSITION_BIAS}), calculatedPosition: ${calculatedPosition}`
+        );
         winner.tierList.positionUnknownFighter(winner.tierSlot, calculatedPosition);
+      } else {
+        console.log(
+          `[Contest Resolution] Winner (${winner.tierSlot.fighterId}) already positioned at ${winner.tierSlot.position}`
+        );
       }
 
       // Position unknown fighter for loser
@@ -146,7 +155,14 @@ export function getMRivalry({ rivalry }: GetMRivalryProps): MRivalry {
         const enemyPosition = winner.tierSlot.position ?? MIDPOINT;
         const offset = Math.abs(result) * POSITION_BIAS;
         const calculatedPosition = enemyPosition + offset; // loser moves DOWN (higher position number)
+        console.log(
+          `[Contest Resolution] Loser (${loser.tierSlot.fighterId}) is UNKNOWN - enemyPosition: ${enemyPosition}, offset: ${offset} (${result} stocks * ${POSITION_BIAS}), calculatedPosition: ${calculatedPosition}`
+        );
         loser.tierList.positionUnknownFighter(loser.tierSlot, calculatedPosition);
+      } else {
+        console.log(
+          `[Contest Resolution] Loser (${loser.tierSlot.fighterId}) already positioned at ${loser.tierSlot.position}`
+        );
       }
 
       // EXISTING: Continue with normal standings adjustment

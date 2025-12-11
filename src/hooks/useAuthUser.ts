@@ -4,7 +4,7 @@ import { useEffect, useState } from 'react';
 
 import type { Schema } from '../../amplify/data/resource';
 import { getCurrentUser } from '../lib/amplify-auth';
-import { getOrCreateUserUuid, generateDisplayName } from '../lib/user-identity';
+import { getOrCreateUserUuid, getDisplayName } from '../lib/user-identity';
 
 interface AuthUser {
   id: string;
@@ -119,7 +119,8 @@ export function useAuthUser() {
             setUser(getResult.data as AuthUser);
           } else {
             // Create new anonymous user
-            const displayName = generateDisplayName(uuid);
+            // Check storage first in case user previously set their name
+            const displayName = await getDisplayName(uuid);
             const createResult = await client.models.User.create({
               id: uuid,
               email: `${displayName}@anonymous.local`, // Placeholder email

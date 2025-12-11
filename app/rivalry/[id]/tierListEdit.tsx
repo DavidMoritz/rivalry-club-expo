@@ -17,6 +17,7 @@ import { getMUser } from '../../../src/models/m-user';
 import { GameProvider } from '../../../src/providers/game';
 import { RivalryProvider } from '../../../src/providers/rivalry';
 import { darkStyles, styles } from '../../../src/utils/styles';
+import { getStoredUuid } from '../../../src/lib/user-identity';
 
 // Lazy client initialization to avoid crashes when Amplify isn't configured
 let client: ReturnType<typeof generateClient<Schema>> | null = null;
@@ -33,13 +34,33 @@ export default function TierListEditRoute() {
   const router = useRouter();
   const params = useLocalSearchParams();
   const rivalryId = params.id as string;
-  const userId = params.userId as string | undefined;
+  const userIdParam = params.userId as string | undefined;
   const userAName = params.userAName as string | undefined;
   const userBName = params.userBName as string | undefined;
 
+  const [userId, setUserId] = useState<string | undefined>(userIdParam);
   const [rivalry, setRivalry] = useState<MRivalry | null>(null);
   const [userTierList, setUserTierList] = useState<MTierList | null>(null);
   const [hasChanges, setHasChanges] = useState(false);
+
+  // Fallback: Load userId from storage if not provided in URL params
+  useEffect(() => {
+    async function loadUserIdFromStorage() {
+      if (userId) {
+        return; // Already have userId from params
+      }
+
+      const storedUserId = await getStoredUuid();
+
+      if (storedUserId) {
+        setUserId(storedUserId);
+      } else {
+        console.warn('[TierListEditRoute] No userId found in storage either!');
+      }
+    }
+
+    loadUserIdFromStorage();
+  }, [userIdParam]);
 
   // Load game from cache
   const game = useMemo(() => {
@@ -122,12 +143,27 @@ export default function TierListEditRoute() {
 
   // Determine which tier list belongs to the current user
   useEffect(() => {
-    if (!rivalry || !userId) return;
+    if (!rivalry) {
+      return;
+    }
+
+    if (!userId) {
+      console.warn('[TierListEditRoute] userId param is missing!');
+      return;
+    }
+
+    console.log(
+      `[TierListEditRoute] Matching userId ${userId} against tierListA.userId=${rivalry.tierListA?.userId}, tierListB.userId=${rivalry.tierListB?.userId}`
+    );
 
     if (rivalry.tierListA?.userId === userId) {
       setUserTierList(rivalry.tierListA);
     } else if (rivalry.tierListB?.userId === userId) {
       setUserTierList(rivalry.tierListB);
+    } else {
+      console.error(
+        `[TierListEditRoute] No tier list found for userId ${userId}! Available: ${rivalry.tierListA?.userId}, ${rivalry.tierListB?.userId}`
+      );
     }
   }, [rivalry, userId]);
 
@@ -237,11 +273,55 @@ export default function TierListEditRoute() {
               </View>
             )}
 
-            {!isLoading && !isError && !userTierList && (
-              <View style={{ flex: 1, alignItems: 'center', justifyContent: 'center' }}>
-                <Text style={[styles.text, darkStyles.text, { fontSize: 18 }]}>
+            {!isLoading && !isError && rivalry && !userTierList && (
+              <View
+                style={{
+                  flex: 1,
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  paddingHorizontal: 16
+                }}
+              >
+                <Text
+                  style={[
+                    styles.text,
+                    darkStyles.text,
+                    { fontSize: 18, fontWeight: 'bold', color: '#f59e0b', marginBottom: 16 }
+                  ]}
+                >
                   Could not load tier list
                 </Text>
+                <Text
+                  style={[styles.text, darkStyles.text, { textAlign: 'center', marginBottom: 8 }]}
+                >
+                  {!userId
+                    ? 'User ID is missing from navigation params'
+                    : `Your user ID (${userId}) doesn't match either tier list`}
+                </Text>
+                {userId && rivalry.tierListA && rivalry.tierListB && (
+                  <Text
+                    style={[
+                      styles.text,
+                      darkStyles.text,
+                      { fontSize: 12, color: '#9ca3af', textAlign: 'center', marginTop: 16 }
+                    ]}
+                  >
+                    TierList A: {rivalry.tierListA.userId}
+                    {'\n'}
+                    TierList B: {rivalry.tierListB.userId}
+                  </Text>
+                )}
+                <TouchableOpacity
+                  onPress={() => router.back()}
+                  style={{
+                    backgroundColor: '#3b82f6',
+                    padding: 12,
+                    borderRadius: 8,
+                    marginTop: 24
+                  }}
+                >
+                  <Text style={{ color: 'white', fontSize: 16 }}>Go Back</Text>
+                </TouchableOpacity>
               </View>
             )}
           </SafeAreaView>

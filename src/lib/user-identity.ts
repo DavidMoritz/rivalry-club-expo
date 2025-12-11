@@ -3,6 +3,7 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 
 const UUID_KEYCHAIN_KEY = 'rivalryClubUserUuid';
 const UUID_STORAGE_KEY = 'userUuid';
+const FIRST_NAME_STORAGE_KEY = 'userFirstName';
 
 // Singleton lock to prevent race conditions when multiple components call getOrCreateUserUuid simultaneously
 let uuidPromise: Promise<string> | null = null;
@@ -136,10 +137,65 @@ export async function clearStoredUuid(): Promise<void> {
 
     await Promise.all([
       SecureStore.deleteItemAsync(UUID_KEYCHAIN_KEY),
-      AsyncStorage.removeItem(UUID_STORAGE_KEY)
+      AsyncStorage.removeItem(UUID_STORAGE_KEY),
+      AsyncStorage.removeItem(FIRST_NAME_STORAGE_KEY) // Also clear firstName
     ]);
   } catch (error) {
     console.error('[user-identity] ❌ Error clearing stored UUID:', error);
     throw error;
   }
+}
+
+/**
+ * Stores the user's first name locally.
+ * Called when user updates their profile, so we never show "Player_${shortId}" again.
+ */
+export async function storeFirstName(firstName: string): Promise<void> {
+  try {
+    if (!firstName || firstName.trim() === '') {
+      console.warn('[user-identity] Attempted to store empty firstName');
+      return;
+    }
+
+    await AsyncStorage.setItem(FIRST_NAME_STORAGE_KEY, firstName.trim());
+    console.log('[user-identity] ✅ Stored firstName locally:', firstName.trim());
+  } catch (error) {
+    console.error('[user-identity] ❌ Error storing firstName:', error);
+    // Don't throw - this is not critical
+  }
+}
+
+/**
+ * Gets the stored first name from AsyncStorage.
+ * Returns null if not found.
+ */
+export async function getStoredFirstName(): Promise<string | null> {
+  try {
+    const firstName = await AsyncStorage.getItem(FIRST_NAME_STORAGE_KEY);
+    return firstName;
+  } catch (error) {
+    console.error('[user-identity] ❌ Error getting stored firstName:', error);
+    return null;
+  }
+}
+
+/**
+ * Gets the display name for the user.
+ *
+ * Priority:
+ * 1. Stored firstName (if user has ever set their name)
+ * 2. Fallback to "Player_${shortId}"
+ *
+ * This ensures users never see "Player_${shortId}" after they've set their name once.
+ */
+export async function getDisplayName(uuid: string): Promise<string> {
+  // Check if we have a stored firstName
+  const storedFirstName = await getStoredFirstName();
+
+  if (storedFirstName) {
+    return storedFirstName;
+  }
+
+  // Fallback to generated name
+  return generateDisplayName(uuid);
 }

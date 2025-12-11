@@ -119,23 +119,132 @@ export function getMTierList(tierList: TierList): MTierList {
      * Negative steps means the fighter won and is moving UP in the order.
      */
     adjustTierSlotPositionBySteps(tierSlotPosition: number, steps = STEPS_PER_STOCK * -1) {
-      const sortedTierSlots = sortBy(this.slots, 'position');
+      // Check if ALL slots have positions (fully positioned tier list)
+      const allPositioned = this.slots.every((slot) => slot.position != null);
 
-      // Remove the element from its current index
-      const tierSlotToMove = sortedTierSlots.splice(tierSlotPosition, 1)[0];
+      if (allPositioned) {
+        // OPTIMIZATION: If all fighters are positioned, use efficient reindexing
+        const sortedTierSlots = sortBy(this.slots, 'position');
 
-      // Update counts
-      tierSlotToMove.contestCount = (tierSlotToMove.contestCount || 0) + 1;
+        // Remove the element from its current index
+        const tierSlotToMove = sortedTierSlots.splice(tierSlotPosition, 1)[0];
+        const initialPosition = tierSlotToMove.position;
 
-      if (steps < 0) {
-        // fighter won, increment winCount
-        tierSlotToMove.winCount = (tierSlotToMove.winCount || 0) + 1;
+        console.log(
+          `[Contest Position] FULLY POSITIONED MODE - Fighter: ${tierSlotToMove.fighterId}, Initial position: ${initialPosition}, Steps: ${steps}, Result: ${steps < 0 ? 'WIN (moving UP)' : 'LOSS (moving DOWN)'}`
+        );
+
+        // Update counts
+        tierSlotToMove.contestCount = (tierSlotToMove.contestCount || 0) + 1;
+
+        if (steps < 0) {
+          // fighter won, increment winCount
+          tierSlotToMove.winCount = (tierSlotToMove.winCount || 0) + 1;
+        }
+
+        // Insert the element at the new index (can be outside the array bounds)
+        sortedTierSlots.splice(tierSlotPosition + steps, 0, tierSlotToMove);
+
+        // Safe to normalize all positions when all fighters are positioned
+        this.slots = sortedTierSlots.map(normalizeTierSlotPositionToIndex);
+
+        const finalPosition = tierSlotToMove.position;
+        const movement = finalPosition - (initialPosition || 0);
+        console.log(
+          `[Contest Position] Fighter: ${tierSlotToMove.fighterId}, Final position: ${finalPosition}, Total movement: ${movement > 0 ? '+' : ''}${movement}`
+        );
+        console.log('---');
+      } else {
+        // SPARSE POSITIONS: Use collision-aware shifting logic
+        // Get only positioned slots, sorted by position
+        const positionedSlots = this.slots.filter((slot) => slot.position != null);
+        const sortedPositioned = sortBy(positionedSlots, 'position');
+
+        console.log(
+          `[Contest Position] SPARSE MODE - ${positionedSlots.length} positioned fighters, ${this.slots.length - positionedSlots.length} unknown fighters`
+        );
+
+        // Find the fighter to move by their current position
+        const tierSlotToMove = sortedPositioned[tierSlotPosition];
+        if (!tierSlotToMove) {
+          console.warn(
+            `[adjustTierSlotPositionBySteps] No slot found at position ${tierSlotPosition}`
+          );
+          return;
+        }
+
+        const oldPosition = tierSlotToMove.position as number;
+        const newPosition = Math.max(0, Math.min(tierSlotPosition + steps, FIGHTER_COUNT - 1));
+
+        console.log(
+          `[Contest Position] Fighter: ${tierSlotToMove.fighterId}, Initial position: ${oldPosition}, Steps: ${steps}, Result: ${steps < 0 ? 'WIN (moving UP)' : 'LOSS (moving DOWN)'}`
+        );
+        console.log(
+          `[Contest Position] Calculated new position: ${newPosition} (clamped to 0-${FIGHTER_COUNT - 1})`
+        );
+
+        // Update counts
+        tierSlotToMove.contestCount = (tierSlotToMove.contestCount || 0) + 1;
+
+        if (steps < 0) {
+          // fighter won, increment winCount
+          tierSlotToMove.winCount = (tierSlotToMove.winCount || 0) + 1;
+        }
+
+        // Track affected fighters
+        const affectedFighters: string[] = [];
+
+        // Only shift fighters between old and new positions
+        if (steps < 0) {
+          // Moving UP (to lower position): shift fighters in range [newPosition, oldPosition) down by 1
+          this.slots.forEach((slot) => {
+            if (
+              slot.id !== tierSlotToMove.id &&
+              slot.position != null &&
+              slot.position >= newPosition &&
+              slot.position < oldPosition
+            ) {
+              affectedFighters.push(
+                `${slot.fighterId} (${slot.position} → ${slot.position + 1})`
+              );
+              slot.position += 1;
+            }
+          });
+        } else {
+          // Moving DOWN (to higher position): shift fighters in range (oldPosition, newPosition] up by 1
+          this.slots.forEach((slot) => {
+            if (
+              slot.id !== tierSlotToMove.id &&
+              slot.position != null &&
+              slot.position > oldPosition &&
+              slot.position <= newPosition
+            ) {
+              affectedFighters.push(
+                `${slot.fighterId} (${slot.position} → ${slot.position - 1})`
+              );
+              slot.position -= 1;
+            }
+          });
+        }
+
+        if (affectedFighters.length > 0) {
+          console.log(`[Contest Position] Shifted ${affectedFighters.length} fighters:`, affectedFighters);
+        } else {
+          console.log(`[Contest Position] No other fighters affected (no collisions)`);
+        }
+
+        // Update the moved fighter's position
+        tierSlotToMove.position = newPosition;
+
+        const movement = newPosition - oldPosition;
+        console.log(
+          `[Contest Position] Fighter: ${tierSlotToMove.fighterId}, Final position: ${newPosition}, Total movement: ${movement > 0 ? '+' : ''}${movement}`
+        );
+        console.log('---');
+
+        // Re-sort slots by position (nulls at end)
+        this.slots = sortBy(this.slots, [(slot) => (slot.position === null ? Infinity : slot.position)]);
       }
-
-      // Insert the element at the new index (can be outside the array bounds)
-      sortedTierSlots.splice(tierSlotPosition + steps, 0, tierSlotToMove);
-
-      this.slots = sortedTierSlots.map(normalizeTierSlotPositionToIndex);
     },
     eligibleTierSlots() {
       const minSlotPosition: number = this.getCurrentTier() * this.slotsPerTier;
@@ -274,6 +383,10 @@ export function getMTierList(tierList: TierList): MTierList {
       // Clamp position to valid range (0-85, 0-based)
       const clampedPosition = Math.max(0, Math.min(newPosition, FIGHTER_COUNT - 1));
 
+      console.log(
+        `[UNKNOWN TIER] Positioning unknown fighter: ${tierSlot.fighterId}, Requested position: ${newPosition}, Clamped to: ${clampedPosition}`
+      );
+
       // Find the tier slot in our list
       const slotIndex = this.slots.findIndex((s) => s.id === tierSlot.id);
       if (slotIndex === -1) {
@@ -281,15 +394,26 @@ export function getMTierList(tierList: TierList): MTierList {
         return;
       }
 
+      // Track affected fighters
+      const affectedFighters: string[] = [];
+
       // Assign the position to the target tier slot
       tierSlot.position = clampedPosition;
 
       // Handle collisions: increment positions >= clampedPosition for other slots
       this.slots.forEach((slot) => {
         if (slot.id !== tierSlot.id && slot.position !== null && slot.position >= clampedPosition) {
+          affectedFighters.push(`${slot.fighterId} (${slot.position} → ${slot.position + 1})`);
           slot.position += 1;
         }
       });
+
+      if (affectedFighters.length > 0) {
+        console.log(`[UNKNOWN TIER] Shifted ${affectedFighters.length} fighters down:`, affectedFighters);
+      } else {
+        console.log(`[UNKNOWN TIER] No collisions - position ${clampedPosition} was available`);
+      }
+      console.log('---');
 
       // Re-sort slots by position (nulls at end)
       this.slots = sortBy(this.slots, [

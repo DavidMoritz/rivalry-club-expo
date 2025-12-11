@@ -51,7 +51,7 @@ export function CurrentContest({
   const contest = rivalry?.currentContest;
 
   useEffect(() => {
-    if (!(rivalry && contest)) {
+    if (!(rivalry && contest && game)) {
       return;
     }
 
@@ -77,6 +77,7 @@ export function CurrentContest({
   }, [contest, game, rivalry]);
 
   if (!rivalry) return null;
+  if (!game) return <Text style={{ color: '#e9d5ff' }}>Loading game data...</Text>;
 
   function onPressResolve() {
     if (!(winner && onResolveContest && contest)) return;

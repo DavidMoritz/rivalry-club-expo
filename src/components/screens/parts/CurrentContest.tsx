@@ -13,7 +13,7 @@ import { fighterByIdFromGame } from '../../../utils';
 import { CharacterDisplay } from '../../common/CharacterDisplay';
 
 interface CurrentContestProps {
-  onPressShuffle: () => void;
+  onPressShuffle: (slot: 'A' | 'B') => void;
   onResolveContest?(contest: MContest): void;
 }
 
@@ -85,28 +85,10 @@ export function CurrentContest({
           flexDirection: 'row',
           alignItems: 'center',
           justifyContent: 'center',
-          marginBottom: 8,
-          position: 'relative'
+          marginBottom: 8
         }}
       >
-        <Text style={{ fontSize: 18, color: 'white', position: 'absolute', left: 0 }}>
-          Current Contest
-        </Text>
-        <TouchableOpacity
-          style={{
-            alignItems: 'center',
-            paddingHorizontal: 16,
-            paddingVertical: 8,
-            borderWidth: 1,
-            borderColor: 'white',
-            borderRadius: 12,
-            backgroundColor: '#334155',
-            marginStart: 80
-          }}
-          onPress={onPressShuffle}
-        >
-          <Text style={{ fontSize: 16, color: 'white' }}>🔀 Reshuffle</Text>
-        </TouchableOpacity>
+        <Text style={{ fontSize: 18, color: 'white' }}>Current Contest</Text>
       </View>
 
       <View
@@ -273,8 +255,39 @@ export function CurrentContest({
             </TouchableOpacity>
           </>
         ) : (
-          <View>
+          <View
+            style={{
+              flexDirection: 'row',
+              alignItems: 'center',
+              justifyContent: 'center',
+              gap: 12
+            }}
+          >
+            <TouchableOpacity
+              style={{
+                padding: 12,
+                borderWidth: 1,
+                borderColor: 'white',
+                borderRadius: 8,
+                backgroundColor: '#334155'
+              }}
+              onPress={() => onPressShuffle('A')}
+            >
+              <Text style={{ fontSize: 18 }}>🔀</Text>
+            </TouchableOpacity>
             <Text style={{ color: '#e9d5ff' }}>Select the winner</Text>
+            <TouchableOpacity
+              style={{
+                padding: 12,
+                borderWidth: 1,
+                borderColor: 'white',
+                borderRadius: 8,
+                backgroundColor: '#334155'
+              }}
+              onPress={() => onPressShuffle('B')}
+            >
+              <Text style={{ fontSize: 18 }}>🔀</Text>
+            </TouchableOpacity>
           </View>
         )}
       </View>

@@ -1,6 +1,16 @@
 import { generateClient } from 'aws-amplify/data';
 import React, { useState } from 'react';
-import { ActivityIndicator, Modal, Text, TextInput, TouchableOpacity, View } from 'react-native';
+import {
+  ActivityIndicator,
+  KeyboardAvoidingView,
+  Modal,
+  Platform,
+  ScrollView,
+  Text,
+  TextInput,
+  TouchableOpacity,
+  View
+} from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
 import type { Schema } from '../../../amplify/data/resource';
@@ -98,25 +108,33 @@ export function LinkAccountModal({ visible, currentUserId, onClose, onSuccess }:
   return (
     <Modal visible={visible} animationType="slide" presentationStyle="pageSheet">
       <SafeAreaView style={[styles.container, darkStyles.container]} edges={['top', 'bottom']}>
-        <View style={{ flex: 1, paddingHorizontal: 24 }}>
-          <View
-            style={{
-              flexDirection: 'row',
-              justifyContent: 'space-between',
-              alignItems: 'center',
-              paddingVertical: 16,
-              borderBottomWidth: 1,
-              borderBottomColor: '#333',
-            }}>
-            <Text style={[styles.text, { fontSize: 24, fontWeight: 'bold' }]}>
-              Link Existing Account
-            </Text>
-            <TouchableOpacity onPress={onClose}>
-              <Text style={[styles.text, { fontSize: 16, color: '#6b7280' }]}>Cancel</Text>
-            </TouchableOpacity>
-          </View>
+        <KeyboardAvoidingView
+          style={{ flex: 1 }}
+          behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+          keyboardVerticalOffset={0}>
+          <View style={{ flex: 1, paddingHorizontal: 24 }}>
+            <View
+              style={{
+                flexDirection: 'row',
+                justifyContent: 'space-between',
+                alignItems: 'center',
+                paddingVertical: 16,
+                borderBottomWidth: 1,
+                borderBottomColor: '#333',
+              }}>
+              <Text style={[styles.text, { fontSize: 24, fontWeight: 'bold' }]}>
+                Link Existing Account
+              </Text>
+              <TouchableOpacity onPress={onClose}>
+                <Text style={[styles.text, { fontSize: 16, color: '#6b7280' }]}>Cancel</Text>
+              </TouchableOpacity>
+            </View>
 
-          <View style={{ flex: 1, justifyContent: 'center' }}>
+            <ScrollView
+              style={{ flex: 1 }}
+              contentContainerStyle={{ flexGrow: 1, justifyContent: 'center', paddingBottom: 40 }}
+              keyboardShouldPersistTaps="handled"
+              showsVerticalScrollIndicator={false}>
             <Text style={[styles.text, { marginBottom: 24, textAlign: 'center', color: '#9ca3af' }]}>
               Sign in with your existing account to restore your data and rivalries
             </Text>
@@ -204,8 +222,9 @@ export function LinkAccountModal({ visible, currentUserId, onClose, onSuccess }:
                 </Text>
               )}
             </TouchableOpacity>
+            </ScrollView>
           </View>
-        </View>
+        </KeyboardAvoidingView>
       </SafeAreaView>
     </Modal>
   );

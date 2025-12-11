@@ -695,44 +695,49 @@ export const useUpdateCurrentContestShuffleTierSlotsMutation = ({
   const queryClient = useQueryClient();
 
   return useMutation({
-    mutationFn: async () => {
+    mutationFn: async (slotToReshuffle?: 'A' | 'B') => {
       if (!rivalry?.currentContest) {
         throw new Error('No current contest');
       }
 
-      // Store the current fighter IDs
-      const currentTierSlotAId = rivalry.currentContest.tierSlotAId;
-      const currentTierSlotBId = rivalry.currentContest.tierSlotBId;
+      // Store the current tier slots and their positions BEFORE resampling
+      const oldTierSlotA = rivalry.currentContest.tierSlotA;
+      const oldTierSlotB = rivalry.currentContest.tierSlotB;
+      const oldPositionA = oldTierSlotA?.position;
+      const oldPositionB = oldTierSlotB?.position;
 
-      // Sample tier slot A until we get a different fighter
-      let tierSlotA = rivalry?.tierListA?.sampleEligibleSlot();
-      console.log('sampleEligibleSlot called');
-      let attempts = 0;
-      const maxAttempts = 100; // Safety limit
+      let tierSlotA = oldTierSlotA;
+      let tierSlotB = oldTierSlotB;
 
-      while (tierSlotA && tierSlotA.id === currentTierSlotAId && attempts < maxAttempts) {
-        tierSlotA = rivalry?.tierListA?.sampleEligibleSlot();
-        attempts++;
-      }
-
-      // Sample tier slot B until we get a different fighter
-      let tierSlotB = rivalry?.tierListB?.sampleEligibleSlot();
-      attempts = 0;
-
-      while (tierSlotB && tierSlotB.id === currentTierSlotBId && attempts < maxAttempts) {
-        tierSlotB = rivalry?.tierListB?.sampleEligibleSlot();
-        attempts++;
-      }
-
-      if (!(tierSlotA && tierSlotB)) {
-        throw new Error('Unable to sample tier slots');
-      }
-
-      // UNKNOWN TIER: If sampled fighters have no position, assign them to bottom (position 85, 0-based)
       const tierSlotsToUpdate: Array<{ id: string; position: number }> = [];
 
-      if (tierSlotA.position === null || tierSlotA.position === undefined) {
-        rivalry.tierListA?.positionUnknownFighter(tierSlotA, FIGHTER_COUNT - 1);
+      // Only resample the specified slot(s)
+      if (!slotToReshuffle || slotToReshuffle === 'A') {
+        // Sample tier slot A until we get a different fighter
+        tierSlotA = rivalry?.tierListA?.sampleEligibleSlot();
+        console.log('sampleEligibleSlot called for slot A');
+        let attempts = 0;
+        const maxAttempts = 100; // Safety limit
+
+        while (tierSlotA && tierSlotA.id === oldTierSlotA?.id && attempts < maxAttempts) {
+          tierSlotA = rivalry?.tierListA?.sampleEligibleSlot();
+          attempts++;
+        }
+
+        // Move OLD slot to position 85 (bottom) with UP shifting
+        if (oldTierSlotA && rivalry.tierListA) {
+          rivalry.tierListA.positionFighterAtBottom(oldTierSlotA);
+        }
+
+        // Give NEW slot the OLD slot's position (or position 85 if old slot had no position)
+        if (tierSlotA && rivalry.tierListA) {
+          const targetPosition =
+            oldPositionA !== null && oldPositionA !== undefined
+              ? oldPositionA
+              : FIGHTER_COUNT - 1;
+          rivalry.tierListA.positionUnknownFighter(tierSlotA, targetPosition);
+        }
+
         // Collect all affected tier slots from tierListA
         rivalry.tierListA?.slots.forEach((slot) => {
           if (slot.position !== null && slot.position !== undefined) {
@@ -741,14 +746,42 @@ export const useUpdateCurrentContestShuffleTierSlotsMutation = ({
         });
       }
 
-      if (tierSlotB.position === null || tierSlotB.position === undefined) {
-        rivalry.tierListB?.positionUnknownFighter(tierSlotB, FIGHTER_COUNT - 1);
+      if (!slotToReshuffle || slotToReshuffle === 'B') {
+        // Sample tier slot B until we get a different fighter
+        tierSlotB = rivalry?.tierListB?.sampleEligibleSlot();
+        console.log('sampleEligibleSlot called for slot B');
+        let attempts = 0;
+        const maxAttempts = 100; // Safety limit
+
+        while (tierSlotB && tierSlotB.id === oldTierSlotB?.id && attempts < maxAttempts) {
+          tierSlotB = rivalry?.tierListB?.sampleEligibleSlot();
+          attempts++;
+        }
+
+        // Move OLD slot to position 85 (bottom) with UP shifting
+        if (oldTierSlotB && rivalry.tierListB) {
+          rivalry.tierListB.positionFighterAtBottom(oldTierSlotB);
+        }
+
+        // Give NEW slot the OLD slot's position (or position 85 if old slot had no position)
+        if (tierSlotB && rivalry.tierListB) {
+          const targetPosition =
+            oldPositionB !== null && oldPositionB !== undefined
+              ? oldPositionB
+              : FIGHTER_COUNT - 1;
+          rivalry.tierListB.positionUnknownFighter(tierSlotB, targetPosition);
+        }
+
         // Collect all affected tier slots from tierListB
         rivalry.tierListB?.slots.forEach((slot) => {
           if (slot.position !== null && slot.position !== undefined) {
             tierSlotsToUpdate.push({ id: slot.id, position: slot.position });
           }
         });
+      }
+
+      if (!(tierSlotA && tierSlotB)) {
+        throw new Error('Unable to sample tier slots');
       }
 
       // Persist position updates to database if any unknown fighters were positioned

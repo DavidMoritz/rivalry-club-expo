@@ -22,6 +22,7 @@ export interface MTierList extends TierList {
   getPrestige(): number;
   moveDownATier(): boolean;
   moveUpATier(): boolean;
+  positionFighterAtBottom(tierSlot: MTierSlot): void;
   positionUnknownFighter(tierSlot: MTierSlot, newPosition: number): void;
   prestigeDisplay: string;
   rivalry?: MRivalry;
@@ -453,6 +454,79 @@ export function getMTierList(tierList: TierList): MTierList {
           console.log(
             `[UNKNOWN TIER] Shifted ${affectedFighters.length} consecutive fighters:`,
             affectedFighters.reverse() // Show in forward order
+          );
+        }
+        console.log('---');
+      }
+
+      // Re-sort slots by position (nulls at end)
+      this.slots = sortBy(this.slots, [
+        (slot) => (slot.position === null ? Infinity : slot.position)
+      ]);
+    },
+    positionFighterAtBottom(tierSlot: MTierSlot) {
+      // Position fighter at 85 (bottom) and shift existing fighters UP (85 → 84, 84 → 83, etc.)
+      const bottomPosition = FIGHTER_COUNT - 1; // 85 (0-based)
+
+      console.log(
+        `[POSITION AT BOTTOM] Positioning fighter at bottom: ${tierSlot.fighterId}, Position: ${bottomPosition}`
+      );
+
+      // Find the tier slot in our list
+      const slotIndex = this.slots.findIndex((s) => s.id === tierSlot.id);
+      if (slotIndex === -1) {
+        console.warn('[MTierList.positionFighterAtBottom] Tier slot not found:', tierSlot.id);
+        return;
+      }
+
+      // Check if bottom position is already occupied
+      const occupiedSlot = this.slots.find(
+        (slot) => slot.id !== tierSlot.id && slot.position === bottomPosition
+      );
+
+      if (!occupiedSlot) {
+        // Position is free - just place the fighter there
+        tierSlot.position = bottomPosition;
+        console.log(`[POSITION AT BOTTOM] No collision - position ${bottomPosition} was available`);
+        console.log('---');
+      } else {
+        // Position is occupied - need to shift fighters UP (towards position 0)
+        console.log(`[POSITION AT BOTTOM] Collision detected at position ${bottomPosition}`);
+
+        // Find first empty position searching UP from bottom (85 → 0)
+        let firstEmpty = bottomPosition - 1;
+        while (firstEmpty >= 0) {
+          const isOccupied = this.slots.some(
+            (slot) => slot.id !== tierSlot.id && slot.position === firstEmpty
+          );
+          if (!isOccupied) break;
+          firstEmpty--;
+        }
+
+        console.log(`[POSITION AT BOTTOM] First empty position (searching up): ${firstEmpty}`);
+
+        // Track affected fighters
+        const affectedFighters: string[] = [];
+
+        // Shift ONLY consecutive occupied positions UP (from firstEmpty+1 to bottomPosition)
+        // Moving each fighter one position UP (position - 1)
+        for (let pos = firstEmpty + 1; pos <= bottomPosition; pos++) {
+          const slotAtPos = this.slots.find(
+            (slot) => slot.id !== tierSlot.id && slot.position === pos
+          );
+          if (slotAtPos) {
+            affectedFighters.push(`${slotAtPos.fighterId} (${pos} → ${pos - 1})`);
+            slotAtPos.position = pos - 1;
+          }
+        }
+
+        // Place the new fighter at bottom position
+        tierSlot.position = bottomPosition;
+
+        if (affectedFighters.length > 0) {
+          console.log(
+            `[POSITION AT BOTTOM] Shifted ${affectedFighters.length} consecutive fighters UP:`,
+            affectedFighters
           );
         }
         console.log('---');

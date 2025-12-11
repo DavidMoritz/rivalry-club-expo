@@ -185,8 +185,8 @@ export function ConnectedRivalryView({ navigation }: ConnectedRivalryViewProps):
     });
   }, [navigation, rivalry]);
 
-  const handlePressShuffle = () => {
-    updateCurrentContestShuffleTierSlotsMutation.mutate();
+  const handlePressShuffle = (slot: 'A' | 'B') => {
+    updateCurrentContestShuffleTierSlotsMutation.mutate(slot);
   };
 
   return (

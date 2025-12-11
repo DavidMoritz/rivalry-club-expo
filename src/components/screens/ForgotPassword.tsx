@@ -1,5 +1,13 @@
 import React, { useState } from 'react';
-import { Text, TextInput, TouchableOpacity, View } from 'react-native';
+import {
+  KeyboardAvoidingView,
+  Platform,
+  ScrollView,
+  Text,
+  TextInput,
+  TouchableOpacity,
+  View
+} from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
 import { confirmResetPassword, resetPassword } from '../../lib/amplify-auth';
@@ -86,10 +94,23 @@ export function ForgotPassword({ onBack, initialEmail = '' }: ForgotPasswordProp
 
   return (
     <SafeAreaView style={[styles.container, darkStyles.container]} edges={['top', 'bottom']}>
-      <View style={{ flex: 1, alignItems: 'center', justifyContent: 'center', paddingHorizontal: 32 }}>
-        <Text style={[styles.title, { marginBottom: 48 }]}>
-          {codeSent ? 'Reset Password' : 'Forgot Password'}
-        </Text>
+      <KeyboardAvoidingView
+        style={{ flex: 1 }}
+        behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+        keyboardVerticalOffset={0}>
+        <ScrollView
+          contentContainerStyle={{
+            flexGrow: 1,
+            justifyContent: 'center',
+            alignItems: 'center',
+            paddingHorizontal: 32,
+            paddingBottom: 40
+          }}
+          keyboardShouldPersistTaps="handled"
+          showsVerticalScrollIndicator={false}>
+          <Text style={[styles.title, { marginBottom: 48 }]}>
+            {codeSent ? 'Reset Password' : 'Forgot Password'}
+          </Text>
 
         {!codeSent ? (
           <>
@@ -332,7 +353,8 @@ export function ForgotPassword({ onBack, initialEmail = '' }: ForgotPasswordProp
             </TouchableOpacity>
           </>
         )}
-      </View>
+        </ScrollView>
+      </KeyboardAvoidingView>
     </SafeAreaView>
   );
 }

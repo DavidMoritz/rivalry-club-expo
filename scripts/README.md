@@ -291,6 +291,84 @@ node scripts/restore-tierlists.js
 
 ---
 
+## reset-cognito-passwords.js
+
+Resets all user passwords in the production Cognito user pool to a standard value.
+
+### Usage
+
+```bash
+node scripts/reset-cognito-passwords.js
+```
+
+### Configuration
+
+The script is configured with:
+- **User Pool ID**: `us-east-1_8f6RCLauy` (from `amplify_outputs.production.json`)
+- **Region**: `us-east-1`
+- **New Password**: `qwerqwer`
+- **Permanent**: `true` (users won't be forced to change password on next login)
+
+To modify these values, edit the constants at the top of `reset-cognito-passwords.js`.
+
+### What it does
+
+1. Lists all users in the specified Cognito user pool
+2. Displays the users that will be updated
+3. Waits 3 seconds for confirmation (Ctrl+C to cancel)
+4. Updates each user's password to the configured value
+5. Sets passwords as permanent (no forced change required)
+6. Displays a summary of successful/failed updates
+
+### Output example
+
+```
+========================================
+Cognito Password Reset Script
+========================================
+User Pool: us-east-1_8f6RCLauy
+Region: us-east-1
+New Password: qwerqwer
+Permanent: true
+========================================
+
+Listing all users in user pool: us-east-1_8f6RCLauy
+Found 5 users
+
+Users to be updated:
+  1. user1@example.com (user1@example.com)
+  2. user2@example.com (user2@example.com)
+  3. user3@example.com (user3@example.com)
+
+⚠️  WARNING: This will update passwords for ALL users listed above!
+Press Ctrl+C to cancel, or the script will continue in 3 seconds...
+
+Updating passwords...
+
+✓ Updated password for: user1@example.com
+✓ Updated password for: user2@example.com
+✓ Updated password for: user3@example.com
+
+========================================
+Summary
+========================================
+Total users: 3
+Successfully updated: 3
+Failed: 0
+========================================
+```
+
+### Security Notes
+
+⚠️ **WARNING**: This script will update passwords for ALL users in the production user pool. Use with caution!
+
+- The script includes a 3-second delay before execution to allow cancellation
+- All operations are logged to the console
+- Failed updates are reported with error messages
+- Consider backing up user data before running bulk operations
+
+---
+
 ## Notes
 
 - All DynamoDB scripts use the `us-east-1` region

@@ -1,6 +1,6 @@
 import { generateClient } from 'aws-amplify/data';
 import { Amplify } from 'aws-amplify';
-import outputs from './amplify_outputs.json';
+import outputs from '../amplify_outputs.json';
 
 Amplify.configure(outputs);
 const client = generateClient();
@@ -18,7 +18,11 @@ async function fixInvalidPositions() {
     pageCount++;
     console.log(`Fetching page ${pageCount}...`);
 
-    const { data, errors, nextToken: token } = await client.models.TierSlot.list({
+    const {
+      data,
+      errors,
+      nextToken: token
+    } = await client.models.TierSlot.list({
       filter: { position: { eq: 86 } },
       nextToken: nextToken as any
     });
@@ -48,7 +52,8 @@ async function fixInvalidPositions() {
   // Show some details
   console.log('\nSlots to be updated:');
   invalidSlots.forEach((slot, idx) => {
-    if (idx < 5) { // Show first 5
+    if (idx < 5) {
+      // Show first 5
       console.log(`  - ID: ${slot.id}, Fighter: ${slot.fighterId}, TierList: ${slot.tierListId}`);
     }
   });
@@ -115,10 +120,12 @@ async function fixInvalidPositions() {
   }
 }
 
-fixInvalidPositions().then(() => {
-  console.log('\nDone!');
-  process.exit(0);
-}).catch(err => {
-  console.error('\n❌ Script failed:', err);
-  process.exit(1);
-});
+fixInvalidPositions()
+  .then(() => {
+    console.log('\nDone!');
+    process.exit(0);
+  })
+  .catch((err) => {
+    console.error('\n❌ Script failed:', err);
+    process.exit(1);
+  });

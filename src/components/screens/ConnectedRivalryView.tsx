@@ -83,6 +83,7 @@ export function ConnectedRivalryView({ navigation }: ConnectedRivalryViewProps):
     onSuccess: () => {
       if (!rivalry) return;
 
+      // Pass the actual POSITION values, not indices
       rivalry.tierListA?.adjustTierSlotPositionBySteps(
         rivalry.currentContest?.tierSlotA?.position as number,
         (rivalry.currentContest?.result as number) * STEPS_PER_STOCK * -1

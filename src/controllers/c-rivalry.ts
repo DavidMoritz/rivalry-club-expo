@@ -819,6 +819,8 @@ export const useDeleteMostRecentContestMutation = ({
       // When resolving: tierListA adjusts by (result * STEPS_PER_STOCK * -1)
       // When undoing: reverse that, so adjust by (result * STEPS_PER_STOCK)
       const STEPS_PER_STOCK = 3;
+
+      // Pass the actual POSITION values, not indices
       rivalry.tierListA?.adjustTierSlotPositionBySteps(
         mostRecentContest.tierSlotA?.position as number,
         (mostRecentContest.result as number) * STEPS_PER_STOCK

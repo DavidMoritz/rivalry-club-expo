@@ -66,15 +66,6 @@ export function TierListEditDisplay({ tierList, onChange }: TierListEditDisplayP
     const currentPositionedSlots = customPositionedSlots || positionedSlots;
     const currentUnknownSlots = customUnknownSlots || unknownSlots;
 
-    console.log('[moveSlot] START', {
-      fromIndex,
-      toIndex,
-      isFromUnknown,
-      shiftDirection,
-      positionedSlotsLength: currentPositionedSlots.length,
-      selectedSlotId: selectedSlot?.id
-    });
-
     LayoutAnimation.configureNext(LayoutAnimation.Presets.easeInEaseOut);
 
     let newSlots: MTierSlot[];
@@ -102,9 +93,12 @@ export function TierListEditDisplay({ tierList, onChange }: TierListEditDisplayP
           }
 
           if (firstAvailablePos > 85) {
-            console.warn('[moveSlot] Cannot place fighter - no empty slots in range [toIndex, 85]', {
-              toIndex
-            });
+            console.warn(
+              '[moveSlot] Cannot place fighter - no empty slots in range [toIndex, 85]',
+              {
+                toIndex
+              }
+            );
             newUnknownSlots.splice(unknownIndex, 0, movedSlot);
             return false;
           }
@@ -113,12 +107,6 @@ export function TierListEditDisplay({ tierList, onChange }: TierListEditDisplayP
           const fightersToShift = currentPositionedSlots.filter(
             (s) => (s.position ?? 0) >= toIndex && (s.position ?? 0) < firstAvailablePos
           );
-
-          console.log('[moveSlot] Shift down analysis', {
-            toIndex,
-            firstAvailablePos,
-            fightersToShiftCount: fightersToShift.length
-          });
 
           // Shift these fighters: each gets +1 to their position
           const newPositionMap = new Map<number, number>();
@@ -155,12 +143,6 @@ export function TierListEditDisplay({ tierList, onChange }: TierListEditDisplayP
             (s) => (s.position ?? 0) > firstAvailablePos && (s.position ?? 0) <= toIndex
           );
 
-          console.log('[moveSlot] Shift up analysis', {
-            toIndex,
-            firstAvailablePos,
-            fightersToShiftCount: fightersToShift.length
-          });
-
           // Shift these fighters: each gets -1 to their position
           const newPositionMap = new Map<number, number>();
           for (const fighter of fightersToShift) {
@@ -188,15 +170,6 @@ export function TierListEditDisplay({ tierList, onChange }: TierListEditDisplayP
       // Add the moved slot and sort by position
       newSlots = [...newSlots, movedSlot].sort((a, b) => (a.position || 0) - (b.position || 0));
 
-      console.log('[moveSlot] isFromUnknown - handled collision', {
-        toIndex,
-        hadCollision: !!existingSlotAtPosition,
-        shiftDirection,
-        movedSlotId: movedSlot.id,
-        movedSlotPosition: movedSlot.position,
-        newSlotsLength: newSlots.length
-      });
-
       setUnknownSlots(newUnknownSlots);
     } else {
       // This shouldn't happen - we only support moving FROM unknown tier
@@ -205,12 +178,6 @@ export function TierListEditDisplay({ tierList, onChange }: TierListEditDisplayP
     }
 
     const updatedSlots = newSlots;
-
-    console.log('[moveSlot] After processing', {
-      updatedSlotsLength: updatedSlots.length,
-      firstFewPositions: updatedSlots.slice(0, 5).map((s) => ({ id: s.id, position: s.position })),
-      lastFewPositions: updatedSlots.slice(-5).map((s) => ({ id: s.id, position: s.position }))
-    });
 
     setPositionedSlots(updatedSlots);
 
@@ -244,14 +211,10 @@ export function TierListEditDisplay({ tierList, onChange }: TierListEditDisplayP
     // If the selected fighter has a position, temporarily remove it
     let updatedPositioned = positionedSlots;
     let updatedUnknown = unknownSlots;
-    let originalPosition: number | null = null;
+    let originalPosition: number | null | undefined = null;
 
     if (!isFromUnknown) {
-      originalPosition = selectedSlot.position;
-      console.log('[handleMoveToPosition] Removing positioned fighter before move', {
-        fighterId: selectedSlot.id,
-        oldPosition: originalPosition
-      });
+      originalPosition = selectedSlot?.position;
 
       // Remove fighter from positioned slots
       updatedPositioned = positionedSlots.filter((s) => s.id !== selectedSlot.id);
@@ -268,16 +231,18 @@ export function TierListEditDisplay({ tierList, onChange }: TierListEditDisplayP
 
     // If that failed (no room going down), try 'up' direction
     if (!success) {
-      console.log('[handleMoveToPosition] Shift down failed, trying shift up');
       success = moveSlot(-1, toIndex, true, 'up', updatedPositioned, updatedUnknown);
     }
 
     // If both directions failed and we had a positioned fighter, restore it
     if (!success && originalPosition !== null) {
-      console.warn('[handleMoveToPosition] Both shift directions failed - restoring fighter to original position', {
-        fighterId: selectedSlot.id,
-        originalPosition
-      });
+      console.warn(
+        '[handleMoveToPosition] Both shift directions failed - restoring fighter to original position',
+        {
+          fighterId: selectedSlot.id,
+          originalPosition
+        }
+      );
 
       // Restore the fighter to its original position
       selectedSlot.position = originalPosition;
@@ -305,14 +270,10 @@ export function TierListEditDisplay({ tierList, onChange }: TierListEditDisplayP
 
     let updatedPositioned = positionedSlots;
     let updatedUnknown = unknownSlots;
-    let originalPosition: number | null = null;
+    let originalPosition: number | null | undefined = null;
 
     if (!isFromUnknown) {
       originalPosition = selectedSlot.position;
-      console.log('[handleTierLabelClick] Removing positioned fighter before move', {
-        fighterId: selectedSlot.id,
-        oldPosition: originalPosition
-      });
 
       // Remove fighter from positioned slots
       updatedPositioned = positionedSlots.filter((s) => s.id !== selectedSlot.id);
@@ -323,13 +284,6 @@ export function TierListEditDisplay({ tierList, onChange }: TierListEditDisplayP
 
     // Calculate the start index of the clicked tier (0-based position)
     const targetPosition = TIERS.slice(0, tierIndex).reduce((sum, t) => sum + t.fightersCount, 0);
-
-    console.log('[handleTierLabelClick]', {
-      tierIndex,
-      targetPosition,
-      selectedSlot: selectedSlot.id,
-      positionedSlotsCount: updatedPositioned.length
-    });
 
     // Move the fighter to the start of the tier
     // Shift existing characters DOWN (higher positions) to make room
@@ -365,14 +319,10 @@ export function TierListEditDisplay({ tierList, onChange }: TierListEditDisplayP
 
     let updatedPositioned = positionedSlots;
     let updatedUnknown = unknownSlots;
-    let originalPosition: number | null = null;
+    let originalPosition: number | null | undefined = null;
 
     if (!isFromUnknown) {
       originalPosition = selectedSlot.position;
-      console.log('[handleTierBackgroundClick] Removing positioned fighter before move', {
-        fighterId: selectedSlot.id,
-        oldPosition: originalPosition
-      });
 
       // Remove fighter from positioned slots
       updatedPositioned = positionedSlots.filter((s) => s.id !== selectedSlot.id);
@@ -388,24 +338,19 @@ export function TierListEditDisplay({ tierList, onChange }: TierListEditDisplayP
     );
     const targetPosition = tierStartPosition + TIERS[tierIndex].fightersCount - 1;
 
-    console.log('[handleTierBackgroundClick]', {
-      tierIndex,
-      tierStartPosition,
-      targetPosition,
-      selectedSlot: selectedSlot.id,
-      positionedSlotsCount: updatedPositioned.length
-    });
-
     // Move the fighter to the end of the tier
     // Shift existing characters UP (lower positions) to make room
     const success = moveSlot(-1, targetPosition, true, 'up', updatedPositioned, updatedUnknown);
 
     // If move failed and we had a positioned fighter, restore it
     if (!success && originalPosition !== null) {
-      console.warn('[handleTierBackgroundClick] Move failed - restoring fighter to original position', {
-        fighterId: selectedSlot.id,
-        originalPosition
-      });
+      console.warn(
+        '[handleTierBackgroundClick] Move failed - restoring fighter to original position',
+        {
+          fighterId: selectedSlot.id,
+          originalPosition
+        }
+      );
 
       selectedSlot.position = originalPosition;
       const restoredPositioned = [...updatedPositioned, selectedSlot].sort(
@@ -510,7 +455,9 @@ export function TierListEditDisplay({ tierList, onChange }: TierListEditDisplayP
                   flexWrap: 'wrap',
                   gap: 4
                 }}
-                onPress={isAnyFighterSelected ? () => handleTierBackgroundClick(tierIndex) : undefined}
+                onPress={
+                  isAnyFighterSelected ? () => handleTierBackgroundClick(tierIndex) : undefined
+                }
               >
                 {Array.from({ length: endIdx - startIdx }, (_, i) => {
                   const position = startIdx + i;

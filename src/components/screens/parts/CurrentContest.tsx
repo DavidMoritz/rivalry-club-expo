@@ -42,9 +42,10 @@ export function CurrentContest({
   const [fighterB, setFighterB] = useState<Schema['Fighter']['type']>();
   const [winner, setWinner] = useState<MTierSlot>();
   const [stockRemaining, setStockRemaining] = useState<string | number>(1);
+  const [canShuffle, setCanShuffle] = useState(false);
 
   const rivalry = useRivalry();
-  const { userAName, userBName, isUserB } = useRivalryContext();
+  const { isUserB } = useRivalryContext();
   const contest = rivalry?.currentContest;
 
   useEffect(() => {
@@ -88,7 +89,40 @@ export function CurrentContest({
           marginBottom: 8
         }}
       >
-        <Text style={{ fontSize: 18, color: 'white' }}>Current Contest</Text>
+        <Text style={{ fontSize: 18, color: 'white', position: 'absolute', left: 0 }}>
+          Current Contest
+        </Text>
+        {!canShuffle ? (
+          <TouchableOpacity
+            style={{
+              alignItems: 'center',
+              paddingHorizontal: 16,
+              paddingVertical: 8,
+              borderWidth: 1,
+              borderColor: 'white',
+              borderRadius: 12,
+              backgroundColor: '#334155',
+              marginStart: 80
+            }}
+            onPress={() => setCanShuffle(true)}
+          >
+            <Text style={{ fontSize: 16, color: 'white' }}>🔀 Reshuffle</Text>
+          </TouchableOpacity>
+        ) : (
+          <View
+            style={{
+              alignItems: 'center',
+              paddingHorizontal: 16,
+              paddingVertical: 8,
+              borderWidth: 1,
+              borderColor: 'transparent',
+              borderRadius: 12,
+              marginStart: 80
+            }}
+          >
+            <Text style={{ fontSize: 16, color: 'transparent' }}>🔀 Reshuffle</Text>
+          </View>
+        )}
       </View>
 
       <View
@@ -123,6 +157,20 @@ export function CurrentContest({
                 borderRadius: 12
               }}
             >
+              {canShuffle && (
+                <TouchableOpacity
+                  style={{
+                    position: 'absolute',
+                    top: -10,
+                    left: -10,
+                    padding: 10,
+                    zIndex: 10
+                  }}
+                  onPress={() => onPressShuffle('A')}
+                >
+                  <Text style={{ fontSize: 16 }}>🔀</Text>
+                </TouchableOpacity>
+              )}
               <Text
                 style={[
                   styles.currentContestUser,
@@ -173,6 +221,20 @@ export function CurrentContest({
                 borderRadius: 12
               }}
             >
+              {canShuffle && (
+                <TouchableOpacity
+                  style={{
+                    position: 'absolute',
+                    top: -10,
+                    right: -10,
+                    padding: 10,
+                    zIndex: 10
+                  }}
+                  onPress={() => onPressShuffle('B')}
+                >
+                  <Text style={{ fontSize: 16 }}>🔀</Text>
+                </TouchableOpacity>
+              )}
               <Text
                 style={[
                   styles.currentContestUser,
@@ -260,34 +322,11 @@ export function CurrentContest({
               flexDirection: 'row',
               alignItems: 'center',
               justifyContent: 'center',
-              gap: 12
+              gap: 12,
+              paddingVertical: 8
             }}
           >
-            <TouchableOpacity
-              style={{
-                padding: 12,
-                borderWidth: 1,
-                borderColor: 'white',
-                borderRadius: 8,
-                backgroundColor: '#334155'
-              }}
-              onPress={() => onPressShuffle('A')}
-            >
-              <Text style={{ fontSize: 18 }}>🔀</Text>
-            </TouchableOpacity>
             <Text style={{ color: '#e9d5ff' }}>Select the winner</Text>
-            <TouchableOpacity
-              style={{
-                padding: 12,
-                borderWidth: 1,
-                borderColor: 'white',
-                borderRadius: 8,
-                backgroundColor: '#334155'
-              }}
-              onPress={() => onPressShuffle('B')}
-            >
-              <Text style={{ fontSize: 18 }}>🔀</Text>
-            </TouchableOpacity>
           </View>
         )}
       </View>

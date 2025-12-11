@@ -94,4 +94,32 @@ describe('CharacterDisplay', () => {
     // The image should maintain 1:1 aspect ratio
     expect(root).toBeTruthy();
   });
+
+  it('accepts optional tierSlot prop', () => {
+    const mockTierSlot = {
+      id: 'slot-1',
+      fighterId: 'fighter-1',
+      position: 5,
+      contestCount: 10,
+      winCount: 7,
+    };
+
+    const { root } = render(
+      <CharacterDisplay
+        fighter={mockFighter}
+        tierSlot={mockTierSlot as any}
+        hideName={true}
+      />
+    );
+
+    expect(root).toBeTruthy();
+  });
+
+  it('renders without tierSlot prop (backward compatibility)', () => {
+    const { root } = render(
+      <CharacterDisplay fighter={mockFighter} hideName={true} />
+    );
+
+    expect(root).toBeTruthy();
+  });
 });

@@ -1,9 +1,19 @@
 import React from 'react';
 import { render } from '@testing-library/react-native';
+import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 
 import TierListRow from '../TierListRow';
 import { GameProvider } from '../../../../providers/game';
 import { getMGame } from '../../../../models/m-game';
+
+const createTestQueryClient = () =>
+  new QueryClient({
+    defaultOptions: {
+      queries: {
+        retry: false,
+      },
+    },
+  });
 
 const mockGame = getMGame({
   id: 'game-1',
@@ -23,30 +33,36 @@ const mockSlots = [
 
 describe('TierListRow', () => {
   it('renders tier label correctly', () => {
+    const queryClient = createTestQueryClient();
     const { getByText } = render(
-      <GameProvider game={mockGame}>
-        <TierListRow
-          label="S"
-          color="hsl(0, 100%, 75%)"
-          active={false}
-          slots={mockSlots as any}
-        />
-      </GameProvider>
+      <QueryClientProvider client={queryClient}>
+        <GameProvider game={mockGame}>
+          <TierListRow
+            label="S"
+            color="hsl(0, 100%, 75%)"
+            active={false}
+            slots={mockSlots as any}
+          />
+        </GameProvider>
+      </QueryClientProvider>
     );
 
     expect(getByText('S')).toBeTruthy();
   });
 
   it('renders with correct background color', () => {
+    const queryClient = createTestQueryClient();
     const { getByText } = render(
-      <GameProvider game={mockGame}>
-        <TierListRow
-          label="A"
-          color="hsl(30, 100%, 75%)"
-          active={false}
-          slots={mockSlots as any}
-        />
-      </GameProvider>
+      <QueryClientProvider client={queryClient}>
+        <GameProvider game={mockGame}>
+          <TierListRow
+            label="A"
+            color="hsl(30, 100%, 75%)"
+            active={false}
+            slots={mockSlots as any}
+          />
+        </GameProvider>
+      </QueryClientProvider>
     );
 
     const labelElement = getByText('A');
@@ -54,15 +70,18 @@ describe('TierListRow', () => {
   });
 
   it('renders CharacterDisplay components for each slot', () => {
+    const queryClient = createTestQueryClient();
     const { getByText } = render(
-      <GameProvider game={mockGame}>
-        <TierListRow
-          label="B"
-          color="hsl(45, 100%, 75%)"
-          active={false}
-          slots={mockSlots as any}
-        />
-      </GameProvider>
+      <QueryClientProvider client={queryClient}>
+        <GameProvider game={mockGame}>
+          <TierListRow
+            label="B"
+            color="hsl(45, 100%, 75%)"
+            active={false}
+            slots={mockSlots as any}
+          />
+        </GameProvider>
+      </QueryClientProvider>
     );
 
     // The tier label should be visible
@@ -70,34 +89,40 @@ describe('TierListRow', () => {
   });
 
   it('renders with empty slots array', () => {
+    const queryClient = createTestQueryClient();
     const { getByText } = render(
-      <GameProvider game={mockGame}>
-        <TierListRow
-          label="C"
-          color="hsl(60, 100%, 75%)"
-          active={false}
-          slots={[]}
-        />
-      </GameProvider>
+      <QueryClientProvider client={queryClient}>
+        <GameProvider game={mockGame}>
+          <TierListRow
+            label="C"
+            color="hsl(60, 100%, 75%)"
+            active={false}
+            slots={[]}
+          />
+        </GameProvider>
+      </QueryClientProvider>
     );
 
     expect(getByText('C')).toBeTruthy();
   });
 
   it('handles null fighters gracefully', () => {
+    const queryClient = createTestQueryClient();
     const slotsWithInvalidFighter = [
       { id: 'slot-3', fighterId: 'non-existent', position: 0 },
     ];
 
     const { getByText } = render(
-      <GameProvider game={mockGame}>
-        <TierListRow
-          label="D"
-          color="hsl(90, 100%, 75%)"
-          active={false}
-          slots={slotsWithInvalidFighter as any}
-        />
-      </GameProvider>
+      <QueryClientProvider client={queryClient}>
+        <GameProvider game={mockGame}>
+          <TierListRow
+            label="D"
+            color="hsl(90, 100%, 75%)"
+            active={false}
+            slots={slotsWithInvalidFighter as any}
+          />
+        </GameProvider>
+      </QueryClientProvider>
     );
 
     expect(getByText('D')).toBeTruthy();

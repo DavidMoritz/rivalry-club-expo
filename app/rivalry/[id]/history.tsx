@@ -1,21 +1,21 @@
 import { useLocalSearchParams, Stack } from 'expo-router';
 import { StatusBar } from 'expo-status-bar';
-import React, { useState, useMemo, useCallback } from 'react';
+import React, { useState, useCallback } from 'react';
 import { Text, View, ActivityIndicator } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { generateClient } from 'aws-amplify/data';
 import type { Schema } from '../../../amplify/data/resource';
 
-import gameQuery from '../../../assets/cache/game-query.json';
 import { darkStyles, styles } from '../../../src/utils/styles';
 import { HamburgerMenu } from '../../../src/components/common/HamburgerMenu';
 import { ContestHistoryTable } from '../../../src/components/screens/parts/ContestHistoryTable';
 import { getMContest, MContest } from '../../../src/models/m-contest';
-import { getMGame, MGame } from '../../../src/models/m-game';
+import { MGame } from '../../../src/models/m-game';
 import { getMRivalry, MRivalry } from '../../../src/models/m-rivalry';
 import { getMUser } from '../../../src/models/m-user';
 import { RivalryProvider } from '../../../src/providers/rivalry';
+import { useGame } from '../../../src/providers/game';
 import { useDeleteMostRecentContestMutation } from '../../../src/controllers/c-rivalry';
 
 // Lazy client initialization to avoid crashes when Amplify isn't configured
@@ -51,14 +51,8 @@ export default function HistoryRoute() {
     }
   });
 
-  const game = useMemo(() => {
-    const games = gameQuery.data?.listGames?.items;
-    if (games && games.length > 0) {
-      return getMGame(games[0] as any);
-    }
-
-    return null;
-  }, []);
+  // Get game from global GameProvider (includes fighter stats)
+  const game = useGame();
 
   const {
     data: rivalryData,

@@ -52,8 +52,6 @@ export const GameProvider = ({
   const { data: fetchedGame } = useQuery({
     queryKey: ['game-with-fighters', GAME_ID],
     queryFn: async () => {
-      console.log('[GameProvider] Fetching game with fighters from DB...');
-
       const { data: fighters, errors } = await getClient().models.Fighter.list({
         filter: {
           gameId: {
@@ -67,8 +65,6 @@ export const GameProvider = ({
         console.error('[GameProvider] Error fetching fighters:', errors);
         throw new Error('Failed to fetch fighters');
       }
-
-      console.log('[GameProvider] Fetched', fighters.length, 'fighters with stats');
 
       // Calculate win percentages and rank fighters
       const fightersWithRanks = fighters.map((fighter) => {
@@ -104,15 +100,8 @@ export const GameProvider = ({
     if (fetchedGame && !game) {
       const mGame = getMGame(fetchedGame as any);
       setGame(mGame);
-      console.log('[GameProvider] Updated with game data from DB');
     }
   }, [fetchedGame, game]);
 
-  console.log('[GameProvider] Rendering with', game?.fighters?.items?.length || 0, 'fighters');
-
-  return (
-    <GameContext.Provider value={{ game, setGame }}>
-      {children}
-    </GameContext.Provider>
-  );
+  return <GameContext.Provider value={{ game, setGame }}>{children}</GameContext.Provider>;
 };

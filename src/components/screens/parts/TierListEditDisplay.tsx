@@ -407,6 +407,7 @@ export function TierListEditDisplay({ tierList, onChange }: TierListEditDisplayP
       >
         <CharacterDisplay
           fighter={fighter}
+          tierSlot={slot}
           hideName={true}
           height={45}
           zoomMultiplier={0.65}
@@ -547,6 +548,7 @@ export function TierListEditDisplay({ tierList, onChange }: TierListEditDisplayP
                   >
                     <CharacterDisplay
                       fighter={fighter}
+                      tierSlot={slot}
                       hideName={true}
                       height={45}
                       zoomMultiplier={0.65}

@@ -192,6 +192,7 @@ export function CurrentContest({
               </Text>
               <CharacterDisplay
                 fighter={fighterA}
+                tierSlot={contest?.tierSlotA}
                 hideName={true}
                 height={180}
                 width={140}
@@ -257,6 +258,7 @@ export function CurrentContest({
               </Text>
               <CharacterDisplay
                 fighter={fighterB}
+                tierSlot={contest?.tierSlotB}
                 hideName={true}
                 height={180}
                 width={140}

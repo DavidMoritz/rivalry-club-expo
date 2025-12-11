@@ -69,6 +69,7 @@ const TierListRow: React.FC<TierListRowProps> = (props) => {
               >
                 <CharacterDisplay
                   fighter={fighter}
+                  tierSlot={slot}
                   hideName={true}
                   height={50}
                   zoomMultiplier={0.65}

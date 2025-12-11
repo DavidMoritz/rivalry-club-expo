@@ -6,6 +6,7 @@ import { dateDisplay, fighterByIdFromGame, scoreDisplay } from '../../utils';
 import { MContest } from '../../models/m-contest';
 import { MGame } from '../../models/m-game';
 import { MRivalry } from '../../models/m-rivalry';
+import { MTierSlot } from '../../models/m-tier-slot';
 import { CharacterDisplay } from './CharacterDisplay';
 
 interface ContestRowProps {
@@ -20,6 +21,8 @@ export function ContestRow({ contest, game, rivalry, flip, shouldFadeOut }: Cont
   const [updatedDisplay, setUpdatedDisplay] = useState<string>('');
   const [fighterA, setFighterA] = useState<any>();
   const [fighterB, setFighterB] = useState<any>();
+  const [tierSlotA, setTierSlotA] = useState<MTierSlot>();
+  const [tierSlotB, setTierSlotB] = useState<MTierSlot>();
   const fadeAnim = useRef(new Animated.Value(1)).current;
 
   useEffect(() => {
@@ -39,15 +42,17 @@ export function ContestRow({ contest, game, rivalry, flip, shouldFadeOut }: Cont
   }, [shouldFadeOut, fadeAnim, contest.id]);
 
   useEffect(() => {
-    const tierSlotA = rivalry?.tierListA?.slots.find(
+    const foundTierSlotA = rivalry?.tierListA?.slots.find(
       (thisTierSlot) => thisTierSlot?.id === contest?.tierSlotAId
     );
-    const tierSlotB = rivalry?.tierListB?.slots.find(
+    const foundTierSlotB = rivalry?.tierListB?.slots.find(
       (thisTierSlot) => thisTierSlot?.id === contest?.tierSlotBId
     );
 
-    setFighterA(fighterByIdFromGame(game, tierSlotA?.fighterId || ''));
-    setFighterB(fighterByIdFromGame(game, tierSlotB?.fighterId || ''));
+    setTierSlotA(foundTierSlotA);
+    setTierSlotB(foundTierSlotB);
+    setFighterA(fighterByIdFromGame(game, foundTierSlotA?.fighterId || ''));
+    setFighterB(fighterByIdFromGame(game, foundTierSlotB?.fighterId || ''));
   }, [contest, game, rivalry]);
 
   if (!(contest?.result && fighterA && fighterB)) return null;
@@ -69,13 +74,23 @@ export function ContestRow({ contest, game, rivalry, flip, shouldFadeOut }: Cont
         <Text style={{ color: 'white', fontSize: 14 }}>{updatedDisplay}</Text>
       </View>
       <View style={[contestStyles.item, contest.result > 0 ? contestStyles.winner : null]}>
-        <CharacterDisplay fighter={flip ? fighterB : fighterA} hideName={true} height={75} />
+        <CharacterDisplay
+          fighter={flip ? fighterB : fighterA}
+          tierSlot={flip ? tierSlotB : tierSlotA}
+          hideName={true}
+          height={75}
+        />
       </View>
       <View style={contestStyles.item}>
         <Text style={{ color: 'white', fontSize: 14 }}>{scoreDisplay(contest.result)}</Text>
       </View>
       <View style={[contestStyles.item, contest.result < 0 ? contestStyles.winner : null]}>
-        <CharacterDisplay fighter={flip ? fighterA : fighterB} hideName={true} height={75} />
+        <CharacterDisplay
+          fighter={flip ? fighterA : fighterB}
+          tierSlot={flip ? tierSlotA : tierSlotB}
+          hideName={true}
+          height={75}
+        />
       </View>
     </Animated.View>
   );

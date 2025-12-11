@@ -24,7 +24,7 @@ const mockSlots = [
 describe('TierListRow', () => {
   it('renders tier label correctly', () => {
     const { getByText } = render(
-      <GameProvider value={mockGame}>
+      <GameProvider game={mockGame}>
         <TierListRow
           label="S"
           color="hsl(0, 100%, 75%)"
@@ -39,7 +39,7 @@ describe('TierListRow', () => {
 
   it('renders with correct background color', () => {
     const { getByText } = render(
-      <GameProvider value={mockGame}>
+      <GameProvider game={mockGame}>
         <TierListRow
           label="A"
           color="hsl(30, 100%, 75%)"
@@ -55,7 +55,7 @@ describe('TierListRow', () => {
 
   it('renders CharacterDisplay components for each slot', () => {
     const { getByText } = render(
-      <GameProvider value={mockGame}>
+      <GameProvider game={mockGame}>
         <TierListRow
           label="B"
           color="hsl(45, 100%, 75%)"
@@ -71,7 +71,7 @@ describe('TierListRow', () => {
 
   it('renders with empty slots array', () => {
     const { getByText } = render(
-      <GameProvider value={mockGame}>
+      <GameProvider game={mockGame}>
         <TierListRow
           label="C"
           color="hsl(60, 100%, 75%)"
@@ -90,7 +90,7 @@ describe('TierListRow', () => {
     ];
 
     const { getByText } = render(
-      <GameProvider value={mockGame}>
+      <GameProvider game={mockGame}>
         <TierListRow
           label="D"
           color="hsl(90, 100%, 75%)"

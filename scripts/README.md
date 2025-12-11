@@ -369,6 +369,75 @@ Failed: 0
 
 ---
 
+## update-fighter-positions.js
+
+Updates the `gamePosition` field for all fighters in both production and sandbox databases based on values from `assets/cache/game-query.json`.
+
+### Usage
+
+**Dry run (preview changes without applying):**
+```bash
+node scripts/update-fighter-positions.js
+```
+
+**Apply changes to both production and sandbox:**
+```bash
+node scripts/update-fighter-positions.js --apply
+```
+
+### What it does
+
+1. Reads fighter data from `assets/cache/game-query.json`
+2. Extracts fighter IDs and gamePosition values
+3. Updates the Fighter table in both:
+   - **Production** database (using `amplify_outputs.production.json`)
+   - **Sandbox** database (using `data-backup/amplify_outputs.sandbox.backup.json`)
+4. **Only updates the `gamePosition` field** - all other fighter data (name, contestCount, winCount, etc.) remains unchanged
+
+### Safety Features
+
+- **Dry run by default**: Running without `--apply` shows what would be updated without making changes
+- **Progress feedback**: Shows each fighter being updated with success/error status
+- **Error handling**: Continues processing all fighters even if some updates fail
+- **Rate limiting**: Adds 100ms delays between requests to avoid overwhelming the API
+- **Summary report**: Shows total successes and errors for each environment
+
+### Output example
+
+```
+Fighter gamePosition Update Script
+===================================
+MODE: DRY RUN (preview only)
+To apply changes, run: node scripts/update-fighter-positions.js --apply
+
+Reading game-query.json...
+Found 86 fighters to update
+
+Reading configuration files...
+
+=== Preview Production environment ===
+API URL: https://3nqbfghjnreungdjaafttjstbi.appsync-api.us-east-1.amazonaws.com/graphql
+Total fighters to update: 86
+⚠️  DRY RUN MODE - No changes will be made
+
+○ [1/86] Would update Mario (ID: 483cfead-6301-11ee-a22d-169ccb685861) → gamePosition: 1
+○ [2/86] Would update Donkey Kong (ID: 483d0208-6301-11ee-a22d-169ccb685861) → gamePosition: 2
+...
+
+Production Summary:
+  Success: 86
+  Errors: 0
+  Total: 86
+
+=== Preview Sandbox environment ===
+...
+
+✅ Dry run completed! No changes were made.
+To apply these changes, run: node scripts/update-fighter-positions.js --apply
+```
+
+---
+
 ## Notes
 
 - All DynamoDB scripts use the `us-east-1` region

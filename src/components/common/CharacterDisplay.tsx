@@ -1,13 +1,5 @@
 import { useState } from 'react';
-import {
-  Dimensions,
-  Image,
-  Modal,
-  Pressable,
-  Text,
-  View,
-  ViewStyle
-} from 'react-native';
+import { Dimensions, Image, Modal, Pressable, Text, View, ViewStyle } from 'react-native';
 
 import { styles } from '../../utils/styles';
 import { sourceCase } from '../../utils';
@@ -19,6 +11,9 @@ interface Fighter {
   id: string;
   name: string;
   gamePosition?: number;
+  winCount?: number | null;
+  contestCount?: number | null;
+  rank?: number;
 }
 
 interface CharacterDisplayProps {
@@ -31,13 +26,36 @@ interface CharacterDisplayProps {
   onPress?: () => void;
 }
 
-export function CharacterDisplay({ fighter, hideName, style, height, width, zoomMultiplier, onPress }: CharacterDisplayProps) {
+export function CharacterDisplay({
+  fighter,
+  hideName,
+  style,
+  height,
+  width,
+  zoomMultiplier,
+  onPress
+}: CharacterDisplayProps) {
   const [showFullImage, setShowFullImage] = useState(false);
   const screenWidth = Dimensions.get('window').width;
 
   if (!fighter) {
     return null;
   }
+
+  // Log fighter data on long press to debug stats display
+  const handleLongPress = () => {
+    console.log(
+      '[CharacterDisplay] Long press on fighter:',
+      fighter.name,
+      'winCount:',
+      fighter.winCount,
+      'contestCount:',
+      fighter.contestCount,
+      'rank:',
+      fighter.rank
+    );
+    setShowFullImage(true);
+  };
 
   const characterKey = sourceCase(fighter.name);
   const displayHeight = height || 100; // Use provided height or default to 100
@@ -62,7 +80,7 @@ export function CharacterDisplay({ fighter, hideName, style, height, width, zoom
       >
         <Pressable
           onPress={onPress}
-          onLongPress={() => setShowFullImage(true)}
+          onLongPress={handleLongPress}
           delayLongPress={300}
           style={{ flexShrink: 0 }}
         >
@@ -103,6 +121,39 @@ export function CharacterDisplay({ fighter, hideName, style, height, width, zoom
               resizeMode: 'contain'
             }}
           />
+          <View
+            style={{
+              marginTop: 20,
+              backgroundColor: 'rgba(0, 0, 0, 0.7)',
+              paddingHorizontal: 24,
+              paddingVertical: 16,
+              borderRadius: 12,
+              alignItems: 'center'
+            }}
+          >
+            {fighter.contestCount !== undefined && fighter.contestCount !== null && (
+              <Text style={{ color: 'white', fontSize: 18, marginBottom: 4 }}>
+                Contests: {fighter.contestCount}
+              </Text>
+            )}
+            {fighter.winCount !== undefined && fighter.winCount !== null && (
+              <Text style={{ color: 'white', fontSize: 18 }}>Wins: {fighter.winCount}</Text>
+            )}
+            {fighter.contestCount !== undefined &&
+              fighter.contestCount !== null &&
+              fighter.contestCount > 0 &&
+              fighter.winCount !== undefined &&
+              fighter.winCount !== null && (
+                <Text style={{ color: '#60a5fa', fontSize: 16, marginTop: 8 }}>
+                  Win Rate: {((fighter.winCount / fighter.contestCount) * 100).toFixed(1)}%
+                </Text>
+              )}
+            {fighter.rank !== undefined && (
+              <Text style={{ color: '#fbbf24', fontSize: 16, marginTop: 4 }}>
+                Rank: #{fighter.rank}
+              </Text>
+            )}
+          </View>
         </Pressable>
       </Modal>
     </>

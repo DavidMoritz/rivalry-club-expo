@@ -129,7 +129,7 @@ export function CurrentContest({
               marginStart: 80
             }}
           >
-            <Text style={{ fontSize: 16, color: 'transparent' }}>🔀 Reshuffle</Text>
+            <Text style={{ fontSize: 16, color: 'transparent' }}>Reshuffle</Text>
           </View>
         )}
       </View>
@@ -214,7 +214,7 @@ export function CurrentContest({
           {!fighterA && !fighterB && <Text style={{ color: '#e9d5ff' }}>Loading fighters...</Text>}
           {(fighterA || fighterB) && (
             <View style={contestStyles.item}>
-              <Text style={{ fontSize: 14, color: 'white' }}>Vs.</Text>
+              <Text style={{ fontSize: 14, color: 'white' }}>Vs</Text>
             </View>
           )}
           {fighterB && (

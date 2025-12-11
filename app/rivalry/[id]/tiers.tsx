@@ -6,14 +6,11 @@ import { useQuery } from '@tanstack/react-query';
 import { generateClient } from 'aws-amplify/data';
 import type { Schema } from '../../../amplify/data/resource';
 
-import gameQuery from '../../../assets/cache/game-query.json';
 import { Button } from '../../../src/components/common/Button';
 import { HamburgerMenu } from '../../../src/components/common/HamburgerMenu';
 import { TierListsDisplay } from '../../../src/components/screens/parts/TierListsDisplay';
-import { getMGame } from '../../../src/models/m-game';
 import { getMRivalry, MRivalry } from '../../../src/models/m-rivalry';
 import { getMUser } from '../../../src/models/m-user';
-import { GameProvider } from '../../../src/providers/game';
 import { RivalryProvider } from '../../../src/providers/rivalry';
 import { SyncedScrollViewContext, syncedScrollViewState } from '../../../src/providers/scroll-view';
 import { darkStyles, styles } from '../../../src/utils/styles';
@@ -39,16 +36,6 @@ export default function TiersRoute() {
 
   const [unlinked, setUnLinked] = useState<boolean>(false);
   const [rivalry, setRivalry] = useState<MRivalry | null>(null);
-
-  // Load game from cache - since there's only one game in the DB
-  const game = useMemo(() => {
-    const games = gameQuery.data?.listGames?.items;
-    if (games && games.length > 0) {
-      return getMGame(games[0] as any);
-    }
-
-    return null;
-  }, []);
 
   const { isLoading, isError, error } = useQuery({
     enabled: !!rivalryId,
@@ -130,8 +117,7 @@ export default function TiersRoute() {
         userBName={userBName}
         userId={userId}
       >
-        <GameProvider value={game}>
-          <SyncedScrollViewContext.Provider value={syncedScrollViewState}>
+        <SyncedScrollViewContext.Provider value={syncedScrollViewState}>
             <SafeAreaView style={[styles.container, darkStyles.container]}>
               {isLoading && (
                 <View style={{ flex: 1, alignItems: 'center', justifyContent: 'center' }}>
@@ -214,8 +200,7 @@ export default function TiersRoute() {
                 </>
               )}
             </SafeAreaView>
-          </SyncedScrollViewContext.Provider>
-        </GameProvider>
+        </SyncedScrollViewContext.Provider>
       </RivalryProvider>
       <StatusBar style="light" />
     </>

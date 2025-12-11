@@ -61,7 +61,7 @@ describe('TierListDisplay', () => {
     const mockTierList = createMockTierList();
 
     const { getByText } = render(
-      <GameProvider value={mockGame}>
+      <GameProvider game={mockGame}>
         <SyncedScrollViewContext.Provider value={syncedScrollViewState}>
           <TierListDisplay tierList={mockTierList} unlinked={false} />
         </SyncedScrollViewContext.Provider>
@@ -78,7 +78,7 @@ describe('TierListDisplay', () => {
     const mockTierList = createMockTierList();
 
     const { getByText } = render(
-      <GameProvider value={mockGame}>
+      <GameProvider game={mockGame}>
         <SyncedScrollViewContext.Provider value={syncedScrollViewState}>
           <TierListDisplay tierList={mockTierList} unlinked={false} />
         </SyncedScrollViewContext.Provider>
@@ -94,7 +94,7 @@ describe('TierListDisplay', () => {
     const mockTierList = createMockTierList();
 
     const { getByText } = render(
-      <GameProvider value={mockGame}>
+      <GameProvider game={mockGame}>
         <SyncedScrollViewContext.Provider value={syncedScrollViewState}>
           <TierListDisplay tierList={mockTierList} unlinked={true} />
         </SyncedScrollViewContext.Provider>

@@ -1,20 +1,17 @@
 import { Stack, useLocalSearchParams, useRouter } from 'expo-router';
 import { StatusBar } from 'expo-status-bar';
-import React, { useEffect, useMemo, useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { ActivityIndicator, SafeAreaView, Text, TouchableOpacity, View } from 'react-native';
 import { useQuery } from '@tanstack/react-query';
 import { generateClient } from 'aws-amplify/data';
 import type { Schema } from '../../../amplify/data/resource';
 
-import gameQuery from '../../../assets/cache/game-query.json';
 import { HamburgerMenu } from '../../../src/components/common/HamburgerMenu';
 import { TierListEditDisplay } from '../../../src/components/screens/parts/TierListEditDisplay';
 import { useUpdateTierSlotsMutation } from '../../../src/controllers/c-rivalry';
-import { getMGame } from '../../../src/models/m-game';
 import { getMRivalry, MRivalry } from '../../../src/models/m-rivalry';
 import { MTierList } from '../../../src/models/m-tier-list';
 import { getMUser } from '../../../src/models/m-user';
-import { GameProvider } from '../../../src/providers/game';
 import { RivalryProvider } from '../../../src/providers/rivalry';
 import { darkStyles, styles } from '../../../src/utils/styles';
 import { getStoredUuid } from '../../../src/lib/user-identity';
@@ -61,16 +58,6 @@ export default function TierListEditRoute() {
 
     loadUserIdFromStorage();
   }, [userIdParam]);
-
-  // Load game from cache
-  const game = useMemo(() => {
-    const games = gameQuery.data?.listGames?.items;
-    if (games && games.length > 0) {
-      return getMGame(games[0] as any);
-    }
-
-    return null;
-  }, []);
 
   const { isLoading, isError, error } = useQuery({
     enabled: !!rivalryId,
@@ -196,8 +183,7 @@ export default function TierListEditRoute() {
         userBName={userBName}
         userId={userId}
       >
-        <GameProvider value={game}>
-          <SafeAreaView style={[styles.container, darkStyles.container]}>
+        <SafeAreaView style={[styles.container, darkStyles.container]}>
             {isLoading && (
               <View style={{ flex: 1, alignItems: 'center', justifyContent: 'center' }}>
                 <ActivityIndicator size="large" color="white" />
@@ -324,8 +310,7 @@ export default function TierListEditRoute() {
                 </TouchableOpacity>
               </View>
             )}
-          </SafeAreaView>
-        </GameProvider>
+        </SafeAreaView>
       </RivalryProvider>
       <StatusBar style="light" />
     </>

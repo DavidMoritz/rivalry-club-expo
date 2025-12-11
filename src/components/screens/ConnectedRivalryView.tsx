@@ -139,10 +139,6 @@ export function ConnectedRivalryView({ navigation }: ConnectedRivalryViewProps):
 
     const isATheWinner = (rivalry.currentContest.result || 0) > 0;
 
-    // Update Fighter stats atomically (only after provisional threshold AND both users are human)
-    const userA = rivalry.userA;
-    const userB = rivalry.userB;
-
     if (
       rivalry.currentContest.tierSlotA &&
       (rivalry.currentContest.tierSlotA.contestCount ?? 0) >= PROVISIONAL_THRESHOLD

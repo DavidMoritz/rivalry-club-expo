@@ -22,7 +22,7 @@ describe('GameProvider', () => {
     };
 
     const { getByTestId } = render(
-      <GameProvider value={mockGame}>
+      <GameProvider game={mockGame}>
         <TestComponent />
       </GameProvider>,
     );
@@ -40,7 +40,7 @@ describe('GameProvider', () => {
     };
 
     const { getByTestId } = render(
-      <GameProvider value={null}>
+      <GameProvider game={null}>
         <TestComponent />
       </GameProvider>,
     );
@@ -61,7 +61,7 @@ describe('GameProvider', () => {
     };
 
     const { getByTestId } = render(
-      <GameProvider value={mockGame}>
+      <GameProvider game={mockGame}>
         <TestComponent />
       </GameProvider>,
     );

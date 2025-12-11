@@ -10,6 +10,7 @@ import { Auth } from './src/components/screens/Auth';
 import Home from './src/components/screens/Home';
 import { getCurrentUser } from './src/lib/amplify-auth';
 import { AllRivalriesProvider } from './src/providers/all-rivalries';
+import { GameProvider } from './src/providers/game';
 
 const queryClient = new QueryClient();
 
@@ -30,16 +31,20 @@ export default function App() {
     setSelectedGame(game);
   }
 
-  if (!entering) {
-    return (
-      <>
-        <Home onEnterClick={handleEnterClick} />
-        <StatusBar style="light" />
-      </>
-    );
-  }
-
-  return <AuthenticatedApp selectedGame={selectedGame} />;
+  return (
+    <QueryClientProvider client={queryClient}>
+      <GameProvider game={null}>
+        {!entering ? (
+          <>
+            <Home onEnterClick={handleEnterClick} />
+            <StatusBar style="light" />
+          </>
+        ) : (
+          <AuthenticatedApp selectedGame={selectedGame} />
+        )}
+      </GameProvider>
+    </QueryClientProvider>
+  );
 }
 
 function AuthenticatedApp({ selectedGame }: { selectedGame: Game | null}) {
@@ -75,11 +80,9 @@ function AuthenticatedApp({ selectedGame }: { selectedGame: Game | null}) {
 
   // No Auth screen - users start as anonymous and can optionally link accounts later
   return (
-    <QueryClientProvider client={queryClient}>
-      <AllRivalriesProvider userId={userId}>
-        <Access selectedGame={selectedGame} />
-      </AllRivalriesProvider>
+    <AllRivalriesProvider userId={userId}>
+      <Access selectedGame={selectedGame} />
       <StatusBar style="light" />
-    </QueryClientProvider>
+    </AllRivalriesProvider>
   );
 }

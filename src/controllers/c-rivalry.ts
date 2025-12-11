@@ -95,10 +95,9 @@ export async function ensureTierListIntegrity(
   );
 
   // Re-fetch tier slots from DB to confirm
-  const { data: tierSlots, errors: tierSlotsErrors } =
-    await getClient().models.TierSlot.list({
-      filter: { tierListId: { eq: tierList.id } }
-    });
+  const { data: tierSlots, errors: tierSlotsErrors } = await getClient().models.TierSlot.list({
+    filter: { tierListId: { eq: tierList.id } }
+  });
 
   if (tierSlotsErrors || !tierSlots) {
     console.error('[ensureTierListIntegrity] Failed to fetch tier slots from DB');
@@ -112,10 +111,9 @@ export async function ensureTierListIntegrity(
     );
 
     // Fetch all fighters for the game
-    const { data: fighters, errors: fightersErrors } =
-      await getClient().models.Fighter.list({
-        filter: { gameId: { eq: gameId } }
-      });
+    const { data: fighters, errors: fightersErrors } = await getClient().models.Fighter.list({
+      filter: { gameId: { eq: gameId } }
+    });
 
     if (fightersErrors || !fighters || fighters.length === 0) {
       console.error('[ensureTierListIntegrity] Failed to fetch fighters');
@@ -123,8 +121,8 @@ export async function ensureTierListIntegrity(
     }
 
     // Identify missing fighters
-    const existingFighterIds = new Set(tierSlots.map(ts => ts.fighterId));
-    const missingFighters = fighters.filter(f => !existingFighterIds.has(f.id));
+    const existingFighterIds = new Set(tierSlots.map((ts) => ts.fighterId));
+    const missingFighters = fighters.filter((f) => !existingFighterIds.has(f.id));
 
     if (missingFighters.length === 0) {
       console.warn('[ensureTierListIntegrity] No missing fighters found, but slot count mismatch');
@@ -136,7 +134,7 @@ export async function ensureTierListIntegrity(
     );
 
     // Create missing tier slots
-    const createPromises = missingFighters.map(fighter =>
+    const createPromises = missingFighters.map((fighter) =>
       getClient().models.TierSlot.create({
         tierListId: tierList.id,
         fighterId: fighter.id,
@@ -147,14 +145,16 @@ export async function ensureTierListIntegrity(
     );
 
     const results = await Promise.all(createPromises);
-    const createErrors = results.filter(r => r.errors).flatMap(r => r.errors);
+    const createErrors = results.filter((r) => r.errors).flatMap((r) => r.errors);
 
     if (createErrors.length > 0) {
       console.error('[ensureTierListIntegrity] Failed to create some tier slots:', createErrors);
       return false;
     }
 
-    console.log(`[ensureTierListIntegrity] Successfully created ${missingFighters.length} tier slots`);
+    console.log(
+      `[ensureTierListIntegrity] Successfully created ${missingFighters.length} tier slots`
+    );
     return true;
   }
 
@@ -330,7 +330,9 @@ export const useRivalryWithAllInfoQuery = ({ rivalry, onSuccess }: RivalryQueryP
 
         // If we created missing tier slots, re-fetch to get updated data
         if (needsRefresh) {
-          console.log('[useRivalryWithAllInfoQuery] Re-fetching rivalry after creating missing tier slots');
+          console.log(
+            '[useRivalryWithAllInfoQuery] Re-fetching rivalry after creating missing tier slots'
+          );
           const { data: refreshedRivalry } = await getClient().models.Rivalry.get(
             { id: rivalry?.id as string },
             {
@@ -347,7 +349,10 @@ export const useRivalryWithAllInfoQuery = ({ rivalry, onSuccess }: RivalryQueryP
                   tierSlotsArray.push(tierSlot);
                 }
               }
-              refreshedTierListsArray.push({ ...tierListData, tierSlots: { items: tierSlotsArray } });
+              refreshedTierListsArray.push({
+                ...tierListData,
+                tierSlots: { items: tierSlotsArray }
+              });
             }
             mRivalry.setMTierLists({ items: refreshedTierListsArray } as any);
           }
@@ -545,14 +550,20 @@ export const useManuallyPositionTierSlotMutation = ({
   const queryClient = useQueryClient();
 
   return useMutation({
-    mutationFn: async ({ tierSlotId, targetPosition }: { tierSlotId: string; targetPosition: number }) => {
+    mutationFn: async ({
+      tierSlotId,
+      targetPosition
+    }: {
+      tierSlotId: string;
+      targetPosition: number;
+    }) => {
       const tierList = tierListSignifier === 'A' ? rivalry?.tierListA : rivalry?.tierListB;
 
       if (!tierList) {
         throw new Error('Tier list not found');
       }
 
-      const tierSlot = tierList.slots.find(s => s.id === tierSlotId);
+      const tierSlot = tierList.slots.find((s) => s.id === tierSlotId);
       if (!tierSlot) {
         throw new Error('Tier slot not found');
       }
@@ -600,6 +611,7 @@ export const useUpdateCurrentContestShuffleTierSlotsMutation = ({
 
       // Sample tier slot A until we get a different fighter
       let tierSlotA = rivalry?.tierListA?.sampleEligibleSlot();
+      console.log('sampleEligibleSlot called');
       let attempts = 0;
       const maxAttempts = 100; // Safety limit
 
@@ -627,7 +639,7 @@ export const useUpdateCurrentContestShuffleTierSlotsMutation = ({
       if (tierSlotA.position === null || tierSlotA.position === undefined) {
         rivalry.tierListA?.positionUnknownFighter(tierSlotA, FIGHTER_COUNT - 1);
         // Collect all affected tier slots from tierListA
-        rivalry.tierListA?.slots.forEach(slot => {
+        rivalry.tierListA?.slots.forEach((slot) => {
           if (slot.position !== null && slot.position !== undefined) {
             tierSlotsToUpdate.push({ id: slot.id, position: slot.position });
           }
@@ -637,7 +649,7 @@ export const useUpdateCurrentContestShuffleTierSlotsMutation = ({
       if (tierSlotB.position === null || tierSlotB.position === undefined) {
         rivalry.tierListB?.positionUnknownFighter(tierSlotB, FIGHTER_COUNT - 1);
         // Collect all affected tier slots from tierListB
-        rivalry.tierListB?.slots.forEach(slot => {
+        rivalry.tierListB?.slots.forEach((slot) => {
           if (slot.position !== null && slot.position !== undefined) {
             tierSlotsToUpdate.push({ id: slot.id, position: slot.position });
           }
@@ -651,10 +663,13 @@ export const useUpdateCurrentContestShuffleTierSlotsMutation = ({
         );
 
         const tierSlotResults = await Promise.all(tierSlotUpdatePromises);
-        const tierSlotErrors = tierSlotResults.filter(r => r.errors).flatMap(r => r.errors);
+        const tierSlotErrors = tierSlotResults.filter((r) => r.errors).flatMap((r) => r.errors);
 
         if (tierSlotErrors.length > 0) {
-          console.error('[useUpdateCurrentContestShuffleTierSlotsMutation] Failed to update tier slots:', tierSlotErrors);
+          console.error(
+            '[useUpdateCurrentContestShuffleTierSlotsMutation] Failed to update tier slots:',
+            tierSlotErrors
+          );
           throw new Error('Failed to update tier slot positions');
         }
       }
@@ -760,11 +775,12 @@ export const useDeleteMostRecentContestMutation = ({
       }
 
       // Reset the result and bias on the most recent contest (making it unresolved)
-      const { data: resetContestData, errors: resetErrors } = await getClient().models.Contest.update({
-        id: mostRecentContest.id,
-        result: 0,
-        bias: 0
-      });
+      const { data: resetContestData, errors: resetErrors } =
+        await getClient().models.Contest.update({
+          id: mostRecentContest.id,
+          result: 0,
+          bias: 0
+        });
 
       if (resetErrors) {
         throw new Error(resetErrors[0]?.message || 'Failed to reset contest');
@@ -934,14 +950,15 @@ export const useCreateRivalryMutation = ({
               fighterId: fighter.id,
               position: null
             }));
-            console.log(`[useCreateRivalryMutation] Created ${fighters.length} fighters with null positions`);
+            console.log(
+              `[useCreateRivalryMutation] Created ${fighters.length} fighters with null positions`
+            );
           }
         } else {
           // No template tier list found, fetch fighters with null positions
-          const { data: fighters, errors: fightersErrors } =
-            await getClient().models.Fighter.list({
-              filter: { gameId: { eq: gameId } }
-            });
+          const { data: fighters, errors: fightersErrors } = await getClient().models.Fighter.list({
+            filter: { gameId: { eq: gameId } }
+          });
 
           if (fightersErrors || !fighters || fighters.length === 0) {
             throw new Error('Failed to fetch fighters');
@@ -951,7 +968,9 @@ export const useCreateRivalryMutation = ({
             fighterId: fighter.id,
             position: null
           }));
-          console.log(`[useCreateRivalryMutation] Created ${fighters.length} fighters with null positions`);
+          console.log(
+            `[useCreateRivalryMutation] Created ${fighters.length} fighters with null positions`
+          );
         }
       } else {
         // No rivalry with contestCount > 2 found, fetch fighters with null positions
@@ -967,7 +986,9 @@ export const useCreateRivalryMutation = ({
           fighterId: fighter.id,
           position: null
         }));
-        console.log(`[useCreateRivalryMutation] Created ${fighters.length} fighters with null positions (no template found)`);
+        console.log(
+          `[useCreateRivalryMutation] Created ${fighters.length} fighters with null positions (no template found)`
+        );
       }
 
       // Create tier list for userA (initiator) only
@@ -1152,10 +1173,11 @@ export const useCreateNpcRivalryMutation = ({
       }
 
       if (allTierSlotErrors.length > 0) {
-        console.error('[useCreateNpcRivalryMutation] Tier slot creation errors:', allTierSlotErrors);
-        throw new Error(
-          `Failed to create ${allTierSlotErrors.length} tier slots`
+        console.error(
+          '[useCreateNpcRivalryMutation] Tier slot creation errors:',
+          allTierSlotErrors
         );
+        throw new Error(`Failed to create ${allTierSlotErrors.length} tier slots`);
       }
 
       return getMRivalry({ rivalry: rivalryData as any });
@@ -1182,9 +1204,10 @@ export const useAcceptRivalryMutation = ({ onSuccess, onError }: AcceptRivalryMu
       }
 
       // First, get the rivalry details to know which users and game are involved
-      const { data: rivalryData, errors: rivalryFetchErrors } = await getClient().models.Rivalry.get({
-        id: rivalryId
-      });
+      const { data: rivalryData, errors: rivalryFetchErrors } =
+        await getClient().models.Rivalry.get({
+          id: rivalryId
+        });
 
       if (rivalryFetchErrors || !rivalryData) {
         throw new Error(rivalryFetchErrors?.[0]?.message || 'Failed to fetch rivalry');
@@ -1248,7 +1271,9 @@ export const useAcceptRivalryMutation = ({ onSuccess, onError }: AcceptRivalryMu
               fighterId: fighter.id,
               position: null
             }));
-            console.log(`[useAcceptRivalryMutation] Created ${fighters.length} fighters with null positions`);
+            console.log(
+              `[useAcceptRivalryMutation] Created ${fighters.length} fighters with null positions`
+            );
           }
         } else {
           // No template tier list found, use null positions
@@ -1256,7 +1281,9 @@ export const useAcceptRivalryMutation = ({ onSuccess, onError }: AcceptRivalryMu
             fighterId: fighter.id,
             position: null
           }));
-          console.log(`[useAcceptRivalryMutation] Created ${fighters.length} fighters with null positions`);
+          console.log(
+            `[useAcceptRivalryMutation] Created ${fighters.length} fighters with null positions`
+          );
         }
       } else {
         // No rivalry with contestCount > 2 found, use null positions

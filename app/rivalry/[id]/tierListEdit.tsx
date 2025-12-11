@@ -154,7 +154,12 @@ export default function TierListEditRoute() {
     <>
       <Stack.Screen options={{ title: 'Edit Tier List' }} />
       <HamburgerMenu />
-      <RivalryProvider rivalry={rivalry} userAName={userAName} userBName={userBName} userId={userId}>
+      <RivalryProvider
+        rivalry={rivalry}
+        userAName={userAName}
+        userBName={userBName}
+        userId={userId}
+      >
         <GameProvider value={game}>
           <SafeAreaView style={[styles.container, darkStyles.container]}>
             {isLoading && (
@@ -193,10 +198,7 @@ export default function TierListEditRoute() {
             {!isLoading && !isError && rivalry && userTierList && (
               <View style={{ flex: 1, padding: 16 }}>
                 <Text
-                  style={[
-                    darkStyles.text,
-                    { fontSize: 24, fontWeight: 'bold', marginBottom: 16 }
-                  ]}
+                  style={[darkStyles.text, { fontSize: 24, fontWeight: 'bold', marginBottom: 16 }]}
                 >
                   Edit Your Tier List
                 </Text>
@@ -227,7 +229,15 @@ export default function TierListEditRoute() {
               </View>
             )}
 
-            {!isLoading && !isError && (!rivalry || !userTierList) && (
+            {!isLoading && !isError && !rivalry && (
+              <View style={{ flex: 1, alignItems: 'center', justifyContent: 'center' }}>
+                <Text style={[styles.text, darkStyles.text, { fontSize: 18 }]}>
+                  Could not load rivalry
+                </Text>
+              </View>
+            )}
+
+            {!isLoading && !isError && !userTierList && (
               <View style={{ flex: 1, alignItems: 'center', justifyContent: 'center' }}>
                 <Text style={[styles.text, darkStyles.text, { fontSize: 18 }]}>
                   Could not load tier list

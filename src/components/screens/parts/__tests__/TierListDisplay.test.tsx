@@ -1,11 +1,21 @@
 import React from 'react';
 import { render, waitFor } from '@testing-library/react-native';
+import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 
 import { TierListDisplay } from '../TierListDisplay';
 import { GameProvider } from '../../../../providers/game';
+import { RivalryProvider } from '../../../../providers/rivalry';
 import { SyncedScrollViewContext, syncedScrollViewState } from '../../../../providers/scroll-view';
 import { getMGame } from '../../../../models/m-game';
 import { getMTierList } from '../../../../models/m-tier-list';
+import { getMRivalry } from '../../../../models/m-rivalry';
+
+const queryClient = new QueryClient({
+  defaultOptions: {
+    queries: { retry: false },
+    mutations: { retry: false },
+  },
+});
 
 const mockGame = getMGame({
   id: 'game-1',
@@ -36,6 +46,15 @@ const createMockTierList = () => {
     }
   } as any);
 };
+
+const mockRivalry = getMRivalry({
+  rivalry: {
+    id: 'rivalry-1',
+    userAId: 'user-1',
+    userBId: 'user-2',
+    gameId: 'game-1',
+  } as any
+});
 
 describe('TierListDisplay', () => {
   it.skip('renders without crashing', async () => {
@@ -99,11 +118,15 @@ describe('TierListDisplay', () => {
     } as any);
 
     const { root } = render(
-      <GameProvider value={mockGame}>
-        <SyncedScrollViewContext.Provider value={syncedScrollViewState}>
-          <TierListDisplay tierList={emptyTierList} unlinked={false} />
-        </SyncedScrollViewContext.Provider>
-      </GameProvider>
+      <QueryClientProvider client={queryClient}>
+        <RivalryProvider value={mockRivalry}>
+          <GameProvider value={mockGame}>
+            <SyncedScrollViewContext.Provider value={syncedScrollViewState}>
+              <TierListDisplay tierList={emptyTierList} tierListSignifier="A" unlinked={false} />
+            </SyncedScrollViewContext.Provider>
+          </GameProvider>
+        </RivalryProvider>
+      </QueryClientProvider>
     );
 
     expect(root).toBeTruthy();

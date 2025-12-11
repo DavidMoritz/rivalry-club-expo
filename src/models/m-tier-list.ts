@@ -22,6 +22,7 @@ export interface MTierList extends TierList {
   getPrestige(): number;
   moveDownATier(): boolean;
   moveUpATier(): boolean;
+  positionUnknownFighter(tierSlot: MTierSlot, newPosition: number): void;
   prestigeDisplay: string;
   rivalry?: MRivalry;
   sampleEligibleSlot(): MTierSlot;
@@ -55,7 +56,7 @@ export const TIERS = [
 
 export type Tier = (typeof TIERS)[number];
 
-export type TierWithSlots = Tier & { slots: TierSlot[] };
+export type TierWithSlots = Tier & { slots: MTierSlot[] };
 
 export function getMTierList(tierList: TierList): MTierList {
   // constructors
@@ -185,6 +186,35 @@ export function getMTierList(tierList: TierList): MTierList {
 
       // Recent fighters are benched several rounds before rejoining rotation.
       const eligibleSlots = this.eligibleTierSlots();
+
+      // NEW: Check if current tier is full (12 positioned fighters)
+      const BASE_PER_TIER = Math.floor(FIGHTER_COUNT / 7); // 12
+      const positionedInCurrentTier = eligibleSlots.filter(
+        slot => slot.position !== null && slot.position !== undefined
+      ).length;
+
+      // NEW: If tier not full, prioritize unknown fighters
+      if (positionedInCurrentTier < BASE_PER_TIER) {
+        const unknownFighters = this.slots.filter(
+          slot => slot.position === null || slot.position === undefined
+        );
+
+        if (unknownFighters.length > 0) {
+          // Avoid current contest fighter if possible
+          const isA = this.rivalry?.tierListA === this;
+          const currentContestSlotId = isA
+            ? this.rivalry.currentContest?.tierSlotAId
+            : this.rivalry.currentContest?.tierSlotBId;
+
+          const availableUnknown = currentContestSlotId
+            ? unknownFighters.filter(slot => slot.id !== currentContestSlotId)
+            : unknownFighters;
+
+          return sample(availableUnknown.length > 0 ? availableUnknown : unknownFighters) as MTierSlot;
+        }
+      }
+
+      // EXISTING: Continue with normal sampling logic if tier is full or no unknown fighters
       let benchedRounds = 30;
       const reduceBenchedRoundsPerAttempt = 5;
       const isA = this.rivalry?.tierListA === this;
@@ -235,6 +265,34 @@ export function getMTierList(tierList: TierList): MTierList {
       }
 
       return sample(selectSlots) as MTierSlot;
+    },
+    positionUnknownFighter(tierSlot: MTierSlot, newPosition: number) {
+      // Clamp position to valid range (0-85, 0-based)
+      const clampedPosition = Math.max(0, Math.min(newPosition, FIGHTER_COUNT - 1));
+
+      // Find the tier slot in our list
+      const slotIndex = this.slots.findIndex(s => s.id === tierSlot.id);
+      if (slotIndex === -1) {
+        console.warn('[MTierList.positionUnknownFighter] Tier slot not found:', tierSlot.id);
+        return;
+      }
+
+      // Assign the position to the target tier slot
+      tierSlot.position = clampedPosition;
+
+      // Handle collisions: increment positions >= clampedPosition for other slots
+      this.slots.forEach(slot => {
+        if (slot.id !== tierSlot.id &&
+            slot.position !== null &&
+            slot.position >= clampedPosition) {
+          slot.position += 1;
+        }
+      });
+
+      // Re-sort slots by position (nulls at end)
+      this.slots = sortBy(this.slots, [
+        (slot) => slot.position === null ? Infinity : slot.position
+      ]);
     }
   };
 }

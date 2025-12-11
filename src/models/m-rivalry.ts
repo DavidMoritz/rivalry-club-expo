@@ -41,9 +41,7 @@ export interface MRivalry extends Rivalry {
   mContests: MContest[];
   setCurrentContest: (contest: MContest) => void;
   setMContests: (contestConnection: ModelContestConnection | undefined) => void;
-  setMTierLists: (
-    tierListConnection: ModelTierListConnection | undefined,
-  ) => void;
+  setMTierLists: (tierListConnection: ModelTierListConnection | undefined) => void;
   // title: string;
   tierListA?: MTierList;
   tierListB?: MTierList;
@@ -125,17 +123,33 @@ export function getMRivalry({ rivalry }: GetMRivalryProps): MRivalry {
       const winner = this.currentContest.getWinner();
       const loser = this.currentContest.getLoser();
 
-      if (
-        !(
-          winner?.tierList &&
-          winner?.tierSlot &&
-          loser?.tierList &&
-          loser?.tierSlot
-        )
-      ) {
+      if (!(winner?.tierList && winner?.tierSlot && loser?.tierList && loser?.tierSlot)) {
         return;
       }
 
+      // Arbitrary number to allow rapid tier placement of new fighters
+      const POSITION_BIAS = 14;
+      const MIDPOINT = 42; // midpoint (0-based: 85/2) if also unknown
+      // NEW: Position unknown fighters BEFORE adjusting positions
+      const result = this.currentContest.result as number;
+
+      // Position unknown fighter for winner
+      if (winner.tierSlot.position === null || winner.tierSlot.position === undefined) {
+        const enemyPosition = loser.tierSlot.position ?? MIDPOINT;
+        const offset = Math.abs(result) * POSITION_BIAS; // result is 1, 2, or 3
+        const calculatedPosition = enemyPosition - offset; // winner moves UP (lower position number)
+        winner.tierList.positionUnknownFighter(winner.tierSlot, calculatedPosition);
+      }
+
+      // Position unknown fighter for loser
+      if (loser.tierSlot.position === null || loser.tierSlot.position === undefined) {
+        const enemyPosition = winner.tierSlot.position ?? MIDPOINT;
+        const offset = Math.abs(result) * POSITION_BIAS;
+        const calculatedPosition = enemyPosition + offset; // loser moves DOWN (higher position number)
+        loser.tierList.positionUnknownFighter(loser.tierSlot, calculatedPosition);
+      }
+
+      // EXISTING: Continue with normal standings adjustment
       const stocks = Math.abs(this.currentContest.result as number);
       const MOVEMENT_DIRECTIONS = 2;
 
@@ -154,17 +168,12 @@ export function getMRivalry({ rivalry }: GetMRivalryProps): MRivalry {
       if (additionalMove) {
         const winnerIsOnLowestTier =
           ((winner.tierList.standing as number) + 1) % TIERS.length === 0;
-        const loserIsOnHighestTier =
-          (loser.tierList.standing as number) % TIERS.length === 0;
+        const loserIsOnHighestTier = (loser.tierList.standing as number) % TIERS.length === 0;
         const preferLoserToMove =
           !loserIsOnHighestTier &&
-          ((nudge && nudge > 0) ||
-            (nudge === undefined && Math.random() < 0.5));
+          ((nudge && nudge > 0) || (nudge === undefined && Math.random() < 0.5));
 
-        if (
-          (winnerIsOnLowestTier || preferLoserToMove) &&
-          loser.tierList.moveUpATier()
-        ) {
+        if ((winnerIsOnLowestTier || preferLoserToMove) && loser.tierList.moveUpATier()) {
           this.currentContest.bias = 1;
         } else {
           winner?.tierList.moveDownATier();
@@ -175,7 +184,7 @@ export function getMRivalry({ rivalry }: GetMRivalryProps): MRivalry {
       const tlA = this.tierListA;
       const tlB = this.tierListB;
 
-      while ([tlA, tlB].every(tl => tl.getPrestige() > 0)) {
+      while ([tlA, tlB].every((tl) => tl.getPrestige() > 0)) {
         tlA.standing = Math.max((tlA.standing as number) - TIERS.length, 0);
         tlB.standing = Math.max((tlB.standing as number) - TIERS.length, 0);
       }
@@ -186,14 +195,7 @@ export function getMRivalry({ rivalry }: GetMRivalryProps): MRivalry {
       const winner = contest.getWinner();
       const loser = contest.getLoser();
 
-      if (
-        !(
-          winner?.tierList &&
-          winner?.tierSlot &&
-          loser?.tierList &&
-          loser?.tierSlot
-        )
-      ) {
+      if (!(winner?.tierList && winner?.tierSlot && loser?.tierList && loser?.tierSlot)) {
         return;
       }
 
@@ -249,13 +251,20 @@ export function getMRivalry({ rivalry }: GetMRivalryProps): MRivalry {
       const afterPrestigeA = tlA.getPrestige();
       const afterPrestigeB = tlB.getPrestige();
 
-      if (currentPrestigeA === 0 && currentPrestigeB === 0 &&
-          afterPrestigeA > 0 && afterPrestigeB > 0) {
+      if (
+        currentPrestigeA === 0 &&
+        currentPrestigeB === 0 &&
+        afterPrestigeA > 0 &&
+        afterPrestigeB > 0
+      ) {
         // Both gained prestige during move reversals
         // This means they both had prestige before adjustStanding, which removed it
         // We need to restore it - keep the current standings (prestige already added by move reversals)
-      } else if (currentPrestigeA === 0 && currentPrestigeB === 0 &&
-                 (afterPrestigeA === 0 || afterPrestigeB === 0)) {
+      } else if (
+        currentPrestigeA === 0 &&
+        currentPrestigeB === 0 &&
+        (afterPrestigeA === 0 || afterPrestigeB === 0)
+      ) {
         // At least one is still at prestige 0 after reversals
         // No prestige was removed during adjustStanding, standings are correct
       }
@@ -303,9 +312,7 @@ export function getMRivalry({ rivalry }: GetMRivalryProps): MRivalry {
           .map((ctst: Contest | null) => ctst && getMContest(ctst))
           .filter(Boolean) as MContest[]) || [];
 
-      this.currentContest = this.mContests.find(
-        ctst => ctst.id === this.currentContestId,
-      );
+      this.currentContest = this.mContests.find((ctst) => ctst.id === this.currentContestId);
     },
     setMTierLists(tierListConnection: ModelTierListConnection | undefined) {
       const tLists =
@@ -320,12 +327,12 @@ export function getMRivalry({ rivalry }: GetMRivalryProps): MRivalry {
           })
           .filter(Boolean) as MTierList[]) || [];
 
-      this.tierListA = tLists.find(tL => tL.userId === this.userAId);
-      this.tierListB = tLists.find(tL => tL.userId === this.userBId);
+      this.tierListA = tLists.find((tL) => tL.userId === this.userAId);
+      this.tierListB = tLists.find((tL) => tL.userId === this.userBId);
 
       if (!this.tierListA || !this.tierListB) {
         console.warn('[MRivalry.setMTierLists] Failed to match tier lists to users');
       }
-    },
+    }
   };
 }

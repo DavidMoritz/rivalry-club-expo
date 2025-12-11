@@ -52,13 +52,19 @@ export function TierListEditDisplay({ tierList, onChange }: TierListEditDisplayP
     setUnknownSlots(unknown);
   }, [tierList]);
 
-  const moveSlot = (fromIndex: number, toIndex: number, isFromUnknown = false) => {
+  const moveSlot = (
+    fromIndex: number,
+    toIndex: number,
+    isFromUnknown = false,
+    shiftDirection: 'up' | 'down' = 'down'
+  ) => {
     if (!isFromUnknown && fromIndex === toIndex) return;
 
     console.log('[moveSlot] START', {
       fromIndex,
       toIndex,
       isFromUnknown,
+      shiftDirection,
       positionedSlotsLength: positionedSlots.length,
       selectedSlotId: selectedSlot?.id
     });
@@ -75,26 +81,43 @@ export function TierListEditDisplay({ tierList, onChange }: TierListEditDisplayP
 
       const [movedSlot] = newUnknownSlots.splice(unknownIndex, 1);
 
-      // Create array sorted by position for insertion
-      const sortedSlots = [...positionedSlots].sort(
-        (a, b) => (a.position || 0) - (b.position || 0)
-      );
+      // Handle collision: check if there's already a slot at toIndex
+      const existingSlotAtPosition = positionedSlots.find((s) => s.position === toIndex);
 
-      // Insert the moved slot at the target index
-      // toIndex represents the desired final position in the sequential array
-      sortedSlots.splice(toIndex, 0, movedSlot);
+      if (existingSlotAtPosition) {
+        // There's a collision - shift other slots
+        newSlots = positionedSlots.map((slot) => {
+          if (shiftDirection === 'down') {
+            // Label click: shift slots at targetPosition and above to higher positions
+            if ((slot.position || 0) >= toIndex) {
+              return { ...slot, position: (slot.position || 0) + 1 };
+            }
+          } else {
+            // Background click: shift slots at targetPosition and above to lower positions
+            if ((slot.position || 0) >= toIndex) {
+              return { ...slot, position: (slot.position || 0) - 1 };
+            }
+          }
+          return slot;
+        });
+      } else {
+        // No collision - just use existing slots
+        newSlots = [...positionedSlots];
+      }
 
-      // Now reindex all slots sequentially to handle any collisions
-      newSlots = sortedSlots.map((slot, index) => ({
-        ...slot,
-        position: index
-      }));
+      // Set the slot's position to the target position
+      movedSlot.position = toIndex;
 
-      console.log('[moveSlot] isFromUnknown - inserted and reindexed', {
+      // Add the moved slot and sort by position
+      newSlots = [...newSlots, movedSlot].sort((a, b) => (a.position || 0) - (b.position || 0));
+
+      console.log('[moveSlot] isFromUnknown - handled collision', {
         toIndex,
+        hadCollision: !!existingSlotAtPosition,
+        shiftDirection,
         movedSlotId: movedSlot.id,
-        newSlotsLength: newSlots.length,
-        firstFewPositions: newSlots.slice(0, 5).map((s) => ({ id: s.id, position: s.position }))
+        movedSlotPosition: movedSlot.position,
+        newSlotsLength: newSlots.length
       });
 
       setUnknownSlots(newUnknownSlots);
@@ -105,11 +128,13 @@ export function TierListEditDisplay({ tierList, onChange }: TierListEditDisplayP
       newSlots.splice(toIndex, 0, movedSlot);
     }
 
-    // Always reindex sequentially to ensure no collisions
-    const updatedSlots = newSlots.map((slot, index) => ({
-      ...slot,
-      position: index
-    }));
+    // Update positions only for positioned fighters (sequential reindexing for moved within positioned)
+    const updatedSlots = isFromUnknown
+      ? newSlots // Already have correct positions when moving from unknown
+      : newSlots.map((slot, index) => ({
+          ...slot,
+          position: index
+        }));
 
     console.log('[moveSlot] After processing', {
       updatedSlotsLength: updatedSlots.length,
@@ -166,36 +191,19 @@ export function TierListEditDisplay({ tierList, onChange }: TierListEditDisplayP
   const handleTierLabelClick = (tierIndex: number) => {
     if (!selectedSlot) return;
 
-    // Sort slots to find actual occupied positions
-    const sortedSlots = [...positionedSlots].sort((a, b) => (a.position || 0) - (b.position || 0));
-
-    // Calculate tier boundaries based on fighter count
-    const tierStartPosition = TIERS.slice(0, tierIndex).reduce(
-      (sum, t) => sum + t.fightersCount,
-      0
-    );
-
-    // Find which array index corresponds to the first slot in this tier
-    // We want to insert before the first slot that belongs to this tier
-    let targetIndex = sortedSlots.length; // Default to end if no slots in or after this tier
-    for (let i = 0; i < sortedSlots.length; i++) {
-      const slotPos = sortedSlots[i].position || 0;
-      if (slotPos >= tierStartPosition) {
-        targetIndex = i; // Insert before this slot
-        break;
-      }
-    }
+    // Calculate the start index of the clicked tier (0-based position)
+    const targetPosition = TIERS.slice(0, tierIndex).reduce((sum, t) => sum + t.fightersCount, 0);
 
     console.log('[handleTierLabelClick]', {
       tierIndex,
-      tierStartPosition,
-      targetIndex,
-      sortedSlotsLength: sortedSlots.length,
-      selectedSlot: selectedSlot.id
+      targetPosition,
+      selectedSlot: selectedSlot.id,
+      positionedSlotsCount: positionedSlots.length
     });
 
-    // Move the unknown fighter to the start of the tier (insert at targetIndex)
-    moveSlot(-1, targetIndex, true);
+    // Move the unknown fighter to the start of the tier
+    // Shift existing characters DOWN (higher positions) to make room
+    moveSlot(-1, targetPosition, true, 'down');
 
     // Clear selection after move
     setSelectedSlot(null);
@@ -208,39 +216,24 @@ export function TierListEditDisplay({ tierList, onChange }: TierListEditDisplayP
     const isFromUnknown = unknownSlots.findIndex((s) => s.id === selectedSlot.id) !== -1;
     if (!isFromUnknown) return; // Only allow moving unknown fighters via tier background
 
-    // Sort slots to find actual occupied positions
-    const sortedSlots = [...positionedSlots].sort((a, b) => (a.position || 0) - (b.position || 0));
-
-    // Calculate tier boundaries based on fighter count
+    // Calculate the end index of the clicked tier (0-based position)
     const tierStartPosition = TIERS.slice(0, tierIndex).reduce(
       (sum, t) => sum + t.fightersCount,
       0
     );
-    const tierEndPosition = tierStartPosition + TIERS[tierIndex].fightersCount - 1;
-
-    // Find which array index corresponds to "after the last slot in this tier"
-    // We want to insert right after the last slot that belongs to this tier
-    let targetIndex = 0;
-    for (let i = 0; i < sortedSlots.length; i++) {
-      const slotPos = sortedSlots[i].position || 0;
-      if (slotPos <= tierEndPosition) {
-        targetIndex = i + 1; // Insert after this slot
-      } else {
-        break; // We've gone past this tier
-      }
-    }
+    const targetPosition = tierStartPosition + TIERS[tierIndex].fightersCount - 1;
 
     console.log('[handleTierBackgroundClick]', {
       tierIndex,
       tierStartPosition,
-      tierEndPosition,
-      targetIndex,
-      sortedSlotsLength: sortedSlots.length,
-      selectedSlot: selectedSlot.id
+      targetPosition,
+      selectedSlot: selectedSlot.id,
+      positionedSlotsCount: positionedSlots.length
     });
 
-    // Move the unknown fighter to the end of the tier (insert at targetIndex)
-    moveSlot(-1, targetIndex, true);
+    // Move the unknown fighter to the end of the tier
+    // Shift existing characters UP (lower positions) to make room
+    moveSlot(-1, targetPosition, true, 'up');
 
     // Clear selection after move
     setSelectedSlot(null);

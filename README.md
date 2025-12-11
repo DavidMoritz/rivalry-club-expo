@@ -12,18 +12,37 @@ npm run android # Run on Android
 
 ## 🚀 Production Build & Deploy
 
+### App Store
+
 **To build and submit to App Store (TestFlight):**
 
 ```bash
-npm run build:ios
+npm run build:ios:local
 ```
 
 This will:
+
 - Build the iOS app for production
 - Automatically submit to App Store Connect
 - No prompts or manual steps required
 
 The build will appear in TestFlight within ~15 minutes after the build completes.
+
+### Play Store
+
+**To build and submit to App Store (TestFlight):**
+
+```bash
+npm run build:android
+```
+
+This will:
+
+- Build the Android app for production
+- Download the app from (Expo)[https://expo.dev/accounts/davisomalley/projects/rivalry-club-expo/builds]
+- Upload the app to a new release in (Google Play Dashboard)[https://play.google.com/console/u/0/developers/8278992728250171737/app/4974178153621674209/app-dashboard]
+
+Give the link to testers to download from Google Play store
 
 ## Project Structure
 
@@ -57,6 +76,7 @@ rivalry-club-expo/
 ## Authentication
 
 This app uses **Supabase** for authentication instead of AWS Cognito because:
+
 - ✅ Works seamlessly in Expo Go (no native module issues)
 - ✅ Simpler setup and configuration
 - ✅ Better developer experience for mobile apps
@@ -66,6 +86,7 @@ This app uses **Supabase** for authentication instead of AWS Cognito because:
 ### Supabase Configuration
 
 **Project Details:**
+
 - Project URL: `https://ybmcuqkllbmqmwtpsgbj.supabase.co`
 - Configuration file: `src/lib/supabase.ts`
 
@@ -80,6 +101,7 @@ This app uses **Supabase** for authentication instead of AWS Cognito because:
    - Manually verify/delete users if needed
 
 **How It Works:**
+
 1. Users sign up/sign in through Supabase
 2. Supabase user ID is stored in the AppSync `User` table's `awsSub` field
 3. The `useAuthUser` hook automatically creates a User record in AppSync after Supabase authentication
@@ -90,11 +112,13 @@ This app uses **Supabase** for authentication instead of AWS Cognito because:
 The app uses Amplify Gen 2 for the GraphQL API and data storage, but NOT for authentication.
 
 **Configuration:**
+
 - Backend outputs: `amplify_outputs.json`
 - GraphQL schema: `amplify/data/resource.ts`
 - API endpoint: AppSync in `us-east-1`
 
 **To deploy backend changes:**
+
 ```bash
 npm run amplify:deploy
 ```

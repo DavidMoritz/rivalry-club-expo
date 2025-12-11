@@ -48,6 +48,7 @@ describe('TierListEditDisplay', () => {
       rivalryId: 'test-rivalry',
       userId: 'test-user',
       standing: 0,
+      slots: slots,
       tierSlots: { items: slots },
       createdAt: new Date().toISOString(),
       updatedAt: new Date().toISOString()

@@ -85,6 +85,16 @@ This directory contains technical reports and documentation generated during dev
 **Key Learning**: Always check official source code repositories for correct configuration; TypeScript type checks passing ≠ runtime success
 **Research Sources**: [AWS amplify-backend tsconfig](https://github.com/aws-amplify/amplify-backend/blob/main/tsconfig.base.json)
 
+## Feature Implementation Reports
+
+### unknown_tier_implementation.md
+**Topic**: Implementation guide for "Unknown Tier" feature
+**Summary**: Comprehensive step-by-step guide for implementing nullable fighter positions (unknown tier) instead of random initial placement. Covers 16 incremental steps including critical fail-safe (data integrity check), backend logic (position calculation, collision handling, sampling), UI changes (visual unknown tier section, drag-and-drop), database updates, and testing. Includes position assignment formula (`enemyPosition ± result * 14`), tier computation logic (86 fighters ÷ 7 tiers), rollback plan, and progress tracking. Designed for incremental implementation with checkpoint updates to survive computer crashes.
+**Use when**: Implementing unknown tier feature, understanding position assignment logic, debugging tier list behavior, working on contest resolution or re-shuffle functionality
+**Status**: Planning Phase (1/16 steps complete - schema verified)
+**Estimated Time**: 11-17 hours total
+**Key Features**: Null position support, data integrity fail-safe, dynamic fighter positioning via contests, manual drag-and-drop positioning, tier fullness detection
+
 ---
 
 **Note**: When generating new reports, add them to the appropriate subfolder and update this index with a brief entry following the format above.

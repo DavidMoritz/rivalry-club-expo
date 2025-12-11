@@ -1,13 +1,6 @@
 // Import @testing-library/jest-native matchers for enhanced assertions
 import '@testing-library/jest-native/extend-expect';
 
-// Mock react-native-reanimated
-jest.mock('react-native-reanimated', () => {
-  const Reanimated = require('react-native-reanimated/mock');
-  Reanimated.default.call = () => {};
-  return Reanimated;
-});
-
 // Mock Expo modules
 jest.mock('@react-native-async-storage/async-storage', () => ({
   __esModule: true,

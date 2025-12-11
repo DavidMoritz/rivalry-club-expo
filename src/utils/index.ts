@@ -1,6 +1,7 @@
 import { ImageSourcePropType } from 'react-native';
 
 import { fighterImages } from '../../assets/images/games/ssbu';
+import { MGame } from '../models/m-game';
 
 // Note: Fighter and Game types will be defined later when we set up GraphQL
 // For now, using basic types
@@ -53,7 +54,7 @@ export function dateDisplay(dateString: string): string {
   });
 }
 
-export function fighterByIdFromGame(game: Game, fighterId: string): Fighter | null {
+export function fighterByIdFromGame(game: Game | MGame, fighterId: string): Fighter | null {
   return (
     (game.fighters?.items.find(
       thisFighter => thisFighter?.id === fighterId,

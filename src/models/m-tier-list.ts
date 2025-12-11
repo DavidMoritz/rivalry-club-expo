@@ -153,7 +153,9 @@ export function getMTierList(tierList: TierList): MTierList {
         const sortedTierSlots = sortBy(this.slots, 'position');
 
         // Find the fighter by their current position
-        const tierSlotIndex = sortedTierSlots.findIndex((slot) => slot.position === currentPosition);
+        const tierSlotIndex = sortedTierSlots.findIndex(
+          (slot) => slot.position === currentPosition
+        );
         if (tierSlotIndex === -1) {
           console.warn(
             `[adjustTierSlotPositionBySteps] No slot found at position ${currentPosition}`
@@ -258,7 +260,9 @@ export function getMTierList(tierList: TierList): MTierList {
         }
 
         // Re-sort slots by position (nulls at end)
-        this.slots = sortBy(this.slots, [(slot) => (slot.position === null ? Infinity : slot.position)]);
+        this.slots = sortBy(this.slots, [
+          (slot) => (slot.position === null ? Infinity : slot.position)
+        ]);
       }
     },
     eligibleTierSlots() {
@@ -426,10 +430,6 @@ export function getMTierList(tierList: TierList): MTierList {
       // Clamp position to valid range (0-85, 0-based)
       const clampedPosition = Math.max(0, Math.min(newPosition, FIGHTER_COUNT - 1));
 
-      console.log(
-        `[UNKNOWN TIER] Positioning unknown fighter: ${tierSlot.fighterId}, Requested position: ${newPosition}, Clamped to: ${clampedPosition}`
-      );
-
       // Find the tier slot in our list
       const slotIndex = this.slots.findIndex((s) => s.id === tierSlot.id);
       if (slotIndex === -1) {
@@ -445,12 +445,7 @@ export function getMTierList(tierList: TierList): MTierList {
       if (!occupiedSlot) {
         // Position is free - just place the fighter there
         tierSlot.position = clampedPosition;
-        console.log(`[UNKNOWN TIER] No collision - position ${clampedPosition} was available`);
-        console.log('---');
       } else {
-        // Position is occupied - need to shift fighters UP (towards position 0), same as positionFighterAtBottom
-        console.log(`[UNKNOWN TIER] Collision detected at position ${clampedPosition}`);
-
         // Find first empty position searching UP from target (clampedPosition → 0)
         let firstEmpty = clampedPosition - 1;
         while (firstEmpty >= 0) {
@@ -460,8 +455,6 @@ export function getMTierList(tierList: TierList): MTierList {
           if (!isOccupied) break;
           firstEmpty--;
         }
-
-        console.log(`[UNKNOWN TIER] First empty position (searching up): ${firstEmpty}`);
 
         // Track affected fighters
         const affectedFighters: string[] = [];
@@ -480,14 +473,6 @@ export function getMTierList(tierList: TierList): MTierList {
 
         // Place the new fighter at target position
         tierSlot.position = clampedPosition;
-
-        if (affectedFighters.length > 0) {
-          console.log(
-            `[UNKNOWN TIER] Shifted ${affectedFighters.length} consecutive fighters UP:`,
-            affectedFighters
-          );
-        }
-        console.log('---');
       }
 
       // Re-sort slots by position (nulls at end)
@@ -498,10 +483,6 @@ export function getMTierList(tierList: TierList): MTierList {
     positionFighterAtBottom(tierSlot: MTierSlot) {
       // Position fighter at 85 (bottom) and shift existing fighters UP (85 → 84, 84 → 83, etc.)
       const bottomPosition = FIGHTER_COUNT - 1; // 85 (0-based)
-
-      console.log(
-        `[POSITION AT BOTTOM] Positioning fighter at bottom: ${tierSlot.fighterId}, Position: ${bottomPosition}`
-      );
 
       // Find the tier slot in our list
       const slotIndex = this.slots.findIndex((s) => s.id === tierSlot.id);
@@ -518,11 +499,8 @@ export function getMTierList(tierList: TierList): MTierList {
       if (!occupiedSlot) {
         // Position is free - just place the fighter there
         tierSlot.position = bottomPosition;
-        console.log(`[POSITION AT BOTTOM] No collision - position ${bottomPosition} was available`);
-        console.log('---');
       } else {
         // Position is occupied - need to shift fighters UP (towards position 0)
-        console.log(`[POSITION AT BOTTOM] Collision detected at position ${bottomPosition}`);
 
         // Find first empty position searching UP from bottom (85 → 0)
         let firstEmpty = bottomPosition - 1;
@@ -533,8 +511,6 @@ export function getMTierList(tierList: TierList): MTierList {
           if (!isOccupied) break;
           firstEmpty--;
         }
-
-        console.log(`[POSITION AT BOTTOM] First empty position (searching up): ${firstEmpty}`);
 
         // Track affected fighters
         const affectedFighters: string[] = [];
@@ -553,14 +529,6 @@ export function getMTierList(tierList: TierList): MTierList {
 
         // Place the new fighter at bottom position
         tierSlot.position = bottomPosition;
-
-        if (affectedFighters.length > 0) {
-          console.log(
-            `[POSITION AT BOTTOM] Shifted ${affectedFighters.length} consecutive fighters UP:`,
-            affectedFighters
-          );
-        }
-        console.log('---');
       }
 
       // Re-sort slots by position (nulls at end)

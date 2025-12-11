@@ -34,6 +34,7 @@ export function ConnectedRivalryView({ navigation }: ConnectedRivalryViewProps):
 
   const [tiersReady, setTiersReady] = useState<boolean>(false);
   const [isResolvingContest, setIsResolvingContest] = useState<boolean>(false);
+  const [shufflingSlot, setShufflingSlot] = useState<'A' | 'B' | null>(null);
 
   const updateRivalryMutation = useUpdateRivalryMutation({
     rivalry
@@ -123,6 +124,10 @@ export function ConnectedRivalryView({ navigation }: ConnectedRivalryViewProps):
         if (!rivalry) return;
 
         rivalry.currentContest = currentContest;
+        setShufflingSlot(null); // Clear shuffling state on success
+      },
+      onSettled: () => {
+        setShufflingSlot(null); // Clear shuffling state on error too
       }
     });
 
@@ -186,6 +191,7 @@ export function ConnectedRivalryView({ navigation }: ConnectedRivalryViewProps):
   }, [navigation, rivalry]);
 
   const handlePressShuffle = (slot: 'A' | 'B') => {
+    setShufflingSlot(slot); // Track which slot is being shuffled
     updateCurrentContestShuffleTierSlotsMutation.mutate(slot);
   };
 
@@ -260,6 +266,7 @@ export function ConnectedRivalryView({ navigation }: ConnectedRivalryViewProps):
           <CurrentContest
             onPressShuffle={handlePressShuffle}
             onResolveContest={handleResolveContest}
+            shufflingSlot={shufflingSlot}
           />
         )}
 

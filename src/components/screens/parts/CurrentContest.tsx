@@ -15,6 +15,7 @@ import { CharacterDisplay } from '../../common/CharacterDisplay';
 interface CurrentContestProps {
   onPressShuffle: (slot: 'A' | 'B') => void;
   onResolveContest?(contest: MContest): void;
+  shufflingSlot?: 'A' | 'B' | null;
 }
 
 function WinnerBadge() {
@@ -35,7 +36,8 @@ function WinnerBadge() {
 
 export function CurrentContest({
   onPressShuffle,
-  onResolveContest
+  onResolveContest,
+  shufflingSlot
 }: CurrentContestProps): ReactNode {
   const game = useGame() as MGame;
   const [fighterA, setFighterA] = useState<Schema['Fighter']['type']>();
@@ -65,6 +67,13 @@ export function CurrentContest({
     const foundFighterB = fighterByIdFromGame(gameData, contest.tierSlotB.fighterId);
     if (foundFighterA) setFighterA(foundFighterA);
     if (foundFighterB) setFighterB(foundFighterB);
+
+    // Enable shuffle buttons if both slots have valid positions (not null)
+    if (contest.tierSlotA.position !== null && contest.tierSlotB.position !== null) {
+      setCanShuffle(true);
+    } else {
+      setCanShuffle(false);
+    }
   }, [contest, game, rivalry]);
 
   if (!rivalry) return null;
@@ -161,12 +170,13 @@ export function CurrentContest({
                 <TouchableOpacity
                   style={{
                     position: 'absolute',
-                    top: -10,
+                    top: -25,
                     left: -10,
                     padding: 10,
                     zIndex: 10
                   }}
                   onPress={() => onPressShuffle('A')}
+                  disabled={shufflingSlot === 'A'}
                 >
                   <Text style={{ fontSize: 16 }}>🔀</Text>
                 </TouchableOpacity>
@@ -225,12 +235,13 @@ export function CurrentContest({
                 <TouchableOpacity
                   style={{
                     position: 'absolute',
-                    top: -10,
+                    top: -25,
                     right: -10,
                     padding: 10,
                     zIndex: 10
                   }}
                   onPress={() => onPressShuffle('B')}
+                  disabled={shufflingSlot === 'B'}
                 >
                   <Text style={{ fontSize: 16 }}>🔀</Text>
                 </TouchableOpacity>

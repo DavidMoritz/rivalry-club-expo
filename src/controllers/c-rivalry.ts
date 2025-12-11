@@ -725,17 +725,9 @@ export const useUpdateCurrentContestShuffleTierSlotsMutation = ({
         }
 
         // Move OLD slot to position 85 (bottom) with UP shifting
+        // NEW slot keeps its current position (whatever it is, including null)
         if (oldTierSlotA && rivalry.tierListA) {
           rivalry.tierListA.positionFighterAtBottom(oldTierSlotA);
-        }
-
-        // Give NEW slot the OLD slot's position (or position 85 if old slot had no position)
-        if (tierSlotA && rivalry.tierListA) {
-          const targetPosition =
-            oldPositionA !== null && oldPositionA !== undefined
-              ? oldPositionA
-              : FIGHTER_COUNT - 1;
-          rivalry.tierListA.positionUnknownFighter(tierSlotA, targetPosition);
         }
 
         // Collect all affected tier slots from tierListA
@@ -759,17 +751,9 @@ export const useUpdateCurrentContestShuffleTierSlotsMutation = ({
         }
 
         // Move OLD slot to position 85 (bottom) with UP shifting
+        // NEW slot keeps its current position (whatever it is, including null)
         if (oldTierSlotB && rivalry.tierListB) {
           rivalry.tierListB.positionFighterAtBottom(oldTierSlotB);
-        }
-
-        // Give NEW slot the OLD slot's position (or position 85 if old slot had no position)
-        if (tierSlotB && rivalry.tierListB) {
-          const targetPosition =
-            oldPositionB !== null && oldPositionB !== undefined
-              ? oldPositionB
-              : FIGHTER_COUNT - 1;
-          rivalry.tierListB.positionUnknownFighter(tierSlotB, targetPosition);
         }
 
         // Collect all affected tier slots from tierListB

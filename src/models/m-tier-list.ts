@@ -418,32 +418,33 @@ export function getMTierList(tierList: TierList): MTierList {
         console.log(`[UNKNOWN TIER] No collision - position ${clampedPosition} was available`);
         console.log('---');
       } else {
-        // Position is occupied - need to find first empty slot and shift consecutive fighters
+        // Position is occupied - need to shift fighters UP (towards position 0), same as positionFighterAtBottom
         console.log(`[UNKNOWN TIER] Collision detected at position ${clampedPosition}`);
 
-        // Find first empty position starting from target
-        let firstEmpty = clampedPosition + 1;
-        while (firstEmpty < FIGHTER_COUNT) {
+        // Find first empty position searching UP from target (clampedPosition → 0)
+        let firstEmpty = clampedPosition - 1;
+        while (firstEmpty >= 0) {
           const isOccupied = this.slots.some(
             (slot) => slot.id !== tierSlot.id && slot.position === firstEmpty
           );
           if (!isOccupied) break;
-          firstEmpty++;
+          firstEmpty--;
         }
 
-        console.log(`[UNKNOWN TIER] First empty position: ${firstEmpty}`);
+        console.log(`[UNKNOWN TIER] First empty position (searching up): ${firstEmpty}`);
 
         // Track affected fighters
         const affectedFighters: string[] = [];
 
-        // Shift ONLY consecutive occupied positions between target and first empty
-        for (let pos = firstEmpty - 1; pos >= clampedPosition; pos--) {
+        // Shift ONLY consecutive occupied positions UP (from firstEmpty+1 to clampedPosition)
+        // Moving each fighter one position UP (position - 1)
+        for (let pos = firstEmpty + 1; pos <= clampedPosition; pos++) {
           const slotAtPos = this.slots.find(
             (slot) => slot.id !== tierSlot.id && slot.position === pos
           );
           if (slotAtPos) {
-            affectedFighters.push(`${slotAtPos.fighterId} (${pos} → ${pos + 1})`);
-            slotAtPos.position = pos + 1;
+            affectedFighters.push(`${slotAtPos.fighterId} (${pos} → ${pos - 1})`);
+            slotAtPos.position = pos - 1;
           }
         }
 
@@ -452,8 +453,8 @@ export function getMTierList(tierList: TierList): MTierList {
 
         if (affectedFighters.length > 0) {
           console.log(
-            `[UNKNOWN TIER] Shifted ${affectedFighters.length} consecutive fighters:`,
-            affectedFighters.reverse() // Show in forward order
+            `[UNKNOWN TIER] Shifted ${affectedFighters.length} consecutive fighters UP:`,
+            affectedFighters
           );
         }
         console.log('---');

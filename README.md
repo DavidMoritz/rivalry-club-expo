@@ -299,17 +299,17 @@ When a contest is resolved:
 
 **Unknown Fighter Positioning** (`positionUnknownFighter`):
 - Places fighter at target position
-- If occupied, finds first empty slot going down
-- Shifts consecutive fighters down by 1 position
-- Used when fighters first appear in contests
+- If occupied, finds first empty slot going UP (towards position 0)
+- Shifts consecutive fighters UP by 1 position (85→84, 84→83, etc.)
+- Used when fighters are positioned or repositioned
 
 **Bottom Positioning** (`positionFighterAtBottom`):
 - Places fighter at position 85 (bottom)
 - If occupied, finds first empty slot going UP
 - Shifts consecutive fighters UP by 1 position (85→84, 84→83)
-- Used when resampling during reshuffle
+- Used when moving fighters to the bottom during reshuffle
 
-**Collision Handling**: Both methods only shift consecutive occupied positions, preserving gaps in the tier list.
+**Collision Handling**: Both methods shift UP (towards position 0) and only shift consecutive occupied positions, preserving gaps in the tier list.
 
 ### Sampling Algorithm
 
@@ -326,8 +326,8 @@ When selecting fighters for a contest (`sampleEligibleSlot`):
 
 Individual reshuffle (new in v1.3):
 - User clicks reshuffle button for one side of the contest
+- NEW fighter is sampled and keeps its current position (whatever it is, including null)
 - OLD fighter moves to position 85 using `positionFighterAtBottom()`
-- NEW fighter takes OLD fighter's position (or position 85 if old had no position)
 - Other side remains unchanged
 - Prevents seeing the same matchup repeatedly
 

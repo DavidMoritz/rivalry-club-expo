@@ -87,7 +87,7 @@ describe('Profile Component', () => {
       const { getByText } = render(<Profile />);
 
       expect(getByText('Welcome! 👋')).toBeTruthy();
-      expect(getByText('Please enter your name to get started')).toBeTruthy();
+      expect(getByText('Please enter your first name to get started')).toBeTruthy();
     });
 
     it('shows welcome message when firstName is empty string', () => {
@@ -181,7 +181,7 @@ describe('Profile Component', () => {
       const { queryByText } = render(<Profile />);
 
       expect(queryByText('Welcome! 👋')).toBeNull();
-      expect(queryByText('Please enter your name to get started')).toBeNull();
+      expect(queryByText('Please enter your first name to get started')).toBeNull();
     });
 
     it('pre-fills form with existing user data', () => {
@@ -273,13 +273,22 @@ describe('Profile Component', () => {
       fireEvent.press(updateButton);
 
       await waitFor(() => {
-        expect(getByText('First name and last name are required')).toBeTruthy();
+        expect(getByText('First name is required')).toBeTruthy();
       });
 
       expect(mockUserUpdate).not.toHaveBeenCalled();
     });
 
-    it('shows error when lastName is empty', async () => {
+    it('allows update when lastName is empty', async () => {
+      mockUserUpdate.mockResolvedValue({
+        data: {
+          id: 'user-validation',
+          firstName: 'OnlyFirst',
+          lastName: ' '
+        },
+        errors: null
+      });
+
       const { getByText, getByPlaceholderText } = render(<Profile />);
 
       const firstNameInput = getByPlaceholderText('Enter first name');
@@ -289,10 +298,12 @@ describe('Profile Component', () => {
       fireEvent.press(updateButton);
 
       await waitFor(() => {
-        expect(getByText('First name and last name are required')).toBeTruthy();
+        expect(mockUserUpdate).toHaveBeenCalledWith({
+          id: 'user-validation',
+          firstName: 'OnlyFirst',
+          lastName: ' '
+        });
       });
-
-      expect(mockUserUpdate).not.toHaveBeenCalled();
     });
 
     it('trims whitespace from names before validation', async () => {
@@ -307,7 +318,7 @@ describe('Profile Component', () => {
       fireEvent.press(updateButton);
 
       await waitFor(() => {
-        expect(getByText('First name and last name are required')).toBeTruthy();
+        expect(getByText('First name is required')).toBeTruthy();
       });
     });
 

@@ -366,6 +366,27 @@ export function TierListEditDisplay({ tierList, onChange }: TierListEditDisplayP
     setSelectedSlot(null);
   };
 
+  const handleResetAllFighters = () => {
+    LayoutAnimation.configureNext(LayoutAnimation.Presets.easeInEaseOut);
+
+    // Set all tier slots to position null
+    const resetSlots = tierList.slots.map((slot) => ({
+      ...slot,
+      position: null
+    }));
+
+    // Update tierList
+    tierList.slots = resetSlots;
+
+    // Update local state
+    setPositionedSlots([]);
+    setUnknownSlots(resetSlots);
+    setSelectedSlot(null);
+
+    // Notify parent of changes
+    onChange();
+  };
+
   const renderCharacter = (slot: MTierSlot, index: number) => {
     const fighter = fighterByIdFromGame(game, slot.fighterId);
     if (!fighter) return null;
@@ -548,6 +569,25 @@ export function TierListEditDisplay({ tierList, onChange }: TierListEditDisplayP
             </View>
           </View>
         </View>
+      )}
+
+      {/* RESET BUTTON: Shows whenever there are positioned fighters */}
+      {positionedSlots.length > 0 && (
+        <TouchableOpacity
+          onPress={handleResetAllFighters}
+          style={{
+            backgroundColor: '#eab308',
+            padding: 16,
+            marginTop: 16,
+            marginHorizontal: 16,
+            borderRadius: 8,
+            alignItems: 'center'
+          }}
+        >
+          <Text style={{ color: 'black', fontSize: 16, fontWeight: 'bold' }}>
+            ⚠️ Reset all fighters
+          </Text>
+        </TouchableOpacity>
       )}
     </ScrollView>
   );

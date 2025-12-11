@@ -49,8 +49,8 @@ export function Profile() {
   const handleUpdateProfile = async () => {
     if (!user) return;
 
-    if (!firstName.trim() || !lastName.trim()) {
-      setErrorMessage('First name and last name are required');
+    if (!firstName.trim()) {
+      setErrorMessage('First name is required');
 
       return;
     }
@@ -68,7 +68,7 @@ export function Profile() {
       const result = await client.models.User.update({
         id: user.id,
         firstName: firstName.trim(),
-        lastName: lastName.trim()
+        lastName: lastName.trim() || ' '
       });
 
       if (result.errors && result.errors.length > 0) {
@@ -229,7 +229,7 @@ export function Profile() {
                 Welcome! 👋
               </Text>
               <Text style={{ color: 'white', textAlign: 'center' }}>
-                Please enter your name to get started
+                Please enter your first name to get started
               </Text>
             </View>
           )}

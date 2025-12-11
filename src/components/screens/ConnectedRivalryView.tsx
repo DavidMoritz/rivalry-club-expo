@@ -2,7 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { Text, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
-import { useUpdateFighterViaApiMutation } from '../../controllers/c-fighter';
+import { incrementFighterStats } from '../../controllers/c-increment-stats';
 import {
   useCreateContestMutation,
   useRivalryWithAllInfoQuery,
@@ -100,8 +100,6 @@ export function ConnectedRivalryView({ navigation }: ConnectedRivalryViewProps):
     }
   });
 
-  const resolveUpdateFighterStatsMutation = useUpdateFighterViaApiMutation();
-
   const resolveContestMutation = useUpdateContestMutation({
     rivalry,
     onSuccess: () => {
@@ -136,28 +134,30 @@ export function ConnectedRivalryView({ navigation }: ConnectedRivalryViewProps):
 
     const isATheWinner = (rivalry.currentContest.result || 0) > 0;
 
+    // Update Fighter stats atomically (only after provisional threshold AND both users are human)
+    const userA = rivalry.userA;
+    const userB = rivalry.userB;
+
     if (
       rivalry.currentContest.tierSlotA &&
-      (rivalry.currentContest.tierSlotA.contestCount ?? 0) >= PROVISIONAL_THRESHOLD &&
-      rivalry.tierListA
+      (rivalry.currentContest.tierSlotA.contestCount ?? 0) >= PROVISIONAL_THRESHOLD
     ) {
-      resolveUpdateFighterStatsMutation.mutate({
-        fighterId: rivalry.currentContest.tierSlotA.fighterId,
-        didWin: isATheWinner,
-        tier: rivalry.tierListA.title
-      });
+      try {
+        await incrementFighterStats(rivalry.currentContest.tierSlotA.fighterId, isATheWinner);
+      } catch (error) {
+        console.error('[Fighter Stats] Failed to update Fighter A:', error);
+      }
     }
 
     if (
       rivalry.currentContest.tierSlotB &&
-      (rivalry.currentContest.tierSlotB.contestCount ?? 0) >= PROVISIONAL_THRESHOLD &&
-      rivalry.tierListB
+      (rivalry.currentContest.tierSlotB.contestCount ?? 0) >= PROVISIONAL_THRESHOLD
     ) {
-      resolveUpdateFighterStatsMutation.mutate({
-        fighterId: rivalry.currentContest.tierSlotB.fighterId,
-        didWin: !isATheWinner,
-        tier: rivalry.tierListB.title
-      });
+      try {
+        await incrementFighterStats(rivalry.currentContest.tierSlotB.fighterId, !isATheWinner);
+      } catch (error) {
+        console.error('[Fighter Stats] Failed to update Fighter B:', error);
+      }
     }
 
     rivalry.adjustStanding();

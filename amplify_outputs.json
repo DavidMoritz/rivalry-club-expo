@@ -923,7 +923,53 @@
         }
       },
       "enums": {},
-      "nonModels": {}
+      "nonModels": {},
+      "mutations": {
+        "incrementTierSlotStats": {
+          "name": "incrementTierSlotStats",
+          "isArray": false,
+          "type": {
+            "model": "TierSlot"
+          },
+          "isRequired": false,
+          "arguments": {
+            "tierSlotId": {
+              "name": "tierSlotId",
+              "isArray": false,
+              "type": "ID",
+              "isRequired": true
+            },
+            "won": {
+              "name": "won",
+              "isArray": false,
+              "type": "Boolean",
+              "isRequired": true
+            }
+          }
+        },
+        "incrementFighterStats": {
+          "name": "incrementFighterStats",
+          "isArray": false,
+          "type": {
+            "model": "Fighter"
+          },
+          "isRequired": false,
+          "arguments": {
+            "fighterId": {
+              "name": "fighterId",
+              "isArray": false,
+              "type": "ID",
+              "isRequired": true
+            },
+            "won": {
+              "name": "won",
+              "isArray": false,
+              "type": "Boolean",
+              "isRequired": true
+            }
+          }
+        }
+      }
     }
   },
   "version": "1.4"

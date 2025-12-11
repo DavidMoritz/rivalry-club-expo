@@ -614,11 +614,15 @@ export const useUpdateTierSlotsMutation = ({
         throw new Error('Tier list not found');
       }
 
-      const positionsPojo = tierList.getPositionsPojo();
+      const changedSlots = tierList.getChangedTierSlots();
 
-      // Update all tier slots in parallel
-      const updates = Object.values(positionsPojo).map(({ id, position }) =>
-        getClient().models.TierSlot.update({ id, position })
+      if (changedSlots.length === 0) {
+        return [];
+      }
+
+      // Update only changed tier slots in parallel (including stats)
+      const updates = changedSlots.map(({ id, position, contestCount, winCount }) =>
+        getClient().models.TierSlot.update({ id, position, contestCount, winCount })
       );
 
       const results = await Promise.all(updates);
@@ -668,8 +672,8 @@ export const useManuallyPositionTierSlotMutation = ({
 
       // Update all affected tier slots in database
       const positionsPojo = tierList.getPositionsPojo();
-      const updates = Object.values(positionsPojo).map(({ id, position }) =>
-        getClient().models.TierSlot.update({ id, position })
+      const updates = Object.values(positionsPojo).map(({ id, position, contestCount, winCount }) =>
+        getClient().models.TierSlot.update({ id, position, contestCount, winCount })
       );
 
       const results = await Promise.all(updates);
@@ -838,29 +842,32 @@ export const useDeleteMostRecentContestMutation = ({
       const STEPS_PER_STOCK = 3;
 
       // Pass the actual POSITION values, not indices
+      // trackStats=false to avoid double-counting on undo (stats are aggregate, not reversible)
       rivalry.tierListA?.adjustTierSlotPositionBySteps(
         mostRecentContest.tierSlotA?.position as number,
-        (mostRecentContest.result as number) * STEPS_PER_STOCK
+        (mostRecentContest.result as number) * STEPS_PER_STOCK,
+        false // Don't increment contestCount/winCount on undo
       );
       rivalry.tierListB?.adjustTierSlotPositionBySteps(
         mostRecentContest.tierSlotB?.position as number,
-        (mostRecentContest.result as number) * STEPS_PER_STOCK * -1
+        (mostRecentContest.result as number) * STEPS_PER_STOCK * -1,
+        false // Don't increment contestCount/winCount on undo
       );
 
       // Get the updated tier slot positions
       const tierListAPositions = rivalry.tierListA?.getPositionsPojo();
       const tierListBPositions = rivalry.tierListB?.getPositionsPojo();
 
-      // Update tier slots in parallel
+      // Update tier slots in parallel (including stats - though stats don't change on undo)
       const tierSlotUpdates = [
         ...(tierListAPositions
-          ? Object.values(tierListAPositions).map(({ id, position }) =>
-              getClient().models.TierSlot.update({ id, position })
+          ? Object.values(tierListAPositions).map(({ id, position, contestCount, winCount }) =>
+              getClient().models.TierSlot.update({ id, position, contestCount, winCount })
             )
           : []),
         ...(tierListBPositions
-          ? Object.values(tierListBPositions).map(({ id, position }) =>
-              getClient().models.TierSlot.update({ id, position })
+          ? Object.values(tierListBPositions).map(({ id, position, contestCount, winCount }) =>
+              getClient().models.TierSlot.update({ id, position, contestCount, winCount })
             )
           : [])
       ];

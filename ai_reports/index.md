@@ -87,6 +87,15 @@ This directory contains technical reports and documentation generated during dev
 
 ## Feature Implementation Reports
 
+### atomic-increment-implementation.md ✅
+**Topic**: Atomic increment operations for TierSlot and Fighter statistics using AppSync custom resolvers
+**Summary**: Complete implementation of race-condition-free increment operations for `contestCount` and `winCount` fields using AWS AppSync JavaScript resolvers with DynamoDB's atomic `ADD` operation. Eliminates fetch-then-update patterns and removes need for Lambda functions. Includes custom mutations (`incrementTierSlotStats`, `incrementFighterStats`), TypeScript helper controllers, deployment to sandbox, integration points, performance analysis (AppSync vs Lambda comparison), and migration path from existing Lambda endpoint. Provides zero cold starts, no race conditions, and simpler infrastructure.
+**Use when**: Incrementing contest statistics, resolving contests, updating fighter/tier slot win/loss counts, replacing Lambda endpoints, preventing race conditions, optimizing performance
+**Status**: ✅ Implemented & Deployed to Sandbox (Production deployment pending)
+**Key Files**: `amplify/data/resource.ts` (schema), `amplify/data/increment-tierslot-stats.js`, `amplify/data/increment-fighter-stats.js`, `src/controllers/c-increment-stats.ts`
+**Integration Points**: `src/models/m-tier-list.ts` (adjustTierSlotPositionBySteps), `src/components/screens/ConnectedRivalryView.tsx` (handleResolveContest)
+**Benefits**: Atomic operations, no Lambda costs, instant execution, type-safe, zero race conditions
+
 ### unknown_tier_implementation.md
 **Topic**: Implementation guide for "Unknown Tier" feature
 **Summary**: Comprehensive step-by-step guide for implementing nullable fighter positions (unknown tier) instead of random initial placement. Covers 16 incremental steps including critical fail-safe (data integrity check), backend logic (position calculation, collision handling, sampling), UI changes (visual unknown tier section, drag-and-drop), database updates, and testing. Includes position assignment formula (`enemyPosition ± result * 14`), tier computation logic (86 fighters ÷ 7 tiers), rollback plan, and progress tracking. Designed for incremental implementation with checkpoint updates to survive computer crashes.

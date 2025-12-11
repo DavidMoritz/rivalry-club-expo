@@ -173,10 +173,11 @@ rivalry-club-expo/
 ### Backend
 - **AWS Amplify Gen 2** - Backend infrastructure
   - **Cognito** - User authentication
-  - **AppSync** - GraphQL API
-  - **DynamoDB** - Database
+  - **AppSync** - GraphQL API with custom resolvers for atomic operations
+  - **DynamoDB** - Database with atomic increment support
   - **S3** - Asset storage
 - **GraphQL** - API query language
+- **Atomic Increments** - Race-condition-free counter updates via AppSync JavaScript resolvers (see `ai_reports/atomic-increment-implementation.md`)
 
 ### Styling
 - **React Native StyleSheet** - Component styling

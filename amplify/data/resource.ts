@@ -105,6 +105,38 @@ const schema = a.schema({
       winCount: a.integer(),
       deletedAt: a.datetime()
     })
+    .authorization((allow) => [allow.publicApiKey()]),
+
+  // Custom mutation for atomic increment of TierSlot stats
+  incrementTierSlotStats: a
+    .mutation()
+    .arguments({
+      tierSlotId: a.id().required(),
+      won: a.boolean().required()
+    })
+    .returns(a.ref('TierSlot'))
+    .handler(
+      a.handler.custom({
+        dataSource: a.ref('TierSlot'),
+        entry: './increment-tierslot-stats.js'
+      })
+    )
+    .authorization((allow) => [allow.publicApiKey()]),
+
+  // Custom mutation for atomic increment of Fighter stats
+  incrementFighterStats: a
+    .mutation()
+    .arguments({
+      fighterId: a.id().required(),
+      won: a.boolean().required()
+    })
+    .returns(a.ref('Fighter'))
+    .handler(
+      a.handler.custom({
+        dataSource: a.ref('Fighter'),
+        entry: './increment-fighter-stats.js'
+      })
+    )
     .authorization((allow) => [allow.publicApiKey()])
 });
 

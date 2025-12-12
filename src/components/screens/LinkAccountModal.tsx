@@ -17,6 +17,7 @@ import type { Schema } from '../../../amplify/data/resource';
 import { signIn, getCurrentUser } from '../../lib/amplify-auth';
 import { updateStoredUuid, storeFirstName } from '../../lib/user-identity';
 import { darkStyles, styles } from '../../utils/styles';
+import { colors } from '../../utils/colors';
 
 interface LinkAccountModalProps {
   visible: boolean;
@@ -120,13 +121,13 @@ export function LinkAccountModal({ visible, currentUserId, onClose, onSuccess }:
                 alignItems: 'center',
                 paddingVertical: 16,
                 borderBottomWidth: 1,
-                borderBottomColor: '#333',
+                borderBottomColor: colors.gray750,
               }}>
               <Text style={[styles.text, { fontSize: 24, fontWeight: 'bold' }]}>
                 Link Existing Account
               </Text>
               <TouchableOpacity onPress={onClose}>
-                <Text style={[styles.text, { fontSize: 16, color: '#6b7280' }]}>Cancel</Text>
+                <Text style={[styles.text, { fontSize: 16, color: colors.slate500 }]}>Cancel</Text>
               </TouchableOpacity>
             </View>
 
@@ -135,7 +136,7 @@ export function LinkAccountModal({ visible, currentUserId, onClose, onSuccess }:
               contentContainerStyle={{ flexGrow: 1, justifyContent: 'center', paddingBottom: 40 }}
               keyboardShouldPersistTaps="handled"
               showsVerticalScrollIndicator={false}>
-            <Text style={[styles.text, { marginBottom: 24, textAlign: 'center', color: '#9ca3af' }]}>
+            <Text style={[styles.text, { marginBottom: 24, textAlign: 'center', color: colors.gray300 }]}>
               Sign in with your existing account to restore your data and rivalries
             </Text>
 
@@ -152,13 +153,13 @@ export function LinkAccountModal({ visible, currentUserId, onClose, onSuccess }:
                     fontSize: 16,
                     paddingHorizontal: 16,
                     paddingVertical: 14,
-                    backgroundColor: '#2d3748',
+                    backgroundColor: colors.gray800,
                     borderWidth: 2,
-                    borderColor: '#4a5568',
+                    borderColor: colors.gray600,
                   },
                 ]}
                 placeholder="Enter your email"
-                placeholderTextColor="#a0aec0"
+                placeholderTextColor={colors.gray200}
                 value={email}
                 onChangeText={setEmail}
                 keyboardType="email-address"
@@ -180,13 +181,13 @@ export function LinkAccountModal({ visible, currentUserId, onClose, onSuccess }:
                     fontSize: 16,
                     paddingHorizontal: 16,
                     paddingVertical: 14,
-                    backgroundColor: '#2d3748',
+                    backgroundColor: colors.gray800,
                     borderWidth: 2,
-                    borderColor: '#4a5568',
+                    borderColor: colors.gray600,
                   },
                 ]}
                 placeholder="Enter your password"
-                placeholderTextColor="#a0aec0"
+                placeholderTextColor={colors.gray200}
                 value={password}
                 onChangeText={setPassword}
                 secureTextEntry
@@ -195,19 +196,19 @@ export function LinkAccountModal({ visible, currentUserId, onClose, onSuccess }:
             </View>
 
             {error && (
-              <Text style={[styles.text, { marginBottom: 16, textAlign: 'center', color: '#f87171' }]}>
+              <Text style={[styles.text, { marginBottom: 16, textAlign: 'center', color: colors.red400 }]}>
                 {error}
               </Text>
             )}
 
             <TouchableOpacity
               style={{
-                backgroundColor: '#fbbf24',
+                backgroundColor: colors.amber400,
                 paddingHorizontal: 32,
                 paddingVertical: 16,
                 borderRadius: 25,
                 borderWidth: 1,
-                borderColor: '#cbd5e1',
+                borderColor: colors.slate300,
                 width: '100%',
                 alignItems: 'center',
                 marginTop: 8,
@@ -215,9 +216,9 @@ export function LinkAccountModal({ visible, currentUserId, onClose, onSuccess }:
               onPress={handleLinkAccount}
               disabled={loading || !email || !password}>
               {loading ? (
-                <ActivityIndicator color="#1f2937" />
+                <ActivityIndicator color={colors.darkText} />
               ) : (
-                <Text style={{ color: '#1f2937', fontSize: 18, fontWeight: 'bold' }}>
+                <Text style={{ color: colors.darkText, fontSize: 18, fontWeight: 'bold' }}>
                   Link Account
                 </Text>
               )}

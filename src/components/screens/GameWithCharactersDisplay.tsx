@@ -3,6 +3,7 @@ import { FlatList, Image, Linking, Text, TouchableOpacity, View } from 'react-na
 
 import { logoImage } from '../../../assets/images/games/ssbu';
 import { styles } from '../../utils/styles';
+import { colors } from '../../utils/colors';
 import { CharacterDisplay } from '../common/CharacterDisplay';
 import { Button } from '../common/Button';
 import { MGame } from '../../models/m-game';
@@ -41,13 +42,13 @@ export function GameWithCharactersDisplay({
               alignItems: 'center'
             }}
           >
-            <Text style={{ color: '#999', fontSize: 17, textAlign: 'center' }}>
+            <Text style={{ color: colors.gray400, fontSize: 17, textAlign: 'center' }}>
               Custom artwork provided by
             </Text>
             <TouchableOpacity
               onPress={() => Linking.openURL('https://www.deviantart.com/professorfandango')}
             >
-              <Text style={{ color: '#60a5fa', fontSize: 17, textDecorationLine: 'underline' }}>
+              <Text style={{ color: colors.blue400, fontSize: 17, textDecorationLine: 'underline' }}>
                 Professor Fandango
               </Text>
             </TouchableOpacity>

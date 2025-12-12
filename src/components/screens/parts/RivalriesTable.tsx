@@ -4,6 +4,7 @@ import { FlatList, Text, TouchableOpacity, View } from 'react-native';
 
 import { useAllRivalries } from '../../../providers/all-rivalries';
 import { styles } from '../../../utils/styles';
+import { colors } from '../../../utils/colors';
 import { RivalryRow } from './RivalryRow';
 
 interface Rivalry {
@@ -97,7 +98,7 @@ const buttonContainerStyle = {
 };
 
 const baseButtonStyle = {
-  backgroundColor: '#fbbf24',
+  backgroundColor: colors.amber400,
   paddingHorizontal: 24,
   paddingVertical: 12,
   borderRadius: 8,
@@ -118,5 +119,5 @@ const buttonTextStyle = {
   ...styles.text,
   fontSize: 16,
   fontWeight: bold,
-  color: '#222'
+  color: colors.darkText2
 };

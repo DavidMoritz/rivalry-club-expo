@@ -3,6 +3,7 @@ import { ReactNode, useEffect, useState } from 'react';
 import { Image, Text, TouchableOpacity, View } from 'react-native';
 
 import { contestStyles, styles } from '../../../utils/styles';
+import { colors } from '../../../utils/colors';
 import { MContest } from '../../../models/m-contest';
 import { MFighter } from '../../../models/m-fighter';
 import { MGame, STOCK } from '../../../models/m-game';
@@ -67,7 +68,7 @@ export function CurrentContest({
   }, [contest, game, rivalry]);
 
   if (!rivalry) return null;
-  if (!game) return <Text style={{ color: '#e9d5ff' }}>Loading game data...</Text>;
+  if (!game) return <Text style={{ color: colors.purple100 }}>Loading game data...</Text>;
 
   function onPressResolve() {
     if (!(winner && onResolveContest && contest)) return;
@@ -79,7 +80,7 @@ export function CurrentContest({
     onResolveContest(contest);
   }
 
-  const getTextColor = (isWinner: boolean) => (isWinner ? 'black' : 'white');
+  const getTextColor = (isWinner: boolean) => (isWinner ? colors.black : colors.white);
 
   return (
     <>
@@ -87,7 +88,7 @@ export function CurrentContest({
         <Text style={currentContestTitleStyle}>Current Contest</Text>
         {!canShuffle ? (
           <TouchableOpacity style={reshuffleButtonStyle} onPress={() => setCanShuffle(true)}>
-            <Text style={{ fontSize: 16, color: 'white' }}>🔀 Reshuffle</Text>
+            <Text style={{ fontSize: 16, color: colors.white }}>🔀 Reshuffle</Text>
           </TouchableOpacity>
         ) : (
           <View style={reshuffleButtonPlaceholderStyle}>
@@ -144,10 +145,10 @@ export function CurrentContest({
             </View>
           )}
 
-          {!fighterA && !fighterB && <Text style={{ color: '#e9d5ff' }}>Loading fighters...</Text>}
+          {!fighterA && !fighterB && <Text style={{ color: colors.purple100 }}>Loading fighters...</Text>}
           {(fighterA || fighterB) && (
             <View style={contestStyles.item}>
-              <Text style={{ fontSize: 14, color: 'white' }}>Vs</Text>
+              <Text style={{ fontSize: 14, color: colors.white }}>Vs</Text>
             </View>
           )}
           {fighterB && (
@@ -197,7 +198,7 @@ export function CurrentContest({
 
         {winner ? (
           <>
-            <Text style={{ fontSize: 14, color: 'white', marginTop: 8 }}>Stock remaining</Text>
+            <Text style={{ fontSize: 14, color: colors.white, marginTop: 8 }}>Stock remaining</Text>
             <View style={{ flexDirection: 'row', marginTop: 8 }}>
               {range(1, STOCK + 1).map((value, idx) => {
                 const isFirstButton = idx === 0;
@@ -210,7 +211,7 @@ export function CurrentContest({
                       stockButtonStyle,
                       {
                         borderRightWidth: isLastButton ? 1 : 0,
-                        backgroundColor: isSelected ? '#1e293b' : '#f1f5f9',
+                        backgroundColor: isSelected ? colors.slate900 : '#f1f5f9',
                         borderTopLeftRadius: isFirstButton ? 8 : 0,
                         borderBottomLeftRadius: isFirstButton ? 8 : 0,
                         borderTopRightRadius: isLastButton ? 8 : 0,
@@ -225,7 +226,7 @@ export function CurrentContest({
                     <Text
                       style={{
                         fontSize: 24,
-                        color: isSelected ? 'white' : 'black'
+                        color: isSelected ? colors.white : colors.black
                       }}
                     >
                       {value}
@@ -236,12 +237,12 @@ export function CurrentContest({
             </View>
 
             <TouchableOpacity style={resolveButtonStyle} onPress={onPressResolve}>
-              <Text style={{ fontSize: 20, fontWeight: 'bold', color: 'white' }}>Resolve!</Text>
+              <Text style={{ fontSize: 20, fontWeight: 'bold', color: colors.white }}>Resolve!</Text>
             </TouchableOpacity>
           </>
         ) : (
           <View style={selectWinnerContainerStyle}>
-            <Text style={{ color: '#e9d5ff' }}>Select the winner</Text>
+            <Text style={{ color: colors.purple100 }}>Select the winner</Text>
           </View>
         )}
       </View>
@@ -251,8 +252,8 @@ export function CurrentContest({
 
 // Helper function to get border and background color based on winner status
 const getFighterBorderStyle = (isWinner: boolean) => ({
-  borderColor: isWinner ? '#15803d' : 'transparent',
-  backgroundColor: isWinner ? '#dbeafe' : 'transparent'
+  borderColor: isWinner ? '#15803d' : colors.white,
+  backgroundColor: isWinner ? '#dbeafe' : colors.white
 });
 
 // Style constants
@@ -276,7 +277,7 @@ const headerContainerStyle = {
 
 const currentContestTitleStyle = {
   fontSize: 18,
-  color: 'white',
+  color: colors.white,
   position: absolute,
   left: 0
 };
@@ -286,9 +287,9 @@ const reshuffleButtonStyle = {
   paddingHorizontal: 16,
   paddingVertical: 8,
   borderWidth: 1,
-  borderColor: 'white',
+  borderColor: colors.white,
   borderRadius: 12,
-  backgroundColor: '#334155',
+  backgroundColor: colors.slate700,
   marginStart: 80
 };
 

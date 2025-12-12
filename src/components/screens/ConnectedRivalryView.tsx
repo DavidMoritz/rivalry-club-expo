@@ -17,6 +17,7 @@ import { PROVISIONAL_THRESHOLD, STEPS_PER_STOCK } from '../../models/m-game';
 import { MRivalry } from '../../models/m-rivalry';
 import { useRivalry, useUpdateRivalry } from '../../providers/rivalry';
 import { darkStyles, styles } from '../../utils/styles';
+import { colors } from '../../utils/colors';
 import { Button } from '../common/Button';
 import { CurrentContest } from './parts/CurrentContest';
 import { RivalryView } from './parts/RivalryView';
@@ -218,7 +219,7 @@ export function ConnectedRivalryView({ navigation }: ConnectedRivalryViewProps):
             style={[
               styles.text,
               darkStyles.text,
-              { fontSize: 18, fontWeight: 'bold', color: '#ef4444', marginBottom: 16 }
+              { fontSize: 18, fontWeight: 'bold', color: colors.red600, marginBottom: 16 }
             ]}
           >
             Error
@@ -243,7 +244,7 @@ export function ConnectedRivalryView({ navigation }: ConnectedRivalryViewProps):
             style={[
               styles.text,
               darkStyles.text,
-              { fontSize: 18, fontWeight: 'bold', color: '#ef4444', marginBottom: 16 }
+              { fontSize: 18, fontWeight: 'bold', color: colors.red600, marginBottom: 16 }
             ]}
           >
             Error

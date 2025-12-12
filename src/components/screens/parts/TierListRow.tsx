@@ -2,6 +2,7 @@ import React from 'react';
 import { Text, TouchableOpacity, View } from 'react-native';
 
 import { fighterByIdFromGame } from '../../../utils';
+import { colors } from '../../../utils/colors';
 import { MGame } from '../../../models/m-game';
 import { MTierSlot } from '../../../models/m-tier-slot';
 import { useGame } from '../../../providers/game';
@@ -31,7 +32,7 @@ const TierListRow: React.FC<TierListRowProps> = (props) => {
         style={[
           tierLabelStyle,
           {
-            backgroundColor: props.onTierClick ? 'rgb(31, 41, 55, 0.4)' : 'rgb(31, 41, 55, 0.2)'
+            backgroundColor: props.onTierClick ? colors.tierRowDark : colors.tierRowLight
           }
         ]}
       >
@@ -52,7 +53,7 @@ const TierListRow: React.FC<TierListRowProps> = (props) => {
                   slotWrapperStyle,
                   {
                     borderWidth: isSelected ? 3 : 0,
-                    borderColor: isSelected ? '#fbbf24' : 'transparent'
+                    borderColor: isSelected ? colors.amber400 : colors.white
                   }
                 ]}
               >
@@ -80,7 +81,7 @@ const wrap = 'wrap' as const;
 const rowContainerStyle = {
   flexDirection: row,
   borderBottomWidth: 1,
-  borderBottomColor: '#374151'
+  borderBottomColor: colors.gray700
 };
 
 const tierLabelStyle = {
@@ -88,14 +89,14 @@ const tierLabelStyle = {
   justifyContent: center,
   alignItems: center,
   borderRightWidth: 2,
-  borderRightColor: '#1f2937',
+  borderRightColor: colors.slate800,
   marginRight: 4
 };
 
 const tierLabelTextStyle = {
   fontSize: 32,
   fontWeight: bold,
-  color: 'black'
+  color: colors.black
 };
 
 const tierBackgroundStyle = {

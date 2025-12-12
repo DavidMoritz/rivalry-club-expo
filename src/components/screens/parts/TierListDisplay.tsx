@@ -5,6 +5,7 @@ import { MTierList, TIERS, TierWithSlots } from '../../../models/m-tier-list';
 import { MTierSlot } from '../../../models/m-tier-slot';
 import { SyncedScrollView } from './SyncedScrollView';
 import TierListRow from './TierListRow';
+import { colors } from '../../../utils/colors';
 
 export function TierListDisplay({
   tierList,
@@ -72,7 +73,7 @@ export function TierListDisplay({
           <TierListRow
             key={`UNKNOWN-${tierList.id}`}
             label="U"
-            color="hsl(0, 0%, 50%)"
+            color={colors.tierU}
             active={false}
             slots={unknownSlots}
           />

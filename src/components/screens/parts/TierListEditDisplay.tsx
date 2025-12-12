@@ -15,6 +15,7 @@ import { MGame } from '../../../models/m-game';
 import { useGame } from '../../../providers/game';
 import { fighterByIdFromGame } from '../../../utils';
 import { CharacterDisplay } from '../../common/CharacterDisplay';
+import { colors } from '../../../utils/colors';
 
 interface TierListEditDisplayProps {
   tierList: MTierList;
@@ -446,7 +447,7 @@ export function TierListEditDisplay({ tierList, onChange }: TierListEditDisplayP
               style={{
                 flexDirection: 'row',
                 borderBottomWidth: 1,
-                borderBottomColor: '#374151',
+                borderBottomColor: colors.gray700,
                 backgroundColor: tier.color,
                 minHeight: 40
               }}
@@ -457,10 +458,10 @@ export function TierListEditDisplay({ tierList, onChange }: TierListEditDisplayP
                   justifyContent: 'center',
                   alignItems: 'center',
                   borderRightWidth: 2,
-                  borderRightColor: '#1f2937',
+                  borderRightColor: colors.slate800,
                   backgroundColor: isAnyFighterSelected
-                    ? 'rgba(31, 41, 55, 0.5)'
-                    : 'rgb(31, 41, 55, 0.2)'
+                    ? colors.tierRowDarkAlpha
+                    : colors.tierRowLight
                 }}
                 onPress={isAnyFighterSelected ? () => handleTierLabelClick(tierIndex) : undefined}
               >
@@ -499,8 +500,8 @@ export function TierListEditDisplay({ tierList, onChange }: TierListEditDisplayP
             style={{
               flexDirection: 'row',
               borderBottomWidth: 1,
-              borderBottomColor: '#374151',
-              backgroundColor: 'hsl(0, 0%, 50%)',
+              borderBottomColor: colors.gray700,
+              backgroundColor: colors.tierU,
               minHeight: 80
             }}
           >
@@ -510,8 +511,8 @@ export function TierListEditDisplay({ tierList, onChange }: TierListEditDisplayP
                 justifyContent: 'center',
                 alignItems: 'center',
                 borderRightWidth: 2,
-                borderRightColor: '#1f2937',
-                backgroundColor: 'rgb(31, 41, 55, 0.2)'
+                borderRightColor: colors.slate800,
+                backgroundColor: colors.tierRowLight
               }}
             >
               <Text style={{ fontSize: 32, fontWeight: 'bold', color: 'black', opacity: 1 }}>

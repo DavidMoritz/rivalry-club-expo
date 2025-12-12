@@ -4,6 +4,7 @@ import React from 'react';
 import { useHideRivalryMutation } from '../../../controllers/c-rivalry';
 import { useAuthUser } from '../../../hooks/useAuthUser';
 import { useRivalry } from '../../../providers/rivalry';
+import { colors } from '../../../utils/colors';
 import { Button } from '../../common/Button';
 
 interface RivalryViewProps {
@@ -88,7 +89,7 @@ const primaryButtonStyle = {
 
 const unhideButtonStyle = {
   ...primaryButtonStyle,
-  backgroundColor: '#dc2626'
+  backgroundColor: colors.red500
 };
 
 const linkButtonStyle = {
@@ -101,7 +102,7 @@ const linkButtonStyle = {
 };
 
 const linkTextStyle = {
-  color: '#94a3b8',
+  color: colors.slate400,
   fontSize: 14,
   fontWeight: 'normal' as const,
   textDecorationLine: 'underline' as const

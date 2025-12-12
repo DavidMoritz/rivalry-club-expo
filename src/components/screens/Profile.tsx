@@ -18,6 +18,7 @@ import { useAuthUser } from '../../hooks/useAuthUser';
 import { updatePassword, signOut } from '../../lib/amplify-auth';
 import { clearStoredUuid, storeFirstName } from '../../lib/user-identity';
 import { darkStyles, styles } from '../../utils/styles';
+import { colors } from '../../utils/colors';
 import { LinkAccountModal } from './LinkAccountModal';
 import { CreateAccountModal } from './CreateAccountModal';
 
@@ -217,7 +218,7 @@ export function Profile() {
           {isNewUser && (
             <View
               style={{
-                backgroundColor: '#3b82f6',
+                backgroundColor: colors.blue500,
                 padding: 16,
                 borderRadius: 8,
                 marginBottom: 16
@@ -237,7 +238,7 @@ export function Profile() {
           {successMessage ? (
             <View
               style={{
-                backgroundColor: '#10b981',
+                backgroundColor: colors.green600,
                 padding: 12,
                 borderRadius: 8,
                 marginBottom: 16
@@ -250,7 +251,7 @@ export function Profile() {
           {errorMessage ? (
             <View
               style={{
-                backgroundColor: '#ef4444',
+                backgroundColor: colors.red600,
                 padding: 12,
                 borderRadius: 8,
                 marginBottom: 16
@@ -271,19 +272,19 @@ export function Profile() {
                 style={[
                   styles.text,
                   {
-                    backgroundColor: '#2d3748',
+                    backgroundColor: colors.gray800,
                     color: 'white',
                     paddingHorizontal: 16,
                     paddingVertical: 12,
                     borderRadius: 8,
                     borderWidth: 1,
-                    borderColor: '#4a5568'
+                    borderColor: colors.gray600
                   }
                 ]}
                 value={firstName}
                 onChangeText={setFirstName}
                 placeholder="Enter first name"
-                placeholderTextColor="#999"
+                placeholderTextColor={colors.gray400}
                 autoCapitalize="words"
               />
             </View>
@@ -294,36 +295,36 @@ export function Profile() {
                 style={[
                   styles.text,
                   {
-                    backgroundColor: '#2d3748',
+                    backgroundColor: colors.gray800,
                     color: 'white',
                     paddingHorizontal: 16,
                     paddingVertical: 12,
                     borderRadius: 8,
                     borderWidth: 1,
-                    borderColor: '#4a5568'
+                    borderColor: colors.gray600
                   }
                 ]}
                 value={lastName}
                 onChangeText={setLastName}
                 placeholder="Enter last name"
-                placeholderTextColor="#999"
+                placeholderTextColor={colors.gray400}
                 autoCapitalize="words"
               />
             </View>
 
             <View style={{ marginBottom: 16 }}>
-              <Text style={[styles.text, { marginBottom: 8, color: '#9ca3af' }]}>Email</Text>
+              <Text style={[styles.text, { marginBottom: 8, color: colors.gray300 }]}>Email</Text>
               <Text
                 style={[
                   styles.text,
                   {
-                    backgroundColor: '#1f2937',
+                    backgroundColor: colors.slate800,
                     color: 'white',
                     paddingHorizontal: 16,
                     paddingVertical: 12,
                     borderRadius: 8,
                     borderWidth: 1,
-                    borderColor: '#374151'
+                    borderColor: colors.gray700
                   }
                 ]}
               >
@@ -333,12 +334,12 @@ export function Profile() {
 
             <TouchableOpacity
               style={{
-                backgroundColor: '#6b21a8',
+                backgroundColor: colors.purple900,
                 paddingHorizontal: 32,
                 paddingVertical: 16,
                 borderRadius: 25,
                 borderWidth: 1,
-                borderColor: '#cbd5e1',
+                borderColor: colors.slate300,
                 width: '100%',
                 alignItems: 'center',
                 marginTop: 8
@@ -355,7 +356,7 @@ export function Profile() {
           <View
             style={{
               borderTopWidth: 1,
-              borderTopColor: '#374151',
+              borderTopColor: colors.gray700,
               paddingTop: 32,
               marginBottom: 32
             }}
@@ -368,7 +369,7 @@ export function Profile() {
               <>
                 <View
                   style={{
-                    backgroundColor: '#475569',
+                    backgroundColor: colors.slate600,
                     padding: 12,
                     borderRadius: 8,
                     marginBottom: 16
@@ -378,7 +379,7 @@ export function Profile() {
                     📱 Anonymous Account
                   </Text>
                   <Text
-                    style={{ color: '#cbd5e1', textAlign: 'center', marginTop: 4, fontSize: 13 }}
+                    style={{ color: colors.slate300, textAlign: 'center', marginTop: 4, fontSize: 13 }}
                   >
                     Your data is saved locally. Link an account for recovery and multi-device sync.
                   </Text>
@@ -386,7 +387,7 @@ export function Profile() {
 
                 <TouchableOpacity
                   style={{
-                    backgroundColor: '#fbbf24',
+                    backgroundColor: colors.amber400,
                     paddingHorizontal: 24,
                     paddingVertical: 14,
                     borderRadius: 8,
@@ -395,11 +396,11 @@ export function Profile() {
                   }}
                   onPress={() => setShowLinkAccountModal(true)}
                 >
-                  <Text style={{ color: '#1f2937', fontSize: 16, fontWeight: 'bold' }}>
+                  <Text style={{ color: colors.darkText, fontSize: 16, fontWeight: 'bold' }}>
                     Link Existing Account
                   </Text>
                   <Text
-                    style={{ color: '#1f2937', fontSize: 12, marginTop: 2, textAlign: 'center' }}
+                    style={{ color: colors.darkText, fontSize: 12, marginTop: 2, textAlign: 'center' }}
                   >
                     Already have an account? Restore your data. This will remove all data for{' '}
                     {user?.email.split('@')[0] ?? 'this profile'}.
@@ -408,7 +409,7 @@ export function Profile() {
 
                 <TouchableOpacity
                   style={{
-                    backgroundColor: '#6b21a8',
+                    backgroundColor: colors.purple900,
                     paddingHorizontal: 24,
                     paddingVertical: 14,
                     borderRadius: 8,
@@ -427,7 +428,7 @@ export function Profile() {
             ) : (
               <View
                 style={{
-                  backgroundColor: '#10b981',
+                  backgroundColor: colors.green600,
                   padding: 12,
                   borderRadius: 8,
                   marginBottom: 16
@@ -436,7 +437,7 @@ export function Profile() {
                 <Text style={{ color: 'white', textAlign: 'center', fontWeight: '600' }}>
                   ✅ Linked to Account
                 </Text>
-                <Text style={{ color: '#d1fae5', textAlign: 'center', marginTop: 4, fontSize: 13 }}>
+                <Text style={{ color: colors.green100, textAlign: 'center', marginTop: 4, fontSize: 13 }}>
                   Your data is backed up and synced across devices
                 </Text>
               </View>
@@ -447,18 +448,18 @@ export function Profile() {
             <View
               style={{
                 borderTopWidth: 1,
-                borderTopColor: '#374151',
+                borderTopColor: colors.gray700,
                 paddingTop: 32
               }}
             >
               <TouchableOpacity
                 style={{
-                  backgroundColor: '#6b21a8',
+                  backgroundColor: colors.purple900,
                   paddingHorizontal: 32,
                   paddingVertical: 16,
                   borderRadius: 25,
                   borderWidth: 1,
-                  borderColor: '#cbd5e1',
+                  borderColor: colors.slate300,
                   width: '100%',
                   alignItems: 'center',
                   marginTop: 8
@@ -475,7 +476,7 @@ export function Profile() {
             <View
               style={{
                 borderTopWidth: 1,
-                borderTopColor: '#374151',
+                borderTopColor: colors.gray700,
                 paddingTop: 32
               }}
             >
@@ -489,19 +490,19 @@ export function Profile() {
                   style={[
                     styles.text,
                     {
-                      backgroundColor: '#2d3748',
+                      backgroundColor: colors.gray800,
                       color: 'white',
                       paddingHorizontal: 16,
                       paddingVertical: 12,
                       borderRadius: 8,
                       borderWidth: 1,
-                      borderColor: '#4a5568'
+                      borderColor: colors.gray600
                     }
                   ]}
                   value={currentPassword}
                   onChangeText={setCurrentPassword}
                   placeholder="Enter current password"
-                  placeholderTextColor="#999"
+                  placeholderTextColor={colors.gray400}
                   secureTextEntry
                   autoCapitalize="none"
                 />
@@ -513,19 +514,19 @@ export function Profile() {
                   style={[
                     styles.text,
                     {
-                      backgroundColor: '#2d3748',
+                      backgroundColor: colors.gray800,
                       color: 'white',
                       paddingHorizontal: 16,
                       paddingVertical: 12,
                       borderRadius: 8,
                       borderWidth: 1,
-                      borderColor: '#4a5568'
+                      borderColor: colors.gray600
                     }
                   ]}
                   value={newPassword}
                   onChangeText={setNewPassword}
                   placeholder="Enter new password (min 8 characters)"
-                  placeholderTextColor="#999"
+                  placeholderTextColor={colors.gray400}
                   secureTextEntry
                   autoCapitalize="none"
                 />
@@ -537,19 +538,19 @@ export function Profile() {
                   style={[
                     styles.text,
                     {
-                      backgroundColor: '#2d3748',
+                      backgroundColor: colors.gray800,
                       color: 'white',
                       paddingHorizontal: 16,
                       paddingVertical: 12,
                       borderRadius: 8,
                       borderWidth: 1,
-                      borderColor: '#4a5568'
+                      borderColor: colors.gray600
                     }
                   ]}
                   value={confirmPassword}
                   onChangeText={setConfirmPassword}
                   placeholder="Re-enter new password"
-                  placeholderTextColor="#999"
+                  placeholderTextColor={colors.gray400}
                   secureTextEntry
                   autoCapitalize="none"
                 />
@@ -557,12 +558,12 @@ export function Profile() {
 
               <TouchableOpacity
                 style={{
-                  backgroundColor: '#6b21a8',
+                  backgroundColor: colors.purple900,
                   paddingHorizontal: 32,
                   paddingVertical: 16,
                   borderRadius: 25,
                   borderWidth: 1,
-                  borderColor: '#cbd5e1',
+                  borderColor: colors.slate300,
                   width: '100%',
                   alignItems: 'center',
                   marginTop: 8

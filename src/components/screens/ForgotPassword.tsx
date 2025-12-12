@@ -11,6 +11,7 @@ import {
 import { SafeAreaView } from 'react-native-safe-area-context';
 
 import { confirmResetPassword, resetPassword } from '../../lib/amplify-auth';
+import { colors } from '../../utils/colors';
 import { darkStyles, styles } from '../../utils/styles';
 
 interface ForgotPasswordProps {
@@ -131,13 +132,13 @@ export function ForgotPassword({ onBack, initialEmail = '' }: ForgotPasswordProp
                     fontSize: 16,
                     paddingHorizontal: 16,
                     paddingVertical: 14,
-                    backgroundColor: '#2d3748',
+                    backgroundColor: colors.gray800,
                     borderWidth: 2,
-                    borderColor: '#4a5568'
+                    borderColor: colors.gray600
                   }
                 ]}
                 placeholder="Enter your email"
-                placeholderTextColor="#a0aec0"
+                placeholderTextColor={colors.gray200}
                 value={email}
                 onChangeText={setEmail}
                 keyboardType="email-address"
@@ -148,13 +149,13 @@ export function ForgotPassword({ onBack, initialEmail = '' }: ForgotPasswordProp
             </View>
 
             {error && (
-              <Text style={[styles.text, { marginBottom: 16, textAlign: 'center', color: '#f87171' }]}>
+              <Text style={[styles.text, { marginBottom: 16, textAlign: 'center', color: colors.red400 }]}>
                 {error}
               </Text>
             )}
 
             {success && (
-              <Text style={[styles.text, { marginBottom: 16, textAlign: 'center', color: '#4ade80' }]}>
+              <Text style={[styles.text, { marginBottom: 16, textAlign: 'center', color: colors.green300 }]}>
                 {success}
               </Text>
             )}
@@ -162,12 +163,12 @@ export function ForgotPassword({ onBack, initialEmail = '' }: ForgotPasswordProp
             <TouchableOpacity
               testID="send-code-button"
               style={{
-                backgroundColor: '#6b21a8',
+                backgroundColor: colors.purple900,
                 paddingHorizontal: 32,
                 paddingVertical: 16,
                 borderRadius: 25,
                 borderWidth: 1,
-                borderColor: '#cbd5e1',
+                borderColor: colors.slate300,
                 width: '75%',
                 alignItems: 'center',
                 marginTop: 8,
@@ -186,7 +187,7 @@ export function ForgotPassword({ onBack, initialEmail = '' }: ForgotPasswordProp
               onPress={onBack}
               style={{ marginTop: 8 }}
             >
-              <Text style={{ color: '#22d3ee', fontSize: 16 }}>Back to Sign In</Text>
+              <Text style={{ color: colors.cyan400, fontSize: 16 }}>Back to Sign In</Text>
             </TouchableOpacity>
           </>
         ) : (
@@ -208,9 +209,9 @@ export function ForgotPassword({ onBack, initialEmail = '' }: ForgotPasswordProp
                     fontSize: 16,
                     paddingHorizontal: 16,
                     paddingVertical: 14,
-                    backgroundColor: '#2d3748',
+                    backgroundColor: colors.gray800,
                     borderWidth: 2,
-                    borderColor: '#4a5568'
+                    borderColor: colors.gray600
                   }
                 ]}
                 value={email}
@@ -235,13 +236,13 @@ export function ForgotPassword({ onBack, initialEmail = '' }: ForgotPasswordProp
                     fontSize: 16,
                     paddingHorizontal: 16,
                     paddingVertical: 14,
-                    backgroundColor: '#2d3748',
+                    backgroundColor: colors.gray800,
                     borderWidth: 2,
-                    borderColor: '#4a5568'
+                    borderColor: colors.gray600
                   }
                 ]}
                 placeholder="Enter reset code"
-                placeholderTextColor="#a0aec0"
+                placeholderTextColor={colors.gray200}
                 value={resetCode}
                 onChangeText={setResetCode}
                 keyboardType="number-pad"
@@ -262,13 +263,13 @@ export function ForgotPassword({ onBack, initialEmail = '' }: ForgotPasswordProp
                     fontSize: 16,
                     paddingHorizontal: 16,
                     paddingVertical: 14,
-                    backgroundColor: '#2d3748',
+                    backgroundColor: colors.gray800,
                     borderWidth: 2,
-                    borderColor: '#4a5568'
+                    borderColor: colors.gray600
                   }
                 ]}
                 placeholder="Enter new password"
-                placeholderTextColor="#a0aec0"
+                placeholderTextColor={colors.gray200}
                 value={newPassword}
                 onChangeText={setNewPassword}
                 secureTextEntry
@@ -289,13 +290,13 @@ export function ForgotPassword({ onBack, initialEmail = '' }: ForgotPasswordProp
                     fontSize: 16,
                     paddingHorizontal: 16,
                     paddingVertical: 14,
-                    backgroundColor: '#2d3748',
+                    backgroundColor: colors.gray800,
                     borderWidth: 2,
-                    borderColor: '#4a5568'
+                    borderColor: colors.gray600
                   }
                 ]}
                 placeholder="Confirm new password"
-                placeholderTextColor="#a0aec0"
+                placeholderTextColor={colors.gray200}
                 value={confirmPassword}
                 onChangeText={setConfirmPassword}
                 secureTextEntry
@@ -304,13 +305,13 @@ export function ForgotPassword({ onBack, initialEmail = '' }: ForgotPasswordProp
             </View>
 
             {error && (
-              <Text style={[styles.text, { marginBottom: 16, textAlign: 'center', color: '#f87171' }]}>
+              <Text style={[styles.text, { marginBottom: 16, textAlign: 'center', color: colors.red400 }]}>
                 {error}
               </Text>
             )}
 
             {success && (
-              <Text style={[styles.text, { marginBottom: 16, textAlign: 'center', color: '#4ade80' }]}>
+              <Text style={[styles.text, { marginBottom: 16, textAlign: 'center', color: colors.green300 }]}>
                 {success}
               </Text>
             )}
@@ -318,12 +319,12 @@ export function ForgotPassword({ onBack, initialEmail = '' }: ForgotPasswordProp
             <TouchableOpacity
               testID="reset-password-button"
               style={{
-                backgroundColor: '#6b21a8',
+                backgroundColor: colors.purple900,
                 paddingHorizontal: 32,
                 paddingVertical: 16,
                 borderRadius: 25,
                 borderWidth: 1,
-                borderColor: '#cbd5e1',
+                borderColor: colors.slate300,
                 width: '75%',
                 alignItems: 'center',
                 marginTop: 8,
@@ -349,7 +350,7 @@ export function ForgotPassword({ onBack, initialEmail = '' }: ForgotPasswordProp
               }}
               style={{ marginTop: 8 }}
             >
-              <Text style={{ color: '#22d3ee', fontSize: 16 }}>Back</Text>
+              <Text style={{ color: colors.cyan400, fontSize: 16 }}>Back</Text>
             </TouchableOpacity>
           </>
         )}

@@ -7,6 +7,7 @@ import { useAuthUser } from '../../hooks/useAuthUser';
 import { useUserRivalries } from '../../hooks/useUserRivalries';
 import { useAllRivalriesUpdate } from '../../providers/all-rivalries';
 import { darkStyles, styles } from '../../utils/styles';
+import { colors } from '../../utils/colors';
 import { RivalriesTable } from './parts/RivalriesTable';
 
 interface Rivalry {
@@ -183,7 +184,7 @@ const errorTitleStyle = {
   ...styles.text,
   fontSize: 18,
   fontWeight: bold,
-  color: '#ef4444',
+  color: colors.red600,
   marginBottom: 16
 };
 
@@ -191,7 +192,7 @@ const headerContainerStyle = {
   paddingHorizontal: 16,
   paddingVertical: 16,
   borderBottomWidth: 1,
-  borderBottomColor: '#333'
+  borderBottomColor: colors.gray750
 };
 
 const welcomeTextStyle = {
@@ -203,11 +204,11 @@ const welcomeTextStyle = {
 const subtitleTextStyle = {
   ...styles.text,
   marginTop: 4,
-  color: '#999'
+  color: colors.gray400
 };
 
 const createButtonStyle = {
-  backgroundColor: '#6b21a8',
+  backgroundColor: colors.purple900,
   paddingHorizontal: 24,
   paddingVertical: 12,
   borderRadius: 8,
@@ -230,7 +231,7 @@ const hiddenHeaderTextStyle = {
   ...styles.text,
   fontSize: 18,
   fontWeight: bold,
-  color: '#999'
+  color: colors.gray400
 };
 
 const toggleContainerStyle = {
@@ -239,7 +240,7 @@ const toggleContainerStyle = {
 };
 
 const toggleButtonStyle = {
-  backgroundColor: '#374151',
+  backgroundColor: colors.gray700,
   paddingHorizontal: 24,
   paddingVertical: 12,
   borderRadius: 8,

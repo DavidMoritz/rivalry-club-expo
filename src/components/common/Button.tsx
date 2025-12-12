@@ -1,4 +1,5 @@
 import { StyleSheet, Text, TextStyle, TouchableOpacity, ViewStyle } from 'react-native';
+import { colors } from '../../utils/colors';
 import { styles } from '../../utils/styles';
 
 type ButtonProps = {
@@ -39,9 +40,9 @@ const buttonStyles = StyleSheet.create({
     marginVertical: 8,
     justifyContent: 'center',
     alignItems: 'center',
-    backgroundColor: '#6b21a8',
+    backgroundColor: colors.purple900,
     borderWidth: 1,
-    borderColor: '#cbd5e1',
+    borderColor: colors.slate300,
     borderRadius: 25,
     height: 36,
     paddingHorizontal: 24,

@@ -1,4 +1,5 @@
 import { StyleSheet } from 'react-native';
+import { colors } from './colors';
 
 export const styles = StyleSheet.create({
   container: {
@@ -30,7 +31,7 @@ export const styles = StyleSheet.create({
 
 export const darkStyles = StyleSheet.create({
   container: {
-    backgroundColor: '#111',
+    backgroundColor: colors.gray900,
     color: 'white'
   },
   text: { color: 'white' }

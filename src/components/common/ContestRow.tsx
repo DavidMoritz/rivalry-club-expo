@@ -8,6 +8,7 @@ import { MGame } from '../../models/m-game';
 import { MRivalry } from '../../models/m-rivalry';
 import { MTierSlot } from '../../models/m-tier-slot';
 import { CharacterDisplay } from './CharacterDisplay';
+import { colors } from '../../utils/colors';
 
 interface ContestRowProps {
   contest: MContest;
@@ -36,7 +37,7 @@ export function ContestRow({ contest, game, rivalry, flip, shouldFadeOut }: Cont
       Animated.timing(fadeAnim, {
         toValue: 0,
         duration: 2000,
-        useNativeDriver: true,
+        useNativeDriver: true
       }).start();
     }
   }, [shouldFadeOut, fadeAnim, contest.id]);
@@ -66,8 +67,8 @@ export function ContestRow({ contest, game, rivalry, flip, shouldFadeOut }: Cont
       style={[
         contestStyles.row,
         {
-          opacity: fadeAnim,
-        },
+          opacity: fadeAnim
+        }
       ]}
     >
       <View style={contestStyles.item}>
@@ -102,5 +103,5 @@ const textStyle = {
 };
 
 const winnerStyle = {
-  backgroundColor: 'hsl(150, 100%, 13%)'
+  backgroundColor: colors.green900
 };

@@ -11,6 +11,7 @@ import {
 import { SafeAreaView } from 'react-native-safe-area-context';
 
 import { confirmSignUp, getCurrentUser, signIn, signUp } from '../../lib/amplify-auth';
+import { colors } from '../../utils/colors';
 import { darkStyles, styles } from '../../utils/styles';
 import { ForgotPassword } from './ForgotPassword';
 
@@ -189,13 +190,13 @@ export function Auth({ onAuthSuccess }: AuthProps) {
                     fontSize: 16,
                     paddingHorizontal: 16,
                     paddingVertical: 14,
-                    backgroundColor: '#2d3748',
+                    backgroundColor: colors.gray800,
                     borderWidth: 2,
-                    borderColor: '#4a5568'
+                    borderColor: colors.gray600
                   }
                 ]}
                 placeholder="Enter your email"
-                placeholderTextColor="#a0aec0"
+                placeholderTextColor={colors.gray200}
                 value={email}
                 onChangeText={setEmail}
                 keyboardType="email-address"
@@ -218,13 +219,13 @@ export function Auth({ onAuthSuccess }: AuthProps) {
                     fontSize: 16,
                     paddingHorizontal: 16,
                     paddingVertical: 14,
-                    backgroundColor: '#2d3748',
+                    backgroundColor: colors.gray800,
                     borderWidth: 2,
-                    borderColor: '#4a5568'
+                    borderColor: colors.gray600
                   }
                 ]}
                 placeholder="Enter verification code"
-                placeholderTextColor="#a0aec0"
+                placeholderTextColor={colors.gray200}
                 value={verificationCode}
                 onChangeText={setVerificationCode}
                 keyboardType="number-pad"
@@ -233,7 +234,7 @@ export function Auth({ onAuthSuccess }: AuthProps) {
             </View>
 
             {error && (
-              <Text style={[styles.text, { marginBottom: 16, textAlign: 'center', color: '#f87171' }]}>
+              <Text style={[styles.text, { marginBottom: 16, textAlign: 'center', color: colors.red400 }]}>
                 {error}
               </Text>
             )}
@@ -241,12 +242,12 @@ export function Auth({ onAuthSuccess }: AuthProps) {
             <TouchableOpacity
               testID="verify-submit-button"
               style={{
-                backgroundColor: '#6b21a8',
+                backgroundColor: colors.purple900,
                 paddingHorizontal: 32,
                 paddingVertical: 16,
                 borderRadius: 25,
                 borderWidth: 1,
-                borderColor: '#cbd5e1',
+                borderColor: colors.slate300,
                 width: '75%',
                 alignItems: 'center',
                 marginTop: 8,
@@ -269,7 +270,7 @@ export function Auth({ onAuthSuccess }: AuthProps) {
               }}
               style={{ marginTop: 8 }}
             >
-              <Text style={{ color: '#22d3ee', fontSize: 16 }}>Back to Sign Up</Text>
+              <Text style={{ color: colors.cyan400, fontSize: 16 }}>Back to Sign Up</Text>
             </TouchableOpacity>
           </>
         ) : (
@@ -287,13 +288,13 @@ export function Auth({ onAuthSuccess }: AuthProps) {
                     fontSize: 16,
                     paddingHorizontal: 16,
                     paddingVertical: 14,
-                    backgroundColor: '#2d3748',
+                    backgroundColor: colors.gray800,
                     borderWidth: 2,
-                    borderColor: '#4a5568'
+                    borderColor: colors.gray600
                   }
                 ]}
                 placeholder="Enter your email"
-                placeholderTextColor="#a0aec0"
+                placeholderTextColor={colors.gray200}
                 value={email}
                 onChangeText={setEmail}
                 keyboardType="email-address"
@@ -315,13 +316,13 @@ export function Auth({ onAuthSuccess }: AuthProps) {
                     fontSize: 16,
                     paddingHorizontal: 16,
                     paddingVertical: 14,
-                    backgroundColor: '#2d3748',
+                    backgroundColor: colors.gray800,
                     borderWidth: 2,
-                    borderColor: '#4a5568'
+                    borderColor: colors.gray600
                   }
                 ]}
                 placeholder="Enter your password"
-                placeholderTextColor="#a0aec0"
+                placeholderTextColor={colors.gray200}
                 value={password}
                 onChangeText={setPassword}
                 secureTextEntry
@@ -343,13 +344,13 @@ export function Auth({ onAuthSuccess }: AuthProps) {
                       fontSize: 16,
                       paddingHorizontal: 16,
                       paddingVertical: 14,
-                      backgroundColor: '#2d3748',
+                      backgroundColor: colors.gray800,
                       borderWidth: 2,
-                      borderColor: '#4a5568'
+                      borderColor: colors.gray600
                     }
                   ]}
                   placeholder="Confirm your password"
-                  placeholderTextColor="#a0aec0"
+                  placeholderTextColor={colors.gray200}
                   value={confirmPassword}
                   onChangeText={setConfirmPassword}
                   secureTextEntry
@@ -365,7 +366,7 @@ export function Auth({ onAuthSuccess }: AuthProps) {
                   {
                     marginBottom: 16,
                     textAlign: 'center',
-                    color: error.includes('verified') || error.includes('success') ? '#4ade80' : '#f87171'
+                    color: error.includes('verified') || error.includes('success') ? colors.green300 : colors.red400
                   }
                 ]}
               >
@@ -376,12 +377,12 @@ export function Auth({ onAuthSuccess }: AuthProps) {
             <TouchableOpacity
               testID="auth-submit-button"
               style={{
-                backgroundColor: '#6b21a8',
+                backgroundColor: colors.purple900,
                 paddingHorizontal: 32,
                 paddingVertical: 16,
                 borderRadius: 25,
                 borderWidth: 1,
-                borderColor: '#cbd5e1',
+                borderColor: colors.slate300,
                 width: '75%',
                 alignItems: 'center',
                 marginTop: 8,
@@ -403,7 +404,7 @@ export function Auth({ onAuthSuccess }: AuthProps) {
               }}
               style={{ marginTop: 8 }}
             >
-              <Text style={{ color: '#22d3ee', fontSize: 16 }}>
+              <Text style={{ color: colors.cyan400, fontSize: 16 }}>
                 {isSignUp ? 'Already have an account? Sign In' : "Don't have an account? Sign Up"}
               </Text>
             </TouchableOpacity>
@@ -416,7 +417,7 @@ export function Auth({ onAuthSuccess }: AuthProps) {
                 }}
                 style={{ marginTop: 12 }}
               >
-                <Text style={{ color: '#a0aec0', fontSize: 16 }}>
+                <Text style={{ color: colors.gray200, fontSize: 16 }}>
                   Forgot Password?
                 </Text>
               </TouchableOpacity>

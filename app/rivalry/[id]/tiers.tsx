@@ -14,6 +14,7 @@ import { getMUser } from '../../../src/models/m-user';
 import { RivalryProvider } from '../../../src/providers/rivalry';
 import { SyncedScrollViewContext, syncedScrollViewState } from '../../../src/providers/scroll-view';
 import { darkStyles, styles } from '../../../src/utils/styles';
+import { colors } from '../../../src/utils/colors';
 
 // Lazy client initialization to avoid crashes when Amplify isn't configured
 let client: ReturnType<typeof generateClient<Schema>> | null = null;
@@ -118,54 +119,54 @@ export default function TiersRoute() {
         userId={userId}
       >
         <SyncedScrollViewContext.Provider value={syncedScrollViewState}>
-            <SafeAreaView style={[styles.container, darkStyles.container]}>
-              {isLoading && (
-                <View style={centeredContainerStyle}>
-                  <Text style={loadingTextStyle}>Loading Tier Lists...</Text>
-                </View>
-              )}
+          <SafeAreaView style={[styles.container, darkStyles.container]}>
+            {isLoading && (
+              <View style={centeredContainerStyle}>
+                <Text style={loadingTextStyle}>Loading Tier Lists...</Text>
+              </View>
+            )}
 
-              {isError && (
-                <View style={errorContainerStyle}>
-                  <Text style={errorTitleStyle}>Error</Text>
-                  <Text
-                    style={[styles.text, darkStyles.text]}
-                  >{`Error loading tier lists: ${error?.message}`}</Text>
-                </View>
-              )}
+            {isError && (
+              <View style={errorContainerStyle}>
+                <Text style={errorTitleStyle}>Error</Text>
+                <Text
+                  style={[styles.text, darkStyles.text]}
+                >{`Error loading tier lists: ${error?.message}`}</Text>
+              </View>
+            )}
 
-              {!isLoading && !isError && !rivalry && (
-                <View style={centeredContainerStyle}>
-                  <Text style={loadingTextStyle}>Waiting for tier lists...</Text>
-                  <Text style={debugTextStyle}>Check console logs for details</Text>
-                </View>
-              )}
+            {!isLoading && !isError && !rivalry && (
+              <View style={centeredContainerStyle}>
+                <Text style={loadingTextStyle}>Waiting for tier lists...</Text>
+                <Text style={debugTextStyle}>Check console logs for details</Text>
+              </View>
+            )}
 
-              {!isLoading && !isError && rivalry && (
-                <>
-                  <View style={editButtonContainerStyle}>
-                    <Button
-                      style={editButtonStyle}
-                      onPress={() => {
-                        router.push({
-                          pathname: `/rivalry/${rivalryId}/tierListEdit`,
-                          params: { userId, userAName, userBName }
-                        });
-                      }}
-                      text="Edit Tier List"
-                    />
-                  </View>
-
-                  <TierListsDisplay rivalry={rivalry} unlinked={unlinked} />
-
+            {!isLoading && !isError && rivalry && (
+              <>
+                <View style={editButtonContainerStyle}>
                   <Button
-                    onPress={() => setUnLinked(!unlinked)}
-                    text={unlinked ? 'Unlinked' : 'Linked'}
-                    style={linkButtonStyle}
+                    style={editButtonStyle}
+                    onPress={() => {
+                      router.push({
+                        pathname: `/rivalry/${rivalryId}/tierListEdit`,
+                        params: { userId, userAName, userBName }
+                      });
+                    }}
+                    text="Edit Tier List"
                   />
-                </>
-              )}
-            </SafeAreaView>
+                </View>
+
+                <TierListsDisplay rivalry={rivalry} unlinked={unlinked} />
+
+                <Button
+                  onPress={() => setUnLinked(!unlinked)}
+                  text={unlinked ? 'Unlinked' : 'Linked'}
+                  style={linkButtonStyle}
+                />
+              </>
+            )}
+          </SafeAreaView>
         </SyncedScrollViewContext.Provider>
       </RivalryProvider>
       <StatusBar style="light" />
@@ -209,7 +210,7 @@ const debugTextStyle = {
   ...darkStyles.text,
   fontSize: 12,
   marginTop: 8,
-  color: '#999'
+  color: colors.gray400
 };
 
 const editButtonContainerStyle = {

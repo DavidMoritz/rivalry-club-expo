@@ -4,6 +4,7 @@ import { Modal, Pressable, Text, TouchableOpacity, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import { signOut } from '../../lib/amplify-auth';
+import { colors } from '../../utils/colors';
 import { darkStyles } from '../../utils/styles';
 
 export function HamburgerMenu() {
@@ -121,7 +122,7 @@ const hamburgerButtonStyle = {
   right: 16,
   zIndex: 100,
   padding: 12,
-  backgroundColor: '#334155',
+  backgroundColor: colors.slate700,
   borderRadius: 8
 };
 
@@ -132,17 +133,17 @@ const hamburgerIconStyle = {
 
 const modalBackdropStyle = {
   flex: 1,
-  backgroundColor: 'rgba(0, 0, 0, 0.5)'
+  backgroundColor: colors.overlayLight
 };
 
 const menuContainerStyle = {
   position: absolute,
   right: 16,
-  backgroundColor: '#1e293b',
+  backgroundColor: colors.slate900,
   borderRadius: 8,
   paddingVertical: 8,
   minWidth: 200,
-  shadowColor: '#000',
+  shadowColor: 'black',
   shadowOffset: { width: 0, height: 2 },
   shadowOpacity: 0.25,
   shadowRadius: 4,
@@ -158,7 +159,7 @@ const menuItemStyle = {
 
 const dividerStyle = {
   height: 1,
-  backgroundColor: '#475569',
+  backgroundColor: colors.slate600,
   marginVertical: 4
 };
 
@@ -175,11 +176,11 @@ const menuTextStyle = {
 
 const signOutIconStyle = {
   fontSize: 16,
-  color: '#ef4444',
+  color: colors.red600,
   marginRight: 12
 };
 
 const signOutTextStyle = {
   fontSize: 16,
-  color: '#ef4444'
+  color: colors.red600
 };

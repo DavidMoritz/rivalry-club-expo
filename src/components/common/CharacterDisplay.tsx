@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { Dimensions, Image, Modal, Pressable, Text, View, ViewStyle } from 'react-native';
 
-import { styles } from '../../utils/styles';
+import { colors } from '../../utils/colors';
 import { sourceCase } from '../../utils';
 import { CharacterFace } from '../../../assets/images/games/ssbu/CharacterFaceExample';
 import { fighterImages } from '../../../assets/images/games/ssbu';
@@ -38,16 +38,6 @@ export function CharacterDisplay({
 
   // Log fighter data on long press to debug stats display
   const handleLongPress = () => {
-    console.log(
-      '[CharacterDisplay] Long press on fighter:',
-      fighter.name,
-      'winCount:',
-      fighter.winCount,
-      'contestCount:',
-      fighter.contestCount,
-      'rank:',
-      fighter.rank
-    );
     setShowFullImage(true);
   };
 
@@ -151,9 +141,7 @@ export function CharacterDisplay({
                   Win Rate: {((fighter.winCount / fighter.contestCount) * 100).toFixed(1)}%
                 </Text>
               )}
-            {fighter.rank !== undefined && (
-              <Text style={rankTextStyle}>Rank: #{fighter.rank}</Text>
-            )}
+            {fighter.rank !== undefined && <Text style={rankTextStyle}>Rank: #{fighter.rank}</Text>}
           </View>
         </Pressable>
       </Modal>
@@ -194,14 +182,14 @@ const fighterNameTextStyle = {
 
 const modalBackdropStyle = {
   flex: 1,
-  backgroundColor: 'rgba(0, 0, 0, 0.9)',
+  backgroundColor: colors.overlayDark,
   justifyContent: center,
   alignItems: center
 };
 
 const statsContainerStyle = {
   marginTop: 20,
-  backgroundColor: 'rgba(0, 0, 0, 0.7)',
+  backgroundColor: colors.overlayMedium,
   paddingHorizontal: 24,
   paddingVertical: 16,
   borderRadius: 12,
@@ -209,7 +197,7 @@ const statsContainerStyle = {
 };
 
 const sectionHeaderStyle = {
-  color: '#a78bfa',
+  color: colors.purple400,
   fontSize: 20,
   fontWeight: 'bold' as const,
   marginBottom: 8
@@ -227,13 +215,13 @@ const statTextLargeStyle = {
 };
 
 const winRateTextStyle = {
-  color: '#60a5fa',
+  color: colors.blue400,
   fontSize: 16,
   marginBottom: 12
 };
 
 const globalStatsHeaderStyle = {
-  color: '#34d399',
+  color: colors.green400,
   fontSize: 20,
   fontWeight: 'bold' as const,
   marginTop: 8,
@@ -241,13 +229,13 @@ const globalStatsHeaderStyle = {
 };
 
 const globalWinRateTextStyle = {
-  color: '#60a5fa',
+  color: colors.blue400,
   fontSize: 16,
   marginTop: 8
 };
 
 const rankTextStyle = {
-  color: '#fbbf24',
+  color: colors.amber400,
   fontSize: 16,
   marginTop: 4
 };

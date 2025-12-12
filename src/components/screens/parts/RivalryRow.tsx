@@ -2,6 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { Text, TouchableOpacity, View } from 'react-native';
 
 import { darkStyles, styles } from '../../../utils/styles';
+import { colors } from '../../../utils/colors';
 
 interface RivalryRowProps {
   updatedAt: string;
@@ -58,7 +59,7 @@ export function RivalryRow({
           <Text style={[styles.text, { fontSize: 18, fontWeight: '600', marginBottom: 4 }]}>
             vs. {opponentName || 'Unknown'}
           </Text>
-          <Text style={[styles.text, { fontSize: 12, color: '#999' }]}>
+          <Text style={[styles.text, { fontSize: 12, color: colors.gray400 }]}>
             {updatedDisplay} • {contestCount} contest{contestCount !== 1 ? 's' : ''}
           </Text>
         </View>
@@ -67,13 +68,13 @@ export function RivalryRow({
             width: 24,
             height: 24,
             borderWidth: 2,
-            borderColor: '#10b981',
+            borderColor: colors.green600,
             borderRadius: 4,
             alignItems: 'center',
             justifyContent: 'center'
           }}
         >
-          <Text style={{ color: '#10b981', fontSize: 10 }}>✓</Text>
+          <Text style={{ color: colors.green600, fontSize: 10 }}>✓</Text>
         </View>
       </View>
     </TouchableOpacity>

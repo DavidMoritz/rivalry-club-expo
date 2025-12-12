@@ -7,6 +7,7 @@ import { MGame } from '../../../models/m-game';
 import { MRivalry } from '../../../models/m-rivalry';
 import { useRivalryContext } from '../../../providers/rivalry';
 import { contestStyles, styles } from '../../../utils/styles';
+import { colors } from '../../../utils/colors';
 import { Button } from '../../common/Button';
 import { ContestRow } from '../../common/ContestRow';
 
@@ -57,7 +58,7 @@ export function ContestHistoryTable({
 
     return (
       <View style={loaderContainerStyle}>
-        <ActivityIndicator size="small" color="#fff" />
+        <ActivityIndicator size="small" color={colors.white} />
       </View>
     );
   };
@@ -158,13 +159,13 @@ const undoPlaceholderStyle = {
 const errorContainerStyle = {
   marginBottom: 16,
   padding: 12,
-  backgroundColor: '#7f1d1d',
+  backgroundColor: colors.red900,
   borderRadius: 8
 };
 
 const errorTextStyle = {
   ...styles.text,
-  color: '#fca5a5'
+  color: colors.red300
 };
 
 const tableWrapperStyle = {
@@ -178,7 +179,7 @@ const tableHeaderStyle = {
 
 const headerTextStyle = {
   ...tableHeaderStyle,
-  color: 'white'
+  color: colors.white
 };
 
 const tableHeaderRowStyle = {
@@ -193,5 +194,5 @@ const emptyStateContainerStyle = {
 
 const emptyStateTextStyle = {
   ...styles.text,
-  color: '#999'
+  color: colors.gray400
 };

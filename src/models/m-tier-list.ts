@@ -4,6 +4,7 @@ import type { Schema } from '../../amplify/data/resource';
 import { STEPS_PER_STOCK } from './m-game';
 import { MRivalry } from './m-rivalry';
 import { getMTierSlot, MTierSlot, normalizeTierSlotPositionToIndex } from './m-tier-slot';
+import { colors } from '../utils/colors';
 
 // Extract Gen 2 types
 type TierList = Schema['TierList']['type'];
@@ -54,16 +55,16 @@ const baseFightersPerTier = Math.floor(FIGHTER_COUNT / 7);
 const remainderFighters = FIGHTER_COUNT % 7;
 
 export const TIERS = [
-  { label: 'S', position: 0, color: 'hsl(0, 100%, 75%)', fightersCount: baseFightersPerTier },
-  { label: 'A', position: 1, color: 'hsl(30, 100%, 75%)', fightersCount: baseFightersPerTier },
-  { label: 'B', position: 2, color: 'hsl(45, 100%, 75%)', fightersCount: baseFightersPerTier },
-  { label: 'C', position: 3, color: 'hsl(60, 100%, 75%)', fightersCount: baseFightersPerTier },
-  { label: 'D', position: 4, color: 'hsl(90, 100%, 75%)', fightersCount: baseFightersPerTier },
-  { label: 'E', position: 5, color: 'hsl(120, 100%, 75%)', fightersCount: baseFightersPerTier },
+  { label: 'S', position: 0, color: colors.tierS, fightersCount: baseFightersPerTier },
+  { label: 'A', position: 1, color: colors.tierA, fightersCount: baseFightersPerTier },
+  { label: 'B', position: 2, color: colors.tierB, fightersCount: baseFightersPerTier },
+  { label: 'C', position: 3, color: colors.tierC, fightersCount: baseFightersPerTier },
+  { label: 'D', position: 4, color: colors.tierD, fightersCount: baseFightersPerTier },
+  { label: 'E', position: 5, color: colors.tierE, fightersCount: baseFightersPerTier },
   {
     label: 'F',
     position: 6,
-    color: 'hsl(180, 100%, 75%)',
+    color: colors.tierF,
     fightersCount: baseFightersPerTier + remainderFighters
   }
 ] as const;

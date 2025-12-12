@@ -13,6 +13,7 @@ import { useAuthUser } from '../../hooks/useAuthUser';
 import { MUser } from '../../models/m-user';
 import { useGame } from '../../providers/game';
 import { useAllRivalries, useAllRivalriesUpdate } from '../../providers/all-rivalries';
+import { colors } from '../../utils/colors';
 import { darkStyles, styles } from '../../utils/styles';
 
 export function CreateRivalry() {
@@ -166,7 +167,7 @@ export function CreateRivalry() {
 
     if (existingRivalry?.accepted) {
       // Priority 1: Active rivalry exists
-      badge = { text: 'Active Rivalry', color: '#10b981' };
+      badge = { text: 'Active Rivalry', color: colors.green600 };
       isDisabled = true; // Can't select someone you already have an active rivalry with
     } else if (
       existingRivalry &&
@@ -174,7 +175,7 @@ export function CreateRivalry() {
       existingRivalry.userBId === user?.id
     ) {
       // Priority 2: This user initiated a rivalry with the logged-in user (needs acceptance)
-      badge = { text: 'Awaiting Your Acceptance', color: '#fbbf24' };
+      badge = { text: 'Awaiting Your Acceptance', color: colors.amber400 };
       isDisabled = false; // Allow selection to accept
     } else if (
       existingRivalry &&
@@ -182,11 +183,11 @@ export function CreateRivalry() {
       existingRivalry.userBId === item.id
     ) {
       // Priority 3: Logged-in user already initiated a rivalry with this person
-      badge = { text: 'Rivalry Initiated', color: '#6b7280' };
+      badge = { text: 'Rivalry Initiated', color: colors.slate500 };
       isDisabled = true; // Can't initiate another rivalry until they accept
     } else if (item.role === 13) {
       // Priority 4: NPC user
-      badge = { text: 'NPC', color: '#8b5cf6' };
+      badge = { text: 'NPC', color: colors.purple600 };
       isDisabled = false;
     }
 
@@ -198,8 +199,8 @@ export function CreateRivalry() {
           paddingVertical: 16,
           paddingHorizontal: 16,
           borderBottomWidth: 1,
-          borderBottomColor: '#333',
-          backgroundColor: selectedUser?.id === item.id ? '#374151' : 'transparent',
+          borderBottomColor: colors.gray750,
+          backgroundColor: selectedUser?.id === item.id ? colors.gray700 : 'transparent',
           opacity: isDisabled ? 0.5 : 1
         }}
       >
@@ -234,13 +235,13 @@ export function CreateRivalry() {
             paddingHorizontal: 16,
             paddingVertical: 16,
             borderBottomWidth: 1,
-            borderBottomColor: '#333'
+            borderBottomColor: colors.gray750
           }}
         >
           <Text style={[styles.text, { fontSize: 24, fontWeight: 'bold' }]}>
             Create New Rivalry
           </Text>
-          <Text style={[styles.text, { marginTop: 4, color: '#999' }]}>
+          <Text style={[styles.text, { marginTop: 4, color: colors.gray400 }]}>
             Search for a user to challenge in {gameName}
           </Text>
         </View>
@@ -250,35 +251,37 @@ export function CreateRivalry() {
             value={searchText}
             onChangeText={setSearchText}
             placeholder="Type 'npc' or search by name/email..."
-            placeholderTextColor="#666"
+            placeholderTextColor={colors.gray500}
             style={{
-              backgroundColor: '#1e293b',
+              backgroundColor: colors.slate900,
               color: 'white',
               paddingHorizontal: 16,
               paddingVertical: 12,
               borderRadius: 8,
               fontSize: 16,
               borderWidth: 1,
-              borderColor: '#475569'
+              borderColor: colors.slate600
             }}
           />
         </View>
 
         {error && (
           <View style={{ paddingHorizontal: 16, paddingBottom: 16 }}>
-            <Text style={[styles.text, { color: '#ef4444', fontSize: 14 }]}>Error: {error}</Text>
+            <Text style={[styles.text, { color: colors.red600, fontSize: 14 }]}>
+              Error: {error}
+            </Text>
           </View>
         )}
 
         {isSearching && searchText.length >= 2 && (
           <View style={{ paddingVertical: 32, alignItems: 'center' }}>
-            <ActivityIndicator size="large" color="#6b21a8" />
+            <ActivityIndicator size="large" color={colors.purple900} />
           </View>
         )}
 
         {!isSearching && searchText.length >= 2 && searchResults.length === 0 && (
           <View style={{ paddingVertical: 32, paddingHorizontal: 16, alignItems: 'center' }}>
-            <Text style={[styles.text, { color: '#999' }]}>
+            <Text style={[styles.text, { color: colors.gray400 }]}>
               No users found matching "{searchText}"
             </Text>
           </View>
@@ -307,11 +310,13 @@ export function CreateRivalry() {
                 style={{
                   padding: 16,
                   borderTopWidth: 1,
-                  borderTopColor: '#333',
-                  backgroundColor: '#0f172a'
+                  borderTopColor: colors.gray750,
+                  backgroundColor: colors.slate950
                 }}
               >
-                <Text style={[styles.text, { fontSize: 14, color: '#999', marginBottom: 8 }]}>
+                <Text
+                  style={[styles.text, { fontSize: 14, color: colors.gray400, marginBottom: 8 }]}
+                >
                   {isAccepting
                     ? `Accept rivalry from ${selectedUser.firstName} ${selectedUser.lastName}`
                     : isNpc
@@ -323,12 +328,12 @@ export function CreateRivalry() {
                   disabled={creatingRivalry}
                   style={{
                     backgroundColor: creatingRivalry
-                      ? '#475569'
+                      ? colors.slate600
                       : isAccepting
-                        ? '#fbbf24'
+                        ? colors.amber400
                         : isNpc
-                          ? '#8b5cf6'
-                          : '#6b21a8',
+                          ? colors.purple600
+                          : colors.purple900,
                     paddingHorizontal: 24,
                     paddingVertical: 12,
                     borderRadius: 8,

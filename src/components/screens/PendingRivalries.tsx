@@ -8,6 +8,7 @@ import { useAuthUser } from '../../hooks/useAuthUser';
 import { MRivalry } from '../../models/m-rivalry';
 import { useAllRivalries, useAllRivalriesUpdate } from '../../providers/all-rivalries';
 import { darkStyles, styles } from '../../utils/styles';
+import { colors } from '../../utils/colors';
 
 export function PendingRivalries() {
   const router = useRouter();
@@ -79,7 +80,7 @@ export function PendingRivalries() {
           paddingVertical: 16,
           paddingHorizontal: 16,
           borderBottomWidth: 1,
-          borderBottomColor: '#333',
+          borderBottomColor: colors.gray750,
           flexDirection: 'row',
           alignItems: 'center',
           justifyContent: 'space-between'
@@ -90,7 +91,7 @@ export function PendingRivalries() {
             {isAwaitingAcceptance ? 'Challenge from ' : 'Sent to '}
             {displayName}
           </Text>
-          <Text style={[styles.text, { fontSize: 14, color: '#999', marginTop: 4 }]}>
+          <Text style={[styles.text, { fontSize: 14, color: colors.gray400, marginTop: 4 }]}>
             {isAwaitingAcceptance ? 'Waiting for you to accept' : 'Waiting for acceptance'}
           </Text>
         </View>
@@ -100,7 +101,7 @@ export function PendingRivalries() {
             onPress={() => handleAcceptRivalry(item.id)}
             disabled={acceptingRivalryId === item.id}
             style={{
-              backgroundColor: acceptingRivalryId === item.id ? '#475569' : '#10b981',
+              backgroundColor: acceptingRivalryId === item.id ? colors.slate600 : colors.green600,
               paddingHorizontal: 16,
               paddingVertical: 8,
               borderRadius: 6,
@@ -126,11 +127,11 @@ export function PendingRivalries() {
 
   return (
     <SafeAreaView style={[styles.container, darkStyles.container]} edges={['top', 'bottom']}>
-      <View style={{ paddingHorizontal: 16, paddingVertical: 16, borderBottomWidth: 1, borderBottomColor: '#333' }}>
+      <View style={{ paddingHorizontal: 16, paddingVertical: 16, borderBottomWidth: 1, borderBottomColor: colors.gray750 }}>
         <Text style={[styles.text, { fontSize: 24, fontWeight: 'bold' }]}>
           Pending Rivalries
         </Text>
-        <Text style={[styles.text, { marginTop: 4, color: '#999' }]}>
+        <Text style={[styles.text, { marginTop: 4, color: colors.gray400 }]}>
           Challenges waiting for acceptance
         </Text>
 
@@ -138,7 +139,7 @@ export function PendingRivalries() {
           <TouchableOpacity
             onPress={handleCreateRivalry}
             style={{
-              backgroundColor: '#6b21a8',
+              backgroundColor: colors.purple900,
               paddingHorizontal: 24,
               paddingVertical: 12,
               borderRadius: 8,
@@ -155,11 +156,11 @@ export function PendingRivalries() {
 
       {awaitingAcceptance.length === 0 && initiated.length === 0 ? (
         <View style={{ flex: 1, alignItems: 'center', justifyContent: 'center', paddingHorizontal: 16 }}>
-          <Text style={{ fontSize: 48, color: '#666', marginBottom: 16 }}>📥</Text>
-          <Text style={[styles.text, { fontSize: 18, color: '#999', textAlign: 'center' }]}>
+          <Text style={{ fontSize: 48, color: colors.gray500, marginBottom: 16 }}>📥</Text>
+          <Text style={[styles.text, { fontSize: 18, color: colors.gray400, textAlign: 'center' }]}>
             No pending rivalries
           </Text>
-          <Text style={[styles.text, { fontSize: 14, color: '#666', textAlign: 'center', marginTop: 8 }]}>
+          <Text style={[styles.text, { fontSize: 14, color: colors.gray500, textAlign: 'center', marginTop: 8 }]}>
             Create a new rivalry to get started!
           </Text>
         </View>
@@ -177,9 +178,9 @@ export function PendingRivalries() {
                   <View style={{
                     paddingHorizontal: 16,
                     paddingVertical: 12,
-                    backgroundColor: '#1e293b'
+                    backgroundColor: colors.slate900
                   }}>
-                    <Text style={[styles.text, { fontSize: 14, fontWeight: 'bold', color: '#94a3b8' }]}>
+                    <Text style={[styles.text, { fontSize: 14, fontWeight: 'bold', color: colors.slate400 }]}>
                       {item.section === 'awaitingAcceptance' ? 'AWAITING YOUR ACCEPTANCE' : 'SENT BY YOU'}
                     </Text>
                   </View>

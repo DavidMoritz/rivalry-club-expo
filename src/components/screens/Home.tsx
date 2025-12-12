@@ -10,6 +10,7 @@ import {
 
 import { logoImage } from '../../../assets/images/games/ssbu';
 import { darkStyles, styles } from '../../utils/styles';
+import { colors } from '../../utils/colors';
 import { s3Favicons } from '../../utils';
 import { Button } from '../common/Button';
 import { GameWithCharactersDisplay } from './GameWithCharactersDisplay';
@@ -64,8 +65,8 @@ export default function Home({ onEnterClick, onHowToPlayClick }: HomeProps) {
       <View style={viewLowerStyle}>
         {isLoading ? (
           <View style={{ flex: 1, alignItems: 'center', justifyContent: 'center', paddingTop: 40 }}>
-            <ActivityIndicator size="large" color="#60a5fa" />
-            <Text style={{ color: '#999', fontSize: 16, marginTop: 16 }}>Loading fighters...</Text>
+            <ActivityIndicator size="large" color={colors.blue400} />
+            <Text style={{ color: colors.gray400, fontSize: 16, marginTop: 16 }}>Loading fighters...</Text>
           </View>
         ) : game ? (
           <GameWithCharactersDisplay game={game} onHowToPlayClick={onHowToPlayClick} />
@@ -103,7 +104,7 @@ const viewLowerStyle = {
 
 const lightStyles = {
   container: {
-    backgroundColor: '#f8f8f8',
-    color: 'black'
+    backgroundColor: colors.gray50,
+    color: colors.black
   }
 };

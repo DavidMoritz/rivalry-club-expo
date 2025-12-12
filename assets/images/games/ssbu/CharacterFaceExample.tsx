@@ -2,6 +2,7 @@ import React from 'react';
 import { View, Image, StyleSheet, ViewStyle } from 'react-native';
 import { fighterImages } from './index';
 import { getCharacterZoomStyle } from './useCharacterZoom';
+import { colors } from '../../../../src/utils/colors';
 
 interface CharacterFaceProps {
   characterKey: string;
@@ -32,7 +33,7 @@ export const CharacterFace: React.FC<CharacterFaceProps> = ({
   width,
   height,
   style,
-  zoomMultiplier = 1.0,
+  zoomMultiplier = 1.0
 }) => {
   const imageSource = fighterImages[characterKey];
 
@@ -40,7 +41,12 @@ export const CharacterFace: React.FC<CharacterFaceProps> = ({
   const displayWidth = width ?? size;
   const displayHeight = height ?? size;
 
-  const zoomStyle = getCharacterZoomStyle(characterKey, displayWidth, displayHeight, zoomMultiplier);
+  const zoomStyle = getCharacterZoomStyle(
+    characterKey,
+    displayWidth,
+    displayHeight,
+    zoomMultiplier
+  );
 
   if (!imageSource) {
     return null;
@@ -52,16 +58,12 @@ export const CharacterFace: React.FC<CharacterFaceProps> = ({
         styles.container,
         {
           width: displayWidth,
-          height: displayHeight,
+          height: displayHeight
         },
-        style,
+        style
       ]}
     >
-      <Image
-        source={imageSource}
-        style={[styles.image, zoomStyle]}
-        resizeMode="cover"
-      />
+      <Image source={imageSource} style={[styles.image, zoomStyle]} resizeMode="cover" />
     </View>
   );
 };
@@ -70,13 +72,13 @@ const styles = StyleSheet.create({
   container: {
     overflow: 'hidden',
     borderRadius: 8,
-    backgroundColor: '#000',
+    backgroundColor: colors.black,
     borderWidth: 1,
-    borderColor: '#666',
+    borderColor: colors.gray500
   },
   image: {
-    position: 'absolute',
-  },
+    position: 'absolute'
+  }
 });
 
 /**
@@ -92,7 +94,7 @@ export const CharacterFaceGrid: React.FC = () => {
     'kirby',
     'fox',
     'pikachu',
-    'donkey_kong',
+    'donkey_kong'
   ];
 
   return (
@@ -109,9 +111,9 @@ const gridStyles = StyleSheet.create({
     flexDirection: 'row',
     flexWrap: 'wrap',
     padding: 16,
-    gap: 16,
+    gap: 16
   },
   face: {
-    margin: 8,
-  },
+    margin: 8
+  }
 });

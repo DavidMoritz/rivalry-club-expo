@@ -5,6 +5,7 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 
 import type { Schema } from '../../../amplify/data/resource';
 import { signUp, confirmSignUp, signIn, getCurrentUser } from '../../lib/amplify-auth';
+import { colors } from '../../utils/colors';
 import { darkStyles, styles } from '../../utils/styles';
 
 interface CreateAccountModalProps {
@@ -121,20 +122,20 @@ export function CreateAccountModal({ visible, currentUserId, onClose, onSuccess 
               alignItems: 'center',
               paddingVertical: 16,
               borderBottomWidth: 1,
-              borderBottomColor: '#333',
+              borderBottomColor: colors.gray750,
             }}>
             <Text style={[styles.text, { fontSize: 24, fontWeight: 'bold' }]}>
               {needsVerification ? 'Verify Email' : 'Create New Account'}
             </Text>
             <TouchableOpacity onPress={onClose}>
-              <Text style={[styles.text, { fontSize: 16, color: '#6b7280' }]}>Cancel</Text>
+              <Text style={[styles.text, { fontSize: 16, color: colors.slate500 }]}>Cancel</Text>
             </TouchableOpacity>
           </View>
 
           <View style={{ flex: 1, justifyContent: 'center' }}>
             {needsVerification ? (
               <>
-                <Text style={[styles.text, { marginBottom: 24, textAlign: 'center', color: '#9ca3af' }]}>
+                <Text style={[styles.text, { marginBottom: 24, textAlign: 'center', color: colors.gray300 }]}>
                   Please enter the verification code we sent to your email
                 </Text>
 
@@ -151,13 +152,13 @@ export function CreateAccountModal({ visible, currentUserId, onClose, onSuccess 
                         fontSize: 16,
                         paddingHorizontal: 16,
                         paddingVertical: 14,
-                        backgroundColor: '#2d3748',
+                        backgroundColor: colors.gray800,
                         borderWidth: 2,
-                        borderColor: '#4a5568',
+                        borderColor: colors.gray600,
                       },
                     ]}
                     placeholder="Enter verification code"
-                    placeholderTextColor="#a0aec0"
+                    placeholderTextColor={colors.gray200}
                     value={verificationCode}
                     onChangeText={setVerificationCode}
                     keyboardType="number-pad"
@@ -166,19 +167,19 @@ export function CreateAccountModal({ visible, currentUserId, onClose, onSuccess 
                 </View>
 
                 {error && (
-                  <Text style={[styles.text, { marginBottom: 16, textAlign: 'center', color: '#f87171' }]}>
+                  <Text style={[styles.text, { marginBottom: 16, textAlign: 'center', color: colors.red400 }]}>
                     {error}
                   </Text>
                 )}
 
                 <TouchableOpacity
                   style={{
-                    backgroundColor: '#6b21a8',
+                    backgroundColor: colors.purple900,
                     paddingHorizontal: 32,
                     paddingVertical: 16,
                     borderRadius: 25,
                     borderWidth: 1,
-                    borderColor: '#cbd5e1',
+                    borderColor: colors.slate300,
                     width: '100%',
                     alignItems: 'center',
                     marginTop: 8,
@@ -201,12 +202,12 @@ export function CreateAccountModal({ visible, currentUserId, onClose, onSuccess 
                     setError(null);
                   }}
                   style={{ marginTop: 16, alignItems: 'center' }}>
-                  <Text style={{ color: '#22d3ee', fontSize: 16 }}>Back</Text>
+                  <Text style={{ color: colors.cyan400, fontSize: 16 }}>Back</Text>
                 </TouchableOpacity>
               </>
             ) : (
               <>
-                <Text style={[styles.text, { marginBottom: 24, textAlign: 'center', color: '#9ca3af' }]}>
+                <Text style={[styles.text, { marginBottom: 24, textAlign: 'center', color: colors.gray300 }]}>
                   Create an account to back up your data and sync across devices
                 </Text>
 
@@ -223,13 +224,13 @@ export function CreateAccountModal({ visible, currentUserId, onClose, onSuccess 
                         fontSize: 16,
                         paddingHorizontal: 16,
                         paddingVertical: 14,
-                        backgroundColor: '#2d3748',
+                        backgroundColor: colors.gray800,
                         borderWidth: 2,
-                        borderColor: '#4a5568',
+                        borderColor: colors.gray600,
                       },
                     ]}
                     placeholder="Enter your email"
-                    placeholderTextColor="#a0aec0"
+                    placeholderTextColor={colors.gray200}
                     value={email}
                     onChangeText={setEmail}
                     keyboardType="email-address"
@@ -251,13 +252,13 @@ export function CreateAccountModal({ visible, currentUserId, onClose, onSuccess 
                         fontSize: 16,
                         paddingHorizontal: 16,
                         paddingVertical: 14,
-                        backgroundColor: '#2d3748',
+                        backgroundColor: colors.gray800,
                         borderWidth: 2,
-                        borderColor: '#4a5568',
+                        borderColor: colors.gray600,
                       },
                     ]}
                     placeholder="Enter your password"
-                    placeholderTextColor="#a0aec0"
+                    placeholderTextColor={colors.gray200}
                     value={password}
                     onChangeText={setPassword}
                     secureTextEntry
@@ -278,13 +279,13 @@ export function CreateAccountModal({ visible, currentUserId, onClose, onSuccess 
                         fontSize: 16,
                         paddingHorizontal: 16,
                         paddingVertical: 14,
-                        backgroundColor: '#2d3748',
+                        backgroundColor: colors.gray800,
                         borderWidth: 2,
-                        borderColor: '#4a5568',
+                        borderColor: colors.gray600,
                       },
                     ]}
                     placeholder="Confirm your password"
-                    placeholderTextColor="#a0aec0"
+                    placeholderTextColor={colors.gray200}
                     value={confirmPassword}
                     onChangeText={setConfirmPassword}
                     secureTextEntry
@@ -293,19 +294,19 @@ export function CreateAccountModal({ visible, currentUserId, onClose, onSuccess 
                 </View>
 
                 {error && (
-                  <Text style={[styles.text, { marginBottom: 16, textAlign: 'center', color: '#f87171' }]}>
+                  <Text style={[styles.text, { marginBottom: 16, textAlign: 'center', color: colors.red400 }]}>
                     {error}
                   </Text>
                 )}
 
                 <TouchableOpacity
                   style={{
-                    backgroundColor: '#6b21a8',
+                    backgroundColor: colors.purple900,
                     paddingHorizontal: 32,
                     paddingVertical: 16,
                     borderRadius: 25,
                     borderWidth: 1,
-                    borderColor: '#cbd5e1',
+                    borderColor: colors.slate300,
                     width: '100%',
                     alignItems: 'center',
                     marginTop: 8,

@@ -17,6 +17,7 @@ import { getMUser } from '../../../src/models/m-user';
 import { RivalryProvider } from '../../../src/providers/rivalry';
 import { useGame } from '../../../src/providers/game';
 import { useDeleteMostRecentContestMutation } from '../../../src/controllers/c-rivalry';
+import { colors } from '../../../src/utils/colors';
 
 // Lazy client initialization to avoid crashes when Amplify isn't configured
 let client: ReturnType<typeof generateClient<Schema>> | null = null;
@@ -262,7 +263,7 @@ export default function HistoryRoute() {
         <Stack.Screen options={{ title: 'Contest History' }} />
         <SafeAreaView style={[styles.container, darkStyles.container]}>
           <View style={centeredContainerStyle}>
-            <ActivityIndicator size="large" color="#fff" />
+            <ActivityIndicator size="large" color={colors.white} />
             <Text style={loadingTextStyle}>
               {isLoadingRivalry ? 'Loading rivalry data...' : 'Loading contests...'}
             </Text>
@@ -297,7 +298,7 @@ export default function HistoryRoute() {
         <Stack.Screen options={{ title: 'Contest History' }} />
         <SafeAreaView style={[styles.container, darkStyles.container]}>
           <View style={centeredContainerStyle}>
-            <Text style={noGameTextStyle}>Game data not available</Text>
+            <Text style={errorMessageStyle}>Game data not available</Text>
           </View>
         </SafeAreaView>
         <StatusBar style="light" />
@@ -315,7 +316,10 @@ export default function HistoryRoute() {
         userBName={userBName}
         userId={userId}
       >
-        <SafeAreaView style={[styles.container, darkStyles.container]} edges={['left', 'right', 'bottom']}>
+        <SafeAreaView
+          style={[styles.container, darkStyles.container]}
+          edges={['left', 'right', 'bottom']}
+        >
           <View style={historyContainerStyle}>
             <ContestHistoryTable
               contests={contests}
@@ -364,12 +368,7 @@ const errorTitleStyle = {
 
 const errorMessageStyle = {
   ...styles.text,
-  color: '#999'
-};
-
-const noGameTextStyle = {
-  ...styles.text,
-  color: '#999'
+  color: colors.gray400
 };
 
 const historyContainerStyle = {

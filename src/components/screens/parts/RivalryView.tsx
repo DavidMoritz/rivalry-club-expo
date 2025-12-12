@@ -72,13 +72,37 @@ export function RivalryView({ navigation }: RivalryViewProps) {
       <Button
         onPress={handleToggleHideRivalry}
         text={isCurrentlyHidden ? 'Unhide Rivalry' : 'Hide Rivalry'}
-        style={{
-          height: 48,
-          paddingHorizontal: 0,
-          paddingVertical: 0,
-          width: 256,
-          backgroundColor: '#dc2626'
-        }}
+        style={
+          isCurrentlyHidden
+            ? {
+                // Keep as big red button for "Unhide Rivalry"
+                height: 48,
+                paddingHorizontal: 0,
+                paddingVertical: 0,
+                width: 256,
+                backgroundColor: '#dc2626'
+              }
+            : {
+                // Make it look like a link for "Hide Rivalry"
+                backgroundColor: 'transparent',
+                borderWidth: 0,
+                height: 'auto',
+                width: 'auto',
+                paddingHorizontal: 4,
+                paddingVertical: 4
+              }
+        }
+        textStyle={
+          isCurrentlyHidden
+            ? {}
+            : {
+                // Link-like text styling for "Hide Rivalry"
+                color: '#94a3b8',
+                fontSize: 14,
+                fontWeight: 'normal',
+                textDecorationLine: 'underline'
+              }
+        }
       />
     </>
   );

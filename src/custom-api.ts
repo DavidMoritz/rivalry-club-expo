@@ -1,7 +1,21 @@
-import {
-  UpdateTierListMutationVariables,
-  UpdateTierSlotMutationVariables,
-} from './API';
+// Legacy mutation variable types for custom API operations
+type UpdateTierListMutationVariables = {
+  input: {
+    id: string;
+    standing?: number | null;
+    rivalryId?: string;
+    userId?: string;
+  };
+};
+
+type UpdateTierSlotMutationVariables = {
+  input: {
+    id: string;
+    position?: number | null;
+    contestCount?: number | null;
+    winCount?: number | null;
+  };
+};
 
 export type GetBasicUserQuery = {
   getUser?: {

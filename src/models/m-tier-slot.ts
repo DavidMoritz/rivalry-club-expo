@@ -12,7 +12,7 @@ export function normalizeTierSlotPositionToIndex(slot: MTierSlot, idx: number) {
   };
 }
 
-export interface MTierSlot extends TierSlot {
+export interface MTierSlot extends Omit<TierSlot, 'tierList' | 'fighter'> {
   // private
   _mFighter?: MFighter;
   _mTierList?: MTierList;

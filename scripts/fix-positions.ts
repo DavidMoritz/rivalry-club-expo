@@ -1,3 +1,7 @@
+/**
+ * This file is a one-time use to fix the missing slots for the 2 mii fighters
+ */
+
 import { generateClient } from 'aws-amplify/data';
 import { Amplify } from 'aws-amplify';
 import outputs from '../amplify_outputs.json';

@@ -58,7 +58,7 @@ export const SyncedScrollView = (props: SyncedScrollViewProps) => {
   offsetPercent?.addListener(({ value }) => {
     // Only respond to changes of the offsetPercent if this scrollView is NOT the activeScrollView
     // --> The active ScrollView responding to its own changes would cause an infinite loop
-    if (id !== activeScrollView._value && scrollableLength > 0) {
+    if (id !== (activeScrollView as any)._value && scrollableLength > 0) {
       // Depending on the orientation we scroll in, we need to use different properties
       scrollViewRef.current?.scrollTo({
         [props.horizontal ? 'x' : 'y']: value * scrollableLength,
@@ -86,7 +86,7 @@ export const SyncedScrollView = (props: SyncedScrollViewProps) => {
   offset.addListener(({ value }) => {
     // Only change the offsetPercent if the scrollView IS the activeScrollView
     // --> The inactive ScrollViews changing the offsetPercent would cause an infinite loop
-    if (id === activeScrollView._value && scrollableLength > 0) {
+    if (id === (activeScrollView as any)._value && scrollableLength > 0) {
       offsetPercent.setValue(value / scrollableLength);
     }
   });

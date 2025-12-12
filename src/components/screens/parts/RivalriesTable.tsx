@@ -14,8 +14,8 @@ interface Rivalry {
   userAName?: string;
   userBName?: string;
   contestCount?: number;
-  hiddenByA?: boolean;
-  hiddenByB?: boolean;
+  hiddenByA?: boolean | null;
+  hiddenByB?: boolean | null;
 }
 
 interface RivalriesTableProps {

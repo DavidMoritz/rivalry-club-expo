@@ -172,7 +172,10 @@ export function CurrentContest({
                     padding: 10,
                     zIndex: 10
                   }}
-                  onPress={() => onPressShuffle('A')}
+                  onPress={() => {
+                    setWinner(undefined);
+                    onPressShuffle('A');
+                  }}
                   disabled={shufflingSlot === 'A'}
                 >
                   <Text style={{ fontSize: 16 }}>🔀</Text>
@@ -238,7 +241,10 @@ export function CurrentContest({
                     padding: 10,
                     zIndex: 10
                   }}
-                  onPress={() => onPressShuffle('B')}
+                  onPress={() => {
+                    setWinner(undefined);
+                    onPressShuffle('B');
+                  }}
                   disabled={shufflingSlot === 'B'}
                 >
                   <Text style={{ fontSize: 16 }}>🔀</Text>

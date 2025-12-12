@@ -10,9 +10,9 @@ interface RivalryWithUsers {
   gameId: string;
   contestCount: number;
   updatedAt: string;
-  accepted?: boolean;
-  hiddenByA?: boolean;
-  hiddenByB?: boolean;
+  accepted?: boolean | null;
+  hiddenByA?: boolean | null;
+  hiddenByB?: boolean | null;
   userAName?: string;
   userBName?: string;
 }

@@ -5,18 +5,20 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 
 import { useAuthUser } from '../../hooks/useAuthUser';
 import { useUserRivalries } from '../../hooks/useUserRivalries';
-import { useAllRivalries, useAllRivalriesUpdate } from '../../providers/all-rivalries';
+import { useAllRivalriesUpdate } from '../../providers/all-rivalries';
 import { darkStyles, styles } from '../../utils/styles';
 import { RivalriesTable } from './parts/RivalriesTable';
 
 interface Rivalry {
   id: string;
+  userAId: string;
+  userBId: string;
   updatedAt: string;
   userAName?: string;
   userBName?: string;
   contestCount?: number;
-  hiddenByA?: boolean;
-  hiddenByB?: boolean;
+  hiddenByA?: boolean | null;
+  hiddenByB?: boolean | null;
 }
 
 export function RivalryIndex() {
@@ -163,7 +165,7 @@ export function RivalryIndex() {
         </View>
       )}
       <RivalriesTable
-        rivalries={rivalries}
+        rivalries={rivalries as Rivalry[]}
         currentUserId={user?.id}
         onSelectRivalry={handleSelectRivalry}
         showHidden={showHiddenRivalries}

@@ -32,7 +32,6 @@ export default function RootLayout() {
     async function initialize() {
       try {
         if (!amplifyConfigured) {
-          console.log('[RootLayout] Configuring Amplify...');
           Amplify.configure(outputs);
           amplifyConfigured = true;
           console.log('[RootLayout] Amplify configured successfully');

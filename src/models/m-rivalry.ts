@@ -20,7 +20,7 @@ type ModelTierListConnection = {
   nextToken?: string | null;
 };
 
-export interface MRivalry extends Rivalry {
+export interface MRivalry extends Omit<Rivalry, 'game'> {
   _currentContest?: MContest;
   _mContests: MContest[];
   _mGame?: MGame;

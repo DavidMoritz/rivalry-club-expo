@@ -5,25 +5,11 @@ import { logoImage } from '../../../assets/images/games/ssbu';
 import { styles } from '../../utils/styles';
 import { CharacterDisplay } from '../common/CharacterDisplay';
 import { Button } from '../common/Button';
-
-// Temporary types - will be replaced with GraphQL types later
-interface Fighter {
-  id: string;
-  name: string;
-  gamePosition?: number;
-  winCount?: number | null;
-  contestCount?: number | null;
-  rank?: number;
-}
-
-interface Game {
-  id: string;
-  name: string;
-  fighters?: { items: (Fighter | null)[] };
-}
+import { MGame } from '../../models/m-game';
+import { MFighter } from '../../models/m-fighter';
 
 interface GameWithCharactersDisplayProps {
-  game: Game;
+  game: MGame;
   onHowToPlayClick?: () => void;
 }
 
@@ -31,19 +17,15 @@ export function GameWithCharactersDisplay({
   game,
   onHowToPlayClick
 }: GameWithCharactersDisplayProps) {
-  // Log game data to verify stats are present
-  React.useEffect(() => {
-    if (game?.fighters?.items && game.fighters.items.length > 0) {
-      const firstFighter = game.fighters.items[0];
-    }
-  }, [game]);
+  // Cast fighters to access items (LazyLoader type)
+  const fighters = (game.fighters as any)?.items || [];
 
   return (
     <>
       <FlatList
         key="id"
-        data={game.fighters?.items || []}
-        renderItem={({ item }) => item && <CharacterDisplay fighter={item} />}
+        data={fighters}
+        renderItem={({ item }) => item && <CharacterDisplay fighter={item as MFighter} />}
         style={{ flex: 1 }}
         contentContainerStyle={{ flexGrow: 1 }}
         numColumns={3}

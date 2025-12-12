@@ -54,8 +54,7 @@ export function useFightersByGameIdQuery({
 
       return fighters;
     },
-    enabled: enabled && !!gameId,
-    onSuccess
+    enabled: enabled && !!gameId
   });
 }
 

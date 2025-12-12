@@ -136,6 +136,7 @@ export const useUserDataQuery = ({ rivalries }: UserDataQueryProps) => {
       if (!uniqueUserIds.length) return null;
 
       // Fetch all users in parallel using Gen 2 client
+      const client = getClient();
       const userPromises = uniqueUserIds.map((userId) =>
         client.models.User.get(
           { id: userId },

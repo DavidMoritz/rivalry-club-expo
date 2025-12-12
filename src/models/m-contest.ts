@@ -14,7 +14,7 @@ type ParticipantDetail = {
   tierSlot?: MTierSlot;
 };
 
-export interface MContest extends Contest {
+export interface MContest extends Omit<Contest, 'rivalry'> {
   _mTierSlotA?: MTierSlot;
   _mTierSlotB?: MTierSlot;
   _mRivalry?: MRivalry;

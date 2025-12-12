@@ -28,7 +28,7 @@ interface ConnectedRivalryViewProps {
   };
 }
 
-export function ConnectedRivalryView({ navigation }: ConnectedRivalryViewProps): JSX.Element {
+export function ConnectedRivalryView({ navigation }: ConnectedRivalryViewProps): React.ReactElement {
   const updateRivalryProvider = useUpdateRivalry();
   const rivalry = useRivalry();
 

@@ -55,7 +55,7 @@ export default function HistoryRoute() {
   const game = useGame();
 
   const {
-    data: rivalryData,
+    data: _rivalryData,
     isLoading: isLoadingRivalry,
     error: rivalryError
   } = useQuery({
@@ -155,35 +155,22 @@ export default function HistoryRoute() {
     structuralSharing: false,
     queryFn: async () => {
       // Use the GSI query for efficient sorting by createdAt
-      let allContests: any[] = [];
-      let currentNextToken: string | null | undefined = undefined;
-      let pageCount = 0;
-      const maxPages = 10; // Safety limit
+      const {
+        data: contestData,
+        errors
+      }: {
+        data: any[];
+        errors?: any[];
+      } = await getClient().models.Contest.contestsByRivalryIdAndCreatedAt({
+        rivalryId: rivalryId
+      });
 
-      do {
-        const {
-          data: pageData,
-          errors,
-          nextToken: pageNextToken
-        } = await getClient().models.Contest.contestsByRivalryIdAndCreatedAt({
-          rivalryId: rivalryId,
-          sortDirection: 'DESC', // Most recent first
-          limit: 100,
-          nextToken: currentNextToken
-        });
+      if (errors) {
+        console.error('[HistoryRoute] GraphQL errors:', errors);
+        throw new Error(errors[0]?.message || 'Failed to fetch contests');
+      }
 
-        if (errors) {
-          console.error('[HistoryRoute] GraphQL errors:', errors);
-          throw new Error(errors[0]?.message || 'Failed to fetch contests');
-        }
-
-        allContests = [...allContests, ...pageData];
-        currentNextToken = pageNextToken;
-        pageCount++;
-      } while (currentNextToken && pageCount < maxPages);
-
-      const contestData = allContests;
-      const newNextToken = currentNextToken;
+      const newNextToken = null;
       const mContests = contestData.map((c) => {
         const mContest = getMContest(c as any);
         if (rivalry) {

@@ -43,7 +43,7 @@ export function TierListDisplay({
 
       // Find slots within this tier's position range
       const tierSlots = positionedSorted.filter(
-        (slot) => slot.position !== null && slot.position >= startIdx && slot.position < endIdx
+        (slot) => slot.position != null && slot.position >= startIdx && slot.position < endIdx
       );
 
       return {

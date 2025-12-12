@@ -1,6 +1,3 @@
-import { ImageSourcePropType } from 'react-native';
-
-import { fighterImages } from '../../assets/images/games/ssbu';
 import { MGame } from '../models/m-game';
 import { MFighter } from '../models/m-fighter';
 import { Schema } from '../../amplify/data/resource';

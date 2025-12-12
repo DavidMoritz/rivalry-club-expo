@@ -93,7 +93,7 @@ const unhideButtonStyle = {
 };
 
 const linkButtonStyle = {
-  backgroundColor: 'transparent',
+  backgroundColor: colors.none,
   borderWidth: 0,
   height: 'auto' as const,
   width: 'auto' as const,

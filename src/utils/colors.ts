@@ -17,6 +17,7 @@ export const colors = {
   // Base colors
   white: 'white',
   black: 'black',
+  none: 'transparent',
 
   // Purple shades
   purple900: '#6b21a8',

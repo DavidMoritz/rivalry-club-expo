@@ -74,7 +74,7 @@ interface UserSearchQueryProps {
 /** Queries */
 
 export const useUserWithRivalriesByAwsSubQuery = ({
-  amplifyUser,
+  amplifyUser
 }: UserWithRivalriesByAwsSubProps) =>
   useQuery({
     queryKey: ['usersByAwsSub', amplifyUser?.username],
@@ -85,10 +85,10 @@ export const useUserWithRivalriesByAwsSubQuery = ({
       const { data: users, errors } = await getClient().models.User.list({
         filter: {
           awsSub: {
-            eq: amplifyUser.username,
-          },
+            eq: amplifyUser.username
+          }
         },
-        selectionSet: USER_SELECTION_SET,
+        selectionSet: USER_SELECTION_SET
       });
 
       if (errors) {
@@ -104,38 +104,36 @@ export const useUserWithRivalriesByAwsSubQuery = ({
         const { data: rivalriesA } = await getClient().models.Rivalry.list({
           filter: {
             userAId: {
-              eq: user.id,
-            },
+              eq: user.id
+            }
           },
-          selectionSet: RIVALRY_SELECTION_SET,
+          selectionSet: RIVALRY_SELECTION_SET
         });
 
         // Fetch rivalries where user is userB
         const { data: rivalriesB } = await getClient().models.Rivalry.list({
           filter: {
             userBId: {
-              eq: user.id,
-            },
+              eq: user.id
+            }
           },
-          selectionSet: RIVALRY_SELECTION_SET,
+          selectionSet: RIVALRY_SELECTION_SET
         });
 
         return {
           user,
           rivalriesA: rivalriesA || [],
-          rivalriesB: rivalriesB || [],
+          rivalriesB: rivalriesB || []
         };
       }
 
       return null;
-    },
+    }
   });
 
 export const useUserDataQuery = ({ rivalries }: UserDataQueryProps) => {
   const uniqueUserIds: string[] = [
-    ...new Set(
-      rivalries.map(({ userAId, userBId }) => [userAId, userBId]).flat(),
-    ),
+    ...new Set(rivalries.map(({ userAId, userBId }) => [userAId, userBId]).flat())
   ].filter(Boolean);
 
   return useQuery({
@@ -149,7 +147,7 @@ export const useUserDataQuery = ({ rivalries }: UserDataQueryProps) => {
         client.models.User.get(
           { id: userId },
           {
-            selectionSet: USER_SELECTION_SET,
+            selectionSet: USER_SELECTION_SET
           }
         )
       );
@@ -162,7 +160,7 @@ export const useUserDataQuery = ({ rivalries }: UserDataQueryProps) => {
         .map((result) => result.data);
 
       return users;
-    },
+    }
   });
 };
 
@@ -175,7 +173,11 @@ export const useUserSearchQuery = ({ searchText, currentUserId }: UserSearchQuer
       }
 
       const searchLower = searchText.toLowerCase().trim();
-      const isNpcSearch = searchLower === 'np' || searchLower.includes('npc');
+      const isNpcSearch =
+        searchLower === 'np' ||
+        searchLower === 'cp' ||
+        searchLower.includes('npc') ||
+        searchLower.includes('cpu');
 
       // Fetch all users (in production, you'd want server-side filtering)
       const { data: users, errors } = await getClient().models.User.list({
@@ -188,8 +190,12 @@ export const useUserSearchQuery = ({ searchText, currentUserId }: UserSearchQuer
       }
 
       // Separate NPC users (role = 13) from other users
-      const npcUsers = users.filter((user) => user.role === 13 && user.id !== currentUserId && !user.deletedAt);
-      const regularUsers = users.filter((user) => user.role !== 13 && user.id !== currentUserId && !user.deletedAt);
+      const npcUsers = users.filter(
+        (user) => user.role === 13 && user.id !== currentUserId && !user.deletedAt
+      );
+      const regularUsers = users.filter(
+        (user) => user.role !== 13 && user.id !== currentUserId && !user.deletedAt
+      );
 
       let finalResults: MUser[] = [];
 

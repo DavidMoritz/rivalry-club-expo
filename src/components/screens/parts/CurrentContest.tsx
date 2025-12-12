@@ -92,7 +92,7 @@ export function CurrentContest({
           </TouchableOpacity>
         ) : (
           <View style={reshuffleButtonPlaceholderStyle}>
-            <Text style={{ fontSize: 16, color: 'transparent' }}>Reshuffle</Text>
+            <Text style={{ fontSize: 16, color: colors.none }}>Reshuffle</Text>
           </View>
         )}
       </View>
@@ -145,7 +145,9 @@ export function CurrentContest({
             </View>
           )}
 
-          {!fighterA && !fighterB && <Text style={{ color: colors.purple100 }}>Loading fighters...</Text>}
+          {!fighterA && !fighterB && (
+            <Text style={{ color: colors.purple100 }}>Loading fighters...</Text>
+          )}
           {(fighterA || fighterB) && (
             <View style={contestStyles.item}>
               <Text style={{ fontSize: 14, color: colors.white }}>Vs</Text>
@@ -237,7 +239,9 @@ export function CurrentContest({
             </View>
 
             <TouchableOpacity style={resolveButtonStyle} onPress={onPressResolve}>
-              <Text style={{ fontSize: 20, fontWeight: 'bold', color: colors.white }}>Resolve!</Text>
+              <Text style={{ fontSize: 20, fontWeight: 'bold', color: colors.white }}>
+                Resolve!
+              </Text>
             </TouchableOpacity>
           </>
         ) : (
@@ -252,8 +256,8 @@ export function CurrentContest({
 
 // Helper function to get border and background color based on winner status
 const getFighterBorderStyle = (isWinner: boolean) => ({
-  borderColor: isWinner ? colors.green700 : colors.white,
-  backgroundColor: isWinner ? colors.blue100 : colors.white
+  borderColor: isWinner ? colors.green700 : colors.none,
+  backgroundColor: isWinner ? colors.blue100 : colors.none
 });
 
 // Style constants
@@ -295,8 +299,8 @@ const reshuffleButtonStyle = {
 
 const reshuffleButtonPlaceholderStyle = {
   ...reshuffleButtonStyle,
-  borderColor: 'transparent',
-  backgroundColor: 'transparent'
+  borderColor: colors.none,
+  backgroundColor: colors.none
 };
 
 const contestOuterContainerStyle = {

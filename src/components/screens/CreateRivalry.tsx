@@ -200,7 +200,7 @@ export function CreateRivalry() {
           paddingHorizontal: 16,
           borderBottomWidth: 1,
           borderBottomColor: colors.gray750,
-          backgroundColor: selectedUser?.id === item.id ? colors.gray700 : 'transparent',
+          backgroundColor: selectedUser?.id === item.id ? colors.gray700 : colors.none,
           opacity: isDisabled ? 0.5 : 1
         }}
       >

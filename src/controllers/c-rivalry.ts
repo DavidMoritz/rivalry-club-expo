@@ -4,6 +4,7 @@ import { pick } from 'lodash';
 import type { Schema } from '../../amplify/data/resource';
 
 import { getMContest, MContest } from '../models/m-contest';
+import { STEPS_PER_STOCK } from '../models/m-game';
 import { getMRivalry, MRivalry } from '../models/m-rivalry';
 import { FIGHTER_COUNT } from '../models/m-tier-list';
 import type { MTierList } from '../models/m-tier-list';
@@ -20,6 +21,11 @@ function getClient() {
 }
 
 const UPDATE_RIVALRY_KEYS = ['id', 'contestCount', 'currentContestId'];
+
+// Constants for tier list creation and management
+const TIER_SLOT_BATCH_SIZE = 10;
+const CONTEST_COUNT_TEMPLATE_THRESHOLD = 100;
+const MAX_RESAMPLE_ATTEMPTS = 100;
 
 interface RivalryQueryBaseProps {
   rivalry?: MRivalry | null;
@@ -716,9 +722,8 @@ export const useUpdateCurrentContestShuffleTierSlotsMutation = ({
         // Sample tier slot A until we get a different fighter
         tierSlotA = rivalry?.tierListA?.sampleEligibleSlot();
         let attempts = 0;
-        const maxAttempts = 100; // Safety limit
 
-        while (tierSlotA && tierSlotA.id === oldTierSlotA?.id && attempts < maxAttempts) {
+        while (tierSlotA && tierSlotA.id === oldTierSlotA?.id && attempts < MAX_RESAMPLE_ATTEMPTS) {
           tierSlotA = rivalry?.tierListA?.sampleEligibleSlot();
           attempts++;
         }
@@ -741,9 +746,8 @@ export const useUpdateCurrentContestShuffleTierSlotsMutation = ({
         // Sample tier slot B until we get a different fighter
         tierSlotB = rivalry?.tierListB?.sampleEligibleSlot();
         let attempts = 0;
-        const maxAttempts = 100; // Safety limit
 
-        while (tierSlotB && tierSlotB.id === oldTierSlotB?.id && attempts < maxAttempts) {
+        while (tierSlotB && tierSlotB.id === oldTierSlotB?.id && attempts < MAX_RESAMPLE_ATTEMPTS) {
           tierSlotB = rivalry?.tierListB?.sampleEligibleSlot();
           attempts++;
         }
@@ -833,7 +837,6 @@ export const useDeleteMostRecentContestMutation = ({
       // Reverse the tier slot position adjustments (opposite of what was done when resolving)
       // When resolving: tierListA adjusts by (result * STEPS_PER_STOCK * -1)
       // When undoing: reverse that, so adjust by (result * STEPS_PER_STOCK)
-      const STEPS_PER_STOCK = 3;
 
       // Pass the actual POSITION values, not indices
       // trackStats=false to avoid double-counting on undo (stats are aggregate, not reversible)
@@ -1017,9 +1020,9 @@ export const useCreateRivalryMutation = ({
         }
       });
 
-      // Sort by contestCount descending and find the first one with contestCount > 100
+      // Sort by contestCount descending and find the first one with contestCount > threshold
       const templateRivalry = userRivalries
-        ?.filter((r) => (r.contestCount || 0) > 100)
+        ?.filter((r) => (r.contestCount || 0) > CONTEST_COUNT_TEMPLATE_THRESHOLD)
         .sort((a, b) => (b.contestCount || 0) - (a.contestCount || 0))[0];
 
       let tierSlotData: Array<{ fighterId: string; position: number | null }>;
@@ -1098,7 +1101,7 @@ export const useCreateRivalryMutation = ({
           );
         }
       } else {
-        // No rivalry with contestCount > 2 found, fetch fighters with null positions
+        // No rivalry with contestCount > threshold found, fetch fighters with null positions
         const { data: fighters, errors: fightersErrors } = await getClient().models.Fighter.list({
           filter: { gameId: { eq: gameId } }
         });
@@ -1130,11 +1133,10 @@ export const useCreateRivalryMutation = ({
       }
 
       // Create tier slots for userA in batches
-      const BATCH_SIZE = 10;
       const allTierSlotErrors: any[] = [];
 
-      for (let i = 0; i < tierSlotData.length; i += BATCH_SIZE) {
-        const batch = tierSlotData.slice(i, i + BATCH_SIZE);
+      for (let i = 0; i < tierSlotData.length; i += TIER_SLOT_BATCH_SIZE) {
+        const batch = tierSlotData.slice(i, i + TIER_SLOT_BATCH_SIZE);
         const tierSlotPromises = batch.map((slot) =>
           getClient().models.TierSlot.create({
             tierListId: tierListAData.id,
@@ -1150,7 +1152,7 @@ export const useCreateRivalryMutation = ({
         allTierSlotErrors.push(...tierSlotErrors);
 
         console.log(
-          `[useCreateRivalryMutation] Created tier slots batch ${Math.floor(i / BATCH_SIZE) + 1}/${Math.ceil(tierSlotData.length / BATCH_SIZE)}`
+          `[useCreateRivalryMutation] Created tier slots batch ${Math.floor(i / TIER_SLOT_BATCH_SIZE) + 1}/${Math.ceil(tierSlotData.length / TIER_SLOT_BATCH_SIZE)}`
         );
       }
 
@@ -1258,12 +1260,11 @@ export const useCreateNpcRivalryMutation = ({
       }
 
       // Create tier slots for both users in batches
-      const BATCH_SIZE = 10;
       const allTierSlotErrors: any[] = [];
 
       // Create tier slots for userA
-      for (let i = 0; i < tierSlotDataA.length; i += BATCH_SIZE) {
-        const batch = tierSlotDataA.slice(i, i + BATCH_SIZE);
+      for (let i = 0; i < tierSlotDataA.length; i += TIER_SLOT_BATCH_SIZE) {
+        const batch = tierSlotDataA.slice(i, i + TIER_SLOT_BATCH_SIZE);
         const tierSlotPromises = batch.map((slot) =>
           getClient().models.TierSlot.create({
             tierListId: tierListAData.id,
@@ -1280,8 +1281,8 @@ export const useCreateNpcRivalryMutation = ({
       }
 
       // Create tier slots for userB (NPC)
-      for (let i = 0; i < tierSlotDataB.length; i += BATCH_SIZE) {
-        const batch = tierSlotDataB.slice(i, i + BATCH_SIZE);
+      for (let i = 0; i < tierSlotDataB.length; i += TIER_SLOT_BATCH_SIZE) {
+        const batch = tierSlotDataB.slice(i, i + TIER_SLOT_BATCH_SIZE);
         const tierSlotPromises = batch.map((slot) =>
           getClient().models.TierSlot.create({
             tierListId: tierListBData.id,
@@ -1357,9 +1358,9 @@ export const useAcceptRivalryMutation = ({ onSuccess, onError }: AcceptRivalryMu
         }
       });
 
-      // Sort by contestCount descending and find the first one with contestCount > 100
+      // Sort by contestCount descending and find the first one with contestCount > threshold
       const templateRivalry = userBRivalries
-        ?.filter((r) => (r.contestCount || 0) > 100)
+        ?.filter((r) => (r.contestCount || 0) > CONTEST_COUNT_TEMPLATE_THRESHOLD)
         .sort((a, b) => (b.contestCount || 0) - (a.contestCount || 0))[0];
 
       let tierSlotData: Array<{ fighterId: string; position: number | null }>;
@@ -1421,7 +1422,7 @@ export const useAcceptRivalryMutation = ({ onSuccess, onError }: AcceptRivalryMu
           );
         }
       } else {
-        // No rivalry with contestCount > 2 found, use null positions
+        // No rivalry with contestCount > threshold found, use null positions
         tierSlotData = fighters.map((fighter) => ({
           fighterId: fighter.id,
           position: null
@@ -1444,11 +1445,10 @@ export const useAcceptRivalryMutation = ({ onSuccess, onError }: AcceptRivalryMu
       }
 
       // Create tier slots for userB in batches
-      const BATCH_SIZE = 10;
       const allTierSlotErrors: any[] = [];
 
-      for (let i = 0; i < tierSlotData.length; i += BATCH_SIZE) {
-        const batch = tierSlotData.slice(i, i + BATCH_SIZE);
+      for (let i = 0; i < tierSlotData.length; i += TIER_SLOT_BATCH_SIZE) {
+        const batch = tierSlotData.slice(i, i + TIER_SLOT_BATCH_SIZE);
         const tierSlotPromises = batch.map((slot) =>
           getClient().models.TierSlot.create({
             tierListId: tierListBData.id,
@@ -1464,7 +1464,7 @@ export const useAcceptRivalryMutation = ({ onSuccess, onError }: AcceptRivalryMu
         allTierSlotErrors.push(...tierSlotErrors);
 
         console.log(
-          `[useAcceptRivalryMutation] Created tier slots batch ${Math.floor(i / BATCH_SIZE) + 1}/${Math.ceil(tierSlotData.length / BATCH_SIZE)} for userB`
+          `[useAcceptRivalryMutation] Created tier slots batch ${Math.floor(i / TIER_SLOT_BATCH_SIZE) + 1}/${Math.ceil(tierSlotData.length / TIER_SLOT_BATCH_SIZE)} for userB`
         );
       }
 

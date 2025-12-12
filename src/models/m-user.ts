@@ -35,8 +35,9 @@ export function getMUser({ user }: GetMUserProps): MUser {
           ? (comparativeName as MUser).fullName
           : comparativeName;
 
-      const compFirstName = compName.split(' ')[0];
-      const compLastName = compName.split(' ')[1] || '';
+      const compNameParts = compName.split(' ');
+      const compFirstName = compNameParts[0];
+      const compLastName = compNameParts[1] || '';
 
       // If first names are different, just use first name
       if (user.firstName !== compFirstName) {

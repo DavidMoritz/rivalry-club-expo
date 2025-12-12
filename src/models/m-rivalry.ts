@@ -1,6 +1,6 @@
 import type { Schema } from '../../amplify/data/resource';
 import { getMContest, MContest } from './m-contest';
-import { MGame } from './m-game';
+import { MGame, STEPS_PER_STOCK } from './m-game';
 import { getMTierList, MTierList, TIERS } from './m-tier-list';
 import { MUser } from './m-user';
 
@@ -52,6 +52,8 @@ export interface MRivalry extends Omit<Rivalry, 'game'> {
 export interface GetMRivalryProps {
   rivalry: Rivalry;
 }
+
+const MOVEMENT_DIRECTIONS = 2; // up or down (winner and loser both move)
 
 export function getMRivalry({ rivalry }: GetMRivalryProps): MRivalry {
   return {
@@ -170,7 +172,6 @@ export function getMRivalry({ rivalry }: GetMRivalryProps): MRivalry {
 
       // EXISTING: Continue with normal standings adjustment
       const stocks = Math.abs(this.currentContest.result as number);
-      const MOVEMENT_DIRECTIONS = 2;
 
       const bothPlayersMoveCount = Math.floor(stocks / MOVEMENT_DIRECTIONS);
       const additionalMove = Boolean(stocks % MOVEMENT_DIRECTIONS);
@@ -219,7 +220,6 @@ export function getMRivalry({ rivalry }: GetMRivalryProps): MRivalry {
       }
 
       const stocks = Math.abs(contest.result as number);
-      const MOVEMENT_DIRECTIONS = 2;
 
       const bothPlayersMoveCount = Math.floor(stocks / MOVEMENT_DIRECTIONS);
       const additionalMove = Boolean(stocks % MOVEMENT_DIRECTIONS);
@@ -299,11 +299,10 @@ export function getMRivalry({ rivalry }: GetMRivalryProps): MRivalry {
       return this.userB?.displayName(this.userA || '') || 'User B';
     },
     fighterMoves() {
-      // Fighter always makes 3 moves per stock
+      // Fighter always makes STEPS_PER_STOCK moves per stock
       const stocks = Math.abs(this.currentContest?.result as number);
-      const fighterMovesPerStock = 3;
 
-      return stocks * fighterMovesPerStock;
+      return stocks * STEPS_PER_STOCK;
     },
     getCurrentContest() {
       if (this.currentContest?.id !== this.currentContestId) {

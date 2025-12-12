@@ -66,6 +66,8 @@ export function getMTierSlot(tierSlot: TierSlot): MTierSlot {
 
 /** Utility Functions */
 
+const TIER_COUNT = 7;
+
 /**
  * Computes the tier label (S, A, B, C, D, E, F, or UNKNOWN) from a position value.
  * Handles nullable positions and out-of-range values.
@@ -79,7 +81,7 @@ export function computeTierFromPosition(position: number | null): string {
     return 'U';
   }
 
-  const BASE_PER_TIER = Math.floor(FIGHTER_COUNT / 7); // 12
+  const BASE_PER_TIER = Math.floor(FIGHTER_COUNT / TIER_COUNT); // 12
 
   if (position < BASE_PER_TIER) return 'S';
   if (position < 2 * BASE_PER_TIER) return 'A';

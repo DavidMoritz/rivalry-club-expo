@@ -16,6 +16,48 @@ function getClient() {
   return client;
 }
 
+// Reusable selection sets
+const USER_SELECTION_SET = [
+  'id',
+  'email',
+  'firstName',
+  'lastName',
+  'role',
+  'awsSub',
+  'createdAt',
+  'updatedAt',
+  'deletedAt'
+] as const;
+
+const RIVALRY_SELECTION_SET = [
+  'id',
+  'userAId',
+  'userBId',
+  'gameId',
+  'contestCount',
+  'currentContestId',
+  'hiddenByA',
+  'hiddenByB',
+  'createdAt',
+  'updatedAt',
+  'deletedAt'
+] as const;
+
+// User search scoring constants
+const SEARCH_SCORE = {
+  EXACT_MATCH: 100,
+  FULL_NAME_MATCH: 90,
+  WORD_BOUNDARY_MATCH: 60,
+  STARTS_WITH_FIRST_NAME: 50,
+  STARTS_WITH_LAST_NAME: 50,
+  STARTS_WITH_FULL_NAME: 45,
+  STARTS_WITH_EMAIL: 40,
+  CONTAINS_FIRST_NAME: 20,
+  CONTAINS_LAST_NAME: 20,
+  CONTAINS_EMAIL: 15,
+  CONTAINS_FULL_NAME: 10
+} as const;
+
 interface UserDataQueryProps {
   rivalries: MRivalry[];
 }
@@ -46,17 +88,7 @@ export const useUserWithRivalriesByAwsSubQuery = ({
             eq: amplifyUser.username,
           },
         },
-        selectionSet: [
-          'id',
-          'email',
-          'firstName',
-          'lastName',
-          'role',
-          'awsSub',
-          'createdAt',
-          'updatedAt',
-          'deletedAt',
-        ],
+        selectionSet: USER_SELECTION_SET,
       });
 
       if (errors) {
@@ -75,19 +107,7 @@ export const useUserWithRivalriesByAwsSubQuery = ({
               eq: user.id,
             },
           },
-          selectionSet: [
-            'id',
-            'userAId',
-            'userBId',
-            'gameId',
-            'contestCount',
-            'currentContestId',
-            'hiddenByA',
-            'hiddenByB',
-            'createdAt',
-            'updatedAt',
-            'deletedAt',
-          ],
+          selectionSet: RIVALRY_SELECTION_SET,
         });
 
         // Fetch rivalries where user is userB
@@ -97,19 +117,7 @@ export const useUserWithRivalriesByAwsSubQuery = ({
               eq: user.id,
             },
           },
-          selectionSet: [
-            'id',
-            'userAId',
-            'userBId',
-            'gameId',
-            'contestCount',
-            'currentContestId',
-            'hiddenByA',
-            'hiddenByB',
-            'createdAt',
-            'updatedAt',
-            'deletedAt',
-          ],
+          selectionSet: RIVALRY_SELECTION_SET,
         });
 
         return {
@@ -141,17 +149,7 @@ export const useUserDataQuery = ({ rivalries }: UserDataQueryProps) => {
         client.models.User.get(
           { id: userId },
           {
-            selectionSet: [
-              'id',
-              'email',
-              'firstName',
-              'lastName',
-              'role',
-              'awsSub',
-              'createdAt',
-              'updatedAt',
-              'deletedAt',
-            ],
+            selectionSet: USER_SELECTION_SET,
           }
         )
       );
@@ -181,17 +179,7 @@ export const useUserSearchQuery = ({ searchText, currentUserId }: UserSearchQuer
 
       // Fetch all users (in production, you'd want server-side filtering)
       const { data: users, errors } = await getClient().models.User.list({
-        selectionSet: [
-          'id',
-          'email',
-          'firstName',
-          'lastName',
-          'role',
-          'awsSub',
-          'createdAt',
-          'updatedAt',
-          'deletedAt'
-        ]
+        selectionSet: USER_SELECTION_SET
       });
 
       if (errors) {
@@ -225,25 +213,25 @@ export const useUserSearchQuery = ({ searchText, currentUserId }: UserSearchQuer
 
           // Exact matches get highest priority
           if (firstName === searchLower || lastName === searchLower || email === searchLower) {
-            score += 100;
+            score += SEARCH_SCORE.EXACT_MATCH;
           }
 
           // Full name exact match
           if (fullName === searchLower) {
-            score += 90;
+            score += SEARCH_SCORE.FULL_NAME_MATCH;
           }
 
           // Starts with matches
-          if (firstName.startsWith(searchLower)) score += 50;
-          if (lastName.startsWith(searchLower)) score += 50;
-          if (email.startsWith(searchLower)) score += 40;
-          if (fullName.startsWith(searchLower)) score += 45;
+          if (firstName.startsWith(searchLower)) score += SEARCH_SCORE.STARTS_WITH_FIRST_NAME;
+          if (lastName.startsWith(searchLower)) score += SEARCH_SCORE.STARTS_WITH_LAST_NAME;
+          if (email.startsWith(searchLower)) score += SEARCH_SCORE.STARTS_WITH_EMAIL;
+          if (fullName.startsWith(searchLower)) score += SEARCH_SCORE.STARTS_WITH_FULL_NAME;
 
           // Contains matches
-          if (firstName.includes(searchLower)) score += 20;
-          if (lastName.includes(searchLower)) score += 20;
-          if (email.includes(searchLower)) score += 15;
-          if (fullName.includes(searchLower)) score += 10;
+          if (firstName.includes(searchLower)) score += SEARCH_SCORE.CONTAINS_FIRST_NAME;
+          if (lastName.includes(searchLower)) score += SEARCH_SCORE.CONTAINS_LAST_NAME;
+          if (email.includes(searchLower)) score += SEARCH_SCORE.CONTAINS_EMAIL;
+          if (fullName.includes(searchLower)) score += SEARCH_SCORE.CONTAINS_FULL_NAME;
 
           // Word boundary matches (e.g., "john doe" matches "j d")
           const searchWords = searchLower.split(/\s+/);
@@ -253,7 +241,7 @@ export const useUserSearchQuery = ({ searchText, currentUserId }: UserSearchQuer
             const allWordsMatch = searchWords.every((searchWord, idx) =>
               nameWords[idx]?.startsWith(searchWord)
             );
-            if (allWordsMatch) score += 60;
+            if (allWordsMatch) score += SEARCH_SCORE.WORD_BOUNDARY_MATCH;
           }
 
           return { user, score };

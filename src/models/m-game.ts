@@ -11,7 +11,6 @@ export interface MGame extends Game {
 
 export const STOCK = 3;
 export const STEPS_PER_STOCK = 3;
-
 export const PROVISIONAL_THRESHOLD = 10;
 
 export function getMGame(game: Game): MGame {
@@ -21,7 +20,7 @@ export function getMGame(game: Game): MGame {
     get abbr() {
       return `${game.name
         .split(' ')
-        .map(word => word.charAt(0))
+        .map((word) => word.charAt(0))
         .join('')
         .toUpperCase()}`;
     },
@@ -32,6 +31,6 @@ export function getMGame(game: Game): MGame {
 
     get title() {
       return `${game.name} (unofficial)`;
-    },
+    }
   };
 }

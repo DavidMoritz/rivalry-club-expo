@@ -21,23 +21,6 @@ export const s3Logos = `${s3Images}/logos`;
 export const s3Favicons = `${s3Images}/favicons`;
 export const s3Fighters = `${s3Images}/fighters`;
 
-export function contrast(isDarkMode: boolean): 'white' | 'black' {
-  return isDarkMode ? 'white' : 'black';
-}
-
-export function cWarn(warnObj: string | Record<string, unknown>, note = '') {
-  if (typeof warnObj === 'string') {
-    console.warn(warnObj, note);
-
-    return;
-  }
-
-  const name = Object.keys(warnObj)[0];
-  const value = warnObj[name];
-
-  console.warn(name, value, note);
-}
-
 export function dateDisplay(dateString: string): string {
   const today = new Date();
   const updatedDate = new Date(dateString);
@@ -50,10 +33,7 @@ export function dateDisplay(dateString: string): string {
   });
 }
 
-export function fighterByIdFromGame(
-  game: Game | MGame,
-  fighterId: string
-): MFighter | null {
+export function fighterByIdFromGame(game: Game | MGame, fighterId: string): MFighter | null {
   // Handle both Game and MGame types - fighters might be LazyLoader or { items: ... }
   const fighters = game.fighters as any;
   const fightersItems = fighters?.items || [];

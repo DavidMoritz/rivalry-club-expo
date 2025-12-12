@@ -225,11 +225,16 @@ export function Profile() {
               }}
             >
               <Text
-                style={{ color: 'white', textAlign: 'center', fontWeight: '600', marginBottom: 4 }}
+                style={{
+                  color: colors.white,
+                  textAlign: 'center',
+                  fontWeight: '600',
+                  marginBottom: 4
+                }}
               >
                 Welcome! 👋
               </Text>
-              <Text style={{ color: 'white', textAlign: 'center' }}>
+              <Text style={{ color: colors.white, textAlign: 'center' }}>
                 Please enter your first name to get started
               </Text>
             </View>
@@ -244,7 +249,7 @@ export function Profile() {
                 marginBottom: 16
               }}
             >
-              <Text style={{ color: 'white', textAlign: 'center' }}>{successMessage}</Text>
+              <Text style={{ color: colors.white, textAlign: 'center' }}>{successMessage}</Text>
             </View>
           ) : null}
 
@@ -257,7 +262,7 @@ export function Profile() {
                 marginBottom: 16
               }}
             >
-              <Text style={{ color: 'white', textAlign: 'center' }}>{errorMessage}</Text>
+              <Text style={{ color: colors.white, textAlign: 'center' }}>{errorMessage}</Text>
             </View>
           ) : null}
 
@@ -273,7 +278,7 @@ export function Profile() {
                   styles.text,
                   {
                     backgroundColor: colors.gray800,
-                    color: 'white',
+                    color: colors.white,
                     paddingHorizontal: 16,
                     paddingVertical: 12,
                     borderRadius: 8,
@@ -296,7 +301,7 @@ export function Profile() {
                   styles.text,
                   {
                     backgroundColor: colors.gray800,
-                    color: 'white',
+                    color: colors.white,
                     paddingHorizontal: 16,
                     paddingVertical: 12,
                     borderRadius: 8,
@@ -319,7 +324,7 @@ export function Profile() {
                   styles.text,
                   {
                     backgroundColor: colors.slate800,
-                    color: 'white',
+                    color: colors.white,
                     paddingHorizontal: 16,
                     paddingVertical: 12,
                     borderRadius: 8,
@@ -347,7 +352,7 @@ export function Profile() {
               onPress={handleUpdateProfile}
               disabled={isUpdating}
             >
-              <Text style={{ color: 'white', fontSize: 18, fontWeight: 'bold' }}>
+              <Text style={{ color: colors.white, fontSize: 18, fontWeight: 'bold' }}>
                 {isUpdating ? 'Updating...' : 'Update Profile'}
               </Text>
             </TouchableOpacity>
@@ -375,7 +380,7 @@ export function Profile() {
                     marginBottom: 16
                   }}
                 >
-                  <Text style={{ color: 'white', textAlign: 'center', fontWeight: '600' }}>
+                  <Text style={{ color: colors.white, textAlign: 'center', fontWeight: '600' }}>
                     📱 Anonymous Account
                   </Text>
                   <Text
@@ -444,7 +449,7 @@ export function Profile() {
                   marginBottom: 16
                 }}
               >
-                <Text style={{ color: 'white', textAlign: 'center', fontWeight: '600' }}>
+                <Text style={{ color: colors.white, textAlign: 'center', fontWeight: '600' }}>
                   ✅ Linked to Account
                 </Text>
                 <Text
@@ -483,7 +488,7 @@ export function Profile() {
                 }}
                 onPress={() => setViewChangePassword(true)}
               >
-                <Text style={{ color: 'white', fontSize: 18, fontWeight: 'bold' }}>
+                <Text style={{ color: colors.white, fontSize: 18, fontWeight: 'bold' }}>
                   Change Password
                 </Text>
               </TouchableOpacity>
@@ -508,7 +513,7 @@ export function Profile() {
                     styles.text,
                     {
                       backgroundColor: colors.gray800,
-                      color: 'white',
+                      color: colors.white,
                       paddingHorizontal: 16,
                       paddingVertical: 12,
                       borderRadius: 8,
@@ -532,7 +537,7 @@ export function Profile() {
                     styles.text,
                     {
                       backgroundColor: colors.gray800,
-                      color: 'white',
+                      color: colors.white,
                       paddingHorizontal: 16,
                       paddingVertical: 12,
                       borderRadius: 8,
@@ -556,7 +561,7 @@ export function Profile() {
                     styles.text,
                     {
                       backgroundColor: colors.gray800,
-                      color: 'white',
+                      color: colors.white,
                       paddingHorizontal: 16,
                       paddingVertical: 12,
                       borderRadius: 8,
@@ -588,7 +593,7 @@ export function Profile() {
                 onPress={handleChangePassword}
                 disabled={isChangingPassword}
               >
-                <Text style={{ color: 'white', fontSize: 18, fontWeight: 'bold' }}>
+                <Text style={{ color: colors.white, fontSize: 18, fontWeight: 'bold' }}>
                   {isChangingPassword ? 'Changing...' : 'Change Password'}
                 </Text>
               </TouchableOpacity>

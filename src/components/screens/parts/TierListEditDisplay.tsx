@@ -515,7 +515,7 @@ export function TierListEditDisplay({ tierList, onChange }: TierListEditDisplayP
                 backgroundColor: colors.tierRowLight
               }}
             >
-              <Text style={{ fontSize: 32, fontWeight: 'bold', color: 'black', opacity: 1 }}>
+              <Text style={{ fontSize: 32, fontWeight: 'bold', color: colors.black, opacity: 1 }}>
                 U
               </Text>
             </View>

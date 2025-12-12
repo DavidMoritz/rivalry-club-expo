@@ -25,7 +25,9 @@ export function PendingRivalries() {
         updateRivalry(acceptingRivalryId, { accepted: true });
 
         // Find the accepted rivalry to get user names for navigation
-        const acceptedRivalry = pendingRivalries.awaitingAcceptance.find(r => r.id === acceptingRivalryId);
+        const acceptedRivalry = pendingRivalries.awaitingAcceptance.find(
+          (r) => r.id === acceptingRivalryId
+        );
 
         if (acceptedRivalry) {
           // Navigate to the rivalry page
@@ -69,7 +71,13 @@ export function PendingRivalries() {
     });
   };
 
-  const renderRivalryItem = ({ item, isAwaitingAcceptance }: { item: any; isAwaitingAcceptance: boolean }) => {
+  const renderRivalryItem = ({
+    item,
+    isAwaitingAcceptance
+  }: {
+    item: any;
+    isAwaitingAcceptance: boolean;
+  }) => {
     const isUserA = item.userAId === user?.id;
     const otherUserName = isUserA ? item.userBName : item.userAName;
     const displayName = otherUserName || 'Unknown User';
@@ -113,7 +121,7 @@ export function PendingRivalries() {
               <ActivityIndicator size="small" color="white" />
             ) : (
               <>
-                <Text style={{ fontSize: 14, color: 'white', marginRight: 8 }}>✓</Text>
+                <Text style={{ fontSize: 14, color: colors.white, marginRight: 8 }}>✓</Text>
                 <Text style={[styles.text, { fontSize: 14, fontWeight: 'bold' }]}>Accept</Text>
               </>
             )}
@@ -127,10 +135,15 @@ export function PendingRivalries() {
 
   return (
     <SafeAreaView style={[styles.container, darkStyles.container]} edges={['top', 'bottom']}>
-      <View style={{ paddingHorizontal: 16, paddingVertical: 16, borderBottomWidth: 1, borderBottomColor: colors.gray750 }}>
-        <Text style={[styles.text, { fontSize: 24, fontWeight: 'bold' }]}>
-          Pending Rivalries
-        </Text>
+      <View
+        style={{
+          paddingHorizontal: 16,
+          paddingVertical: 16,
+          borderBottomWidth: 1,
+          borderBottomColor: colors.gray750
+        }}
+      >
+        <Text style={[styles.text, { fontSize: 24, fontWeight: 'bold' }]}>Pending Rivalries</Text>
         <Text style={[styles.text, { marginTop: 4, color: colors.gray400 }]}>
           Challenges waiting for acceptance
         </Text>
@@ -155,12 +168,19 @@ export function PendingRivalries() {
       </View>
 
       {awaitingAcceptance.length === 0 && initiated.length === 0 ? (
-        <View style={{ flex: 1, alignItems: 'center', justifyContent: 'center', paddingHorizontal: 16 }}>
+        <View
+          style={{ flex: 1, alignItems: 'center', justifyContent: 'center', paddingHorizontal: 16 }}
+        >
           <Text style={{ fontSize: 48, color: colors.gray500, marginBottom: 16 }}>📥</Text>
           <Text style={[styles.text, { fontSize: 18, color: colors.gray400, textAlign: 'center' }]}>
             No pending rivalries
           </Text>
-          <Text style={[styles.text, { fontSize: 14, color: colors.gray500, textAlign: 'center', marginTop: 8 }]}>
+          <Text
+            style={[
+              styles.text,
+              { fontSize: 14, color: colors.gray500, textAlign: 'center', marginTop: 8 }
+            ]}
+          >
             Create a new rivalry to get started!
           </Text>
         </View>
@@ -175,13 +195,22 @@ export function PendingRivalries() {
             <>
               {item.data.length > 0 && (
                 <>
-                  <View style={{
-                    paddingHorizontal: 16,
-                    paddingVertical: 12,
-                    backgroundColor: colors.slate900
-                  }}>
-                    <Text style={[styles.text, { fontSize: 14, fontWeight: 'bold', color: colors.slate400 }]}>
-                      {item.section === 'awaitingAcceptance' ? 'AWAITING YOUR ACCEPTANCE' : 'SENT BY YOU'}
+                  <View
+                    style={{
+                      paddingHorizontal: 16,
+                      paddingVertical: 12,
+                      backgroundColor: colors.slate900
+                    }}
+                  >
+                    <Text
+                      style={[
+                        styles.text,
+                        { fontSize: 14, fontWeight: 'bold', color: colors.slate400 }
+                      ]}
+                    >
+                      {item.section === 'awaitingAcceptance'
+                        ? 'AWAITING YOUR ACCEPTANCE'
+                        : 'SENT BY YOU'}
                     </Text>
                   </View>
                   {item.data.map((rivalry) => (

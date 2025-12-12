@@ -259,7 +259,7 @@ export function Auth({ onAuthSuccess }: AuthProps) {
                 disabled={loading || !verificationCode || !email}
                 accessibilityState={{ disabled: loading || !verificationCode || !email }}
               >
-                <Text style={{ color: 'white', fontSize: 18, fontWeight: 'bold' }}>
+                <Text style={{ color: colors.white, fontSize: 18, fontWeight: 'bold' }}>
                   {loading ? 'Verifying...' : 'Verify'}
                 </Text>
               </TouchableOpacity>
@@ -397,7 +397,7 @@ export function Auth({ onAuthSuccess }: AuthProps) {
                 disabled={loading || !email || !password}
                 accessibilityState={{ disabled: loading || !email || !password }}
               >
-                <Text style={{ color: 'white', fontSize: 18, fontWeight: 'bold' }}>
+                <Text style={{ color: colors.white, fontSize: 18, fontWeight: 'bold' }}>
                   {loading ? 'Loading...' : isSignUp ? 'Sign Up' : 'Sign In'}
                 </Text>
               </TouchableOpacity>

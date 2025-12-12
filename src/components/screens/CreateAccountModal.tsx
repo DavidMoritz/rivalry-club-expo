@@ -15,7 +15,12 @@ interface CreateAccountModalProps {
   onSuccess: () => void;
 }
 
-export function CreateAccountModal({ visible, currentUserId, onClose, onSuccess }: CreateAccountModalProps) {
+export function CreateAccountModal({
+  visible,
+  currentUserId,
+  onClose,
+  onSuccess
+}: CreateAccountModalProps) {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
@@ -98,7 +103,7 @@ export function CreateAccountModal({ visible, currentUserId, onClose, onSuccess 
         id: currentUserId,
         awsSub: cognitoAwsSub,
         email: email.trim(),
-        role: 1, // Regular user role
+        role: 1 // Regular user role
       });
 
       // Success!
@@ -122,8 +127,9 @@ export function CreateAccountModal({ visible, currentUserId, onClose, onSuccess 
               alignItems: 'center',
               paddingVertical: 16,
               borderBottomWidth: 1,
-              borderBottomColor: colors.gray750,
-            }}>
+              borderBottomColor: colors.gray750
+            }}
+          >
             <Text style={[styles.text, { fontSize: 24, fontWeight: 'bold' }]}>
               {needsVerification ? 'Verify Email' : 'Create New Account'}
             </Text>
@@ -135,7 +141,12 @@ export function CreateAccountModal({ visible, currentUserId, onClose, onSuccess 
           <View style={{ flex: 1, justifyContent: 'center' }}>
             {needsVerification ? (
               <>
-                <Text style={[styles.text, { marginBottom: 24, textAlign: 'center', color: colors.gray300 }]}>
+                <Text
+                  style={[
+                    styles.text,
+                    { marginBottom: 24, textAlign: 'center', color: colors.gray300 }
+                  ]}
+                >
                   Please enter the verification code we sent to your email
                 </Text>
 
@@ -154,8 +165,8 @@ export function CreateAccountModal({ visible, currentUserId, onClose, onSuccess 
                         paddingVertical: 14,
                         backgroundColor: colors.gray800,
                         borderWidth: 2,
-                        borderColor: colors.gray600,
-                      },
+                        borderColor: colors.gray600
+                      }
                     ]}
                     placeholder="Enter verification code"
                     placeholderTextColor={colors.gray200}
@@ -167,7 +178,12 @@ export function CreateAccountModal({ visible, currentUserId, onClose, onSuccess 
                 </View>
 
                 {error && (
-                  <Text style={[styles.text, { marginBottom: 16, textAlign: 'center', color: colors.red400 }]}>
+                  <Text
+                    style={[
+                      styles.text,
+                      { marginBottom: 16, textAlign: 'center', color: colors.red400 }
+                    ]}
+                  >
                     {error}
                   </Text>
                 )}
@@ -182,14 +198,15 @@ export function CreateAccountModal({ visible, currentUserId, onClose, onSuccess 
                     borderColor: colors.slate300,
                     width: '100%',
                     alignItems: 'center',
-                    marginTop: 8,
+                    marginTop: 8
                   }}
                   onPress={handleVerifyCode}
-                  disabled={loading || !verificationCode}>
+                  disabled={loading || !verificationCode}
+                >
                   {loading ? (
                     <ActivityIndicator color="white" />
                   ) : (
-                    <Text style={{ color: 'white', fontSize: 18, fontWeight: 'bold' }}>
+                    <Text style={{ color: colors.white, fontSize: 18, fontWeight: 'bold' }}>
                       Verify
                     </Text>
                   )}
@@ -201,13 +218,19 @@ export function CreateAccountModal({ visible, currentUserId, onClose, onSuccess 
                     setVerificationCode('');
                     setError(null);
                   }}
-                  style={{ marginTop: 16, alignItems: 'center' }}>
+                  style={{ marginTop: 16, alignItems: 'center' }}
+                >
                   <Text style={{ color: colors.cyan400, fontSize: 16 }}>Back</Text>
                 </TouchableOpacity>
               </>
             ) : (
               <>
-                <Text style={[styles.text, { marginBottom: 24, textAlign: 'center', color: colors.gray300 }]}>
+                <Text
+                  style={[
+                    styles.text,
+                    { marginBottom: 24, textAlign: 'center', color: colors.gray300 }
+                  ]}
+                >
                   Create an account to back up your data and sync across devices
                 </Text>
 
@@ -226,8 +249,8 @@ export function CreateAccountModal({ visible, currentUserId, onClose, onSuccess 
                         paddingVertical: 14,
                         backgroundColor: colors.gray800,
                         borderWidth: 2,
-                        borderColor: colors.gray600,
-                      },
+                        borderColor: colors.gray600
+                      }
                     ]}
                     placeholder="Enter your email"
                     placeholderTextColor={colors.gray200}
@@ -254,8 +277,8 @@ export function CreateAccountModal({ visible, currentUserId, onClose, onSuccess 
                         paddingVertical: 14,
                         backgroundColor: colors.gray800,
                         borderWidth: 2,
-                        borderColor: colors.gray600,
-                      },
+                        borderColor: colors.gray600
+                      }
                     ]}
                     placeholder="Enter your password"
                     placeholderTextColor={colors.gray200}
@@ -281,8 +304,8 @@ export function CreateAccountModal({ visible, currentUserId, onClose, onSuccess 
                         paddingVertical: 14,
                         backgroundColor: colors.gray800,
                         borderWidth: 2,
-                        borderColor: colors.gray600,
-                      },
+                        borderColor: colors.gray600
+                      }
                     ]}
                     placeholder="Confirm your password"
                     placeholderTextColor={colors.gray200}
@@ -294,7 +317,12 @@ export function CreateAccountModal({ visible, currentUserId, onClose, onSuccess 
                 </View>
 
                 {error && (
-                  <Text style={[styles.text, { marginBottom: 16, textAlign: 'center', color: colors.red400 }]}>
+                  <Text
+                    style={[
+                      styles.text,
+                      { marginBottom: 16, textAlign: 'center', color: colors.red400 }
+                    ]}
+                  >
                     {error}
                   </Text>
                 )}
@@ -309,14 +337,15 @@ export function CreateAccountModal({ visible, currentUserId, onClose, onSuccess 
                     borderColor: colors.slate300,
                     width: '100%',
                     alignItems: 'center',
-                    marginTop: 8,
+                    marginTop: 8
                   }}
                   onPress={handleSignUp}
-                  disabled={loading || !email || !password || !confirmPassword}>
+                  disabled={loading || !email || !password || !confirmPassword}
+                >
                   {loading ? (
                     <ActivityIndicator color="white" />
                   ) : (
-                    <Text style={{ color: 'white', fontSize: 18, fontWeight: 'bold' }}>
+                    <Text style={{ color: colors.white, fontSize: 18, fontWeight: 'bold' }}>
                       Create Account
                     </Text>
                   )}

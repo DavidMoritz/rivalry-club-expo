@@ -172,11 +172,11 @@ const fighterTextStyle = {
   fontWeight: 'bold' as const,
   justifyContent: center,
   width: '100%' as const,
-  color: 'white'
+  color: colors.white
 };
 
 const fighterNameTextStyle = {
-  color: 'white',
+  color: colors.white,
   fontSize: 14
 };
 
@@ -204,13 +204,13 @@ const sectionHeaderStyle = {
 };
 
 const statTextStyle = {
-  color: 'white',
+  color: colors.white,
   fontSize: 18,
   marginBottom: 4
 };
 
 const statTextLargeStyle = {
-  color: 'white',
+  color: colors.white,
   fontSize: 18
 };
 

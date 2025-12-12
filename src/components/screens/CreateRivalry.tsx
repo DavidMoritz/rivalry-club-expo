@@ -254,7 +254,7 @@ export function CreateRivalry() {
             placeholderTextColor={colors.gray500}
             style={{
               backgroundColor: colors.slate900,
-              color: 'white',
+              color: colors.white,
               paddingHorizontal: 16,
               paddingVertical: 12,
               borderRadius: 8,

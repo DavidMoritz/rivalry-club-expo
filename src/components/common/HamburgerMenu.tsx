@@ -128,7 +128,7 @@ const hamburgerButtonStyle = {
 
 const hamburgerIconStyle = {
   fontSize: 24,
-  color: 'white'
+  color: colors.white
 };
 
 const modalBackdropStyle = {
@@ -143,7 +143,7 @@ const menuContainerStyle = {
   borderRadius: 8,
   paddingVertical: 8,
   minWidth: 200,
-  shadowColor: 'black',
+  shadowColor: colors.black,
   shadowOffset: { width: 0, height: 2 },
   shadowOpacity: 0.25,
   shadowRadius: 4,
@@ -165,13 +165,13 @@ const dividerStyle = {
 
 const menuIconStyle = {
   fontSize: 16,
-  color: 'white',
+  color: colors.white,
   marginRight: 12
 };
 
 const menuTextStyle = {
   fontSize: 16,
-  color: 'white'
+  color: colors.white
 };
 
 const signOutIconStyle = {

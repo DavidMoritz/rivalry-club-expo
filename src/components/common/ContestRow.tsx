@@ -98,7 +98,7 @@ export function ContestRow({ contest, game, rivalry, flip, shouldFadeOut }: Cont
 }
 
 const textStyle = {
-  color: 'white',
+  color: colors.white,
   fontSize: 14
 };
 

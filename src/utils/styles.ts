@@ -13,14 +13,14 @@ export const styles = StyleSheet.create({
   },
   text: {
     fontSize: 14,
-    color: 'white'
+    color: colors.white
   },
   title: {
     color: 'aqua',
     fontSize: 50,
     fontWeight: 'bold',
     textAlign: 'center',
-    textShadowColor: 'black',
+    textShadowColor: colors.black,
     textShadowOffset: {
       width: 2,
       height: 2
@@ -32,9 +32,9 @@ export const styles = StyleSheet.create({
 export const darkStyles = StyleSheet.create({
   container: {
     backgroundColor: colors.gray900,
-    color: 'white'
+    color: colors.white
   },
-  text: { color: 'white' }
+  text: { color: colors.white }
 });
 
 export const contestStyles = StyleSheet.create({

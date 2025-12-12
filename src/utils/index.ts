@@ -13,14 +13,6 @@ type Game = {
   fighters?: { items: (Fighter | null)[] } | null;
 };
 
-export const s3Bucket = 'https://rivalry-club.s3.amazonaws.com';
-
-export const s3Images = `${s3Bucket}/images`;
-
-export const s3Logos = `${s3Images}/logos`;
-export const s3Favicons = `${s3Images}/favicons`;
-export const s3Fighters = `${s3Images}/fighters`;
-
 export function dateDisplay(dateString: string): string {
   const today = new Date();
   const updatedDate = new Date(dateString);
@@ -64,12 +56,4 @@ export function sourceCase(name: string): string {
     .replace(/\s+/g, '_') // Replace spaces with underscore
     .replace(/_+/g, '_') // Replace multiple consecutive underscores with single underscore
     .replace(/^_|_$/g, ''); // Remove leading/trailing underscores
-}
-
-export function lastItem<T>(arr?: T[] | null): T | null {
-  return arr ? arr[arr.length - 1] : null;
-}
-
-export function fighterImageSource(fighter: Fighter): ImageSourcePropType {
-  return fighterImages[sourceCase(fighter.name)];
 }

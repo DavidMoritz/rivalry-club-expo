@@ -11,7 +11,6 @@ import {
 import { logoImage } from '../../../assets/images/games/ssbu';
 import { darkStyles, styles } from '../../utils/styles';
 import { colors } from '../../utils/colors';
-import { s3Favicons } from '../../utils';
 import { Button } from '../common/Button';
 import { GameWithCharactersDisplay } from './GameWithCharactersDisplay';
 import { useAuthUser } from '../../hooks/useAuthUser';
@@ -35,20 +34,11 @@ export default function Home({ onEnterClick, onHowToPlayClick }: HomeProps) {
   const game = useGame();
   const isLoading = !game;
 
-  const isDarkMode = true;
-
   return (
-    <SafeAreaView
-      style={[styles.container, isDarkMode ? darkStyles.container : lightStyles.container]}
-    >
+    <SafeAreaView style={[styles.container, darkStyles.container]}>
       <View style={viewUpperStyle}>
         <TouchableWithoutFeedback onPress={() => game && onEnterClick(game)}>
-          <Image
-            style={siteLogoImageStyle}
-            source={{
-              uri: `${s3Favicons}/swords-144.png`
-            }}
-          />
+          <Image style={siteLogoImageStyle} source={require('../../../assets/icon-blank.png')} />
         </TouchableWithoutFeedback>
         <TouchableWithoutFeedback onPress={() => game && onEnterClick(game)}>
           <View style={titleContainerStyle}>
@@ -66,7 +56,9 @@ export default function Home({ onEnterClick, onHowToPlayClick }: HomeProps) {
         {isLoading ? (
           <View style={{ flex: 1, alignItems: 'center', justifyContent: 'center', paddingTop: 40 }}>
             <ActivityIndicator size="large" color={colors.blue400} />
-            <Text style={{ color: colors.gray400, fontSize: 16, marginTop: 16 }}>Loading fighters...</Text>
+            <Text style={{ color: colors.gray400, fontSize: 16, marginTop: 16 }}>
+              Loading fighters...
+            </Text>
           </View>
         ) : game ? (
           <GameWithCharactersDisplay game={game} onHowToPlayClick={onHowToPlayClick} />

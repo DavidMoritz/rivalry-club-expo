@@ -181,9 +181,7 @@ export async function ensureTierListIntegrity(
       `[ensureTierListIntegrity] Deleting ${slotsToDelete.length} duplicate tier slots...`
     );
 
-    const deletePromises = slotsToDelete.map((id) =>
-      getClient().models.TierSlot.delete({ id })
-    );
+    const deletePromises = slotsToDelete.map((id) => getClient().models.TierSlot.delete({ id }));
 
     const deleteResults = await Promise.all(deletePromises);
     const deleteErrors = deleteResults.filter((r) => r.errors).flatMap((r) => r.errors);
@@ -193,7 +191,9 @@ export async function ensureTierListIntegrity(
       return false;
     }
 
-    console.log(`[ensureTierListIntegrity] Successfully deleted ${slotsToDelete.length} duplicates`);
+    console.log(
+      `[ensureTierListIntegrity] Successfully deleted ${slotsToDelete.length} duplicates`
+    );
   }
 
   // STEP 3: Identify missing fighters
@@ -326,9 +326,7 @@ export const useRivalryWithAllInfoQuery = ({ rivalry, onSuccess }: RivalryQueryP
       // This ensures we get the actual most recent contests, not a random subset
       const { data: recentContests, errors: contestErrors } =
         await getClient().models.Contest.contestsByRivalryIdAndCreatedAt({
-          rivalryId: rivalryData.id,
-          sortDirection: 'DESC',
-          limit: 50
+          rivalryId: rivalryData.id
         });
 
       if (contestErrors) {
@@ -707,8 +705,6 @@ export const useUpdateCurrentContestShuffleTierSlotsMutation = ({
       // Store the current tier slots and their positions BEFORE resampling
       const oldTierSlotA = rivalry.currentContest.tierSlotA;
       const oldTierSlotB = rivalry.currentContest.tierSlotB;
-      const oldPositionA = oldTierSlotA?.position;
-      const oldPositionB = oldTierSlotB?.position;
 
       let tierSlotA = oldTierSlotA;
       let tierSlotB = oldTierSlotB;
@@ -719,7 +715,6 @@ export const useUpdateCurrentContestShuffleTierSlotsMutation = ({
       if (!slotToReshuffle || slotToReshuffle === 'A') {
         // Sample tier slot A until we get a different fighter
         tierSlotA = rivalry?.tierListA?.sampleEligibleSlot();
-        console.log('sampleEligibleSlot called for slot A');
         let attempts = 0;
         const maxAttempts = 100; // Safety limit
 
@@ -745,7 +740,6 @@ export const useUpdateCurrentContestShuffleTierSlotsMutation = ({
       if (!slotToReshuffle || slotToReshuffle === 'B') {
         // Sample tier slot B until we get a different fighter
         tierSlotB = rivalry?.tierListB?.sampleEligibleSlot();
-        console.log('sampleEligibleSlot called for slot B');
         let attempts = 0;
         const maxAttempts = 100; // Safety limit
 
@@ -1028,7 +1022,7 @@ export const useCreateRivalryMutation = ({
         ?.filter((r) => (r.contestCount || 0) > 100)
         .sort((a, b) => (b.contestCount || 0) - (a.contestCount || 0))[0];
 
-      let tierSlotData: Array<{ fighterId: string; position: number }>;
+      let tierSlotData: Array<{ fighterId: string; position: number | null }>;
 
       if (templateRivalry) {
         // Find the user's tier list in the template rivalry
@@ -1171,7 +1165,7 @@ export const useCreateRivalryMutation = ({
       // Load the tier list to check integrity
       const { data: tierListWithSlots } = await getClient().models.TierList.get(
         { id: tierListAData.id },
-        { selectionSet: ['*', 'tierSlots.*'] }
+        { selectionSet: ['id', 'rivalryId', 'userId', 'standing', 'tierSlots.*'] as const }
       );
 
       if (tierListWithSlots) {
@@ -1368,7 +1362,7 @@ export const useAcceptRivalryMutation = ({ onSuccess, onError }: AcceptRivalryMu
         ?.filter((r) => (r.contestCount || 0) > 100)
         .sort((a, b) => (b.contestCount || 0) - (a.contestCount || 0))[0];
 
-      let tierSlotData: Array<{ fighterId: string; position: number }>;
+      let tierSlotData: Array<{ fighterId: string; position: number | null }>;
 
       if (templateRivalry) {
         // Find the user's tier list in the template rivalry
@@ -1484,7 +1478,7 @@ export const useAcceptRivalryMutation = ({ onSuccess, onError }: AcceptRivalryMu
       // Load the tier list to check integrity
       const { data: tierListWithSlots } = await getClient().models.TierList.get(
         { id: tierListBData.id },
-        { selectionSet: ['*', 'tierSlots.*'] }
+        { selectionSet: ['id', 'rivalryId', 'userId', 'standing', 'tierSlots.*'] as const }
       );
 
       if (tierListWithSlots) {
@@ -1530,7 +1524,7 @@ export const useHideRivalryMutation = ({ onSuccess, onError }: HideRivalryMutati
   return useMutation({
     mutationFn: async ({
       rivalryId,
-      userId,
+      userId: _userId,
       isUserA,
       hidden
     }: {

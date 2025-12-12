@@ -6,19 +6,10 @@ import { sourceCase } from '../../utils';
 import { CharacterFace } from '../../../assets/images/games/ssbu/CharacterFaceExample';
 import { fighterImages } from '../../../assets/images/games/ssbu';
 import { MTierSlot, computeTierFromPosition } from '../../models/m-tier-slot';
-
-// Temporary Fighter type - will be replaced with GraphQL type later
-interface Fighter {
-  id: string;
-  name: string;
-  gamePosition?: number;
-  winCount?: number | null;
-  contestCount?: number | null;
-  rank?: number;
-}
+import { MFighter } from '../../models/m-fighter';
 
 interface CharacterDisplayProps {
-  fighter: Fighter;
+  fighter: MFighter;
   tierSlot?: MTierSlot;
   hideName?: boolean;
   style?: ViewStyle;
@@ -136,12 +127,15 @@ export function CharacterDisplay({
           >
             {tierSlot && (
               <>
-                <Text style={{ color: '#a78bfa', fontSize: 20, fontWeight: 'bold', marginBottom: 8 }}>
+                <Text
+                  style={{ color: '#a78bfa', fontSize: 20, fontWeight: 'bold', marginBottom: 8 }}
+                >
                   Rivalry Stats
                 </Text>
                 {tierSlot.position !== undefined && tierSlot.position !== null && (
                   <Text style={{ color: 'white', fontSize: 18, marginBottom: 4 }}>
-                    Position: #{tierSlot.position + 1} (Tier {computeTierFromPosition(tierSlot.position)})
+                    Position: #{tierSlot.position + 1} (Tier{' '}
+                    {computeTierFromPosition(tierSlot.position)})
                   </Text>
                 )}
                 {tierSlot.contestCount !== undefined && tierSlot.contestCount !== null && (
@@ -160,7 +154,8 @@ export function CharacterDisplay({
                   tierSlot.winCount !== undefined &&
                   tierSlot.winCount !== null && (
                     <Text style={{ color: '#60a5fa', fontSize: 16, marginBottom: 12 }}>
-                      Rivalry Win Rate: {((tierSlot.winCount / tierSlot.contestCount) * 100).toFixed(1)}%
+                      Rivalry Win Rate:{' '}
+                      {((tierSlot.winCount / tierSlot.contestCount) * 100).toFixed(1)}%
                     </Text>
                   )}
               </>
@@ -168,7 +163,15 @@ export function CharacterDisplay({
             {fighter.contestCount !== undefined && fighter.contestCount !== null && (
               <>
                 {tierSlot && (
-                  <Text style={{ color: '#34d399', fontSize: 20, fontWeight: 'bold', marginTop: 8, marginBottom: 8 }}>
+                  <Text
+                    style={{
+                      color: '#34d399',
+                      fontSize: 20,
+                      fontWeight: 'bold',
+                      marginTop: 8,
+                      marginBottom: 8
+                    }}
+                  >
                     Global Stats
                   </Text>
                 )}

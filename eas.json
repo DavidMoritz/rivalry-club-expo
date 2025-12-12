@@ -12,8 +12,7 @@
       "distribution": "internal"
     },
     "production": {
-      "autoIncrement": false,
-      "prebuildCommand": "node scripts/prebuild.js"
+      "autoIncrement": false
     }
   },
   "submit": {

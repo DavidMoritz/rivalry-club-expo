@@ -1,10 +1,10 @@
 import { range } from 'lodash';
 import { ReactNode, useEffect, useState } from 'react';
 import { Image, Text, TouchableOpacity, View } from 'react-native';
-import { Schema } from '../../../../amplify/data/resource';
 
 import { contestStyles, styles } from '../../../utils/styles';
 import { MContest } from '../../../models/m-contest';
+import { MFighter } from '../../../models/m-fighter';
 import { MGame, STOCK } from '../../../models/m-game';
 import { MTierSlot } from '../../../models/m-tier-slot';
 import { useGame } from '../../../providers/game';
@@ -44,8 +44,8 @@ export function CurrentContest({
   setCanShuffle
 }: CurrentContestProps): ReactNode {
   const game = useGame() as MGame;
-  const [fighterA, setFighterA] = useState<Schema['Fighter']['type']>();
-  const [fighterB, setFighterB] = useState<Schema['Fighter']['type']>();
+  const [fighterA, setFighterA] = useState<MFighter>();
+  const [fighterB, setFighterB] = useState<MFighter>();
   const [winner, setWinner] = useState<MTierSlot>();
   const [stockRemaining, setStockRemaining] = useState<string | number>(1);
 
@@ -168,7 +168,7 @@ export function CurrentContest({
                   style={{
                     position: 'absolute',
                     top: -25,
-                    left: -10,
+                    [isUserB ? 'right' : 'left']: -10,
                     padding: 10,
                     zIndex: 10
                   }}
@@ -234,7 +234,7 @@ export function CurrentContest({
                   style={{
                     position: 'absolute',
                     top: -25,
-                    right: -10,
+                    [isUserB ? 'left' : 'right']: -10,
                     padding: 10,
                     zIndex: 10
                   }}

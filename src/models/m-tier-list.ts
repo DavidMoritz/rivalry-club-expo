@@ -14,7 +14,7 @@ type TierSlotPositionsPojo = Record<
   { id: string; position: number; contestCount: number; winCount: number }
 >;
 
-export interface MTierList extends TierList {
+export interface MTierList extends Omit<TierList, 'rivalry'> {
   _mTierSlots: MTierSlot[];
   _mRivalry?: MRivalry;
   adjustTierSlotPositionBySteps: (
@@ -74,7 +74,8 @@ export type TierWithSlots = Tier & { slots: MTierSlot[] };
 
 export function getMTierList(tierList: TierList): MTierList {
   // constructors
-  const _mTierSlots = ((tierList.tierSlots?.items || []) as TierSlot[]).map((ts) =>
+  const tierSlots = tierList.tierSlots as any;
+  const _mTierSlots = ((tierSlots?.items || []) as TierSlot[]).map((ts: TierSlot) =>
     getMTierSlot(ts)
   );
 
@@ -185,11 +186,11 @@ export function getMTierList(tierList: TierList): MTierList {
         const finalPosition = tierSlotToMove.position;
 
         // Validate position
-        if (finalPosition < 0) {
+        if (finalPosition != null && finalPosition < 0) {
           console.error(
             `❌ INVALID POSITION: TierSlot ${tierSlotToMove.id} has negative position: ${finalPosition}`
           );
-        } else if (finalPosition >= FIGHTER_COUNT) {
+        } else if (finalPosition != null && finalPosition >= FIGHTER_COUNT) {
           console.error(
             `❌ INVALID POSITION: TierSlot ${tierSlotToMove.id} has position ${finalPosition} >= FIGHTER_COUNT (${FIGHTER_COUNT})`
           );
@@ -266,7 +267,15 @@ export function getMTierList(tierList: TierList): MTierList {
       }
     },
     eligibleTierSlots() {
-      const minSlotPosition: number = this.getCurrentTier() * this.slotsPerTier;
+      const currentTier = this.getCurrentTier();
+
+      // Calculate minSlotPosition by summing all fighters in previous tiers
+      const minSlotPosition: number = TIERS.slice(0, currentTier).reduce(
+        (sum, tier) => sum + tier.fightersCount,
+        0
+      );
+
+      // maxSlotPosition is minSlotPosition + fighters in THIS tier
       const maxSlotPosition: number = minSlotPosition + this.slotsPerTier;
 
       return this.slots.filter((slot: MTierSlot) => {
@@ -302,7 +311,8 @@ export function getMTierList(tierList: TierList): MTierList {
       }> = [];
 
       this.slots.forEach((slot) => {
-        const baseTierSlot = this.baseTierList.tierSlots?.items?.find((ts) => ts?.id === slot.id);
+        const tierSlots = this.baseTierList.tierSlots as any;
+        const baseTierSlot = tierSlots?.items?.find((ts: TierSlot) => ts?.id === slot.id);
 
         const positionChanged = slot.position !== baseTierSlot?.position;
         const contestCountChanged = (slot.contestCount || 0) !== (baseTierSlot?.contestCount || 0);
@@ -390,7 +400,7 @@ export function getMTierList(tierList: TierList): MTierList {
       const currentContestId = this.rivalry.currentContest?.id;
       const allResolvedContests = this.rivalry.mContests
         .filter((c) => c.id !== currentContestId && c.result !== null && c.result !== undefined)
-        .sort((a, b) => b.createdAt.localeCompare(a.createdAt)); // newest first
+        .sort((a, b) => (b.createdAt || '').localeCompare(a.createdAt || '')); // newest first
 
       // Keep trying with fewer and fewer benched rounds
       while (benchedRounds > 0) {

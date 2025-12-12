@@ -63,7 +63,7 @@ export function ContestHistoryTable({
   };
 
   return (
-    <View style={contestStyles.tableWrapper}>
+    <View style={tableWrapperStyle}>
       {!hideUndoButton && (
         <View style={{ alignSelf: 'flex-start', marginBottom: 8, marginTop: -14 }}>
           <Button
@@ -91,20 +91,20 @@ export function ContestHistoryTable({
         </View>
       )}
 
-      <View style={[contestStyles.row, contestStyles.tableHeaderRow]}>
+      <View style={[contestStyles.row, tableHeaderRowStyle]}>
         <View style={contestStyles.item}>
-          <Text style={[contestStyles.tableHeader, { color: 'white' }]}>Date</Text>
+          <Text style={[tableHeaderStyle, { color: 'white' }]}>Date</Text>
         </View>
         <View style={contestStyles.item}>
-          <Text style={[contestStyles.tableHeader, { color: 'white' }]}>
+          <Text style={[tableHeaderStyle, { color: 'white' }]}>
             {isUserB ? rivalry.displayUserBName() : rivalry.displayUserAName()}
           </Text>
         </View>
         <View style={contestStyles.item}>
-          <Text style={[contestStyles.tableHeader, { color: 'white' }]}>Score</Text>
+          <Text style={[tableHeaderStyle, { color: 'white' }]}>Score</Text>
         </View>
         <View style={contestStyles.item}>
-          <Text style={[contestStyles.tableHeader, { color: 'white' }]}>
+          <Text style={[tableHeaderStyle, { color: 'white' }]}>
             {isUserB ? rivalry.displayUserAName() : rivalry.displayUserBName()}
           </Text>
         </View>
@@ -133,3 +133,17 @@ export function ContestHistoryTable({
     </View>
   );
 }
+
+const tableWrapperStyle = {
+  padding: 10
+};
+
+const tableHeaderStyle = {
+  fontWeight: 'bold' as const,
+  fontSize: 20
+};
+
+const tableHeaderRowStyle = {
+  borderBottomWidth: 2,
+  borderBottomColor: 'yellow'
+};

@@ -9,7 +9,7 @@ import {
 } from 'react-native';
 
 import { logoImage } from '../../../assets/images/games/ssbu';
-import { darkStyles, lightStyles, styles } from '../../utils/styles';
+import { darkStyles, styles } from '../../utils/styles';
 import { s3Favicons } from '../../utils';
 import { Button } from '../common/Button';
 import { GameWithCharactersDisplay } from './GameWithCharactersDisplay';
@@ -40,17 +40,17 @@ export default function Home({ onEnterClick, onHowToPlayClick }: HomeProps) {
     <SafeAreaView
       style={[styles.container, isDarkMode ? darkStyles.container : lightStyles.container]}
     >
-      <View style={styles.viewUpper}>
+      <View style={viewUpperStyle}>
         <TouchableWithoutFeedback onPress={() => game && onEnterClick(game)}>
           <Image
-            style={styles.siteLogoImage}
+            style={siteLogoImageStyle}
             source={{
               uri: `${s3Favicons}/swords-144.png`
             }}
           />
         </TouchableWithoutFeedback>
         <TouchableWithoutFeedback onPress={() => game && onEnterClick(game)}>
-          <View style={styles.titleContainer}>
+          <View style={titleContainerStyle}>
             <Text style={styles.title}>Rivalry Club</Text>
           </View>
         </TouchableWithoutFeedback>
@@ -61,7 +61,7 @@ export default function Home({ onEnterClick, onHowToPlayClick }: HomeProps) {
         />
       </View>
       {!game && <Image style={styles.gameLogoImage} source={logoImage} />}
-      <View style={styles.viewLower}>
+      <View style={viewLowerStyle}>
         {isLoading ? (
           <View style={{ flex: 1, alignItems: 'center', justifyContent: 'center', paddingTop: 40 }}>
             <ActivityIndicator size="large" color="#60a5fa" />
@@ -74,3 +74,36 @@ export default function Home({ onEnterClick, onHowToPlayClick }: HomeProps) {
     </SafeAreaView>
   );
 }
+
+const siteLogoImageStyle = {
+  alignSelf: 'center' as const,
+  aspectRatio: 1,
+  flex: 1,
+  resizeMode: 'contain' as const
+};
+
+const titleContainerStyle = {
+  alignItems: 'center' as const,
+  bottom: 20,
+  justifyContent: 'center' as const,
+  position: 'absolute' as const,
+  top: 0
+};
+
+const viewUpperStyle = {
+  flex: 1,
+  alignItems: 'center' as const,
+  justifyContent: 'space-between' as const,
+  width: '100%' as const
+};
+
+const viewLowerStyle = {
+  flex: 3
+};
+
+const lightStyles = {
+  container: {
+    backgroundColor: '#f8f8f8',
+    color: 'black'
+  }
+};

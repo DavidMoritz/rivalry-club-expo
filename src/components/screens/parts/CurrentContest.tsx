@@ -84,14 +84,9 @@ export function CurrentContest({
   return (
     <>
       <View style={headerContainerStyle}>
-        <Text style={currentContestTitleStyle}>
-          Current Contest
-        </Text>
+        <Text style={currentContestTitleStyle}>Current Contest</Text>
         {!canShuffle ? (
-          <TouchableOpacity
-            style={reshuffleButtonStyle}
-            onPress={() => setCanShuffle(true)}
-          >
+          <TouchableOpacity style={reshuffleButtonStyle} onPress={() => setCanShuffle(true)}>
             <Text style={{ fontSize: 16, color: 'white' }}>🔀 Reshuffle</Text>
           </TouchableOpacity>
         ) : (
@@ -103,13 +98,12 @@ export function CurrentContest({
 
       <View style={contestOuterContainerStyle}>
         <View
-          style={[
-            fightersRowContainerStyle,
-            { flexDirection: isUserB ? 'row-reverse' : 'row' }
-          ]}
+          style={[fightersRowContainerStyle, { flexDirection: isUserB ? 'row-reverse' : 'row' }]}
         >
           {fighterA && (
-            <View style={[fighterContainerStyle, getFighterBorderStyle(contest?.tierSlotA === winner)]}>
+            <View
+              style={[fighterContainerStyle, getFighterBorderStyle(contest?.tierSlotA === winner)]}
+            >
               {canShuffle && (
                 <TouchableOpacity
                   style={[shuffleButtonStyle, { [isUserB ? 'right' : 'left']: -10 }]}
@@ -124,7 +118,7 @@ export function CurrentContest({
               )}
               <Text
                 style={[
-                  styles.currentContestUser,
+                  currentContestUserStyle,
                   { color: getTextColor(contest?.tierSlotA === winner) }
                 ]}
               >
@@ -141,7 +135,9 @@ export function CurrentContest({
                   setWinner(contest?.tierSlotA);
                 }}
               />
-              <Text style={[fighterNameStyle, { color: getTextColor(contest?.tierSlotA === winner) }]}>
+              <Text
+                style={[fighterNameStyle, { color: getTextColor(contest?.tierSlotA === winner) }]}
+              >
                 {fighterA.name}{' '}
               </Text>
               {winner && contest?.tierSlotA === winner && <WinnerBadge />}
@@ -155,7 +151,9 @@ export function CurrentContest({
             </View>
           )}
           {fighterB && (
-            <View style={[fighterContainerStyle, getFighterBorderStyle(contest?.tierSlotB === winner)]}>
+            <View
+              style={[fighterContainerStyle, getFighterBorderStyle(contest?.tierSlotB === winner)]}
+            >
               {canShuffle && (
                 <TouchableOpacity
                   style={[shuffleButtonStyle, { [isUserB ? 'left' : 'right']: -10 }]}
@@ -170,7 +168,7 @@ export function CurrentContest({
               )}
               <Text
                 style={[
-                  styles.currentContestUser,
+                  currentContestUserStyle,
                   { color: getTextColor(contest?.tierSlotB === winner) }
                 ]}
               >
@@ -187,7 +185,9 @@ export function CurrentContest({
                   setWinner(contest?.tierSlotB);
                 }}
               />
-              <Text style={[fighterNameStyle, { color: getTextColor(contest?.tierSlotB === winner) }]}>
+              <Text
+                style={[fighterNameStyle, { color: getTextColor(contest?.tierSlotB === winner) }]}
+              >
                 {fighterB.name}
               </Text>
               {winner && contest?.tierSlotB === winner && <WinnerBadge />}
@@ -256,8 +256,11 @@ const getFighterBorderStyle = (isWinner: boolean) => ({
 });
 
 // Style constants
+const center = 'center' as const;
+const absolute = 'absolute' as const;
+
 const winnerBadgeStyle = {
-  position: 'absolute' as const,
+  position: absolute,
   right: -100,
   top: '78%' as const,
   width: 300,
@@ -266,20 +269,20 @@ const winnerBadgeStyle = {
 
 const headerContainerStyle = {
   flexDirection: 'row' as const,
-  alignItems: 'center' as const,
-  justifyContent: 'center' as const,
+  alignItems: center,
+  justifyContent: center,
   marginBottom: 8
 };
 
 const currentContestTitleStyle = {
   fontSize: 18,
   color: 'white',
-  position: 'absolute' as const,
+  position: absolute,
   left: 0
 };
 
 const reshuffleButtonStyle = {
-  alignItems: 'center' as const,
+  alignItems: center,
   paddingHorizontal: 16,
   paddingVertical: 8,
   borderWidth: 1,
@@ -290,17 +293,13 @@ const reshuffleButtonStyle = {
 };
 
 const reshuffleButtonPlaceholderStyle = {
-  alignItems: 'center' as const,
-  paddingHorizontal: 16,
-  paddingVertical: 8,
-  borderWidth: 1,
+  ...reshuffleButtonStyle,
   borderColor: 'transparent',
-  borderRadius: 12,
-  marginStart: 80
+  backgroundColor: 'transparent'
 };
 
 const contestOuterContainerStyle = {
-  alignItems: 'center' as const,
+  alignItems: center,
   marginVertical: 6,
   borderWidth: 1,
   borderColor: '#eab308',
@@ -308,7 +307,7 @@ const contestOuterContainerStyle = {
 };
 
 const fightersRowContainerStyle = {
-  alignItems: 'center' as const,
+  alignItems: center,
   justifyContent: 'space-between' as const,
   marginVertical: 6,
   padding: 2
@@ -317,17 +316,22 @@ const fightersRowContainerStyle = {
 const fighterContainerStyle = {
   position: 'relative' as const,
   borderWidth: 4,
-  alignItems: 'center' as const,
+  alignItems: center,
   marginVertical: 20,
   padding: 8,
   borderRadius: 12
 };
 
 const shuffleButtonStyle = {
-  position: 'absolute' as const,
+  position: absolute,
   top: -25,
   padding: 10,
   zIndex: 10
+};
+
+const currentContestUserStyle = {
+  fontSize: 16,
+  fontWeight: 'bold' as const
 };
 
 const fighterNameStyle = {
@@ -353,8 +357,8 @@ const resolveButtonStyle = {
 
 const selectWinnerContainerStyle = {
   flexDirection: 'row' as const,
-  alignItems: 'center' as const,
-  justifyContent: 'center' as const,
+  alignItems: center,
+  justifyContent: center,
   gap: 12,
   paddingVertical: 8
 };

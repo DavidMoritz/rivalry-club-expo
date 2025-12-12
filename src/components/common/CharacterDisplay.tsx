@@ -68,7 +68,7 @@ export function CharacterDisplay({
                 justifyContent: 'center',
                 overflow: 'hidden'
               }
-            : styles.fighterWrapper,
+            : fighterWrapperStyle,
           style
         ]}
       >
@@ -86,7 +86,7 @@ export function CharacterDisplay({
           />
         </Pressable>
         {!hideName && (
-          <View style={styles.fighterText}>
+          <View style={fighterTextStyle}>
             <Text style={{ color: 'white', fontSize: 14 }}>{fighter.name}</Text>
           </View>
         )}
@@ -203,3 +203,21 @@ export function CharacterDisplay({
     </>
   );
 }
+
+const fighterWrapperStyle = {
+  alignItems: 'center' as const,
+  height: 150,
+  justifyContent: 'space-between' as const,
+  marginVertical: 0,
+  marginHorizontal: 0,
+  width: '33.33%' as const
+};
+
+const fighterTextStyle = {
+  alignItems: 'center' as const,
+  flex: 1,
+  fontWeight: 'bold' as const,
+  justifyContent: 'center' as const,
+  width: '100%' as const,
+  color: 'white'
+};

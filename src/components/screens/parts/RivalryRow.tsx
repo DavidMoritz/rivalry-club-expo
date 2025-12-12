@@ -52,7 +52,7 @@ export function RivalryRow({
   }, [updatedAt]);
 
   return (
-    <TouchableOpacity onPress={onPress} style={[styles.rivalryRow, darkStyles.container]}>
+    <TouchableOpacity onPress={onPress} style={[rivalryRowStyle, darkStyles.container]}>
       <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' }}>
         <View style={{ flex: 1 }}>
           <Text style={[styles.text, { fontSize: 18, fontWeight: '600', marginBottom: 4 }]}>
@@ -79,3 +79,9 @@ export function RivalryRow({
     </TouchableOpacity>
   );
 }
+
+const rivalryRowStyle = {
+  borderWidth: 1,
+  paddingHorizontal: 10,
+  paddingVertical: 15
+};

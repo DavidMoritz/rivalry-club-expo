@@ -73,7 +73,7 @@ export function ContestRow({ contest, game, rivalry, flip, shouldFadeOut }: Cont
       <View style={contestStyles.item}>
         <Text style={{ color: 'white', fontSize: 14 }}>{updatedDisplay}</Text>
       </View>
-      <View style={[contestStyles.item, contest.result > 0 ? contestStyles.winner : null]}>
+      <View style={[contestStyles.item, contest.result > 0 ? winnerStyle : null]}>
         <CharacterDisplay
           fighter={flip ? fighterB : fighterA}
           tierSlot={flip ? tierSlotB : tierSlotA}
@@ -84,7 +84,7 @@ export function ContestRow({ contest, game, rivalry, flip, shouldFadeOut }: Cont
       <View style={contestStyles.item}>
         <Text style={{ color: 'white', fontSize: 14 }}>{scoreDisplay(contest.result)}</Text>
       </View>
-      <View style={[contestStyles.item, contest.result < 0 ? contestStyles.winner : null]}>
+      <View style={[contestStyles.item, contest.result < 0 ? winnerStyle : null]}>
         <CharacterDisplay
           fighter={flip ? fighterA : fighterB}
           tierSlot={flip ? tierSlotA : tierSlotB}
@@ -95,3 +95,7 @@ export function ContestRow({ contest, game, rivalry, flip, shouldFadeOut }: Cont
     </Animated.View>
   );
 }
+
+const winnerStyle = {
+  backgroundColor: 'hsl(150, 100%, 13%)'
+};

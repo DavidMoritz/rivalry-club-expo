@@ -8,6 +8,8 @@
 
 This document outlines the project's refactoring philosophy: prioritize **readability and clarity** over DRY (Don't Repeat Yourself) principles. Some duplication is acceptable and even preferred when it maintains code clarity.
 
+**Important**: Always check `src/utils/styles.ts` before creating new styles. Reuse global styles when possible, inherit using spread syntax when appropriate, and add common patterns to the global stylesheet.
+
 ---
 
 ## ✅ GOOD Refactoring Examples
@@ -147,6 +149,224 @@ if (position >= F_TIER_START_POSITION) {
 - Easy to update values project-wide
 - Reveals intent and business rules
 
+### 4. Leverage Global Styles from styles.ts
+
+**✅ DO THIS**: Before creating new style constants, check `src/utils/styles.ts` for existing styles you can reuse or inherit from
+
+**File structure**:
+- `styles` - General reusable styles (containers, text, buttons, etc.)
+- `darkStyles` - Dark mode specific styles
+- `lightStyles` - Light mode specific styles
+- `contestStyles` - Contest-specific styles
+- Domain-specific style groups (e.g., `tierStyles`, `rivalryStyles`)
+
+**Pattern 1: Inherit from global styles using spread**
+
+```typescript
+// ❌ BEFORE: Recreating similar styles locally
+const headerContainerStyle = {
+  flexDirection: 'row' as const,
+  alignItems: 'center' as const,
+  justifyContent: 'center' as const,
+  marginBottom: 8
+};
+
+// ✅ AFTER: Inherit from styles.ts and customize
+import { contestStyles } from '../../../utils/styles';
+
+const headerContainerStyle = {
+  ...contestStyles.row,  // Already has flexDirection: 'row', alignItems: 'center'
+  justifyContent: 'center' as const,
+  marginBottom: 8
+};
+```
+
+**Pattern 2: Add common patterns to styles.ts**
+
+When you notice a styling pattern used in **3+ places across different files**, add it to `styles.ts` with a generic name:
+
+```typescript
+// In CurrentContest.tsx, RivalryView.tsx, TierList.tsx - all have similar centered containers
+const centeredContainer = {
+  alignItems: 'center' as const,
+  justifyContent: 'center' as const,
+  flexDirection: 'row' as const
+};
+
+// ✅ ADD TO styles.ts
+export const styles = StyleSheet.create({
+  // ... existing styles
+  centeredRow: {
+    alignItems: 'center',
+    justifyContent: 'center',
+    flexDirection: 'row'
+  }
+});
+
+// Then use everywhere
+import { styles } from '../../../utils/styles';
+<View style={styles.centeredRow}>
+```
+
+**When to add to styles.ts vs keep local**:
+- ✅ Add to styles.ts: Used in 3+ files, generic/reusable pattern
+- ❌ Keep local: Component-specific styling, used in 1-2 files only
+
+**Pattern 3: Move single-use styles OUT of styles.ts**
+
+If you find a style in `styles.ts` that's only used in one file, **move it to that file**:
+
+```typescript
+// ❌ BEFORE: In styles.ts but only used in CurrentContest.tsx
+export const styles = StyleSheet.create({
+  // ... other styles
+  currentContestUser: {
+    fontSize: 16,
+    fontWeight: 'bold'
+  }
+});
+
+// ✅ AFTER: Move to CurrentContest.tsx
+// In CurrentContest.tsx
+const currentContestUserStyle = {
+  fontSize: 16,
+  fontWeight: 'bold' as const
+};
+
+// Remove from styles.ts entirely
+```
+
+**Why this is good**:
+- `styles.ts` stays focused on truly shared styles
+- Easier to find and modify component-specific styles
+- Reduces unused style imports across the app
+- Prevents styles.ts from becoming a dumping ground
+
+### 5. Use Object Spread for Style Variations
+
+**✅ DO THIS**: When you have similar style objects with only minor differences, use object spread to inherit from a base style
+
+```typescript
+// ❌ BEFORE: Duplicated properties
+const primaryButtonStyle = {
+  alignItems: 'center' as const,
+  paddingHorizontal: 16,
+  paddingVertical: 8,
+  borderWidth: 1,
+  borderColor: 'white',
+  borderRadius: 12,
+  backgroundColor: '#334155',
+  marginStart: 80
+};
+
+const secondaryButtonStyle = {
+  alignItems: 'center' as const,
+  paddingHorizontal: 16,
+  paddingVertical: 8,
+  borderWidth: 1,
+  borderColor: 'transparent',  // Only difference
+  borderRadius: 12,
+  backgroundColor: 'transparent',  // Only difference
+  marginStart: 80
+};
+
+// ✅ AFTER: Use spread to inherit and override
+const primaryButtonStyle = {
+  alignItems: 'center' as const,
+  paddingHorizontal: 16,
+  paddingVertical: 8,
+  borderWidth: 1,
+  borderColor: 'white',
+  borderRadius: 12,
+  backgroundColor: '#334155',
+  marginStart: 80
+};
+
+const secondaryButtonStyle = {
+  ...primaryButtonStyle,
+  borderColor: 'transparent',
+  backgroundColor: 'transparent'
+};
+```
+
+**Why this is good**:
+- DRY principle - shared properties defined once
+- Easy to maintain - changes to base style automatically apply to variants
+- Clear intent - shows which properties are overridden
+- Shorter and more readable
+
+### 5. Extract Repeated Style Values
+
+**✅ DO THIS**: Extract recurring style values (like `'center'`, `'absolute'`) that appear in multiple style objects
+
+**Problem**: TypeScript errors when string literals are used in multiple style objects without `as const`:
+```
+Type 'string' is not assignable to type 'FlexAlignType | undefined'
+```
+
+**Solution**: Extract the repeated value to a constant:
+
+```typescript
+// ❌ BEFORE: Repeated 'center' with TypeScript errors
+const headerContainerStyle = {
+  flexDirection: 'row' as const,
+  alignItems: 'center' as const,      // Repeated
+  justifyContent: 'center' as const,  // Repeated
+  marginBottom: 8
+};
+
+const buttonStyle = {
+  alignItems: 'center' as const,      // Repeated
+  paddingHorizontal: 16,
+  paddingVertical: 8
+};
+
+const footerStyle = {
+  alignItems: 'center' as const,      // Repeated
+  justifyContent: 'center' as const,  // Repeated
+  marginTop: 16
+};
+
+// ✅ AFTER: Extract to constant
+const center = 'center' as const;
+
+const headerContainerStyle = {
+  flexDirection: 'row' as const,
+  alignItems: center,
+  justifyContent: center,
+  marginBottom: 8
+};
+
+const buttonStyle = {
+  alignItems: center,
+  paddingHorizontal: 16,
+  paddingVertical: 8
+};
+
+const footerStyle = {
+  alignItems: center,
+  justifyContent: center,
+  marginTop: 16
+};
+```
+
+**When to extract**:
+- A style value appears **3+ times** across style objects
+- Common examples: `'center'`, `'absolute'`, `'relative'`, `'row'`, `'column'`
+
+**Important**: Always use `as const` when declaring the constant to preserve the literal type:
+```typescript
+const center = 'center' as const;  // ✅ Good - preserves literal type
+const center = 'center';            // ❌ Bad - TypeScript infers as string
+```
+
+**Why this is good**:
+- Fixes TypeScript type inference issues
+- Single source of truth for the value
+- Cleaner style objects (no repetitive `as const` on every usage)
+- Easy to update if the value needs to change
+- The constant preserves the literal type with one `as const` declaration
+
 ---
 
 ## ❌ BAD Refactoring Examples
@@ -282,14 +502,29 @@ const createTierListSection = (
 
 When deciding whether to refactor duplicate code, ask:
 
+### ✅ Before creating new styles:
+
+1. **Check `src/utils/styles.ts` first** - Can you reuse or inherit from an existing style?
+2. Is this pattern used in 3+ files? Add it to `styles.ts` as a global style
+3. Is it similar to a global style with minor differences? Use spread to inherit
+4. **Found a style in `styles.ts` used in only 1 file?** Move it OUT to that file
+
 ### ✅ Extract if:
 
 1. It's a style object repeated multiple times
 2. **It's an inline style object that takes up more than 3 lines of code**
-3. It's complex logic/calculation that could have bugs
-4. It's a magic number that has business meaning
-5. It's used in 3+ places across multiple files
-6. The extraction makes the code **more** readable
+3. **It's a style value (like `'center'`, `'absolute'`) used 3+ times across style objects**
+4. It's complex logic/calculation that could have bugs
+5. It's a magic number that has business meaning
+6. It's used in 3+ places across multiple files
+7. The extraction makes the code **more** readable
+
+### ✅ Use object spread if:
+
+1. **Two style objects share most properties with only 1-3 differences**
+2. One style is a variation of another (e.g., primary/secondary buttons, active/inactive states)
+3. The relationship between base and variant is clear
+4. **A local style is similar to a global style from `styles.ts`** - inherit and customize
 
 ### ❌ Don't extract if:
 
@@ -346,6 +581,15 @@ All of these should remain explicit, not abstracted into loops.
 
 **The Golden Rule**: Refactor for readability, not just to reduce line count.
 
+**Styling workflow**:
+1. Check `src/utils/styles.ts` first before creating new styles
+2. Inherit from global styles using spread when appropriate
+3. Add common patterns (3+ files) to `styles.ts` with generic names
+4. **Move single-use styles OUT of `styles.ts` to their component file**
+5. Extract large inline styles (>3 lines) to constants
+6. Use spread to create style variations
+
+**General principles**:
 - Extract duplicate styles, constants, and complex logic
 - Keep A/B rivalry structures explicit and separate
 - Avoid premature abstraction

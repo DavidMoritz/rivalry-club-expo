@@ -1,4 +1,4 @@
-import { StyleSheet, Text, TouchableOpacity, ViewStyle } from 'react-native';
+import { StyleSheet, Text, TextStyle, TouchableOpacity, ViewStyle } from 'react-native';
 import { styles } from '../../utils/styles';
 
 type ButtonProps = {
@@ -8,7 +8,7 @@ type ButtonProps = {
   rightContent?: React.ReactNode;
   style?: ViewStyle;
   text: string;
-  textStyle?: ViewStyle;
+  textStyle?: TextStyle;
 };
 
 export function Button({

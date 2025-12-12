@@ -16,6 +16,8 @@ interface CurrentContestProps {
   onPressShuffle: (slot: 'A' | 'B') => void;
   onResolveContest?(contest: MContest): void;
   shufflingSlot?: 'A' | 'B' | null;
+  canShuffle: boolean;
+  setCanShuffle: (canShuffle: boolean) => void;
 }
 
 function WinnerBadge() {
@@ -37,14 +39,15 @@ function WinnerBadge() {
 export function CurrentContest({
   onPressShuffle,
   onResolveContest,
-  shufflingSlot
+  shufflingSlot,
+  canShuffle,
+  setCanShuffle
 }: CurrentContestProps): ReactNode {
   const game = useGame() as MGame;
   const [fighterA, setFighterA] = useState<Schema['Fighter']['type']>();
   const [fighterB, setFighterB] = useState<Schema['Fighter']['type']>();
   const [winner, setWinner] = useState<MTierSlot>();
   const [stockRemaining, setStockRemaining] = useState<string | number>(1);
-  const [canShuffle, setCanShuffle] = useState(false);
 
   const rivalry = useRivalry();
   const { isUserB } = useRivalryContext();
@@ -67,13 +70,6 @@ export function CurrentContest({
     const foundFighterB = fighterByIdFromGame(gameData, contest.tierSlotB.fighterId);
     if (foundFighterA) setFighterA(foundFighterA);
     if (foundFighterB) setFighterB(foundFighterB);
-
-    // Enable shuffle buttons if both slots have valid positions (not null)
-    if (contest.tierSlotA.position !== null && contest.tierSlotB.position !== null) {
-      setCanShuffle(true);
-    } else {
-      setCanShuffle(false);
-    }
   }, [contest, game, rivalry]);
 
   if (!rivalry) return null;

@@ -35,6 +35,7 @@ export function ConnectedRivalryView({ navigation }: ConnectedRivalryViewProps):
   const [tiersReady, setTiersReady] = useState<boolean>(false);
   const [isResolvingContest, setIsResolvingContest] = useState<boolean>(false);
   const [shufflingSlot, setShufflingSlot] = useState<'A' | 'B' | null>(null);
+  const [canShuffle, setCanShuffle] = useState<boolean>(false);
 
   const updateRivalryMutation = useUpdateRivalryMutation({
     rivalry
@@ -124,16 +125,14 @@ export function ConnectedRivalryView({ navigation }: ConnectedRivalryViewProps):
         if (!rivalry) return;
 
         rivalry.currentContest = currentContest;
-        setShufflingSlot(null); // Clear shuffling state on success
-      },
-      onSettled: () => {
-        setShufflingSlot(null); // Clear shuffling state on error too
+        setShufflingSlot(null); // Clear shuffling state when done
       }
     });
 
   async function handleResolveContest() {
     setIsResolvingContest(true);
     setTiersReady(false);
+    setCanShuffle(false); // Reset shuffle state when contest is resolved
 
     if (!rivalry?.currentContest) return;
 
@@ -263,6 +262,8 @@ export function ConnectedRivalryView({ navigation }: ConnectedRivalryViewProps):
             onPressShuffle={handlePressShuffle}
             onResolveContest={handleResolveContest}
             shufflingSlot={shufflingSlot}
+            canShuffle={canShuffle}
+            setCanShuffle={setCanShuffle}
           />
         )}
 

@@ -14,11 +14,15 @@ This document outlines the project's refactoring philosophy: prioritize **readab
 
 These types of refactoring improve readability and maintainability:
 
-### 1. Extract Duplicate Inline Styles
+### 1. Extract Inline Styles
 
-**✅ DO THIS**: Extract repeated inline styles into named constants
+**✅ DO THIS**: Extract inline styles into named constants
 
-**Example**: `TierListsDisplay.tsx`
+**Rules**:
+1. **Extract duplicate styles** - If the same style appears multiple times, extract it
+2. **Extract large styles** - If an inline style object takes up **more than 3 lines of code**, extract it to the bottom of the file
+
+**Example 1**: Duplicate inline styles (`TierListsDisplay.tsx`)
 
 ```typescript
 // ❌ BEFORE: Duplicate inline styles
@@ -47,12 +51,51 @@ const tierListHeaderStyle = {
 };
 ```
 
+**Example 2**: Large inline styles (more than 3 lines)
+
+```typescript
+// ❌ BEFORE: Large inline style cluttering JSX
+<TouchableOpacity
+  style={{
+    alignItems: 'center',
+    paddingHorizontal: 16,
+    paddingVertical: 8,
+    borderWidth: 1,
+    borderColor: 'white',
+    borderRadius: 12,
+    backgroundColor: '#334155',
+    marginStart: 80
+  }}
+  onPress={onPress}
+>
+  <Text>Click me</Text>
+</TouchableOpacity>
+
+// ✅ AFTER: Extracted to named constant
+<TouchableOpacity style={buttonStyle} onPress={onPress}>
+  <Text>Click me</Text>
+</TouchableOpacity>
+
+// At bottom of file
+const buttonStyle = {
+  alignItems: 'center' as const,
+  paddingHorizontal: 16,
+  paddingVertical: 8,
+  borderWidth: 1,
+  borderColor: 'white',
+  borderRadius: 12,
+  backgroundColor: '#334155',
+  marginStart: 80
+};
+```
+
 **Why this is good**:
 
 - Single source of truth for the style
 - Easy to update in one place
-- Improves readability by naming the intent (`tierListHeaderStyle`)
-- Reduces visual noise in the JSX
+- Improves readability by naming the intent (`tierListHeaderStyle`, `buttonStyle`)
+- Reduces visual noise and clutter in the JSX
+- Makes the component structure easier to scan
 
 ### 2. Extract Repeated Logic Into Helper Functions
 
@@ -242,10 +285,11 @@ When deciding whether to refactor duplicate code, ask:
 ### ✅ Extract if:
 
 1. It's a style object repeated multiple times
-2. It's complex logic/calculation that could have bugs
-3. It's a magic number that has business meaning
-4. It's used in 3+ places across multiple files
-5. The extraction makes the code **more** readable
+2. **It's an inline style object that takes up more than 3 lines of code**
+3. It's complex logic/calculation that could have bugs
+4. It's a magic number that has business meaning
+5. It's used in 3+ places across multiple files
+6. The extraction makes the code **more** readable
 
 ### ❌ Don't extract if:
 

@@ -94,6 +94,17 @@ This directory contains technical reports and documentation generated during dev
 **Key Learning**: Always check official source code repositories for correct configuration; TypeScript type checks passing ≠ runtime success
 **Research Sources**: [AWS amplify-backend tsconfig](https://github.com/aws-amplify/amplify-backend/blob/main/tsconfig.base.json)
 
+## Code Quality & Development Guidelines
+
+### REFACTORING_PREFERENCES.md
+**Topic**: Project refactoring philosophy and guidelines
+**Summary**: Documents when to refactor duplicate code vs. when to keep it explicit. Covers good refactoring (extract inline styles, magic numbers, complex logic) vs. bad refactoring (over-abstracting A/B rivalry patterns, premature extraction). Emphasizes readability over DRY principles. Includes the Rivalry Club A/B Pattern rule: User A and User B are distinct domain concepts, not array items—keep them separate and explicit for clarity.
+**Use when**: Deciding whether to refactor duplicate code, reviewing code for readability, onboarding developers, evaluating pull requests, working with rivalry A/B structures
+**Key Rules**:
+- ✅ Extract: inline styles, magic numbers, complex calculations used 3+ times
+- ❌ Don't extract: A/B parallel structures, one-off logic, code that's already clear
+**Golden Rule**: Refactor for readability, not just to reduce line count
+
 ## Feature Implementation Reports
 
 ### atomic-increment-implementation.md ✅

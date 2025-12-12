@@ -30,6 +30,7 @@ jest.mock('expo-status-bar', () => ({
 // Mock AWS Amplify
 const mockGet = jest.fn();
 const mockList = jest.fn();
+const mockFighterList = jest.fn();
 const mockContestUpdate = jest.fn();
 const mockContestDelete = jest.fn();
 const mockRivalryUpdate = jest.fn();
@@ -47,6 +48,9 @@ jest.mock('aws-amplify/data', () => ({
       User: {
         get: jest.fn(),
       },
+      Fighter: {
+        list: mockFighterList,
+      },
       Contest: {
         list: mockList,
         update: mockContestUpdate,
@@ -63,34 +67,6 @@ jest.mock('aws-amplify/data', () => ({
   })),
 }));
 
-// Mock game query cache
-jest.mock('../../../../assets/cache/game-query.json', () => ({
-  data: {
-    listGames: {
-      items: [
-        {
-          id: 'game-1',
-          name: 'Super Smash Bros. Ultimate',
-          fighters: {
-            items: [
-              {
-                id: 'fighter-1',
-                name: 'Mario',
-                gamePosition: 1,
-              },
-              {
-                id: 'fighter-2',
-                name: 'Link',
-                gamePosition: 2,
-              },
-            ],
-          },
-        },
-      ],
-    },
-  },
-}));
-
 describe('HistoryRoute', () => {
   let queryClient: QueryClient;
 
@@ -104,6 +80,27 @@ describe('HistoryRoute', () => {
     });
     jest.clearAllMocks();
     (useLocalSearchParams as jest.Mock).mockReturnValue({ id: 'rivalry-123' });
+
+    // Mock Fighter.list() to return fighter data for the GameProvider
+    mockFighterList.mockResolvedValue({
+      data: [
+        {
+          id: 'fighter-1',
+          name: 'Mario',
+          gamePosition: 1,
+          winCount: 10,
+          contestCount: 15,
+        },
+        {
+          id: 'fighter-2',
+          name: 'Link',
+          gamePosition: 2,
+          winCount: 8,
+          contestCount: 12,
+        },
+      ],
+      errors: null,
+    });
   });
 
   // Helper to create properly structured rivalry data with async generators

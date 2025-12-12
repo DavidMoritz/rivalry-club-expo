@@ -50,7 +50,9 @@ ios_builds/
 .amplify/
 node_modules/
 .env
-.claude/
+# Claude Code - ignore personal settings, but commit agents/commands
+.claude/settings.local.json
+.claude/.chat-history/
 
 # Dev users config (local test users)
 src/lib/dev/dev-users.json

@@ -23,13 +23,13 @@ export function TierListsDisplay({ rivalry, unlinked }: TierListsDisplayProps): 
       }}
     >
       <View style={{ flex: 1 }}>
-        <Text style={[darkStyles.text, { fontSize: 18, marginBottom: 8, marginTop: 16 }]}>
+        <Text style={[darkStyles.text, tierListHeaderStyle]}>
           {rivalry.displayUserAName()} tier list
         </Text>
         {rivalry.tierListA && <TierListDisplay tierList={rivalry.tierListA} tierListSignifier="A" unlinked={unlinked} />}
       </View>
       <View style={{ flex: 1 }}>
-        <Text style={[darkStyles.text, { fontSize: 18, marginBottom: 8, marginTop: 16 }]}>
+        <Text style={[darkStyles.text, tierListHeaderStyle]}>
           {rivalry.displayUserBName()} tier list
         </Text>
         {rivalry.tierListB && <TierListDisplay tierList={rivalry.tierListB} tierListSignifier="B" unlinked={unlinked} />}
@@ -37,3 +37,9 @@ export function TierListsDisplay({ rivalry, unlinked }: TierListsDisplayProps): 
     </View>
   );
 }
+
+const tierListHeaderStyle = {
+  fontSize: 18,
+  marginBottom: 8,
+  marginTop: 16
+};

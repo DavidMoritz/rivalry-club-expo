@@ -61,4 +61,3 @@ data-backup/
 
 # Amplify sandbox backup (generated during EAS production builds)
 amplify_outputs.sandbox.backup.json
-amplify_outputs.sandbox.json

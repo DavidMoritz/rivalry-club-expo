@@ -13,7 +13,7 @@
     },
     "production": {
       "autoIncrement": false,
-      "prebuildCommand": "cp amplify_outputs.production.json amplify_outputs.json"
+      "prebuildCommand": "node scripts/prebuild.js"
     }
   },
   "submit": {

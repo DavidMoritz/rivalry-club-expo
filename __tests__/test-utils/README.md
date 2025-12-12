@@ -4,6 +4,27 @@ This directory contains reusable testing utilities for the Rivalry Club Expo app
 
 ---
 
+## Recent Updates (2025-12-11)
+
+### New Features Added:
+
+1. **Missing Schema Fields**: All mock factories now include `__typename`, `hiddenByA`, and `hiddenByB` fields to match the current GraphQL schema
+2. **New Mock Factories**:
+   - `createMockTierListWithSlots()` - Creates tier lists with fighters pre-populated
+   - `createMockConnection()` - Creates GraphQL connection objects for paginated responses
+3. **New API Helpers**:
+   - `waitForMultipleQueries()` - Wait for multiple queries to complete in parallel
+   - `resetMockGraphQLClient()` - Reset all mocks in a GraphQL client
+   - `spyOnConsole()` - Spy on console methods for testing error output
+   - `createMockAsyncGeneratorFromArray()` - Alias for createMockAsyncGenerator with clearer name
+
+### Bug Fixes:
+- All mock factories now include `__typename` field required by Amplify Gen 2
+- Rivalry mocks now include `hiddenByA` and `hiddenByB` boolean fields
+- Improved TypeScript typing for mock factories
+
+---
+
 ## Quick Start
 
 ```typescript
@@ -157,6 +178,27 @@ await waitForMockCall(mockCreateRivalry, null, { times: 2 });
 
 ---
 
+#### `waitForMultipleQueries()`
+
+Wait for multiple queries to complete in parallel:
+
+```typescript
+import { waitForMultipleQueries } from '../test-utils';
+
+const { result: result1 } = renderHook(() => useUserQuery('user-1'), { wrapper });
+const { result: result2 } = renderHook(() => useGameQuery('game-1'), { wrapper });
+const { result: result3 } = renderHook(() => useRivalryQuery('r-1'), { wrapper });
+
+await waitForMultipleQueries([result1, result2, result3]);
+
+// All queries are now successful
+expect(result1.current.data).toBeDefined();
+expect(result2.current.data).toBeDefined();
+expect(result3.current.data).toBeDefined();
+```
+
+---
+
 ### GraphQL Response Builders
 
 #### `createGraphQLResponse()`
@@ -244,7 +286,7 @@ expectGraphQLQueryCall(mockRivalryList, {
 
 ---
 
-### Test Setup Helper
+### Test Setup Helpers
 
 #### `createTestQueryWrapper()`
 
@@ -266,6 +308,50 @@ describe('MyHook', () => {
   it('should work', async () => {
     const { result } = renderHook(() => useMyHook(), { wrapper });
     // ...
+  });
+});
+```
+
+---
+
+#### `resetMockGraphQLClient()`
+
+Reset all mocks in a GraphQL client to ensure clean state between tests:
+
+```typescript
+import { createMockGraphQLClient, resetMockGraphQLClient } from '../test-utils';
+
+describe('MyTests', () => {
+  const mockClient = createMockGraphQLClient();
+
+  beforeEach(() => {
+    resetMockGraphQLClient(mockClient);
+  });
+
+  it('should start with clean mocks', () => {
+    expect(mockClient.models.User.get).not.toHaveBeenCalled();
+  });
+});
+```
+
+---
+
+#### `spyOnConsole()`
+
+Create a spy on console methods for testing error/warning output:
+
+```typescript
+import { spyOnConsole } from '../test-utils';
+
+describe('Error handling', () => {
+  it('should log errors', () => {
+    const errorSpy = spyOnConsole('error');
+
+    // Code that logs errors
+    myFunction();
+
+    expect(errorSpy).toHaveBeenCalledWith('Expected error message');
+    errorSpy.mockRestore();
   });
 });
 ```
@@ -357,6 +443,43 @@ const {
   ],
   contestCount: 3
 });
+```
+
+---
+
+### TierList with Slots
+
+Create a tier list with fighters already populated:
+
+```typescript
+import { createMockTierListWithSlots } from '../test-utils';
+
+const tierList = createMockTierListWithSlots({
+  tierListId: 'tier-list-1',
+  userId: 'user-1',
+  standing: 3,
+  fighters: [
+    { id: 'fighter-1', name: 'Mario', position: 0 },
+    { id: 'fighter-2', name: 'Luigi', position: 1 }
+  ]
+});
+```
+
+---
+
+### Connection Objects
+
+Create GraphQL connection objects for paginated responses:
+
+```typescript
+import { createMockConnection } from '../test-utils';
+
+const connection = createMockConnection(
+  [rivalry1, rivalry2],
+  'Rivalry',
+  'nextToken123'
+);
+// Returns: { __typename: 'ModelRivalryConnection', items: [...], nextToken: '...' }
 ```
 
 ---
@@ -749,5 +872,24 @@ For questions or issues with test utilities:
 
 ---
 
-**Last Updated**: 2025-12-07
+## Changelog
+
+### 2025-12-11
+- Added `__typename` to all mock factories for Amplify Gen 2 compatibility
+- Added `hiddenByA` and `hiddenByB` fields to Rivalry mocks
+- Added `createMockTierListWithSlots()` helper
+- Added `createMockConnection()` for paginated GraphQL responses
+- Added `waitForMultipleQueries()` for parallel query testing
+- Added `resetMockGraphQLClient()` for clean test state
+- Added `spyOnConsole()` for testing console output
+- Added `createMockAsyncGeneratorFromArray()` alias
+
+### 2025-12-07
+- Initial creation of test utilities
+- Base mock factories and API helpers
+- Comprehensive README documentation
+
+---
+
+**Last Updated**: 2025-12-11
 **Maintained By**: Development Team

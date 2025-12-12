@@ -92,91 +92,20 @@ describe('TierListEditDisplay', () => {
     expect(getByTestId('character-fighter-83')).toBeTruthy();
   });
 
-  it.skip('selects a character when clicked', () => {
-    const tierList = createMockTierList();
-    const { getByTestId } = render(<TierListEditDisplay tierList={tierList} onChange={mockOnChange} />);
-
-    const character = getByTestId('character-fighter-0');
-    fireEvent.press(character.parent!);
-
-    // After selection, the cancel instruction should appear
-    waitFor(() => {
-      expect(getByTestId('cancel-button')).toBeTruthy();
-    });
-  });
-
-  it.skip('moves a character when destination is clicked', async () => {
+  it('moves a character when destination is clicked', async () => {
     const tierList = createMockTierList();
     const { getByTestId } = render(<TierListEditDisplay tierList={tierList} onChange={mockOnChange} />);
 
     // Select first character
-    const character1 = getByTestId('character-fighter-0');
-    fireEvent.press(character1.parent!);
+    const character1Wrapper = getByTestId('character-fighter-0-wrapper');
+    fireEvent.press(character1Wrapper);
 
     // Click second character to move first character there
-    const character2 = getByTestId('character-fighter-5');
-    fireEvent.press(character2.parent!);
+    const character2Wrapper = getByTestId('character-fighter-5-wrapper');
+    fireEvent.press(character2Wrapper);
 
     await waitFor(() => {
       expect(mockOnChange).toHaveBeenCalled();
-    });
-  });
-
-  it.skip('deselects character when same character is clicked again', async () => {
-    const tierList = createMockTierList();
-    const { getByTestId, queryByText } = render(
-      <TierListEditDisplay tierList={tierList} onChange={mockOnChange} />
-    );
-
-    // Select character
-    const character = getByTestId('character-fighter-0');
-    fireEvent.press(character.parent!);
-
-    // Click same character again
-    fireEvent.press(character.parent!);
-
-    await waitFor(() => {
-      expect(queryByText('Tap a position to move the selected character')).toBeNull();
-    });
-  });
-
-  it.skip('shows cancel button when character is selected', async () => {
-    const tierList = createMockTierList();
-    const { getByTestId, getByText } = render(
-      <TierListEditDisplay tierList={tierList} onChange={mockOnChange} />
-    );
-
-    // Select character
-    const character = getByTestId('character-fighter-0');
-    fireEvent.press(character.parent!);
-
-    await waitFor(() => {
-      expect(getByText('Tap a position to move the selected character')).toBeTruthy();
-      expect(getByText('Cancel')).toBeTruthy();
-    });
-  });
-
-  it.skip('cancels selection when cancel button is pressed', async () => {
-    const tierList = createMockTierList();
-    const { getByTestId, getByText, queryByText } = render(
-      <TierListEditDisplay tierList={tierList} onChange={mockOnChange} />
-    );
-
-    // Select character
-    const character = getByTestId('character-fighter-0');
-    fireEvent.press(character.parent!);
-
-    // Wait for cancel button to appear
-    await waitFor(() => {
-      expect(getByText('Cancel')).toBeTruthy();
-    });
-
-    // Press cancel
-    const cancelButton = getByText('Cancel');
-    fireEvent.press(cancelButton);
-
-    await waitFor(() => {
-      expect(queryByText('Tap a position to move the selected character')).toBeNull();
     });
   });
 

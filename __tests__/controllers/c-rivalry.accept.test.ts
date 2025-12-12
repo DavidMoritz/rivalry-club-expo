@@ -2,14 +2,43 @@ import { renderHook, waitFor } from '@testing-library/react-native';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import React from 'react';
 
+// Mock the m-tier-list module for dynamic import
+jest.mock('../../src/models/m-tier-list', () => ({
+  getMTierList: jest.fn((tierListData: any) => {
+    // Create 86 slots to match FIGHTER_COUNT and avoid integrity check
+    const slots = [];
+    if (tierListData.tierSlots) {
+      // If tierSlots is an async generator, collect all items
+      slots.push(...(tierListData.tierSlots.items || []));
+    }
+    // Pad to 86 slots if needed
+    while (slots.length < 86) {
+      slots.push({
+        id: `mock-slot-${slots.length}`,
+        fighterId: `mock-fighter-${slots.length}`,
+        position: null
+      });
+    }
+    return {
+      id: tierListData.id,
+      slots,
+      tierListData
+    };
+  }),
+  FIGHTER_COUNT: 86
+}));
+
 // Mock the aws-amplify/data module
 jest.mock('aws-amplify/data', () => {
   const mockFns = {
     mockRivalryGet: jest.fn(),
     mockRivalryUpdate: jest.fn(),
+    mockRivalryList: jest.fn(),
     mockFighterList: jest.fn(),
     mockTierListQuery: jest.fn(),
     mockTierListCreate: jest.fn(),
+    mockTierListList: jest.fn(),
+    mockTierListGet: jest.fn(),
     mockTierSlotList: jest.fn(),
     mockTierSlotCreate: jest.fn()
   };
@@ -22,14 +51,17 @@ jest.mock('aws-amplify/data', () => {
       models: {
         Rivalry: {
           get: mockFns.mockRivalryGet,
-          update: mockFns.mockRivalryUpdate
+          update: mockFns.mockRivalryUpdate,
+          list: mockFns.mockRivalryList
         },
         Fighter: {
           list: mockFns.mockFighterList
         },
         TierList: {
           tierListsByUserIdAndUpdatedAt: mockFns.mockTierListQuery,
-          create: mockFns.mockTierListCreate
+          create: mockFns.mockTierListCreate,
+          list: mockFns.mockTierListList,
+          get: mockFns.mockTierListGet
         },
         TierSlot: {
           list: mockFns.mockTierSlotList,
@@ -46,9 +78,12 @@ describe('useAcceptRivalryMutation', () => {
   let queryClient: QueryClient;
   let mockRivalryGet: jest.Mock;
   let mockRivalryUpdate: jest.Mock;
+  let mockRivalryList: jest.Mock;
   let mockFighterList: jest.Mock;
   let mockTierListQuery: jest.Mock;
   let mockTierListCreate: jest.Mock;
+  let mockTierListList: jest.Mock;
+  let mockTierListGet: jest.Mock;
   let mockTierSlotList: jest.Mock;
   let mockTierSlotCreate: jest.Mock;
 
@@ -71,9 +106,12 @@ describe('useAcceptRivalryMutation', () => {
     const globalMocks = (global as any).mockAcceptRivalryFns;
     mockRivalryGet = globalMocks.mockRivalryGet;
     mockRivalryUpdate = globalMocks.mockRivalryUpdate;
+    mockRivalryList = globalMocks.mockRivalryList;
     mockFighterList = globalMocks.mockFighterList;
     mockTierListQuery = globalMocks.mockTierListQuery;
     mockTierListCreate = globalMocks.mockTierListCreate;
+    mockTierListList = globalMocks.mockTierListList;
+    mockTierListGet = globalMocks.mockTierListGet;
     mockTierSlotList = globalMocks.mockTierSlotList;
     mockTierSlotCreate = globalMocks.mockTierSlotCreate;
 
@@ -83,7 +121,7 @@ describe('useAcceptRivalryMutation', () => {
   const wrapper = ({ children }: { children: React.ReactNode }) =>
     React.createElement(QueryClientProvider, { client: queryClient }, children);
 
-  it.skip('should update rivalry accepted field to true and create tier lists', async () => {
+  it('should update rivalry accepted field to true and create tier list for userB', async () => {
     const mockRivalry = {
       id: 'rivalry-1',
       userAId: 'user-1',
@@ -121,7 +159,8 @@ describe('useAcceptRivalryMutation', () => {
       errors: null
     });
 
-    mockTierListQuery.mockResolvedValue({
+    // Mock the query for userB's existing rivalries (no template found - contestCount < 100)
+    mockRivalryList.mockResolvedValue({
       data: []
     });
 
@@ -130,18 +169,21 @@ describe('useAcceptRivalryMutation', () => {
       errors: null
     });
 
+    // Mock TierList.get for integrity check - return null to skip the integrity check
+    // This avoids the dynamic import issue in tests
+    mockTierListGet.mockResolvedValue({
+      data: null
+    });
+
     mockTierSlotCreate.mockResolvedValue({
       data: { id: 'tier-slot-1' },
       errors: null
     });
 
     const onSuccess = jest.fn();
-    const { result } = renderHook(
-      () => useAcceptRivalryMutation({ rivalryId: 'rivalry-1', onSuccess }),
-      { wrapper }
-    );
+    const { result } = renderHook(() => useAcceptRivalryMutation({ onSuccess }), { wrapper });
 
-    result.current.mutate();
+    result.current.mutate('rivalry-1');
 
     // Wait for the mutation to complete and onSuccess to be called
     await waitFor(
@@ -160,17 +202,13 @@ describe('useAcceptRivalryMutation', () => {
     expect(mockFighterList).toHaveBeenCalledWith({
       filter: { gameId: { eq: 'game-1' } }
     });
-    expect(mockTierListQuery).toHaveBeenCalledWith({
-      userId: 'user-1',
-      sortDirection: 'DESC',
-      limit: 1
-    });
-    expect(mockTierListQuery).toHaveBeenCalledWith({
+    // Only creates tier list for userB (accepter), not userA (initiator already has one)
+    expect(mockTierListCreate).toHaveBeenCalledTimes(1);
+    expect(mockTierListCreate).toHaveBeenCalledWith({
+      rivalryId: 'rivalry-1',
       userId: 'user-2',
-      sortDirection: 'DESC',
-      limit: 1
+      standing: 0
     });
-    expect(mockTierListCreate).toHaveBeenCalledTimes(2);
     expect(mockTierSlotCreate).toHaveBeenCalled();
     expect(mockRivalryUpdate).toHaveBeenCalledWith({
       id: 'rivalry-1',
@@ -184,16 +222,14 @@ describe('useAcceptRivalryMutation', () => {
       errors: [{ message: 'Rivalry not found' }]
     });
 
-    const { result } = renderHook(() => useAcceptRivalryMutation({ rivalryId: 'rivalry-1' }), {
-      wrapper
-    });
+    const { result } = renderHook(() => useAcceptRivalryMutation({}), { wrapper });
 
-    result.current.mutate();
+    result.current.mutate('rivalry-1');
 
     await waitFor(() => expect(result.current.isError).toBe(true));
   });
 
-  it.skip('should invalidate pending rivalries queries after successful acceptance', async () => {
+  it('should invalidate pending rivalries queries after successful acceptance', async () => {
     const mockRivalry = {
       id: 'rivalry-1',
       userAId: 'user-1',
@@ -226,13 +262,19 @@ describe('useAcceptRivalryMutation', () => {
       errors: null
     });
 
-    mockTierListQuery.mockResolvedValue({
+    // Mock Rivalry.list to return no template rivalries
+    mockRivalryList.mockResolvedValue({
       data: []
     });
 
     mockTierListCreate.mockResolvedValue({
       data: { id: 'tier-list-1' },
       errors: null
+    });
+
+    // Mock TierList.get to skip integrity check
+    mockTierListGet.mockResolvedValue({
+      data: null
     });
 
     mockTierSlotCreate.mockResolvedValue({
@@ -242,11 +284,9 @@ describe('useAcceptRivalryMutation', () => {
 
     const invalidateQueriesSpy = jest.spyOn(queryClient, 'invalidateQueries');
 
-    const { result } = renderHook(() => useAcceptRivalryMutation({ rivalryId: 'rivalry-1' }), {
-      wrapper
-    });
+    const { result } = renderHook(() => useAcceptRivalryMutation({}), { wrapper });
 
-    result.current.mutate();
+    result.current.mutate('rivalry-1');
 
     await waitFor(() => expect(result.current.isSuccess).toBe(true));
 
@@ -265,19 +305,16 @@ describe('useAcceptRivalryMutation', () => {
     });
 
     const onSuccess = jest.fn();
-    const { result } = renderHook(
-      () => useAcceptRivalryMutation({ rivalryId: 'rivalry-1', onSuccess }),
-      { wrapper }
-    );
+    const { result } = renderHook(() => useAcceptRivalryMutation({ onSuccess }), { wrapper });
 
-    result.current.mutate();
+    result.current.mutate('rivalry-1');
 
     await waitFor(() => expect(result.current.isError).toBe(true));
 
     expect(onSuccess).not.toHaveBeenCalled();
   });
 
-  it.skip('should duplicate existing tier list if user has one', async () => {
+  it('should use template tier list from existing rivalry with contestCount > 100', async () => {
     const mockRivalry = {
       id: 'rivalry-1',
       userAId: 'user-1',
@@ -293,17 +330,26 @@ describe('useAcceptRivalryMutation', () => {
       { id: 'fighter-2', name: 'Fighter 2', gameId: 'game-1' }
     ];
 
-    const mockExistingTierList = {
-      id: 'existing-tier-list-1',
-      userId: 'user-1',
-      rivalryId: 'old-rivalry',
-      standing: 5,
-      updatedAt: new Date().toISOString()
+    // Template rivalry with contestCount > 100
+    const mockTemplateRivalry = {
+      id: 'template-rivalry',
+      userAId: 'user-2',
+      userBId: 'user-3',
+      gameId: 'game-1',
+      contestCount: 150,
+      accepted: true
     };
 
-    const mockExistingTierSlots = [
-      { id: 'slot-1', fighterId: 'fighter-2', position: 0, tierListId: 'existing-tier-list-1' },
-      { id: 'slot-2', fighterId: 'fighter-1', position: 1, tierListId: 'existing-tier-list-1' }
+    const mockTemplateTierList = {
+      id: 'template-tier-list-1',
+      userId: 'user-2',
+      rivalryId: 'template-rivalry',
+      standing: 5
+    };
+
+    const mockTemplateTierSlots = [
+      { id: 'slot-1', fighterId: 'fighter-2', position: 0, tierListId: 'template-tier-list-1' },
+      { id: 'slot-2', fighterId: 'fighter-1', position: 1, tierListId: 'template-tier-list-1' }
     ];
 
     mockRivalryGet.mockResolvedValue({
@@ -321,17 +367,35 @@ describe('useAcceptRivalryMutation', () => {
       errors: null
     });
 
-    mockTierListQuery
-      .mockResolvedValueOnce({ data: [mockExistingTierList] }) // user-1 has existing
-      .mockResolvedValueOnce({ data: [] }); // user-2 has none
+    // Mock Rivalry.list to return a template rivalry with contestCount > 100
+    mockRivalryList.mockResolvedValue({
+      data: [mockTemplateRivalry]
+    });
+
+    // Mock TierList.list to return userB's tier list from the template rivalry
+    mockTierListList.mockResolvedValue({
+      data: [mockTemplateTierList]
+    });
+
+    // Mock TierList.get to return the tier list with tier slots
+    mockTierListGet
+      .mockResolvedValueOnce({
+        data: {
+          id: 'template-tier-list-1',
+          tierSlots: (async function* () {
+            for (const slot of mockTemplateTierSlots) {
+              yield slot;
+            }
+          })()
+        }
+      })
+      .mockResolvedValueOnce({
+        // Second call is for integrity check - skip it
+        data: null
+      });
 
     mockTierListCreate.mockResolvedValue({
       data: { id: 'new-tier-list-1' },
-      errors: null
-    });
-
-    mockTierSlotList.mockResolvedValue({
-      data: mockExistingTierSlots,
       errors: null
     });
 
@@ -340,20 +404,35 @@ describe('useAcceptRivalryMutation', () => {
       errors: null
     });
 
-    const { result } = renderHook(() => useAcceptRivalryMutation({ rivalryId: 'rivalry-1' }), {
-      wrapper
-    });
+    const { result } = renderHook(() => useAcceptRivalryMutation({}), { wrapper });
 
-    result.current.mutate();
+    result.current.mutate('rivalry-1');
 
     await waitFor(() => expect(result.current.isSuccess).toBe(true));
 
-    // Verify that the existing tier list slots were fetched
-    expect(mockTierSlotList).toHaveBeenCalledWith({
-      filter: { tierListId: { eq: 'existing-tier-list-1' } }
+    // Verify that the template rivalry was searched for
+    expect(mockRivalryList).toHaveBeenCalledWith({
+      filter: {
+        or: [{ userAId: { eq: 'user-2' } }, { userBId: { eq: 'user-2' } }],
+        accepted: { eq: true }
+      }
     });
 
-    // Verify that tier slots were created with the same positions as the existing tier list
+    // Verify that the template tier list was fetched
+    expect(mockTierListList).toHaveBeenCalledWith({
+      filter: {
+        rivalryId: { eq: 'template-rivalry' },
+        userId: { eq: 'user-2' }
+      }
+    });
+
+    // Verify that tier list was fetched with tier slots
+    expect(mockTierListGet).toHaveBeenCalledWith(
+      { id: 'template-tier-list-1' },
+      { selectionSet: ['id', 'tierSlots.*'] }
+    );
+
+    // Verify that tier slots were created with the same positions as the template tier list
     expect(mockTierSlotCreate).toHaveBeenCalledWith(
       expect.objectContaining({
         fighterId: 'fighter-2',

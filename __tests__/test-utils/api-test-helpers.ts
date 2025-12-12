@@ -301,3 +301,65 @@ export function createTestQueryWrapper() {
 
   return { wrapper, queryClient };
 }
+
+/**
+ * Helper to create mock async generators for testing Amplify Gen 2 relationships
+ * Supports multiple yields for testing iteration
+ *
+ * @example
+ * const mockTierLists = createMockAsyncGeneratorFromArray([tierList1, tierList2]);
+ * for await (const tierList of mockTierLists) {
+ *   console.log(tierList);
+ * }
+ */
+export function createMockAsyncGeneratorFromArray<T>(items: T[]): AsyncGenerator<T> {
+  return createMockAsyncGenerator(items);
+}
+
+/**
+ * Helper to wait for multiple queries to complete
+ * Useful when testing components that fetch multiple resources
+ *
+ * @example
+ * await waitForMultipleQueries([result1, result2, result3]);
+ */
+export async function waitForMultipleQueries(
+  results: Array<{ current: { isSuccess: boolean; isError: boolean; error?: Error } }>,
+  options?: { timeout?: number }
+) {
+  await Promise.all(
+    results.map((result) => waitForQuerySuccess(result, options))
+  );
+}
+
+/**
+ * Helper to reset all mocks in a GraphQL client mock
+ * Useful in beforeEach to ensure clean state
+ *
+ * @example
+ * const mockClient = createMockGraphQLClient();
+ * resetMockGraphQLClient(mockClient);
+ */
+export function resetMockGraphQLClient(mockClient: any) {
+  Object.values(mockClient.models).forEach((model: any) => {
+    Object.values(model).forEach((method: any) => {
+      if (typeof method.mockReset === 'function') {
+        method.mockReset();
+      }
+    });
+  });
+}
+
+/**
+ * Helper to create a spy on console methods for testing error/warning output
+ * Automatically restores the original method after test
+ *
+ * @example
+ * const errorSpy = spyOnConsole('error');
+ * // ... code that logs errors
+ * expect(errorSpy).toHaveBeenCalledWith('Error message');
+ * errorSpy.mockRestore();
+ */
+export function spyOnConsole(method: 'log' | 'warn' | 'error' | 'info') {
+  return jest.spyOn(console, method).mockImplementation(() => {});
+}

@@ -7,6 +7,8 @@ import { RivalryIndex } from '../RivalryIndex';
 const mockUseAuthUser = jest.fn();
 const mockUseUserRivalries = jest.fn();
 const mockRouterPush = jest.fn();
+const mockUseFocusEffect = jest.fn();
+const mockSetRivalries = jest.fn();
 
 jest.mock('../../../hooks/useAuthUser', () => ({
   useAuthUser: () => mockUseAuthUser()
@@ -19,10 +21,29 @@ jest.mock('../../../hooks/useUserRivalries', () => ({
 jest.mock('expo-router', () => ({
   useRouter: () => ({
     push: mockRouterPush
+  }),
+  useFocusEffect: (callback: () => void) => mockUseFocusEffect(callback)
+}));
+
+jest.mock('../../../providers/all-rivalries', () => ({
+  useAllRivalries: () => ({
+    rivalries: [],
+    pendingRivalries: {
+      awaitingAcceptance: [],
+      initiated: []
+    },
+    acceptedRivalries: []
+  }),
+  useAllRivalriesUpdate: () => ({
+    setRivalries: mockSetRivalries,
+    addRivalry: jest.fn(),
+    updateRivalry: jest.fn(),
+    removeRivalry: jest.fn(),
+    setUserId: jest.fn()
   })
 }));
 
-describe.skip('RivalryIndex', () => {
+describe('RivalryIndex', () => {
   beforeEach(() => {
     jest.clearAllMocks();
     console.log = jest.fn(); // Suppress console.log in tests
@@ -37,6 +58,7 @@ describe.skip('RivalryIndex', () => {
       });
       mockUseUserRivalries.mockReturnValue({
         rivalries: [],
+        allRivalries: [],
         isLoading: false,
         error: null,
         refetch: jest.fn()
@@ -75,6 +97,7 @@ describe.skip('RivalryIndex', () => {
       });
       mockUseUserRivalries.mockReturnValue({
         rivalries: [],
+        allRivalries: [],
         isLoading: false,
         error: null,
         refetch: jest.fn()
@@ -115,6 +138,7 @@ describe.skip('RivalryIndex', () => {
       });
       mockUseUserRivalries.mockReturnValue({
         rivalries: [],
+        allRivalries: [],
         isLoading: false,
         error: null,
         refetch: jest.fn()
@@ -133,6 +157,7 @@ describe.skip('RivalryIndex', () => {
       });
       mockUseUserRivalries.mockReturnValue({
         rivalries: [],
+        allRivalries: [],
         isLoading: false,
         error: null,
         refetch: jest.fn()
@@ -153,6 +178,7 @@ describe.skip('RivalryIndex', () => {
       });
       mockUseUserRivalries.mockReturnValue({
         rivalries: [],
+        allRivalries: [],
         isLoading: false,
         error: null,
         refetch: jest.fn()
@@ -172,6 +198,7 @@ describe.skip('RivalryIndex', () => {
       });
       mockUseUserRivalries.mockReturnValue({
         rivalries: [],
+        allRivalries: [],
         isLoading: false,
         error: null,
         refetch: jest.fn()
@@ -182,7 +209,13 @@ describe.skip('RivalryIndex', () => {
       const createButton = getByTestId('create-rivalry-button');
       fireEvent.press(createButton);
 
-      expect(mockRouterPush).toHaveBeenCalledWith('/rivalry/create');
+      expect(mockRouterPush).toHaveBeenCalledWith({
+        pathname: '/rivalry/create',
+        params: {
+          gameId: '73ed69cf-2775-43d6-bece-aed10da3e25a',
+          autoSearchNpc: 'true'
+        }
+      });
     });
   });
 
@@ -195,6 +228,7 @@ describe.skip('RivalryIndex', () => {
       });
       mockUseUserRivalries.mockReturnValue({
         rivalries: [],
+        allRivalries: [],
         isLoading: false,
         error: null,
         refetch: jest.fn()
@@ -202,9 +236,7 @@ describe.skip('RivalryIndex', () => {
 
       const { getByText } = render(<RivalryIndex />);
 
-      expect(
-        getByText('No rivalries found. Create your first rivalry to get started!')
-      ).toBeTruthy();
+      expect(getByText('How to Play')).toBeTruthy();
     });
 
     it('renders list of rivalries when they exist', () => {
@@ -213,29 +245,31 @@ describe.skip('RivalryIndex', () => {
         isLoading: false,
         error: null
       });
+      const rivalriesData = [
+        {
+          id: 'rivalry1',
+          userAId: 'user1',
+          userBId: 'user2',
+          gameId: 'game1',
+          userAName: 'Alice',
+          userBName: 'Bob',
+          contestCount: 5,
+          updatedAt: new Date().toISOString()
+        },
+        {
+          id: 'rivalry2',
+          userAId: 'user1',
+          userBId: 'user3',
+          gameId: 'game1',
+          userAName: 'Alice',
+          userBName: 'Charlie',
+          contestCount: 3,
+          updatedAt: new Date().toISOString()
+        }
+      ];
       mockUseUserRivalries.mockReturnValue({
-        rivalries: [
-          {
-            id: 'rivalry1',
-            userAId: 'user1',
-            userBId: 'user2',
-            gameId: 'game1',
-            userAName: 'Alice',
-            userBName: 'Bob',
-            contestCount: 5,
-            updatedAt: new Date().toISOString()
-          },
-          {
-            id: 'rivalry2',
-            userAId: 'user1',
-            userBId: 'user3',
-            gameId: 'game1',
-            userAName: 'Alice',
-            userBName: 'Charlie',
-            contestCount: 3,
-            updatedAt: new Date().toISOString()
-          }
-        ],
+        rivalries: rivalriesData,
+        allRivalries: rivalriesData,
         isLoading: false,
         error: null,
         refetch: jest.fn()
@@ -243,29 +277,31 @@ describe.skip('RivalryIndex', () => {
 
       const { getByText } = render(<RivalryIndex />);
 
-      expect(getByText('Alice vs. Bob')).toBeTruthy();
-      expect(getByText('Alice vs. Charlie')).toBeTruthy();
+      expect(getByText('vs. Bob')).toBeTruthy();
+      expect(getByText('vs. Charlie')).toBeTruthy();
     });
 
-    it.skip('calls handleSelectRivalry when rivalry is pressed', async () => {
+    it('calls handleSelectRivalry when rivalry is pressed', async () => {
       mockUseAuthUser.mockReturnValue({
         user: { id: 'user1', email: 'test@test.com', firstName: 'Test' },
         isLoading: false,
         error: null
       });
+      const rivalryData = [
+        {
+          id: 'rivalry1',
+          userAId: 'user1',
+          userBId: 'user2',
+          gameId: 'game1',
+          userAName: 'Alice',
+          userBName: 'Bob',
+          contestCount: 5,
+          updatedAt: new Date().toISOString()
+        }
+      ];
       mockUseUserRivalries.mockReturnValue({
-        rivalries: [
-          {
-            id: 'rivalry1',
-            userAId: 'user1',
-            userBId: 'user2',
-            gameId: 'game1',
-            userAName: 'Alice',
-            userBName: 'Bob',
-            contestCount: 5,
-            updatedAt: new Date().toISOString()
-          }
-        ],
+        rivalries: rivalryData,
+        allRivalries: rivalryData,
         isLoading: false,
         error: null,
         refetch: jest.fn()
@@ -273,11 +309,18 @@ describe.skip('RivalryIndex', () => {
 
       const { getByText } = render(<RivalryIndex />);
 
-      const rivalryRow = getByText('Alice vs. Bob');
+      const rivalryRow = getByText('vs. Bob');
       fireEvent.press(rivalryRow.parent?.parent || rivalryRow);
 
       await waitFor(() => {
-        expect(mockRouterPush).toHaveBeenCalledWith('/rivalry/rivalry1');
+        expect(mockRouterPush).toHaveBeenCalledWith({
+          pathname: '/rivalry/rivalry1',
+          params: {
+            userAName: 'Alice',
+            userBName: 'Bob',
+            userId: 'user1'
+          }
+        });
       });
     });
   });
@@ -293,6 +336,7 @@ describe.skip('RivalryIndex', () => {
       });
       mockUseUserRivalries.mockReturnValue({
         rivalries: [],
+        allRivalries: [],
         isLoading: false,
         error: null,
         refetch: jest.fn()
@@ -311,6 +355,7 @@ describe.skip('RivalryIndex', () => {
       });
       mockUseUserRivalries.mockReturnValue({
         rivalries: [],
+        allRivalries: [],
         isLoading: false,
         error: null,
         refetch: jest.fn()

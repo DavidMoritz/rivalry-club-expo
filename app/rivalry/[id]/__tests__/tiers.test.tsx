@@ -27,18 +27,24 @@ jest.mock('expo-status-bar', () => ({
   StatusBar: () => null,
 }));
 
+// Create shared mock client
+const mockRivalryGet = jest.fn();
+const mockUserGet = jest.fn();
+
+const mockClient = {
+  models: {
+    Rivalry: {
+      get: mockRivalryGet,
+    },
+    User: {
+      get: mockUserGet,
+    },
+  },
+};
+
 // Mock AWS Amplify
 jest.mock('aws-amplify/data', () => ({
-  generateClient: jest.fn(() => ({
-    models: {
-      Rivalry: {
-        get: jest.fn(),
-      },
-      User: {
-        get: jest.fn(),
-      },
-    },
-  })),
+  generateClient: jest.fn(() => mockClient),
 }));
 
 const createTestQueryClient = () =>
@@ -65,6 +71,9 @@ describe('TiersRoute', () => {
     (useLocalSearchParams as jest.Mock).mockReturnValue({
       id: 'rivalry-1',
     });
+    // Reset mock implementations
+    mockRivalryGet.mockReset();
+    mockUserGet.mockReset();
   });
 
   it('renders loading state initially', () => {
@@ -147,38 +156,52 @@ describe('TiersRoute', () => {
     expect(root).toBeTruthy();
   });
 
-  it.skip('displays linked/unlinked button when rivalry is loaded', async () => {
+  it('displays linked/unlinked button when rivalry is loaded', async () => {
     const queryClient = createTestQueryClient();
 
-    // Mock successful query - we'll need to mock the client.models.Rivalry.get call
-    const { generateClient } = require('aws-amplify/data');
-    const mockClient = generateClient();
-    mockClient.models.Rivalry.get.mockResolvedValue({
+    // Mock Rivalry.get
+    mockRivalryGet.mockResolvedValue({
       data: {
         id: 'rivalry-1',
         userAId: 'user-1',
         userBId: 'user-2',
         gameId: 'game-1',
+        contestCount: 0,
+        currentContestId: null,
+        createdAt: new Date().toISOString(),
+        updatedAt: new Date().toISOString(),
+        deletedAt: null,
         tierLists: [],
       },
       errors: null,
     });
-    mockClient.models.User.get.mockResolvedValue({
-      data: { id: 'user-1', firstName: 'Alice' },
-      errors: null,
-    });
+
+    // Mock User.get to handle both userA and userB calls
+    mockUserGet
+      .mockResolvedValueOnce({
+        data: { id: 'user-1', firstName: 'Alice', lastName: 'A' },
+        errors: null,
+      })
+      .mockResolvedValueOnce({
+        data: { id: 'user-2', firstName: 'Bob', lastName: 'B' },
+        errors: null,
+      });
 
     const { getByText } = render(
       <QueryClientProvider client={queryClient}>
-        <RivalryProvider rivalry={mockRivalry} userAName="Alice" userBName="Bob">
+        <RivalryProvider rivalry={null} userAName="Alice" userBName="Bob">
           <TiersRoute />
         </RivalryProvider>
       </QueryClientProvider>
     );
 
+    // Wait for rivalry to load
     await waitFor(() => {
-      // Button text may be Linked or Unlinked depending on state
-      expect(true).toBe(true);
+      // Button text should be "Linked" by default (unlinked state is false initially)
+      expect(getByText('Linked')).toBeTruthy();
     });
+
+    // Also verify Edit Tier List button is present
+    expect(getByText('Edit Tier List')).toBeTruthy();
   });
 });

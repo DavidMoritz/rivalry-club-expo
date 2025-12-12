@@ -52,13 +52,13 @@ describe('Auth Component', () => {
   });
 
   describe('Existing Session Check', () => {
-    it.skip('calls onAuthSuccess if user is already authenticated', async () => {
-      const mockSession = {
-        user: { email: 'test@test.com' },
-        access_token: 'token'
+    it('calls onAuthSuccess if user is already authenticated', async () => {
+      const mockUser = {
+        userId: 'user-123',
+        username: 'test@test.com',
       };
 
-      mockGetSession.mockResolvedValue({ data: { session: mockSession } });
+      mockGetCurrentUser.mockResolvedValue(mockUser);
 
       render(<Auth onAuthSuccess={mockOnAuthSuccess} />);
 
@@ -67,8 +67,8 @@ describe('Auth Component', () => {
       });
     });
 
-    it.skip('does not call onAuthSuccess if no session exists', async () => {
-      mockGetSession.mockResolvedValue({ data: { session: null } });
+    it('does not call onAuthSuccess if no session exists', async () => {
+      mockGetCurrentUser.mockRejectedValue(new Error('Not authenticated'));
 
       render(<Auth onAuthSuccess={mockOnAuthSuccess} />);
 
@@ -108,15 +108,10 @@ describe('Auth Component', () => {
   });
 
   describe('Sign In Flow', () => {
-    it.skip('successfully signs in with valid credentials', async () => {
-      const mockSession = {
-        user: { email: 'test@test.com' },
-        access_token: 'token'
-      };
-
-      mockSignInWithPassword.mockResolvedValue({
-        data: { session: mockSession },
-        error: null
+    it('successfully signs in with valid credentials', async () => {
+      mockSignIn.mockResolvedValue({
+        isSignedIn: true,
+        nextStep: { signInStep: 'DONE' },
       });
 
       const { getByPlaceholderText, getAllByText } = render(
@@ -132,10 +127,7 @@ describe('Auth Component', () => {
       fireEvent.press(signInButton);
 
       await waitFor(() => {
-        expect(mockSignInWithPassword).toHaveBeenCalledWith({
-          email: 'test@test.com',
-          password: 'password123'
-        });
+        expect(mockSignIn).toHaveBeenCalledWith('test@test.com', 'password123');
       });
 
       await waitFor(() => {
@@ -143,10 +135,11 @@ describe('Auth Component', () => {
       });
     });
 
-    it.skip('shows error message when sign in fails', async () => {
-      mockSignInWithPassword.mockResolvedValue({
-        data: { session: null },
-        error: { message: 'Invalid credentials' }
+    it('shows error message when sign in fails', async () => {
+      // Mock sign in throwing an error (AWS Cognito style)
+      mockSignIn.mockRejectedValue({
+        name: 'NotAuthorizedException',
+        message: 'Incorrect username or password.'
       });
 
       const { getByPlaceholderText, getAllByText, getByText } = render(
@@ -162,7 +155,7 @@ describe('Auth Component', () => {
       fireEvent.press(signInButton);
 
       await waitFor(() => {
-        expect(getByText('Invalid credentials')).toBeTruthy();
+        expect(getByText('Incorrect email or password')).toBeTruthy();
       });
 
       expect(mockOnAuthSuccess).not.toHaveBeenCalled();
@@ -184,10 +177,10 @@ describe('Auth Component', () => {
       expect(signInButton.props.accessibilityState?.disabled).toBe(true);
     });
 
-    it.skip('trims whitespace from email and password', async () => {
-      mockSignInWithPassword.mockResolvedValue({
-        data: { session: { user: { email: 'test@test.com' } } },
-        error: null
+    it('trims whitespace from email and password', async () => {
+      mockSignIn.mockResolvedValue({
+        isSignedIn: true,
+        nextStep: { signInStep: 'DONE' },
       });
 
       const { getByPlaceholderText, getAllByText } = render(
@@ -203,22 +196,22 @@ describe('Auth Component', () => {
       fireEvent.press(signInButton);
 
       await waitFor(() => {
-        expect(mockSignInWithPassword).toHaveBeenCalledWith({
-          email: 'test@test.com',
-          password: 'password123'
-        });
+        expect(mockSignIn).toHaveBeenCalledWith(
+          'test@test.com',
+          'password123'
+        );
       });
     });
   });
 
   describe('Sign Up Flow', () => {
-    it.skip('successfully signs up with matching passwords', async () => {
+    it('successfully signs up with matching passwords', async () => {
+      // Mock successful sign up with auto sign-in (DONE step means auto sign-in)
       mockSignUp.mockResolvedValue({
-        data: {
-          session: { user: { email: 'newuser@test.com' } },
-          user: { email: 'newuser@test.com' }
-        },
-        error: null
+        isSignUpComplete: true,
+        nextStep: {
+          signUpStep: 'DONE'
+        }
       });
 
       const { getByPlaceholderText, getByText, getAllByText } = render(
@@ -239,10 +232,10 @@ describe('Auth Component', () => {
       fireEvent.press(signUpButton);
 
       await waitFor(() => {
-        expect(mockSignUp).toHaveBeenCalledWith({
-          email: 'newuser@test.com',
-          password: 'password123'
-        });
+        expect(mockSignUp).toHaveBeenCalledWith(
+          'newuser@test.com',
+          'password123'
+        );
       });
 
       await waitFor(() => {
@@ -250,7 +243,7 @@ describe('Auth Component', () => {
       });
     });
 
-    it.skip('shows error when passwords do not match', async () => {
+    it('shows error when passwords do not match', async () => {
       const { getByPlaceholderText, getByText, getAllByText } = render(
         <Auth onAuthSuccess={mockOnAuthSuccess} />
       );
@@ -276,10 +269,11 @@ describe('Auth Component', () => {
       expect(mockOnAuthSuccess).not.toHaveBeenCalled();
     });
 
-    it.skip('shows error when sign up fails', async () => {
-      mockSignUp.mockResolvedValue({
-        data: { session: null, user: null },
-        error: { message: 'Email already registered' }
+    it('shows error when sign up fails', async () => {
+      // Mock sign up throwing an error (AWS Cognito style)
+      mockSignUp.mockRejectedValue({
+        name: 'UsernameExistsException',
+        message: 'An account with this email already exists'
       });
 
       const { getByPlaceholderText, getByText, getAllByText } = render(
@@ -300,7 +294,7 @@ describe('Auth Component', () => {
       fireEvent.press(signUpButton);
 
       await waitFor(() => {
-        expect(getByText('Email already registered')).toBeTruthy();
+        expect(getByText('An account with this email already exists')).toBeTruthy();
       });
 
       expect(mockOnAuthSuccess).not.toHaveBeenCalled();
@@ -308,11 +302,11 @@ describe('Auth Component', () => {
   });
 
   describe('Loading States', () => {
-    it.skip('shows loading text when signing in', async () => {
-      mockSignInWithPassword.mockImplementation(
+    it('shows loading text when signing in', async () => {
+      mockSignIn.mockImplementation(
         () =>
           new Promise((resolve) =>
-            setTimeout(() => resolve({ data: { session: null }, error: null }), 100)
+            setTimeout(() => resolve({ isSignedIn: true, nextStep: { signInStep: 'DONE' } }), 100)
           )
       );
 
@@ -335,11 +329,11 @@ describe('Auth Component', () => {
       });
     });
 
-    it.skip('disables button during sign in', async () => {
-      mockSignInWithPassword.mockImplementation(
+    it('disables button during sign in', async () => {
+      mockSignIn.mockImplementation(
         () =>
           new Promise((resolve) =>
-            setTimeout(() => resolve({ data: { session: null }, error: null }), 100)
+            setTimeout(() => resolve({ isSignedIn: true, nextStep: { signInStep: 'DONE' } }), 100)
           )
       );
 
@@ -363,10 +357,10 @@ describe('Auth Component', () => {
   });
 
   describe('Error Handling', () => {
-    it.skip('clears error when switching between sign in and sign up', async () => {
-      mockSignInWithPassword.mockResolvedValue({
-        data: { session: null },
-        error: { message: 'Invalid credentials' }
+    it('clears error when switching between sign in and sign up', async () => {
+      mockSignIn.mockRejectedValue({
+        name: 'NotAuthorizedException',
+        message: 'Incorrect username or password.'
       });
 
       const { getByPlaceholderText, getByText, getAllByText, queryByText } = render(
@@ -382,14 +376,14 @@ describe('Auth Component', () => {
       fireEvent.press(getAllByText('Sign In')[1]);
 
       await waitFor(() => {
-        expect(getByText('Invalid credentials')).toBeTruthy();
+        expect(getByText('Incorrect email or password')).toBeTruthy();
       });
 
       // Switch to sign up
       fireEvent.press(getByText("Don't have an account? Sign Up"));
 
       // Error should be cleared
-      expect(queryByText('Invalid credentials')).toBeNull();
+      expect(queryByText('Incorrect email or password')).toBeNull();
     });
   });
 });

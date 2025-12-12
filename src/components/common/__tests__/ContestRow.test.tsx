@@ -32,13 +32,15 @@ describe('ContestRow', () => {
     userId: 'user-1',
     rivalryId: 'rivalry-1',
     standing: 0,
-    slots: [
-      {
-        id: 'slot-1',
-        fighterId: 'fighter-1',
-        position: 0,
-      },
-    ],
+    tierSlots: {
+      items: [
+        {
+          id: 'slot-1',
+          fighterId: 'fighter-1',
+          position: 0,
+        },
+      ],
+    },
   } as any);
 
   const mockTierListB = getMTierList({
@@ -46,13 +48,15 @@ describe('ContestRow', () => {
     userId: 'user-2',
     rivalryId: 'rivalry-1',
     standing: 0,
-    slots: [
-      {
-        id: 'slot-2',
-        fighterId: 'fighter-2',
-        position: 0,
-      },
-    ],
+    tierSlots: {
+      items: [
+        {
+          id: 'slot-2',
+          fighterId: 'fighter-2',
+          position: 0,
+        },
+      ],
+    },
   } as any);
 
   const mockRivalry: MRivalry = getMRivalry({
@@ -68,7 +72,7 @@ describe('ContestRow', () => {
   mockRivalry.tierListA = mockTierListA;
   mockRivalry.tierListB = mockTierListB;
 
-  it.skip('renders contest with winner on left (positive result)', async () => {
+  it('renders contest with winner on left (positive result)', async () => {
     const contest: MContest = getMContest({
       id: 'contest-1',
       rivalryId: 'rivalry-1',
@@ -94,7 +98,7 @@ describe('ContestRow', () => {
     });
   });
 
-  it.skip('renders contest with winner on right (negative result)', async () => {
+  it('renders contest with winner on right (negative result)', async () => {
     const contest: MContest = getMContest({
       id: 'contest-1',
       rivalryId: 'rivalry-1',
@@ -157,7 +161,7 @@ describe('ContestRow', () => {
     expect(toJSON()).toBeNull();
   });
 
-  it.skip('formats date correctly for current year', async () => {
+  it('formats date correctly for current year', async () => {
     const currentYear = new Date().getFullYear();
     const contest: MContest = getMContest({
       id: 'contest-1',
@@ -179,7 +183,7 @@ describe('ContestRow', () => {
     });
   });
 
-  it.skip('formats date with year for past years', async () => {
+  it('formats date with year for past years', async () => {
     const contest: MContest = getMContest({
       id: 'contest-1',
       rivalryId: 'rivalry-1',

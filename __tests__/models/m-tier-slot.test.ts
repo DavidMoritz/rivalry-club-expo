@@ -89,10 +89,7 @@ describe('MTierSlot Model', () => {
     });
   });
 
-  describe('fighterTier', () => {
-    // fighterTier getter uses closure variable instead of this.position
-    // Works in practice as positions don't change after creation
-
+  describe('tierList', () => {
     it('should set and get tierList correctly', () => {
       const mockTierList = getMTierList({
         __typename: 'TierList',
@@ -126,49 +123,6 @@ describe('MTierSlot Model', () => {
       expect(mTierSlot.tierList).toBe(mockTierList);
     });
 
-    it.skip('should calculate tier index correctly - SKIPPED: fighterTier uses closure variable which causes issues in test context', () => {
-      // This test is skipped because the fighterTier getter uses a closure variable (tierSlot.position)
-      // instead of this.position. While this works in practice (positions don't change after creation),
-      // it causes issues in the test environment, possibly due to Babel/TypeScript transformations.
-      // The getter also doesn't appear to be used anywhere in the actual codebase.
-
-      const mockTierList = getMTierList({
-        __typename: 'TierList',
-        id: 'tier-list-123',
-        rivalryId: 'rivalry-123',
-        userId: 'user-123',
-        standing: 0,
-        createdAt: '2024-01-01',
-        updatedAt: '2024-01-01',
-        tierSlots: {
-          __typename: 'ModelTierSlotConnection',
-          items: new Array(21).fill(null).map((_, i) => ({
-            __typename: 'TierSlot' as const,
-            id: `slot-${i}`,
-            tierListId: 'tier-list-123',
-            fighterId: `fighter-${i}`,
-            position: i,
-            createdAt: '2024-01-01',
-            updatedAt: '2024-01-01',
-          })),
-        },
-      });
-
-      const mTierSlot = getMTierSlot({ ...mockTierSlot, position: 6 });
-      mTierSlot.tierList = mockTierList;
-
-      // Verify tierList was set
-      expect(mTierSlot.tierList).toBeDefined();
-      expect(mTierSlot.tierList?.slots.length).toBe(21);
-      expect(mTierSlot.tierList?.slotsPerTier).toBe(3);
-
-      const tier = mTierSlot.fighterTier;
-
-      // Position 6 / 3 slots per tier = tier index 2 (B tier)
-      expect(tier).toBeDefined();
-      expect(tier.label).toBe('B');
-      expect(tier.position).toBe(2);
-    });
   });
 
   describe('normalizeTierSlotPositionToIndex', () => {

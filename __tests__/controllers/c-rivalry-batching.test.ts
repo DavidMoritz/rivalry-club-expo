@@ -326,7 +326,7 @@ describe('Batched Tier Slot Creation', () => {
   });
 
   describe('Error handling in batches', () => {
-    it.skip('should report partial failures when some tier slots fail to create', async () => {
+    it('should report partial failures when some tier slots fail to create', async () => {
       const mockFighters = Array.from({ length: 25 }, (_, i) => ({
         id: `fighter-${i + 1}`,
         name: `Fighter ${i + 1}`,
@@ -353,6 +353,13 @@ describe('Batched Tier Slot Creation', () => {
         data: mockFighters,
         errors: null
       });
+
+      // Mock Rivalry.list for template search (should return empty for this test)
+      const mockRivalryList = jest.fn().mockResolvedValue({
+        data: [],
+        errors: null
+      });
+      (global as any).mockBatchingFns.mockRivalryList = mockRivalryList;
 
       mockTierListCreate.mockResolvedValue({
         data: { id: 'tier-list-1' },
@@ -404,8 +411,9 @@ describe('Batched Tier Slot Creation', () => {
 
       await mutatePromise;
 
-      // Should have attempted all 50 tier slots (25 fighters × 2)
-      expect(mockTierSlotCreate).toHaveBeenCalledTimes(50);
+      // Should have attempted all 25 tier slots (25 fighters × 1 tier list for userA only)
+      // useCreateRivalryMutation only creates tier slots for the initiator (userA)
+      expect(mockTierSlotCreate).toHaveBeenCalledTimes(25);
 
       // Mutation should have triggered the error callback
       expect(errorCaught).toBe(true);

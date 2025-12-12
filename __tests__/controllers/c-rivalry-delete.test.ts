@@ -113,7 +113,7 @@ describe('useDeleteMostRecentContestMutation', () => {
   });
 
   describe('1-stock win deletion', () => {
-    it.skip('should correctly revert standings after deleting 1-stock win (bias=1)', async () => {
+    it('should correctly revert standings after deleting 1-stock win (bias=1)', async () => {
       const initialStandingA = 3;
       const initialStandingB = 3;
 
@@ -213,7 +213,7 @@ describe('useDeleteMostRecentContestMutation', () => {
       });
     });
 
-    it.skip('should correctly revert standings after deleting 1-stock win (bias=-1)', async () => {
+    it('should correctly revert standings after deleting 1-stock win (bias=-1)', async () => {
       const initialStandingA = 3;
       const initialStandingB = 3;
 
@@ -295,7 +295,7 @@ describe('useDeleteMostRecentContestMutation', () => {
   });
 
   describe('2-stock win deletion', () => {
-    it.skip('should correctly revert standings after deleting 2-stock win', async () => {
+    it('should correctly revert standings after deleting 2-stock win', async () => {
       const initialStandingA = 3;
       const initialStandingB = 3;
 
@@ -373,7 +373,7 @@ describe('useDeleteMostRecentContestMutation', () => {
       expect(mRivalry.tierListB.standing).toBe(initialStandingB);
     });
 
-    it.skip('should correctly revert standings when loser was at top tier', async () => {
+    it('should correctly revert standings when loser was at top tier', async () => {
       const initialStandingA = 3;
       const initialStandingB = 0;
 
@@ -453,7 +453,7 @@ describe('useDeleteMostRecentContestMutation', () => {
   });
 
   describe('3-stock win deletion', () => {
-    it.skip('should correctly revert standings after deleting 3-stock win (bias=1)', async () => {
+    it('should correctly revert standings after deleting 3-stock win (bias=1)', async () => {
       const initialStandingA = 5;
       const initialStandingB = 5;
 
@@ -531,7 +531,7 @@ describe('useDeleteMostRecentContestMutation', () => {
       expect(mRivalry.tierListB.standing).toBe(initialStandingB);
     });
 
-    it.skip('should correctly revert standings after deleting 3-stock win (bias=-1)', async () => {
+    it('should correctly revert standings after deleting 3-stock win (bias=-1)', async () => {
       const initialStandingA = 5;
       const initialStandingB = 5;
 
@@ -615,7 +615,7 @@ describe('useDeleteMostRecentContestMutation', () => {
   });
 
   describe('Error handling', () => {
-    it.skip('should throw error when no rivalry is provided', async () => {
+    it('should throw error when no rivalry is provided', async () => {
       const { result } = renderHook(
         () => useDeleteMostRecentContestMutation({ rivalry: null }),
         { wrapper }
@@ -627,7 +627,7 @@ describe('useDeleteMostRecentContestMutation', () => {
       expect(result.current.error).toEqual(new Error('No rivalry provided'));
     });
 
-    it.skip('should throw error when no contests exist', async () => {
+    it('should throw error when no contests exist', async () => {
       const mockRivalry: Rivalry = {
         __typename: 'Rivalry',
         id: 'rivalry-123',
@@ -641,6 +641,7 @@ describe('useDeleteMostRecentContestMutation', () => {
       };
 
       const mRivalry = getMRivalry({ rivalry: mockRivalry });
+      mRivalry.mContests = []; // No contests in array
 
       const { result } = renderHook(
         () => useDeleteMostRecentContestMutation({ rivalry: mRivalry }),
@@ -653,7 +654,7 @@ describe('useDeleteMostRecentContestMutation', () => {
       expect(result.current.error).toEqual(new Error('No contests to delete'));
     });
 
-    it.skip('should throw error when contest is unresolved', async () => {
+    it('should throw error when contest is unresolved', async () => {
       const mockRivalry: Rivalry = {
         __typename: 'Rivalry',
         id: 'rivalry-123',
@@ -711,7 +712,7 @@ describe('useDeleteMostRecentContestMutation', () => {
       expect(result.current.error).toEqual(new Error('Cannot delete unresolved contest'));
     });
 
-    it.skip('should handle tier list update errors', async () => {
+    it('should handle tier list update errors', async () => {
       const mockRivalry: Rivalry = {
         __typename: 'Rivalry',
         id: 'rivalry-123',
@@ -781,7 +782,7 @@ describe('useDeleteMostRecentContestMutation', () => {
       );
     });
 
-    it.skip('should handle contest delete errors', async () => {
+    it('should handle contest delete errors', async () => {
       const mockRivalry: Rivalry = {
         __typename: 'Rivalry',
         id: 'rivalry-123',
@@ -854,7 +855,7 @@ describe('useDeleteMostRecentContestMutation', () => {
   });
 
   describe('Callback execution', () => {
-    it.skip('should call onSuccess callback after successful deletion', async () => {
+    it('should call onSuccess callback after successful deletion', async () => {
       const mockRivalry: Rivalry = {
         __typename: 'Rivalry',
         id: 'rivalry-123',

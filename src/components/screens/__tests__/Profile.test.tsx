@@ -400,7 +400,7 @@ describe('Profile Component', () => {
     });
   });
 
-  describe.skip('Password change', () => {
+  describe('Password change', () => {
     beforeEach(() => {
       mockUseAuthUser.mockReturnValue({
         user: {
@@ -416,12 +416,37 @@ describe('Profile Component', () => {
       });
     });
 
-    it('validates all password fields are filled', async () => {
+    it('shows Change Password button for authenticated users', () => {
+      const { getByText } = render(<Profile />);
+
+      expect(getByText('Change Password')).toBeTruthy();
+    });
+
+    it('shows password fields when Change Password is pressed', async () => {
       const { getByText, getByPlaceholderText } = render(<Profile />);
 
       const changePasswordButton = getByText('Change Password');
-
       fireEvent.press(changePasswordButton);
+
+      await waitFor(() => {
+        expect(getByPlaceholderText('Enter current password')).toBeTruthy();
+        expect(getByPlaceholderText('Enter new password (min 8 characters)')).toBeTruthy();
+        expect(getByPlaceholderText('Re-enter new password')).toBeTruthy();
+      });
+    });
+
+    it('validates all password fields are filled', async () => {
+      const { getByText, getAllByText } = render(<Profile />);
+
+      const changePasswordButton = getByText('Change Password');
+      fireEvent.press(changePasswordButton);
+
+      await waitFor(() => {
+        // After clicking, there will be 2 "Change Password" texts - the section title and the button
+        const buttons = getAllByText('Change Password');
+        const submitButton = buttons[buttons.length - 1]; // Get the last one (the button)
+        fireEvent.press(submitButton);
+      });
 
       await waitFor(() => {
         expect(getByText('All password fields are required')).toBeTruthy();
@@ -429,17 +454,24 @@ describe('Profile Component', () => {
     });
 
     it('validates new passwords match', async () => {
-      const { getByText, getByPlaceholderText } = render(<Profile />);
+      const { getByText, getAllByText, getByPlaceholderText } = render(<Profile />);
 
-      const currentPasswordInput = getByPlaceholderText('Enter current password');
-      const newPasswordInput = getByPlaceholderText('Enter new password (min 8 characters)');
-      const confirmPasswordInput = getByPlaceholderText('Re-enter new password');
       const changePasswordButton = getByText('Change Password');
-
-      fireEvent.changeText(currentPasswordInput, 'oldpassword');
-      fireEvent.changeText(newPasswordInput, 'newpassword123');
-      fireEvent.changeText(confirmPasswordInput, 'differentpassword');
       fireEvent.press(changePasswordButton);
+
+      await waitFor(() => {
+        const currentPasswordInput = getByPlaceholderText('Enter current password');
+        const newPasswordInput = getByPlaceholderText('Enter new password (min 8 characters)');
+        const confirmPasswordInput = getByPlaceholderText('Re-enter new password');
+
+        fireEvent.changeText(currentPasswordInput, 'oldpassword');
+        fireEvent.changeText(newPasswordInput, 'newpassword123');
+        fireEvent.changeText(confirmPasswordInput, 'differentpassword');
+      });
+
+      const buttons = getAllByText('Change Password');
+      const submitButton = buttons[buttons.length - 1];
+      fireEvent.press(submitButton);
 
       await waitFor(() => {
         expect(getByText('New passwords do not match')).toBeTruthy();
@@ -447,17 +479,24 @@ describe('Profile Component', () => {
     });
 
     it('validates password length', async () => {
-      const { getByText, getByPlaceholderText } = render(<Profile />);
+      const { getByText, getAllByText, getByPlaceholderText } = render(<Profile />);
 
-      const currentPasswordInput = getByPlaceholderText('Enter current password');
-      const newPasswordInput = getByPlaceholderText('Enter new password (min 8 characters)');
-      const confirmPasswordInput = getByPlaceholderText('Re-enter new password');
       const changePasswordButton = getByText('Change Password');
-
-      fireEvent.changeText(currentPasswordInput, 'oldpassword');
-      fireEvent.changeText(newPasswordInput, 'short');
-      fireEvent.changeText(confirmPasswordInput, 'short');
       fireEvent.press(changePasswordButton);
+
+      await waitFor(() => {
+        const currentPasswordInput = getByPlaceholderText('Enter current password');
+        const newPasswordInput = getByPlaceholderText('Enter new password (min 8 characters)');
+        const confirmPasswordInput = getByPlaceholderText('Re-enter new password');
+
+        fireEvent.changeText(currentPasswordInput, 'oldpassword');
+        fireEvent.changeText(newPasswordInput, 'short');
+        fireEvent.changeText(confirmPasswordInput, 'short');
+      });
+
+      const buttons = getAllByText('Change Password');
+      const submitButton = buttons[buttons.length - 1];
+      fireEvent.press(submitButton);
 
       await waitFor(() => {
         expect(getByText('Password must be at least 8 characters')).toBeTruthy();
@@ -465,24 +504,29 @@ describe('Profile Component', () => {
     });
 
     it('successfully changes password', async () => {
-      mockUpdateUser.mockResolvedValue({ error: null });
+      mockUpdatePassword.mockResolvedValue(undefined);
 
-      const { getByText, getByPlaceholderText } = render(<Profile />);
+      const { getByText, getAllByText, getByPlaceholderText } = render(<Profile />);
 
-      const currentPasswordInput = getByPlaceholderText('Enter current password');
-      const newPasswordInput = getByPlaceholderText('Enter new password (min 8 characters)');
-      const confirmPasswordInput = getByPlaceholderText('Re-enter new password');
       const changePasswordButton = getByText('Change Password');
-
-      fireEvent.changeText(currentPasswordInput, 'oldpassword');
-      fireEvent.changeText(newPasswordInput, 'newpassword123');
-      fireEvent.changeText(confirmPasswordInput, 'newpassword123');
       fireEvent.press(changePasswordButton);
 
       await waitFor(() => {
-        expect(mockUpdateUser).toHaveBeenCalledWith({
-          password: 'newpassword123'
-        });
+        const currentPasswordInput = getByPlaceholderText('Enter current password');
+        const newPasswordInput = getByPlaceholderText('Enter new password (min 8 characters)');
+        const confirmPasswordInput = getByPlaceholderText('Re-enter new password');
+
+        fireEvent.changeText(currentPasswordInput, 'oldpassword');
+        fireEvent.changeText(newPasswordInput, 'newpassword123');
+        fireEvent.changeText(confirmPasswordInput, 'newpassword123');
+      });
+
+      const buttons = getAllByText('Change Password');
+      const submitButton = buttons[buttons.length - 1];
+      fireEvent.press(submitButton);
+
+      await waitFor(() => {
+        expect(mockUpdatePassword).toHaveBeenCalledWith('oldpassword', 'newpassword123');
       });
 
       await waitFor(() => {
@@ -491,28 +535,88 @@ describe('Profile Component', () => {
     });
 
     it('clears password fields after successful change', async () => {
-      mockUpdateUser.mockResolvedValue({ error: null });
+      mockUpdatePassword.mockResolvedValue(undefined);
 
-      const { getByText, getByPlaceholderText } = render(<Profile />);
+      const { getByText, getAllByText, getByPlaceholderText } = render(<Profile />);
 
-      const currentPasswordInput = getByPlaceholderText('Enter current password');
-      const newPasswordInput = getByPlaceholderText('Enter new password (min 8 characters)');
-      const confirmPasswordInput = getByPlaceholderText('Re-enter new password');
       const changePasswordButton = getByText('Change Password');
-
-      fireEvent.changeText(currentPasswordInput, 'oldpassword');
-      fireEvent.changeText(newPasswordInput, 'newpassword123');
-      fireEvent.changeText(confirmPasswordInput, 'newpassword123');
       fireEvent.press(changePasswordButton);
+
+      await waitFor(() => {
+        const currentPasswordInput = getByPlaceholderText('Enter current password');
+        const newPasswordInput = getByPlaceholderText('Enter new password (min 8 characters)');
+        const confirmPasswordInput = getByPlaceholderText('Re-enter new password');
+
+        fireEvent.changeText(currentPasswordInput, 'oldpassword');
+        fireEvent.changeText(newPasswordInput, 'newpassword123');
+        fireEvent.changeText(confirmPasswordInput, 'newpassword123');
+      });
+
+      const buttons = getAllByText('Change Password');
+      const submitButton = buttons[buttons.length - 1];
+      fireEvent.press(submitButton);
 
       await waitFor(() => {
         expect(getByText('Password changed successfully')).toBeTruthy();
       });
 
       // Check fields are cleared
+      const currentPasswordInput = getByPlaceholderText('Enter current password');
+      const newPasswordInput = getByPlaceholderText('Enter new password (min 8 characters)');
+      const confirmPasswordInput = getByPlaceholderText('Re-enter new password');
+
       expect(currentPasswordInput.props.value).toBe('');
       expect(newPasswordInput.props.value).toBe('');
       expect(confirmPasswordInput.props.value).toBe('');
+    });
+
+    it('handles password change error', async () => {
+      const error = new Error('Current password is incorrect');
+      error.name = 'NotAuthorizedException';
+      mockUpdatePassword.mockRejectedValue(error);
+
+      const { getByText, getAllByText, getByPlaceholderText } = render(<Profile />);
+
+      const changePasswordButton = getByText('Change Password');
+      fireEvent.press(changePasswordButton);
+
+      await waitFor(() => {
+        const currentPasswordInput = getByPlaceholderText('Enter current password');
+        const newPasswordInput = getByPlaceholderText('Enter new password (min 8 characters)');
+        const confirmPasswordInput = getByPlaceholderText('Re-enter new password');
+
+        fireEvent.changeText(currentPasswordInput, 'wrongpassword');
+        fireEvent.changeText(newPasswordInput, 'newpassword123');
+        fireEvent.changeText(confirmPasswordInput, 'newpassword123');
+      });
+
+      const buttons = getAllByText('Change Password');
+      const submitButton = buttons[buttons.length - 1];
+      fireEvent.press(submitButton);
+
+      await waitFor(() => {
+        expect(getByText('Current password is incorrect')).toBeTruthy();
+      });
+    });
+
+    it('hides password change section for anonymous users', () => {
+      mockUseAuthUser.mockReturnValue({
+        user: {
+          id: 'user-anon',
+          email: 'anon@test.com',
+          firstName: 'Anonymous',
+          lastName: 'User',
+          role: 1,
+          awsSub: 'anonymous'
+        },
+        isLoading: false,
+        error: null
+      });
+
+      const { queryByText } = render(<Profile />);
+
+      // Should not show Change Password button for anonymous users
+      expect(queryByText('Change Password')).toBeNull();
     });
   });
 

@@ -108,10 +108,10 @@ describe('c-rivalry Controller', () => {
     React.createElement(QueryClientProvider, { client: queryClient }, children);
 
   describe('useRivalryWithAllInfoQuery', () => {
+    // Skip: Complex async generator mocking + ensureTierListIntegrity requires extensive Fighter/TierSlot mocks
+    // Functionality is covered by integration tests
     it.skip('should populate contestCount, userAId, userBId, and gameId from GraphQL', async () => {
-      // This test is skipped because the async generator mocking is complex
-      // The functionality is covered by integration tests
-      // Mock the GraphQL response with fresh generators for each call
+      // Mock the GraphQL response - use mockImplementation to create fresh generators each time
       mockRivalryGet.mockImplementation(async () => ({
         data: {
           id: 'rivalry-123',
@@ -122,6 +122,8 @@ describe('c-rivalry Controller', () => {
           currentContestId: 'contest-current',
           createdAt: '2024-01-01',
           updatedAt: '2024-01-02',
+          hiddenByA: false,
+          hiddenByB: false,
           contests: (async function* () {
             yield { id: 'contest-1' };
           })(),
@@ -133,7 +135,7 @@ describe('c-rivalry Controller', () => {
               createdAt: '2024-01-01',
               updatedAt: '2024-01-01',
               tierSlots: (async function* () {
-                yield { id: 'slot-1', fighterId: 'fighter-1', position: 0 };
+                yield { id: 'slot-1', fighterId: 'fighter-1', position: 0, contestCount: 0, winCount: 0 };
               })()
             };
             yield {
@@ -143,10 +145,29 @@ describe('c-rivalry Controller', () => {
               createdAt: '2024-01-01',
               updatedAt: '2024-01-01',
               tierSlots: (async function* () {
-                yield { id: 'slot-2', fighterId: 'fighter-2', position: 0 };
+                yield { id: 'slot-2', fighterId: 'fighter-2', position: 0, contestCount: 0, winCount: 0 };
               })()
             };
           })()
+        },
+        errors: null
+      }));
+
+      // Mock contest query
+      mockContestsByRivalryIdAndCreatedAt.mockResolvedValue({
+        data: [{ id: 'contest-1' }],
+        errors: null
+      });
+
+      // Mock user data
+      mockUserGet.mockImplementation(async ({ id }) => ({
+        data: {
+          id,
+          email: `${id}@test.com`,
+          firstName: id,
+          lastName: 'User',
+          role: 0,
+          awsSub: `aws-${id}`
         },
         errors: null
       }));
@@ -179,6 +200,8 @@ describe('c-rivalry Controller', () => {
       expect(populatedRivalry.currentContestId).toBe('contest-current');
     });
 
+    // Skip: Complex async generator mocking + ensureTierListIntegrity requires extensive Fighter/TierSlot mocks
+    // Functionality is covered by integration tests
     it.skip('should match tier lists to users using userAId and userBId', async () => {
       mockRivalryGet.mockImplementation(async () => ({
         data: {
@@ -190,6 +213,8 @@ describe('c-rivalry Controller', () => {
           currentContestId: null,
           createdAt: '2024-01-01',
           updatedAt: '2024-01-01',
+          hiddenByA: false,
+          hiddenByB: false,
           contests: (async function* () {
             yield { id: 'contest-1' };
           })(),
@@ -201,7 +226,7 @@ describe('c-rivalry Controller', () => {
               createdAt: '2024-01-01',
               updatedAt: '2024-01-01',
               tierSlots: (async function* () {
-                yield { id: 'slot-a1', fighterId: 'fighter-1', position: 0 };
+                yield { id: 'slot-a1', fighterId: 'fighter-1', position: 0, contestCount: 0, winCount: 0 };
               })()
             };
             yield {
@@ -211,7 +236,7 @@ describe('c-rivalry Controller', () => {
               createdAt: '2024-01-01',
               updatedAt: '2024-01-01',
               tierSlots: (async function* () {
-                yield { id: 'slot-b1', fighterId: 'fighter-2', position: 0 };
+                yield { id: 'slot-b1', fighterId: 'fighter-2', position: 0, contestCount: 0, winCount: 0 };
               })()
             };
           })()
@@ -266,84 +291,6 @@ describe('c-rivalry Controller', () => {
       expect(populatedRivalry.tierListB.userId).toBe('user-beta');
     });
 
-    it.skip('should fetch rivalry with contests and tier lists', async () => {
-      // This test is skipped because the async generator mocking is complex
-      // The functionality is covered by integration tests
-      // Create mock data
-      const mockContest = {
-        id: 'contest-1',
-        rivalryId: 'rivalry-123',
-        tierSlotAId: 'slot-a',
-        tierSlotBId: 'slot-b',
-        result: 2,
-        bias: 0,
-        createdAt: '2024-01-01',
-        updatedAt: '2024-01-01'
-      };
-
-      const mockTierSlot = {
-        id: 'tier-slot-1',
-        tierListId: 'tier-list-a',
-        fighterId: 'fighter-1',
-        position: 0,
-        winCount: 0,
-        contestCount: 0,
-        createdAt: '2024-01-01',
-        updatedAt: '2024-01-01'
-      };
-
-      // Mock implementation that returns fresh generators each time
-      mockRivalryGet.mockImplementation(async () => {
-        const mockTierList = {
-          id: 'tier-list-a',
-          rivalryId: 'rivalry-123',
-          userId: 'user-a',
-          standing: 0,
-          createdAt: '2024-01-01',
-          updatedAt: '2024-01-01',
-          tierSlots: (async function* () {
-            yield mockTierSlot;
-          })()
-        };
-
-        const mockRivalryData = {
-          id: 'rivalry-123',
-          userAId: 'user-a',
-          userBId: 'user-b',
-          gameId: 'game-123',
-          contestCount: 10,
-          currentContestId: 'contest-current',
-          createdAt: '2024-01-01',
-          updatedAt: '2024-01-01',
-          contests: (async function* () {
-            yield mockContest;
-          })(),
-          tierLists: (async function* () {
-            yield mockTierList;
-          })()
-        };
-
-        return {
-          data: mockRivalryData,
-          errors: null
-        };
-      });
-
-      const onSuccess = jest.fn();
-      const { result } = renderHook(
-        () =>
-          useRivalryWithAllInfoQuery({
-            rivalry: mockRivalry,
-            onSuccess
-          }),
-        { wrapper }
-      );
-
-      await waitFor(() => expect(result.current.isSuccess).toBe(true), { timeout: 5000 });
-
-      expect(mockRivalryGet).toHaveBeenCalled();
-      expect(onSuccess).toHaveBeenCalledWith(mockRivalry);
-    });
 
     it('should not execute query if rivalry is not provided', () => {
       const { result } = renderHook(
@@ -360,8 +307,7 @@ describe('c-rivalry Controller', () => {
   });
 
   describe('useCreateContestMutation', () => {
-    // Mutation test needs adjustment for async behavior
-    it.skip('should create a contest', async () => {
+    it('should create a contest', async () => {
       const mockContest = {
         id: 'contest-new',
         rivalryId: 'rivalry-123',
@@ -378,14 +324,28 @@ describe('c-rivalry Controller', () => {
         errors: null
       });
 
-      // Add tier lists to rivalry for sampling
+      // Add tier lists with slots to rivalry for sampling
       mockRivalry.tierListA = getMTierList({
         id: 'tier-list-a',
         rivalryId: 'rivalry-123',
         userId: 'user-a',
         standing: 0,
         createdAt: '2024-01-01',
-        updatedAt: '2024-01-01'
+        updatedAt: '2024-01-01',
+        tierSlots: {
+          items: [
+            {
+              id: 'slot-a',
+              tierListId: 'tier-list-a',
+              fighterId: 'fighter-a',
+              position: 0,
+              contestCount: 0,
+              winCount: 0,
+              createdAt: '2024-01-01',
+              updatedAt: '2024-01-01'
+            }
+          ]
+        }
       } as any);
 
       mockRivalry.tierListB = getMTierList({
@@ -394,7 +354,21 @@ describe('c-rivalry Controller', () => {
         userId: 'user-b',
         standing: 0,
         createdAt: '2024-01-01',
-        updatedAt: '2024-01-01'
+        updatedAt: '2024-01-01',
+        tierSlots: {
+          items: [
+            {
+              id: 'slot-b',
+              tierListId: 'tier-list-b',
+              fighterId: 'fighter-b',
+              position: 0,
+              contestCount: 0,
+              winCount: 0,
+              createdAt: '2024-01-01',
+              updatedAt: '2024-01-01'
+            }
+          ]
+        }
       } as any);
 
       const onSuccess = jest.fn();
@@ -417,8 +391,7 @@ describe('c-rivalry Controller', () => {
   });
 
   describe('useUpdateContestMutation', () => {
-    // Mutation test needs adjustment for async behavior
-    it.skip('should update a contest', async () => {
+    it('should update a contest', async () => {
       const contestRivalry = getMRivalry({
         rivalry: {
           id: 'rivalry-123',
@@ -426,12 +399,15 @@ describe('c-rivalry Controller', () => {
           userBId: 'user-b',
           gameId: 'game-123',
           contestCount: 10,
+          currentContestId: 'contest-123',
           createdAt: '2024-01-01',
           updatedAt: '2024-01-01'
         } as TestRivalry
       });
 
-      contestRivalry.currentContest = {
+      // Set up the current contest with getMContest to get the proper model
+      const { getMContest } = require('../../src/models/m-contest');
+      contestRivalry.currentContest = getMContest({
         id: 'contest-123',
         rivalryId: 'rivalry-123',
         tierSlotAId: 'slot-a',
@@ -440,7 +416,7 @@ describe('c-rivalry Controller', () => {
         bias: 1,
         createdAt: '2024-01-01',
         updatedAt: '2024-01-01'
-      } as any;
+      } as any);
 
       mockContestUpdate.mockResolvedValue({
         data: {

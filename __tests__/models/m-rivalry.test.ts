@@ -394,11 +394,7 @@ describe('MRivalry Model', () => {
     });
 
     describe('1-stock win reversal', () => {
-      // Skipped: Test has incorrect expectations. With 1-stock wins, only ONE player moves.
-      // With nudge=1, only the loser moves up. Winner stays at same standing.
-      // These tests were originally skipped because the expectations don't match the actual
-      // game logic implementation in adjustStanding().
-      it.skip('should reverse 1-stock win with positive nudge (bias=1)', () => {
+      it('should reverse 1-stock win with positive nudge (bias=1)', () => {
         const mRivalry = getMRivalry({ rivalry: mockRivalry });
         const initialStandingA = 3;
         const initialStandingB = 3;
@@ -424,9 +420,10 @@ describe('MRivalry Model', () => {
         // Apply standing with nudge=1 to force loser to move up
         mRivalry.adjustStanding(1);
 
-        // Verify standings changed
-        expect(mRivalry.tierListA?.standing).not.toBe(initialStandingA);
-        expect(mRivalry.tierListB?.standing).not.toBe(initialStandingB);
+        // With 1-stock win and nudge=1, only loser (B) moves up
+        expect(mRivalry.tierListA?.standing).toBe(initialStandingA); // Winner stays
+        expect(mRivalry.tierListB?.standing).toBe(initialStandingB - 1); // Loser moves up
+        expect(contest.bias).toBe(1);
 
         // Reverse standing
         mRivalry.reverseStanding(contest);
@@ -436,8 +433,7 @@ describe('MRivalry Model', () => {
         expect(mRivalry.tierListB?.standing).toBe(initialStandingB);
       });
 
-      // Skipped: Same issue as above - test expects both players to move, but only one moves.
-      it.skip('should reverse 1-stock win with negative nudge (bias=-1)', () => {
+      it('should reverse 1-stock win with negative nudge (bias=-1)', () => {
         const mRivalry = getMRivalry({ rivalry: mockRivalry });
         const initialStandingA = 3;
         const initialStandingB = 3;
@@ -463,9 +459,10 @@ describe('MRivalry Model', () => {
         // Apply standing with nudge=-1 to force winner to move down
         mRivalry.adjustStanding(-1);
 
-        // Verify standings changed
-        expect(mRivalry.tierListA?.standing).not.toBe(initialStandingA);
-        expect(mRivalry.tierListB?.standing).not.toBe(initialStandingB);
+        // With 1-stock win and nudge=-1, only winner (A) moves down
+        expect(mRivalry.tierListA?.standing).toBe(initialStandingA + 1); // Winner moves down
+        expect(mRivalry.tierListB?.standing).toBe(initialStandingB); // Loser stays
+        expect(contest.bias).toBe(-1);
 
         // Reverse standing
         mRivalry.reverseStanding(contest);
@@ -596,12 +593,11 @@ describe('MRivalry Model', () => {
         expect(mRivalry.tierListB?.standing).toBe(initialStandingB);
       });
 
-      // Skipped: This test may have similar issues with expectations.
-      // TODO: Investigate if this can be enabled with corrected expectations.
-      it.skip('should correctly reverse 3-stock win with bias=-1', () => {
+      it('should correctly reverse 3-stock win with bias=-1', () => {
         const mRivalry = getMRivalry({ rivalry: mockRivalry });
-        const initialStandingA = 5;
-        const initialStandingB = 5;
+        // Use standing=2 to avoid hitting the lowest tier boundary
+        const initialStandingA = 2;
+        const initialStandingB = 2;
 
         mRivalry.tierListA = getMTierList(createTierListWithStanding('user-a', initialStandingA));
         mRivalry.tierListB = getMTierList(createTierListWithStanding('user-b', initialStandingB));
@@ -626,11 +622,11 @@ describe('MRivalry Model', () => {
         const standingAfterB = mRivalry.tierListB?.standing;
 
         // 3 stocks = 1 move where both move + 1 additional move
-        // Both move: A down 1, B up 1
-        // Additional: A down 1 (bias=-1 from nudge)
+        // Both move: A down 1 (2→3), B up 1 (2→1)
+        // Additional: A down 1 more (3→4) since nudge=-1 and winner not at lowest tier
         expect(contest.bias).toBe(-1);
-        expect(standingAfterA).toBe(initialStandingA + 2); // Down 2
-        expect(standingAfterB).toBe(initialStandingB - 1); // Up 1
+        expect(standingAfterA).toBe(initialStandingA + 2); // Down 2 (2→4)
+        expect(standingAfterB).toBe(initialStandingB - 1); // Up 1 (2→1)
 
         // Reverse standing
         mRivalry.reverseStanding(contest);

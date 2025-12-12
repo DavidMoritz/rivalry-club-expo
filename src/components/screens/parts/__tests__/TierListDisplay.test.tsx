@@ -57,15 +57,19 @@ const mockRivalry = getMRivalry({
 });
 
 describe('TierListDisplay', () => {
-  it.skip('renders without crashing', async () => {
+  it('renders without crashing', async () => {
     const mockTierList = createMockTierList();
 
     const { getByText } = render(
-      <GameProvider game={mockGame}>
-        <SyncedScrollViewContext.Provider value={syncedScrollViewState}>
-          <TierListDisplay tierList={mockTierList} unlinked={false} />
-        </SyncedScrollViewContext.Provider>
-      </GameProvider>
+      <QueryClientProvider client={queryClient}>
+        <RivalryProvider rivalry={mockRivalry}>
+          <GameProvider game={mockGame}>
+            <SyncedScrollViewContext.Provider value={syncedScrollViewState}>
+              <TierListDisplay tierList={mockTierList} tierListSignifier="A" unlinked={false} />
+            </SyncedScrollViewContext.Provider>
+          </GameProvider>
+        </RivalryProvider>
+      </QueryClientProvider>
     );
 
     // Should render tier labels
@@ -74,31 +78,21 @@ describe('TierListDisplay', () => {
     });
   });
 
-  it.skip('renders all tier labels', async () => {
+  // REMOVED: Duplicate of 'renders without crashing' test - both tests did the exact same thing
+
+  it('renders with unlinked prop set to true', async () => {
     const mockTierList = createMockTierList();
 
     const { getByText } = render(
-      <GameProvider game={mockGame}>
-        <SyncedScrollViewContext.Provider value={syncedScrollViewState}>
-          <TierListDisplay tierList={mockTierList} unlinked={false} />
-        </SyncedScrollViewContext.Provider>
-      </GameProvider>
-    );
-
-    await waitFor(() => {
-      expect(getByText('S')).toBeTruthy();
-    });
-  });
-
-  it.skip('renders with unlinked prop set to true', async () => {
-    const mockTierList = createMockTierList();
-
-    const { getByText } = render(
-      <GameProvider game={mockGame}>
-        <SyncedScrollViewContext.Provider value={syncedScrollViewState}>
-          <TierListDisplay tierList={mockTierList} unlinked={true} />
-        </SyncedScrollViewContext.Provider>
-      </GameProvider>
+      <QueryClientProvider client={queryClient}>
+        <RivalryProvider rivalry={mockRivalry}>
+          <GameProvider game={mockGame}>
+            <SyncedScrollViewContext.Provider value={syncedScrollViewState}>
+              <TierListDisplay tierList={mockTierList} tierListSignifier="B" unlinked={true} />
+            </SyncedScrollViewContext.Provider>
+          </GameProvider>
+        </RivalryProvider>
+      </QueryClientProvider>
     );
 
     await waitFor(() => {
@@ -119,8 +113,8 @@ describe('TierListDisplay', () => {
 
     const { root } = render(
       <QueryClientProvider client={queryClient}>
-        <RivalryProvider value={mockRivalry}>
-          <GameProvider value={mockGame}>
+        <RivalryProvider rivalry={mockRivalry}>
+          <GameProvider game={mockGame}>
             <SyncedScrollViewContext.Provider value={syncedScrollViewState}>
               <TierListDisplay tierList={emptyTierList} tierListSignifier="A" unlinked={false} />
             </SyncedScrollViewContext.Provider>
@@ -132,7 +126,7 @@ describe('TierListDisplay', () => {
     expect(root).toBeTruthy();
   });
 
-  it.skip('sorts tier slots by position', async () => {
+  it('sorts tier slots by position', async () => {
     const unsortedSlots = [
       { id: 'slot-2', fighterId: 'fighter-2', position: 2, tierListId: 'tierlist-1' },
       { id: 'slot-0', fighterId: 'fighter-1', position: 0, tierListId: 'tierlist-1' },
@@ -150,11 +144,15 @@ describe('TierListDisplay', () => {
     } as any);
 
     const { getByText } = render(
-      <GameProvider value={mockGame}>
-        <SyncedScrollViewContext.Provider value={syncedScrollViewState}>
-          <TierListDisplay tierList={unsortedTierList} unlinked={false} />
-        </SyncedScrollViewContext.Provider>
-      </GameProvider>
+      <QueryClientProvider client={queryClient}>
+        <RivalryProvider rivalry={mockRivalry}>
+          <GameProvider game={mockGame}>
+            <SyncedScrollViewContext.Provider value={syncedScrollViewState}>
+              <TierListDisplay tierList={unsortedTierList} tierListSignifier="A" unlinked={false} />
+            </SyncedScrollViewContext.Provider>
+          </GameProvider>
+        </RivalryProvider>
+      </QueryClientProvider>
     );
 
     await waitFor(() => {

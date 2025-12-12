@@ -15,6 +15,7 @@ export function createMockUser(overrides?: Partial<Schema['User']['type']>): Sch
   const now = new Date().toISOString();
 
   return {
+    __typename: 'User',
     id: 'user-test-id',
     email: 'test@example.com',
     firstName: 'Test',
@@ -35,6 +36,7 @@ export function createMockGame(overrides?: Partial<Schema['Game']['type']>): any
   const now = new Date().toISOString();
 
   return {
+    __typename: 'Game',
     id: 'game-test-id',
     name: 'Super Smash Bros. Ultimate',
     createdAt: now,
@@ -53,6 +55,7 @@ export function createMockFighter(overrides?: Partial<Schema['Fighter']['type']>
   const now = new Date().toISOString();
 
   return {
+    __typename: 'Fighter',
     id: 'fighter-test-id',
     name: 'Mario',
     gameId: 'game-test-id',
@@ -75,6 +78,7 @@ export function createMockRivalry(overrides?: Partial<Schema['Rivalry']['type']>
   const now = new Date().toISOString();
 
   return {
+    __typename: 'Rivalry',
     id: 'rivalry-test-id',
     userAId: 'user-a-id',
     userBId: 'user-b-id',
@@ -82,6 +86,8 @@ export function createMockRivalry(overrides?: Partial<Schema['Rivalry']['type']>
     contestCount: 0,
     currentContestId: null,
     accepted: true,
+    hiddenByA: false,
+    hiddenByB: false,
     createdAt: now,
     updatedAt: now,
     deletedAt: null,
@@ -99,6 +105,7 @@ export function createMockContest(overrides?: Partial<Schema['Contest']['type']>
   const now = new Date().toISOString();
 
   return {
+    __typename: 'Contest',
     id: 'contest-test-id',
     rivalryId: 'rivalry-test-id',
     tierSlotAId: 'tier-slot-a-id',
@@ -120,6 +127,7 @@ export function createMockTierList(overrides?: Partial<Schema['TierList']['type'
   const now = new Date().toISOString();
 
   return {
+    __typename: 'TierList',
     id: 'tier-list-test-id',
     rivalryId: 'rivalry-test-id',
     userId: 'user-test-id',
@@ -140,6 +148,7 @@ export function createMockTierSlot(overrides?: Partial<Schema['TierSlot']['type'
   const now = new Date().toISOString();
 
   return {
+    __typename: 'TierSlot',
     id: 'tier-slot-test-id',
     tierListId: 'tier-list-test-id',
     fighterId: 'fighter-test-id',
@@ -308,6 +317,62 @@ export function createMockGraphQLClient() {
         delete: jest.fn()
       }
     }
+  };
+}
+
+/**
+ * Creates a mock TierList with TierSlots already populated
+ * Useful for tests that need tier lists with fighters
+ */
+export function createMockTierListWithSlots(options?: {
+  tierListId?: string;
+  rivalryId?: string;
+  userId?: string;
+  standing?: number;
+  fighters?: Array<{ id: string; name: string; position?: number }>;
+}): any {
+  const tierListId = options?.tierListId || 'tier-list-test-id';
+  const fighters = options?.fighters || [
+    { id: 'fighter-1', name: 'Fighter 1', position: 0 },
+    { id: 'fighter-2', name: 'Fighter 2', position: 1 }
+  ];
+
+  const tierSlots = fighters.map((fighter, index) =>
+    createMockTierSlot({
+      id: `tier-slot-${tierListId}-${index}`,
+      tierListId,
+      fighterId: fighter.id,
+      position: fighter.position !== undefined ? fighter.position : index,
+      contestCount: 0,
+      winCount: 0
+    })
+  );
+
+  return createMockTierList({
+    id: tierListId,
+    rivalryId: options?.rivalryId || 'rivalry-test-id',
+    userId: options?.userId || 'user-test-id',
+    standing: options?.standing !== undefined ? options.standing : 0,
+    tierSlots: {
+      __typename: 'ModelTierSlotConnection',
+      items: tierSlots
+    }
+  });
+}
+
+/**
+ * Creates a mock connection object (for GraphQL list queries)
+ * Useful for mocking paginated list responses
+ */
+export function createMockConnection<T>(
+  items: T[],
+  typename: string,
+  nextToken?: string | null
+): any {
+  return {
+    __typename: `Model${typename}Connection`,
+    items,
+    nextToken: nextToken || null
   };
 }
 

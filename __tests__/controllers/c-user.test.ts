@@ -1,5 +1,4 @@
-import { renderHook, waitFor } from '@testing-library/react-native';
-import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
+import { renderHook } from '@testing-library/react-native';
 import React from 'react';
 
 // Create mock functions BEFORE jest.mock and controller imports
@@ -7,60 +6,47 @@ export const mockUserList = jest.fn();
 export const mockUserGet = jest.fn();
 export const mockRivalryList = jest.fn();
 
+// Create mock client that will be returned by generateClient
+const mockClient = {
+  models: {
+    User: {
+      list: mockUserList,
+      get: mockUserGet
+    },
+    Rivalry: {
+      list: mockRivalryList
+    }
+  }
+};
+
 // Mock the aws-amplify/data module
 jest.mock('aws-amplify/data', () => ({
-  generateClient: jest.fn(() => {
-    // Access mocks from the test file module
-    const testModule = require(__filename);
-
-    return {
-      models: {
-        User: {
-          list: testModule.mockUserList,
-          get: testModule.mockUserGet
-        },
-        Rivalry: {
-          list: testModule.mockRivalryList
-        }
-      }
-    };
-  })
+  generateClient: jest.fn(() => mockClient)
 }));
 
 import { useUserDataQuery, useUserWithRivalriesByAwsSubQuery } from '../../src/controllers/c-user';
 import { getMRivalry } from '../../src/models/m-rivalry';
 import { TestRivalry } from '../test-helpers';
+import {
+  createTestQueryWrapper,
+  waitForQuerySuccess,
+  createGraphQLResponse,
+  TEST_TIMEOUTS
+} from '../test-utils';
 
-/**
- * NOTE: All tests in this file are currently skipped because the AWS Amplify Data client
- * mocking is not working correctly. The generateClient() mock setup doesn't properly
- * intercept the client.models.User.* and client.models.Rivalry.* calls.
- *
- * To fix these tests:
- * 1. Use a proper mocking library for AWS Amplify Gen 2 (e.g., aws-amplify-testing-utils if available)
- * 2. OR refactor the mocking to properly intercept the client calls at the right level
- * 3. OR refactor the controller to use dependency injection for the client
- *
- * The test structure and assertions are valid - only the mocking layer needs to be fixed.
- */
 describe('c-user Controller', () => {
-  let queryClient: QueryClient;
+  let wrapper: any;
+  let queryClient: any;
 
   beforeEach(() => {
-    queryClient = new QueryClient({
-      defaultOptions: {
-        queries: { retry: false },
-        mutations: { retry: false }
-      }
-    });
+    const testWrapper = createTestQueryWrapper();
+    wrapper = testWrapper.wrapper;
+    queryClient = testWrapper.queryClient;
     jest.clearAllMocks();
   });
 
-  const wrapper = ({ children }: { children: React.ReactNode }) =>
-    React.createElement(QueryClientProvider, { client: queryClient }, children);
-
   describe('useUserWithRivalriesByAwsSubQuery', () => {
-    it.skip('should fetch user data by AWS sub', async () => {
+    it('should fetch user data by AWS sub', async () => {
       const mockUser = {
         id: 'user-123',
         email: 'test@test.com',
@@ -96,20 +82,13 @@ describe('c-user Controller', () => {
         }
       ];
 
-      mockUserList.mockResolvedValue({
-        data: [mockUser],
-        errors: null
-      });
+      mockUserList.mockResolvedValue(
+        createGraphQLResponse([mockUser])
+      );
 
       mockRivalryList
-        .mockResolvedValueOnce({
-          data: mockRivalriesA,
-          errors: null
-        })
-        .mockResolvedValueOnce({
-          data: mockRivalriesB,
-          errors: null
-        });
+        .mockResolvedValueOnce(createGraphQLResponse(mockRivalriesA))
+        .mockResolvedValueOnce(createGraphQLResponse(mockRivalriesB));
 
       const { result } = renderHook(
         () =>
@@ -119,16 +98,7 @@ describe('c-user Controller', () => {
         { wrapper }
       );
 
-      await waitFor(() => expect(result.current.isSuccess).toBe(true), {
-        timeout: 3000,
-        onTimeout: () => {
-          console.error('Query failed:', result.current.error);
-          console.error('Query status:', result.current.status);
-          console.error('mockUserList called:', mockUserList.mock.calls.length);
-
-          return new Error(`Query did not succeed. Status: ${result.current.status}`);
-        }
-      });
+      await waitForQuerySuccess(result, { timeout: TEST_TIMEOUTS.QUERY });
 
       expect(mockUserList).toHaveBeenCalled();
       expect(mockRivalryList).toHaveBeenCalledTimes(2);
@@ -139,7 +109,7 @@ describe('c-user Controller', () => {
       });
     });
 
-    it.skip('should return early if username is not provided', async () => {
+    it('should return early if username is not provided', async () => {
       const { result } = renderHook(
         () =>
           useUserWithRivalriesByAwsSubQuery({
@@ -148,7 +118,7 @@ describe('c-user Controller', () => {
         { wrapper }
       );
 
-      await waitFor(() => expect(result.current.isSuccess).toBe(true));
+      await waitForQuerySuccess(result);
 
       expect(result.current.data).toBeNull();
       expect(mockUserList).not.toHaveBeenCalled();
@@ -156,7 +126,7 @@ describe('c-user Controller', () => {
   });
 
   describe('useUserDataQuery', () => {
-    it.skip('should fetch multiple users from rivalries', async () => {
+    it('should fetch multiple users from rivalries', async () => {
       const mockRivalries = [
         getMRivalry({
           rivalry: {
@@ -216,32 +186,32 @@ describe('c-user Controller', () => {
       ];
 
       mockUserGet
-        .mockResolvedValueOnce({ data: mockUsers[0], errors: null })
-        .mockResolvedValueOnce({ data: mockUsers[1], errors: null })
-        .mockResolvedValueOnce({ data: mockUsers[2], errors: null });
+        .mockResolvedValueOnce(createGraphQLResponse(mockUsers[0]))
+        .mockResolvedValueOnce(createGraphQLResponse(mockUsers[1]))
+        .mockResolvedValueOnce(createGraphQLResponse(mockUsers[2]));
 
       const { result } = renderHook(() => useUserDataQuery({ rivalries: mockRivalries }), {
         wrapper
       });
 
-      await waitFor(() => expect(result.current.isSuccess).toBe(true));
+      await waitForQuerySuccess(result);
 
       expect(mockUserGet).toHaveBeenCalledTimes(3);
       expect(result.current.data).toEqual(mockUsers);
     });
 
-    it.skip('should return early if no rivalries provided', async () => {
+    it('should return early if no rivalries provided', async () => {
       const { result } = renderHook(() => useUserDataQuery({ rivalries: [] }), {
         wrapper
       });
 
-      await waitFor(() => expect(result.current.isSuccess).toBe(true));
+      await waitForQuerySuccess(result);
 
       expect(result.current.data).toBeNull();
       expect(mockUserGet).not.toHaveBeenCalled();
     });
 
-    it.skip('should handle duplicate user IDs correctly', async () => {
+    it('should handle duplicate user IDs correctly', async () => {
       const mockRivalries = [
         getMRivalry({
           rivalry: {
@@ -290,14 +260,14 @@ describe('c-user Controller', () => {
       };
 
       mockUserGet
-        .mockResolvedValueOnce({ data: mockUserA, errors: null })
-        .mockResolvedValueOnce({ data: mockUserB, errors: null });
+        .mockResolvedValueOnce(createGraphQLResponse(mockUserA))
+        .mockResolvedValueOnce(createGraphQLResponse(mockUserB));
 
-      renderHook(() => useUserDataQuery({ rivalries: mockRivalries }), {
+      const { result } = renderHook(() => useUserDataQuery({ rivalries: mockRivalries }), {
         wrapper
       });
 
-      await waitFor(() => expect(mockUserGet).toHaveBeenCalled());
+      await waitForQuerySuccess(result);
 
       // Should only fetch each unique user once
       expect(mockUserGet).toHaveBeenCalledTimes(2);

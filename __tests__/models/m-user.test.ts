@@ -64,9 +64,7 @@ describe('MUser Model', () => {
       expect(result).toBe('John #user-123');
     });
 
-    // Edge case: character-by-character comparison algorithm needs refinement
-    // Core functionality works correctly in practice
-    it.skip('should return abbreviated name when first names match but last names differ', () => {
+    it('should return abbreviated name when first names match but last names differ', () => {
       const mUser = getMUser({ user: mockUser });
 
       const result = mUser.displayName('John Smith');
@@ -74,9 +72,7 @@ describe('MUser Model', () => {
       expect(result).toBe('John D.');
     });
 
-    // Edge case: character-by-character comparison algorithm needs refinement
-    // Core functionality works correctly in practice
-    it.skip('should handle partial name matches', () => {
+    it('should handle partial name matches', () => {
       const user: User = {
         ...mockUser,
         firstName: 'Jonathan',
@@ -86,7 +82,7 @@ describe('MUser Model', () => {
 
       const result = mUser.displayName('John Doe');
 
-      expect(result).toBe('Jonathan D.o.e.');
+      expect(result).toBe('Jonathan');
     });
 
     it('should handle empty firstName gracefully', () => {

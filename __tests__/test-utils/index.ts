@@ -23,10 +23,14 @@ export {
   createGraphQLResponse,
   createGraphQLListResponse,
   createMockAsyncGenerator,
+  createMockAsyncGeneratorFromArray,
   isGraphQLError,
   expectGraphQLMutationCall,
   expectGraphQLQueryCall,
-  createTestQueryWrapper
+  createTestQueryWrapper,
+  waitForMultipleQueries,
+  resetMockGraphQLClient,
+  spyOnConsole
 } from './api-test-helpers';
 
 // Mock factories
@@ -39,6 +43,8 @@ export {
   createMockTierList,
   createMockTierSlot,
   createMockRivalryWithData,
+  createMockTierListWithSlots,
+  createMockConnection,
   createMockGraphQLClient,
   createMockAPIResponse
 } from './mock-factories';

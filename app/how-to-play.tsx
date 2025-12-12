@@ -6,6 +6,7 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { HamburgerMenu } from '../src/components/common/HamburgerMenu';
 import { Button } from '../src/components/common/Button';
 import { darkStyles, styles } from '../src/utils/styles';
+import { colors } from '../src/utils/colors';
 
 export default function HowToPlay() {
   const router = useRouter();
@@ -176,7 +177,7 @@ const headerContainerStyle = {
   paddingVertical: 24,
   alignItems: center,
   borderBottomWidth: 1,
-  borderBottomColor: '#333'
+  borderBottomColor: colors.gray750
 };
 
 const titleTextStyle = {
@@ -189,7 +190,7 @@ const titleTextStyle = {
 const subtitleTextStyle = {
   ...styles.text,
   fontSize: 16,
-  color: '#ab61e8'
+  color: colors.purple500
 };
 
 const homeButtonStyle = {
@@ -205,7 +206,7 @@ const sectionContainerTopStyle = {
 const sectionContainerStyle = {
   marginTop: 24,
   borderTopWidth: 1,
-  borderTopColor: '#333',
+  borderTopColor: colors.gray750,
   paddingTop: 20
 };
 
@@ -213,7 +214,7 @@ const sectionTitleStyle = {
   ...styles.text,
   fontSize: 20,
   fontWeight: bold,
-  color: '#ab61e8',
+  color: colors.purple500,
   marginBottom: 12
 };
 
@@ -254,7 +255,7 @@ const bulletTextNoBtmMarginStyle = {
 const proTipTextStyle = {
   ...bodyTextStyle,
   fontStyle: italic,
-  color: '#bb8cf6'
+  color: colors.purple300
 };
 
 const ruleTextStyle = {
@@ -276,7 +277,7 @@ const closingContainerStyle = {
   marginBottom: 16,
   paddingTop: 20,
   borderTopWidth: 1,
-  borderTopColor: '#333'
+  borderTopColor: colors.gray750
 };
 
 const closingTitleStyle = {

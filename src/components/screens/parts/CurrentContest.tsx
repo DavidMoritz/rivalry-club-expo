@@ -211,7 +211,7 @@ export function CurrentContest({
                       stockButtonStyle,
                       {
                         borderRightWidth: isLastButton ? 1 : 0,
-                        backgroundColor: isSelected ? colors.slate900 : '#f1f5f9',
+                        backgroundColor: isSelected ? colors.slate900 : colors.slate100,
                         borderTopLeftRadius: isFirstButton ? 8 : 0,
                         borderBottomLeftRadius: isFirstButton ? 8 : 0,
                         borderTopRightRadius: isLastButton ? 8 : 0,
@@ -252,8 +252,8 @@ export function CurrentContest({
 
 // Helper function to get border and background color based on winner status
 const getFighterBorderStyle = (isWinner: boolean) => ({
-  borderColor: isWinner ? '#15803d' : colors.white,
-  backgroundColor: isWinner ? '#dbeafe' : colors.white
+  borderColor: isWinner ? colors.green700 : colors.white,
+  backgroundColor: isWinner ? colors.blue100 : colors.white
 });
 
 // Style constants
@@ -303,7 +303,7 @@ const contestOuterContainerStyle = {
   alignItems: center,
   marginVertical: 6,
   borderWidth: 1,
-  borderColor: '#eab308',
+  borderColor: colors.yellow500,
   padding: 2
 };
 
@@ -345,14 +345,14 @@ const stockButtonStyle = {
   borderLeftWidth: 1,
   borderTopWidth: 1,
   borderBottomWidth: 1,
-  borderColor: '#7c3aed'
+  borderColor: colors.violet600
 };
 
 const resolveButtonStyle = {
   paddingHorizontal: 32,
   paddingVertical: 16,
   marginVertical: 16,
-  backgroundColor: '#15803d',
+  backgroundColor: colors.green700,
   borderRadius: 8
 };
 

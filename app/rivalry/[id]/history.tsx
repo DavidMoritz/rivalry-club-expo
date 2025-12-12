@@ -362,7 +362,7 @@ const errorContainerStyle = {
 const errorTitleStyle = {
   ...styles.text,
   fontSize: 18,
-  color: '#ff6b6b',
+  color: colors.red450,
   marginBottom: 8
 };
 

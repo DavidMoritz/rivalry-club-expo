@@ -13,6 +13,7 @@ import { getMRivalry, MRivalry } from '../../../src/models/m-rivalry';
 import { MTierList } from '../../../src/models/m-tier-list';
 import { getMUser } from '../../../src/models/m-user';
 import { RivalryProvider } from '../../../src/providers/rivalry';
+import { colors } from '../../../src/utils/colors';
 import { darkStyles, styles } from '../../../src/utils/styles';
 import { getStoredUuid } from '../../../src/lib/user-identity';
 
@@ -186,7 +187,7 @@ export default function TierListEditRoute() {
         <SafeAreaView style={[styles.container, darkStyles.container]}>
             {isLoading && (
               <View style={centeredContainerStyle}>
-                <ActivityIndicator size="large" color="white" />
+                <ActivityIndicator size="large" color={colors.white} />
                 <Text style={loadingTextStyle}>Loading Tier List...</Text>
               </View>
             )}
@@ -214,12 +215,12 @@ export default function TierListEditRoute() {
                   style={[
                     saveButtonBaseStyle,
                     {
-                      backgroundColor: hasChanges && !isPending ? '#3b82f6' : '#6b7280'
+                      backgroundColor: hasChanges && !isPending ? colors.blue500 : colors.slate500
                     }
                   ]}
                 >
                   {isPending ? (
-                    <ActivityIndicator color="white" />
+                    <ActivityIndicator color={colors.white} />
                   ) : (
                     <Text style={saveButtonTextStyle}>{hasChanges ? 'Save List' : 'No Changes'}</Text>
                   )}
@@ -288,7 +289,7 @@ const errorTitleStyle = {
   ...darkStyles.text,
   fontSize: 18,
   fontWeight: bold,
-  color: '#ef4444',
+  color: colors.red600,
   marginBottom: 16
 };
 
@@ -316,7 +317,7 @@ const saveButtonBaseStyle = {
 };
 
 const saveButtonTextStyle = {
-  color: 'white',
+  color: colors.white,
   fontSize: 18,
   fontWeight: bold
 };
@@ -332,7 +333,7 @@ const warningTitleStyle = {
   ...darkStyles.text,
   fontSize: 18,
   fontWeight: bold,
-  color: '#f59e0b',
+  color: colors.amber400,
   marginBottom: 16
 };
 
@@ -347,19 +348,19 @@ const debugInfoStyle = {
   ...styles.text,
   ...darkStyles.text,
   fontSize: 12,
-  color: '#9ca3af',
+  color: colors.gray300,
   textAlign: center,
   marginTop: 16
 };
 
 const goBackButtonStyle = {
-  backgroundColor: '#3b82f6',
+  backgroundColor: colors.blue500,
   padding: 12,
   borderRadius: 8,
   marginTop: 24
 };
 
 const goBackButtonTextStyle = {
-  color: 'white',
+  color: colors.white,
   fontSize: 16
 };

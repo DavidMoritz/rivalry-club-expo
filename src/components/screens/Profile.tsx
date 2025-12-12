@@ -379,7 +379,12 @@ export function Profile() {
                     📱 Anonymous Account
                   </Text>
                   <Text
-                    style={{ color: colors.slate300, textAlign: 'center', marginTop: 4, fontSize: 13 }}
+                    style={{
+                      color: colors.slate300,
+                      textAlign: 'center',
+                      marginTop: 4,
+                      fontSize: 13
+                    }}
                   >
                     Your data is saved locally. Link an account for recovery and multi-device sync.
                   </Text>
@@ -400,7 +405,12 @@ export function Profile() {
                     Link Existing Account
                   </Text>
                   <Text
-                    style={{ color: colors.darkText, fontSize: 12, marginTop: 2, textAlign: 'center' }}
+                    style={{
+                      color: colors.darkText,
+                      fontSize: 12,
+                      marginTop: 2,
+                      textAlign: 'center'
+                    }}
                   >
                     Already have an account? Restore your data. This will remove all data for{' '}
                     {user?.email.split('@')[0] ?? 'this profile'}.
@@ -417,10 +427,10 @@ export function Profile() {
                   }}
                   onPress={() => setShowCreateAccountModal(true)}
                 >
-                  <Text style={{ color: 'white', fontSize: 16, fontWeight: 'bold' }}>
+                  <Text style={{ color: colors.white, fontSize: 16, fontWeight: 'bold' }}>
                     Create New Account
                   </Text>
-                  <Text style={{ color: '#cbd5e1', fontSize: 12, marginTop: 2 }}>
+                  <Text style={{ color: colors.slate300, fontSize: 12, marginTop: 2 }}>
                     Link email for recovery
                   </Text>
                 </TouchableOpacity>
@@ -437,7 +447,14 @@ export function Profile() {
                 <Text style={{ color: 'white', textAlign: 'center', fontWeight: '600' }}>
                   ✅ Linked to Account
                 </Text>
-                <Text style={{ color: colors.green100, textAlign: 'center', marginTop: 4, fontSize: 13 }}>
+                <Text
+                  style={{
+                    color: colors.green100,
+                    textAlign: 'center',
+                    marginTop: 4,
+                    fontSize: 13
+                  }}
+                >
                   Your data is backed up and synced across devices
                 </Text>
               </View>

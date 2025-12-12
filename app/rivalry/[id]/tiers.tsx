@@ -201,7 +201,7 @@ const errorTitleStyle = {
   ...darkStyles.text,
   fontSize: 18,
   fontWeight: bold,
-  color: '#ef4444',
+  color: colors.red600,
   marginBottom: 16
 };
 
@@ -214,14 +214,14 @@ const debugTextStyle = {
 };
 
 const editButtonContainerStyle = {
-  width: '100%',
+  width: '100%' as const,
   alignItems: center,
   marginStart: 16,
   zIndex: 10
 };
 
 const editButtonStyle = {
-  width: '40%',
+  width: '40%' as const,
   paddingVertical: 4,
   paddingHorizontal: 0
 };

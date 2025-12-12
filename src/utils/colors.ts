@@ -21,30 +21,39 @@ export const colors = {
   // Purple shades
   purple900: '#6b21a8',
   purple600: '#8b5cf6',
+  purple500: '#ab61e8',
   purple400: '#a78bfa',
+  purple300: '#bb8cf6',
   purple100: '#e9d5ff',
 
   // Blue shades
   blue500: '#3b82f6',
   blue400: '#60a5fa',
+  blue100: '#dbeafe',
   cyan400: '#22d3ee',
 
   // Green shades
   green900: '#030',
+  green700: '#15803d',
   green600: '#10b981',
   green400: '#34d399',
   green300: '#4ade80',
   green100: '#d1fae5',
 
   // Red shades
+  red900: '#7f1d1d',
   red600: '#ef4444',
   red500: '#dc2626',
+  red450: '#ff6b6b',
   red400: '#f87171',
-  red900: '#7f1d1d',
   red300: '#fca5a5',
 
-  // Amber shades
+  // Amber/Yellow shades
+  yellow500: '#eab308',
   amber400: '#fbbf24',
+
+  // Violet shades
+  violet600: '#7c3aed',
 
   // Slate/Gray shades (darkest to lightest)
   slate950: '#0f172a',
@@ -55,6 +64,7 @@ export const colors = {
   slate500: '#6b7280',
   slate400: '#94a3b8',
   slate300: '#cbd5e1',
+  slate100: '#f1f5f9',
 
   // Gray shades
   gray900: '#111',

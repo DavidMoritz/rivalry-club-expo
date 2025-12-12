@@ -401,7 +401,7 @@ export function TierListEditDisplay({ tierList, onChange }: TierListEditDisplayP
           opacity: isSelected ? 0.5 : 1,
           transform: [{ scale: isSelected ? 0.9 : 1 }],
           borderWidth: isSelected ? 1 : 0,
-          borderColor: '#3b82f6',
+          borderColor: colors.blue500,
           borderRadius: 4,
           margin: isSelected ? -1 : 0
         }}
@@ -465,7 +465,7 @@ export function TierListEditDisplay({ tierList, onChange }: TierListEditDisplayP
                 }}
                 onPress={isAnyFighterSelected ? () => handleTierLabelClick(tierIndex) : undefined}
               >
-                <Text style={{ fontSize: 32, fontWeight: 'bold', color: 'black', opacity: 1 }}>
+                <Text style={{ fontSize: 32, fontWeight: 'bold', color: colors.black, opacity: 1 }}>
                   {tier.label}
                 </Text>
               </TierLabelContainer>
@@ -542,7 +542,7 @@ export function TierListEditDisplay({ tierList, onChange }: TierListEditDisplayP
                       opacity: isSelected ? 0.5 : 1,
                       transform: [{ scale: isSelected ? 0.9 : 1 }],
                       borderWidth: isSelected ? 1 : 0,
-                      borderColor: '#3b82f6',
+                      borderColor: colors.blue500,
                       borderRadius: 4,
                       margin: isSelected ? -1 : 0
                     }}
@@ -579,7 +579,7 @@ export function TierListEditDisplay({ tierList, onChange }: TierListEditDisplayP
         <TouchableOpacity
           onPress={handleResetAllFighters}
           style={{
-            backgroundColor: '#eab308',
+            backgroundColor: colors.yellow500,
             padding: 16,
             marginTop: 16,
             marginHorizontal: 16,
@@ -587,7 +587,7 @@ export function TierListEditDisplay({ tierList, onChange }: TierListEditDisplayP
             alignItems: 'center'
           }}
         >
-          <Text style={{ color: 'black', fontSize: 16, fontWeight: 'bold' }}>
+          <Text style={{ color: colors.black, fontSize: 16, fontWeight: 'bold' }}>
             ⚠️ Reset all fighters
           </Text>
         </TouchableOpacity>

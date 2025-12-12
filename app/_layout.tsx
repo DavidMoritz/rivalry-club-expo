@@ -11,6 +11,7 @@ import outputs from '../amplify-config';
 import { AllRivalriesProvider } from '../src/providers/all-rivalries';
 import { GameProvider } from '../src/providers/game';
 import { preloadAssets } from '../src/utils/preloadAssets';
+import { colors } from '../src/utils/colors';
 
 const queryClient = new QueryClient();
 
@@ -56,10 +57,15 @@ export default function RootLayout() {
   if (!isReady) {
     return (
       <View
-        style={{ flex: 1, backgroundColor: '#000', alignItems: 'center', justifyContent: 'center' }}
+        style={{
+          flex: 1,
+          backgroundColor: colors.black,
+          alignItems: 'center',
+          justifyContent: 'center'
+        }}
       >
-        <ActivityIndicator size="large" color="#fff" />
-        <Text style={{ color: '#fff', marginTop: 16, fontSize: 16 }}>Initializing...</Text>
+        <ActivityIndicator size="large" color={colors.white} />
+        <Text style={{ color: colors.white, marginTop: 16, fontSize: 16 }}>Initializing...</Text>
       </View>
     );
   }

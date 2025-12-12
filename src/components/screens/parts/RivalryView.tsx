@@ -60,50 +60,49 @@ export function RivalryView({ navigation }: RivalryViewProps) {
           navigation.navigate('RivalryTiersView');
         }}
         text="View Tier Lists"
-        style={{ height: 48, paddingHorizontal: 0, paddingVertical: 0, width: 256 }}
+        style={primaryButtonStyle}
       />
       <Button
         onPress={() => {
           navigation.navigate('ContestHistory');
         }}
         text={`View ${displayCount} ${displayContest}`}
-        style={{ height: 48, paddingHorizontal: 0, paddingVertical: 0, width: 256 }}
+        style={primaryButtonStyle}
       />
       <Button
         onPress={handleToggleHideRivalry}
         text={isCurrentlyHidden ? 'Unhide Rivalry' : 'Hide Rivalry'}
-        style={
-          isCurrentlyHidden
-            ? {
-                // Keep as big red button for "Unhide Rivalry"
-                height: 48,
-                paddingHorizontal: 0,
-                paddingVertical: 0,
-                width: 256,
-                backgroundColor: '#dc2626'
-              }
-            : {
-                // Make it look like a link for "Hide Rivalry"
-                backgroundColor: 'transparent',
-                borderWidth: 0,
-                height: 'auto',
-                width: 'auto',
-                paddingHorizontal: 4,
-                paddingVertical: 4
-              }
-        }
-        textStyle={
-          isCurrentlyHidden
-            ? {}
-            : {
-                // Link-like text styling for "Hide Rivalry"
-                color: '#94a3b8',
-                fontSize: 14,
-                fontWeight: 'normal',
-                textDecorationLine: 'underline'
-              }
-        }
+        style={isCurrentlyHidden ? unhideButtonStyle : linkButtonStyle}
+        textStyle={isCurrentlyHidden ? {} : linkTextStyle}
       />
     </>
   );
 }
+
+const primaryButtonStyle = {
+  height: 48,
+  paddingHorizontal: 0,
+  paddingVertical: 0,
+  width: 256
+};
+
+const unhideButtonStyle = {
+  ...primaryButtonStyle,
+  backgroundColor: '#dc2626'
+};
+
+const linkButtonStyle = {
+  backgroundColor: 'transparent',
+  borderWidth: 0,
+  height: 'auto' as const,
+  width: 'auto' as const,
+  paddingHorizontal: 4,
+  paddingVertical: 4
+};
+
+const linkTextStyle = {
+  color: '#94a3b8',
+  fontSize: 14,
+  fontWeight: 'normal' as const,
+  textDecorationLine: 'underline' as const
+};

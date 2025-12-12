@@ -56,7 +56,7 @@ export function ContestHistoryTable({
     if (!isLoadingMore) return null;
 
     return (
-      <View style={{ paddingVertical: 20, alignItems: 'center' }}>
+      <View style={loaderContainerStyle}>
         <ActivityIndicator size="small" color="#fff" />
       </View>
     );
@@ -65,9 +65,9 @@ export function ContestHistoryTable({
   return (
     <View style={tableWrapperStyle}>
       {!hideUndoButton && (
-        <View style={{ alignSelf: 'flex-start', marginBottom: 8, marginTop: -14 }}>
+        <View style={undoButtonContainerStyle}>
           <Button
-            style={{ paddingVertical: 0 }}
+            style={undoButtonStyle}
             onPress={handleUndoClick}
             text="↺ Undo Recent Contest"
             disabled={
@@ -78,13 +78,11 @@ export function ContestHistoryTable({
           />
         </View>
       )}
-      {hideUndoButton && <View style={{ alignSelf: 'flex-start', marginBottom: 8 }} />}
+      {hideUndoButton && <View style={undoPlaceholderStyle} />}
 
       {deleteMostRecentContestMutation.isError && (
-        <View
-          style={{ marginBottom: 16, padding: 12, backgroundColor: '#7f1d1d', borderRadius: 8 }}
-        >
-          <Text style={[styles.text, { color: '#fca5a5' }]}>
+        <View style={errorContainerStyle}>
+          <Text style={errorTextStyle}>
             Error reversing contest:{' '}
             {deleteMostRecentContestMutation.error?.message || 'Unknown error'}
           </Text>
@@ -93,18 +91,18 @@ export function ContestHistoryTable({
 
       <View style={[contestStyles.row, tableHeaderRowStyle]}>
         <View style={contestStyles.item}>
-          <Text style={[tableHeaderStyle, { color: 'white' }]}>Date</Text>
+          <Text style={headerTextStyle}>Date</Text>
         </View>
         <View style={contestStyles.item}>
-          <Text style={[tableHeaderStyle, { color: 'white' }]}>
+          <Text style={headerTextStyle}>
             {isUserB ? rivalry.displayUserBName() : rivalry.displayUserAName()}
           </Text>
         </View>
         <View style={contestStyles.item}>
-          <Text style={[tableHeaderStyle, { color: 'white' }]}>Score</Text>
+          <Text style={headerTextStyle}>Score</Text>
         </View>
         <View style={contestStyles.item}>
-          <Text style={[tableHeaderStyle, { color: 'white' }]}>
+          <Text style={headerTextStyle}>
             {isUserB ? rivalry.displayUserAName() : rivalry.displayUserBName()}
           </Text>
         </View>
@@ -125,8 +123,8 @@ export function ContestHistoryTable({
         onEndReachedThreshold={0.5}
         ListFooterComponent={renderFooter}
         ListEmptyComponent={
-          <View style={{ paddingVertical: 40, alignItems: 'center' }}>
-            <Text style={[styles.text, { color: '#999' }]}>No contests yet</Text>
+          <View style={emptyStateContainerStyle}>
+            <Text style={emptyStateTextStyle}>No contests yet</Text>
           </View>
         }
       />
@@ -134,16 +132,66 @@ export function ContestHistoryTable({
   );
 }
 
+const center = 'center' as const;
+const bold = 'bold' as const;
+
+const loaderContainerStyle = {
+  paddingVertical: 20,
+  alignItems: center
+};
+
+const undoButtonContainerStyle = {
+  alignSelf: 'flex-start' as const,
+  marginBottom: 8,
+  marginTop: -14
+};
+
+const undoButtonStyle = {
+  paddingVertical: 0
+};
+
+const undoPlaceholderStyle = {
+  alignSelf: 'flex-start' as const,
+  marginBottom: 8
+};
+
+const errorContainerStyle = {
+  marginBottom: 16,
+  padding: 12,
+  backgroundColor: '#7f1d1d',
+  borderRadius: 8
+};
+
+const errorTextStyle = {
+  ...styles.text,
+  color: '#fca5a5'
+};
+
 const tableWrapperStyle = {
   padding: 10
 };
 
 const tableHeaderStyle = {
-  fontWeight: 'bold' as const,
+  fontWeight: bold,
   fontSize: 20
+};
+
+const headerTextStyle = {
+  ...tableHeaderStyle,
+  color: 'white'
 };
 
 const tableHeaderRowStyle = {
   borderBottomWidth: 2,
   borderBottomColor: 'yellow'
+};
+
+const emptyStateContainerStyle = {
+  paddingVertical: 40,
+  alignItems: center
+};
+
+const emptyStateTextStyle = {
+  ...styles.text,
+  color: '#999'
 };

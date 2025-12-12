@@ -64,9 +64,7 @@ export function CharacterDisplay({
             ? {
                 height: displayHeight,
                 width: displayWidth,
-                alignItems: 'center',
-                justifyContent: 'center',
-                overflow: 'hidden'
+                ...customSizeContainerStyle
               }
             : fighterWrapperStyle,
           style
@@ -87,7 +85,7 @@ export function CharacterDisplay({
         </Pressable>
         {!hideName && (
           <View style={fighterTextStyle}>
-            <Text style={{ color: 'white', fontSize: 14 }}>{fighter.name}</Text>
+            <Text style={fighterNameTextStyle}>{fighter.name}</Text>
           </View>
         )}
       </View>
@@ -98,62 +96,37 @@ export function CharacterDisplay({
         animationType="fade"
         onRequestClose={() => setShowFullImage(false)}
       >
-        <Pressable
-          style={{
-            flex: 1,
-            backgroundColor: 'rgba(0, 0, 0, 0.9)',
-            justifyContent: 'center',
-            alignItems: 'center'
-          }}
-          onPress={() => setShowFullImage(false)}
-        >
+        <Pressable style={modalBackdropStyle} onPress={() => setShowFullImage(false)}>
           <Image
             source={fighterImages[characterKey]}
             style={{
               width: screenWidth,
               height: screenWidth,
-              resizeMode: 'contain'
+              resizeMode: 'contain' as const
             }}
           />
-          <View
-            style={{
-              marginTop: 20,
-              backgroundColor: 'rgba(0, 0, 0, 0.7)',
-              paddingHorizontal: 24,
-              paddingVertical: 16,
-              borderRadius: 12,
-              alignItems: 'center'
-            }}
-          >
+          <View style={statsContainerStyle}>
             {tierSlot && (
               <>
-                <Text
-                  style={{ color: '#a78bfa', fontSize: 20, fontWeight: 'bold', marginBottom: 8 }}
-                >
-                  Rivalry Stats
-                </Text>
+                <Text style={sectionHeaderStyle}>Rivalry Stats</Text>
                 {tierSlot.position !== undefined && tierSlot.position !== null && (
-                  <Text style={{ color: 'white', fontSize: 18, marginBottom: 4 }}>
+                  <Text style={statTextStyle}>
                     Position: #{tierSlot.position + 1} (Tier{' '}
                     {computeTierFromPosition(tierSlot.position)})
                   </Text>
                 )}
                 {tierSlot.contestCount !== undefined && tierSlot.contestCount !== null && (
-                  <Text style={{ color: 'white', fontSize: 18, marginBottom: 4 }}>
-                    Rivalry Contests: {tierSlot.contestCount}
-                  </Text>
+                  <Text style={statTextStyle}>Rivalry Contests: {tierSlot.contestCount}</Text>
                 )}
                 {tierSlot.winCount !== undefined && tierSlot.winCount !== null && (
-                  <Text style={{ color: 'white', fontSize: 18, marginBottom: 4 }}>
-                    Rivalry Wins: {tierSlot.winCount}
-                  </Text>
+                  <Text style={statTextStyle}>Rivalry Wins: {tierSlot.winCount}</Text>
                 )}
                 {tierSlot.contestCount !== undefined &&
                   tierSlot.contestCount !== null &&
                   tierSlot.contestCount > 0 &&
                   tierSlot.winCount !== undefined &&
                   tierSlot.winCount !== null && (
-                    <Text style={{ color: '#60a5fa', fontSize: 16, marginBottom: 12 }}>
+                    <Text style={winRateTextStyle}>
                       Rivalry Win Rate:{' '}
                       {((tierSlot.winCount / tierSlot.contestCount) * 100).toFixed(1)}%
                     </Text>
@@ -162,40 +135,24 @@ export function CharacterDisplay({
             )}
             {fighter.contestCount !== undefined && fighter.contestCount !== null && (
               <>
-                {tierSlot && (
-                  <Text
-                    style={{
-                      color: '#34d399',
-                      fontSize: 20,
-                      fontWeight: 'bold',
-                      marginTop: 8,
-                      marginBottom: 8
-                    }}
-                  >
-                    Global Stats
-                  </Text>
-                )}
-                <Text style={{ color: 'white', fontSize: 18, marginBottom: 4 }}>
-                  Contests: {fighter.contestCount}
-                </Text>
+                {tierSlot && <Text style={globalStatsHeaderStyle}>Global Stats</Text>}
+                <Text style={statTextStyle}>Contests: {fighter.contestCount}</Text>
               </>
             )}
             {fighter.winCount !== undefined && fighter.winCount !== null && (
-              <Text style={{ color: 'white', fontSize: 18 }}>Wins: {fighter.winCount}</Text>
+              <Text style={statTextLargeStyle}>Wins: {fighter.winCount}</Text>
             )}
             {fighter.contestCount !== undefined &&
               fighter.contestCount !== null &&
               fighter.contestCount > 0 &&
               fighter.winCount !== undefined &&
               fighter.winCount !== null && (
-                <Text style={{ color: '#60a5fa', fontSize: 16, marginTop: 8 }}>
+                <Text style={globalWinRateTextStyle}>
                   Win Rate: {((fighter.winCount / fighter.contestCount) * 100).toFixed(1)}%
                 </Text>
               )}
             {fighter.rank !== undefined && (
-              <Text style={{ color: '#fbbf24', fontSize: 16, marginTop: 4 }}>
-                Rank: #{fighter.rank}
-              </Text>
+              <Text style={rankTextStyle}>Rank: #{fighter.rank}</Text>
             )}
           </View>
         </Pressable>
@@ -204,8 +161,16 @@ export function CharacterDisplay({
   );
 }
 
+const center = 'center' as const;
+
+const customSizeContainerStyle = {
+  alignItems: center,
+  justifyContent: center,
+  overflow: 'hidden' as const
+};
+
 const fighterWrapperStyle = {
-  alignItems: 'center' as const,
+  alignItems: center,
   height: 150,
   justifyContent: 'space-between' as const,
   marginVertical: 0,
@@ -214,10 +179,75 @@ const fighterWrapperStyle = {
 };
 
 const fighterTextStyle = {
-  alignItems: 'center' as const,
+  alignItems: center,
   flex: 1,
   fontWeight: 'bold' as const,
-  justifyContent: 'center' as const,
+  justifyContent: center,
   width: '100%' as const,
   color: 'white'
+};
+
+const fighterNameTextStyle = {
+  color: 'white',
+  fontSize: 14
+};
+
+const modalBackdropStyle = {
+  flex: 1,
+  backgroundColor: 'rgba(0, 0, 0, 0.9)',
+  justifyContent: center,
+  alignItems: center
+};
+
+const statsContainerStyle = {
+  marginTop: 20,
+  backgroundColor: 'rgba(0, 0, 0, 0.7)',
+  paddingHorizontal: 24,
+  paddingVertical: 16,
+  borderRadius: 12,
+  alignItems: center
+};
+
+const sectionHeaderStyle = {
+  color: '#a78bfa',
+  fontSize: 20,
+  fontWeight: 'bold' as const,
+  marginBottom: 8
+};
+
+const statTextStyle = {
+  color: 'white',
+  fontSize: 18,
+  marginBottom: 4
+};
+
+const statTextLargeStyle = {
+  color: 'white',
+  fontSize: 18
+};
+
+const winRateTextStyle = {
+  color: '#60a5fa',
+  fontSize: 16,
+  marginBottom: 12
+};
+
+const globalStatsHeaderStyle = {
+  color: '#34d399',
+  fontSize: 20,
+  fontWeight: 'bold' as const,
+  marginTop: 8,
+  marginBottom: 8
+};
+
+const globalWinRateTextStyle = {
+  color: '#60a5fa',
+  fontSize: 16,
+  marginTop: 8
+};
+
+const rankTextStyle = {
+  color: '#fbbf24',
+  fontSize: 16,
+  marginTop: 4
 };

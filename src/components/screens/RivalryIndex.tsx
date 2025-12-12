@@ -93,8 +93,8 @@ export function RivalryIndex() {
   if (isLoading) {
     return (
       <SafeAreaView style={[styles.container, darkStyles.container]}>
-        <View style={{ flex: 1, alignItems: 'center', justifyContent: 'center' }}>
-          <Text style={[styles.text, { fontSize: 18 }]}>
+        <View style={centeredContainerStyle}>
+          <Text style={loadingTextStyle}>
             {userLoading ? 'Loading user data...' : 'Loading rivalries...'}
           </Text>
         </View>
@@ -105,17 +105,8 @@ export function RivalryIndex() {
   if (error) {
     return (
       <SafeAreaView style={[styles.container, darkStyles.container]}>
-        <View
-          style={{ flex: 1, alignItems: 'center', justifyContent: 'center', paddingHorizontal: 16 }}
-        >
-          <Text
-            style={[
-              styles.text,
-              { fontSize: 18, fontWeight: 'bold', color: '#ef4444', marginBottom: 16 }
-            ]}
-          >
-            Error
-          </Text>
+        <View style={errorContainerStyle}>
+          <Text style={errorTitleStyle}>Error</Text>
           <Text style={styles.text}>{error.message}</Text>
         </View>
       </SafeAreaView>
@@ -124,44 +115,24 @@ export function RivalryIndex() {
 
   return (
     <SafeAreaView style={[styles.container, darkStyles.container]} edges={['top', 'bottom']}>
-      <View
-        style={{
-          paddingHorizontal: 16,
-          paddingVertical: 16,
-          borderBottomWidth: 1,
-          borderBottomColor: '#333'
-        }}
-      >
-        <Text style={[styles.text, { fontSize: 24, fontWeight: 'bold' }]}>
+      <View style={headerContainerStyle}>
+        <Text style={welcomeTextStyle}>
           Welcome{user?.firstName ? `, ${user.firstName}` : ''}!
         </Text>
-        <Text style={[styles.text, { marginTop: 4, color: '#999' }]}>
-          Select a rivalry to continue
-        </Text>
+        <Text style={subtitleTextStyle}>Select a rivalry to continue</Text>
 
         <TouchableOpacity
           testID="create-rivalry-button"
           onPress={handleCreateRivalry}
-          style={{
-            backgroundColor: '#6b21a8',
-            paddingHorizontal: 24,
-            paddingVertical: 12,
-            borderRadius: 8,
-            marginTop: 16,
-            alignItems: 'center'
-          }}
+          style={createButtonStyle}
         >
-          <Text style={[styles.text, { fontSize: 16, fontWeight: 'bold' }]}>
-            Create New Rivalry
-          </Text>
+          <Text style={createButtonTextStyle}>Create New Rivalry</Text>
         </TouchableOpacity>
       </View>
 
       {showHiddenRivalries && (
-        <View style={{ paddingHorizontal: 16, paddingTop: 8 }}>
-          <Text style={[styles.text, { fontSize: 18, fontWeight: 'bold', color: '#999' }]}>
-            Hidden Rivalries
-          </Text>
+        <View style={hiddenHeaderStyle}>
+          <Text style={hiddenHeaderTextStyle}>Hidden Rivalries</Text>
         </View>
       )}
       <RivalriesTable
@@ -172,18 +143,12 @@ export function RivalryIndex() {
       />
 
       {hasHiddenRivalries && (
-        <View style={{ paddingHorizontal: 16, paddingBottom: 16 }}>
+        <View style={toggleContainerStyle}>
           <TouchableOpacity
             onPress={() => setShowHiddenRivalries(!showHiddenRivalries)}
-            style={{
-              backgroundColor: '#374151',
-              paddingHorizontal: 24,
-              paddingVertical: 12,
-              borderRadius: 8,
-              alignItems: 'center'
-            }}
+            style={toggleButtonStyle}
           >
-            <Text style={[styles.text, { fontSize: 16, fontWeight: 'bold' }]}>
+            <Text style={toggleButtonTextStyle}>
               Show {!showHiddenRivalries && 'Hidden '}Rivalries
             </Text>
           </TouchableOpacity>
@@ -192,3 +157,97 @@ export function RivalryIndex() {
     </SafeAreaView>
   );
 }
+
+const center = 'center' as const;
+const bold = 'bold' as const;
+
+const centeredContainerStyle = {
+  flex: 1,
+  alignItems: center,
+  justifyContent: center
+};
+
+const loadingTextStyle = {
+  ...styles.text,
+  fontSize: 18
+};
+
+const errorContainerStyle = {
+  flex: 1,
+  alignItems: center,
+  justifyContent: center,
+  paddingHorizontal: 16
+};
+
+const errorTitleStyle = {
+  ...styles.text,
+  fontSize: 18,
+  fontWeight: bold,
+  color: '#ef4444',
+  marginBottom: 16
+};
+
+const headerContainerStyle = {
+  paddingHorizontal: 16,
+  paddingVertical: 16,
+  borderBottomWidth: 1,
+  borderBottomColor: '#333'
+};
+
+const welcomeTextStyle = {
+  ...styles.text,
+  fontSize: 24,
+  fontWeight: bold
+};
+
+const subtitleTextStyle = {
+  ...styles.text,
+  marginTop: 4,
+  color: '#999'
+};
+
+const createButtonStyle = {
+  backgroundColor: '#6b21a8',
+  paddingHorizontal: 24,
+  paddingVertical: 12,
+  borderRadius: 8,
+  marginTop: 16,
+  alignItems: center
+};
+
+const createButtonTextStyle = {
+  ...styles.text,
+  fontSize: 16,
+  fontWeight: bold
+};
+
+const hiddenHeaderStyle = {
+  paddingHorizontal: 16,
+  paddingTop: 8
+};
+
+const hiddenHeaderTextStyle = {
+  ...styles.text,
+  fontSize: 18,
+  fontWeight: bold,
+  color: '#999'
+};
+
+const toggleContainerStyle = {
+  paddingHorizontal: 16,
+  paddingBottom: 16
+};
+
+const toggleButtonStyle = {
+  backgroundColor: '#374151',
+  paddingHorizontal: 24,
+  paddingVertical: 12,
+  borderRadius: 8,
+  alignItems: center
+};
+
+const toggleButtonTextStyle = {
+  ...styles.text,
+  fontSize: 16,
+  fontWeight: bold
+};

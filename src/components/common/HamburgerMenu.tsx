@@ -53,17 +53,9 @@ export function HamburgerMenu() {
     <>
       <TouchableOpacity
         onPress={() => setMenuVisible(true)}
-        style={{
-          position: 'absolute',
-          top: insets.top + 12,
-          right: 16,
-          zIndex: 100,
-          padding: 12,
-          backgroundColor: '#334155',
-          borderRadius: 8
-        }}
+        style={[hamburgerButtonStyle, { top: insets.top + 12 }]}
       >
-        <Text style={{ fontSize: 24, color: 'white' }}>☰</Text>
+        <Text style={hamburgerIconStyle}>☰</Text>
       </TouchableOpacity>
 
       <Modal
@@ -72,115 +64,46 @@ export function HamburgerMenu() {
         animationType="fade"
         onRequestClose={() => setMenuVisible(false)}
       >
-        <Pressable
-          style={{
-            flex: 1,
-            backgroundColor: 'rgba(0, 0, 0, 0.5)'
-          }}
-          onPress={() => setMenuVisible(false)}
-        >
-          <View
-            style={{
-              position: 'absolute',
-              top: insets.top + 64,
-              right: 16,
-              backgroundColor: '#1e293b',
-              borderRadius: 8,
-              paddingVertical: 8,
-              minWidth: 200,
-              shadowColor: '#000',
-              shadowOffset: { width: 0, height: 2 },
-              shadowOpacity: 0.25,
-              shadowRadius: 4,
-              elevation: 5
-            }}
-          >
-            <TouchableOpacity
-              onPress={handleBack}
-              style={{
-                paddingVertical: 12,
-                paddingHorizontal: 16,
-                flexDirection: 'row',
-                alignItems: 'center'
-              }}
-            >
-              <Text style={{ fontSize: 16, color: 'white', marginRight: 12 }}>←</Text>
-              <Text style={[darkStyles.text, { fontSize: 16 }]}>Back</Text>
+        <Pressable style={modalBackdropStyle} onPress={() => setMenuVisible(false)}>
+          <View style={[menuContainerStyle, { top: insets.top + 64 }]}>
+            <TouchableOpacity onPress={handleBack} style={menuItemStyle}>
+              <Text style={menuIconStyle}>←</Text>
+              <Text style={menuTextStyle}>Back</Text>
             </TouchableOpacity>
 
-            <View style={{ height: 1, backgroundColor: '#475569', marginVertical: 4 }} />
+            <View style={dividerStyle} />
 
-            <TouchableOpacity
-              onPress={handleRivalries}
-              style={{
-                paddingVertical: 12,
-                paddingHorizontal: 16,
-                flexDirection: 'row',
-                alignItems: 'center'
-              }}
-            >
-              <Text style={{ fontSize: 16, color: 'white', marginRight: 12 }}>📋</Text>
-              <Text style={[darkStyles.text, { fontSize: 16 }]}>Rivalries</Text>
+            <TouchableOpacity onPress={handleRivalries} style={menuItemStyle}>
+              <Text style={menuIconStyle}>📋</Text>
+              <Text style={menuTextStyle}>Rivalries</Text>
             </TouchableOpacity>
 
-            <View style={{ height: 1, backgroundColor: '#475569', marginVertical: 4 }} />
+            <View style={dividerStyle} />
 
-            <TouchableOpacity
-              onPress={handlePendingRivalries}
-              style={{
-                paddingVertical: 12,
-                paddingHorizontal: 16,
-                flexDirection: 'row',
-                alignItems: 'center'
-              }}
-            >
-              <Text style={{ fontSize: 16, color: 'white', marginRight: 12 }}>🕐</Text>
-              <Text style={[darkStyles.text, { fontSize: 16 }]}>Pending Rivalries</Text>
+            <TouchableOpacity onPress={handlePendingRivalries} style={menuItemStyle}>
+              <Text style={menuIconStyle}>🕐</Text>
+              <Text style={menuTextStyle}>Pending Rivalries</Text>
             </TouchableOpacity>
 
-            <View style={{ height: 1, backgroundColor: '#475569', marginVertical: 4 }} />
+            <View style={dividerStyle} />
 
-            <TouchableOpacity
-              onPress={handleProfile}
-              style={{
-                paddingVertical: 12,
-                paddingHorizontal: 16,
-                flexDirection: 'row',
-                alignItems: 'center'
-              }}
-            >
-              <Text style={{ fontSize: 16, color: 'white', marginRight: 12 }}>👤</Text>
-              <Text style={[darkStyles.text, { fontSize: 16 }]}>Profile</Text>
+            <TouchableOpacity onPress={handleProfile} style={menuItemStyle}>
+              <Text style={menuIconStyle}>👤</Text>
+              <Text style={menuTextStyle}>Profile</Text>
             </TouchableOpacity>
 
-            <View style={{ height: 1, backgroundColor: '#475569', marginVertical: 4 }} />
+            <View style={dividerStyle} />
 
-            <TouchableOpacity
-              onPress={handleHowToPlay}
-              style={{
-                paddingVertical: 12,
-                paddingHorizontal: 16,
-                flexDirection: 'row',
-                alignItems: 'center'
-              }}
-            >
-              <Text style={{ fontSize: 16, color: 'white', marginRight: 12 }}>❓</Text>
-              <Text style={[darkStyles.text, { fontSize: 16 }]}>How to Play</Text>
+            <TouchableOpacity onPress={handleHowToPlay} style={menuItemStyle}>
+              <Text style={menuIconStyle}>❓</Text>
+              <Text style={menuTextStyle}>How to Play</Text>
             </TouchableOpacity>
 
-            <View style={{ height: 1, backgroundColor: '#475569', marginVertical: 4 }} />
+            <View style={dividerStyle} />
 
-            <TouchableOpacity
-              onPress={handleSignOut}
-              style={{
-                paddingVertical: 12,
-                paddingHorizontal: 16,
-                flexDirection: 'row',
-                alignItems: 'center'
-              }}
-            >
-              <Text style={{ fontSize: 16, color: '#ef4444', marginRight: 12 }}>→</Text>
-              <Text style={[darkStyles.text, { fontSize: 16, color: '#ef4444' }]}>Sign Out</Text>
+            <TouchableOpacity onPress={handleSignOut} style={menuItemStyle}>
+              <Text style={signOutIconStyle}>→</Text>
+              <Text style={signOutTextStyle}>Sign Out</Text>
             </TouchableOpacity>
           </View>
         </Pressable>
@@ -188,3 +111,75 @@ export function HamburgerMenu() {
     </>
   );
 }
+
+const center = 'center' as const;
+const absolute = 'absolute' as const;
+const row = 'row' as const;
+
+const hamburgerButtonStyle = {
+  position: absolute,
+  right: 16,
+  zIndex: 100,
+  padding: 12,
+  backgroundColor: '#334155',
+  borderRadius: 8
+};
+
+const hamburgerIconStyle = {
+  fontSize: 24,
+  color: 'white'
+};
+
+const modalBackdropStyle = {
+  flex: 1,
+  backgroundColor: 'rgba(0, 0, 0, 0.5)'
+};
+
+const menuContainerStyle = {
+  position: absolute,
+  right: 16,
+  backgroundColor: '#1e293b',
+  borderRadius: 8,
+  paddingVertical: 8,
+  minWidth: 200,
+  shadowColor: '#000',
+  shadowOffset: { width: 0, height: 2 },
+  shadowOpacity: 0.25,
+  shadowRadius: 4,
+  elevation: 5
+};
+
+const menuItemStyle = {
+  paddingVertical: 12,
+  paddingHorizontal: 16,
+  flexDirection: row,
+  alignItems: center
+};
+
+const dividerStyle = {
+  height: 1,
+  backgroundColor: '#475569',
+  marginVertical: 4
+};
+
+const menuIconStyle = {
+  fontSize: 16,
+  color: 'white',
+  marginRight: 12
+};
+
+const menuTextStyle = {
+  fontSize: 16,
+  color: 'white'
+};
+
+const signOutIconStyle = {
+  fontSize: 16,
+  color: '#ef4444',
+  marginRight: 12
+};
+
+const signOutTextStyle = {
+  fontSize: 16,
+  color: '#ef4444'
+};

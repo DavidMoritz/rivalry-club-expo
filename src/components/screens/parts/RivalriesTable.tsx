@@ -70,44 +70,53 @@ export function RivalriesTable({
       )}
 
       {hasPendingRivalries && (
-        <View style={{ paddingHorizontal: 16, paddingBottom: 16 }}>
-          <TouchableOpacity
-            onPress={() => router.push('/pending')}
-            style={{
-              backgroundColor: '#fbbf24',
-              paddingHorizontal: 24,
-              paddingVertical: 12,
-              marginTop: 8,
-              borderRadius: 8,
-              alignItems: 'center'
-            }}
-          >
-            <Text style={[styles.text, { fontSize: 16, fontWeight: 'bold', color: '#222' }]}>
-              Pending Rivalry Found
-            </Text>
+        <View style={buttonContainerStyle}>
+          <TouchableOpacity onPress={() => router.push('/pending')} style={pendingButtonStyle}>
+            <Text style={buttonTextStyle}>Pending Rivalry Found</Text>
           </TouchableOpacity>
         </View>
       )}
 
       {(!visibleRivalries || visibleRivalries.length === 0) && (
-        <View style={{ paddingHorizontal: 16, paddingBottom: 16 }}>
-          <TouchableOpacity
-            onPress={() => router.push('/how-to-play')}
-            style={{
-              backgroundColor: '#fbbf24',
-              paddingHorizontal: 24,
-              paddingVertical: 12,
-              marginTop: 20,
-              borderRadius: 8,
-              alignItems: 'center'
-            }}
-          >
-            <Text style={[styles.text, { fontSize: 16, fontWeight: 'bold', color: '#222' }]}>
-              How to Play
-            </Text>
+        <View style={buttonContainerStyle}>
+          <TouchableOpacity onPress={() => router.push('/how-to-play')} style={howToPlayButtonStyle}>
+            <Text style={buttonTextStyle}>How to Play</Text>
           </TouchableOpacity>
         </View>
       )}
     </>
   );
 }
+
+const center = 'center' as const;
+const bold = 'bold' as const;
+
+const buttonContainerStyle = {
+  paddingHorizontal: 16,
+  paddingBottom: 16
+};
+
+const baseButtonStyle = {
+  backgroundColor: '#fbbf24',
+  paddingHorizontal: 24,
+  paddingVertical: 12,
+  borderRadius: 8,
+  alignItems: center
+};
+
+const pendingButtonStyle = {
+  ...baseButtonStyle,
+  marginTop: 8
+};
+
+const howToPlayButtonStyle = {
+  ...baseButtonStyle,
+  marginTop: 20
+};
+
+const buttonTextStyle = {
+  ...styles.text,
+  fontSize: 16,
+  fontWeight: bold,
+  color: '#222'
+};

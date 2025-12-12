@@ -261,9 +261,9 @@ export default function HistoryRoute() {
       <>
         <Stack.Screen options={{ title: 'Contest History' }} />
         <SafeAreaView style={[styles.container, darkStyles.container]}>
-          <View style={{ flex: 1, alignItems: 'center', justifyContent: 'center' }}>
+          <View style={centeredContainerStyle}>
             <ActivityIndicator size="large" color="#fff" />
-            <Text style={[styles.text, { marginTop: 16 }]}>
+            <Text style={loadingTextStyle}>
               {isLoadingRivalry ? 'Loading rivalry data...' : 'Loading contests...'}
             </Text>
           </View>
@@ -278,18 +278,9 @@ export default function HistoryRoute() {
       <>
         <Stack.Screen options={{ title: 'Contest History' }} />
         <SafeAreaView style={[styles.container, darkStyles.container]}>
-          <View
-            style={{
-              flex: 1,
-              alignItems: 'center',
-              justifyContent: 'center',
-              paddingHorizontal: 16
-            }}
-          >
-            <Text style={[styles.text, { fontSize: 18, color: '#ff6b6b', marginBottom: 8 }]}>
-              Error loading data
-            </Text>
-            <Text style={[styles.text, { color: '#999' }]}>
+          <View style={errorContainerStyle}>
+            <Text style={errorTitleStyle}>Error loading data</Text>
+            <Text style={errorMessageStyle}>
               {(error instanceof Error ? error.message : null) ||
                 (rivalryError instanceof Error ? rivalryError.message : 'Unknown error')}
             </Text>
@@ -305,8 +296,8 @@ export default function HistoryRoute() {
       <>
         <Stack.Screen options={{ title: 'Contest History' }} />
         <SafeAreaView style={[styles.container, darkStyles.container]}>
-          <View style={{ flex: 1, alignItems: 'center', justifyContent: 'center' }}>
-            <Text style={[styles.text, { color: '#999' }]}>Game data not available</Text>
+          <View style={centeredContainerStyle}>
+            <Text style={noGameTextStyle}>Game data not available</Text>
           </View>
         </SafeAreaView>
         <StatusBar style="light" />
@@ -325,7 +316,7 @@ export default function HistoryRoute() {
         userId={userId}
       >
         <SafeAreaView style={[styles.container, darkStyles.container]} edges={['left', 'right', 'bottom']}>
-          <View style={{ paddingTop: 72 }}>
+          <View style={historyContainerStyle}>
             <ContestHistoryTable
               contests={contests}
               game={game as MGame}
@@ -343,3 +334,44 @@ export default function HistoryRoute() {
     </>
   );
 }
+
+const center = 'center' as const;
+
+const centeredContainerStyle = {
+  flex: 1,
+  alignItems: center,
+  justifyContent: center
+};
+
+const loadingTextStyle = {
+  ...styles.text,
+  marginTop: 16
+};
+
+const errorContainerStyle = {
+  flex: 1,
+  alignItems: center,
+  justifyContent: center,
+  paddingHorizontal: 16
+};
+
+const errorTitleStyle = {
+  ...styles.text,
+  fontSize: 18,
+  color: '#ff6b6b',
+  marginBottom: 8
+};
+
+const errorMessageStyle = {
+  ...styles.text,
+  color: '#999'
+};
+
+const noGameTextStyle = {
+  ...styles.text,
+  color: '#999'
+};
+
+const historyContainerStyle = {
+  paddingTop: 72
+};

@@ -120,31 +120,14 @@ export default function TiersRoute() {
         <SyncedScrollViewContext.Provider value={syncedScrollViewState}>
             <SafeAreaView style={[styles.container, darkStyles.container]}>
               {isLoading && (
-                <View style={{ flex: 1, alignItems: 'center', justifyContent: 'center' }}>
-                  <Text style={[styles.text, darkStyles.text, { fontSize: 18 }]}>
-                    Loading Tier Lists...
-                  </Text>
+                <View style={centeredContainerStyle}>
+                  <Text style={loadingTextStyle}>Loading Tier Lists...</Text>
                 </View>
               )}
 
               {isError && (
-                <View
-                  style={{
-                    flex: 1,
-                    alignItems: 'center',
-                    justifyContent: 'center',
-                    paddingHorizontal: 16
-                  }}
-                >
-                  <Text
-                    style={[
-                      styles.text,
-                      darkStyles.text,
-                      { fontSize: 18, fontWeight: 'bold', color: '#ef4444', marginBottom: 16 }
-                    ]}
-                  >
-                    Error
-                  </Text>
+                <View style={errorContainerStyle}>
+                  <Text style={errorTitleStyle}>Error</Text>
                   <Text
                     style={[styles.text, darkStyles.text]}
                   >{`Error loading tier lists: ${error?.message}`}</Text>
@@ -152,34 +135,17 @@ export default function TiersRoute() {
               )}
 
               {!isLoading && !isError && !rivalry && (
-                <View style={{ flex: 1, alignItems: 'center', justifyContent: 'center' }}>
-                  <Text style={[styles.text, darkStyles.text, { fontSize: 18 }]}>
-                    Waiting for tier lists...
-                  </Text>
-                  <Text
-                    style={[
-                      styles.text,
-                      darkStyles.text,
-                      { fontSize: 12, marginTop: 8, color: '#999' }
-                    ]}
-                  >
-                    Check console logs for details
-                  </Text>
+                <View style={centeredContainerStyle}>
+                  <Text style={loadingTextStyle}>Waiting for tier lists...</Text>
+                  <Text style={debugTextStyle}>Check console logs for details</Text>
                 </View>
               )}
 
               {!isLoading && !isError && rivalry && (
                 <>
-                  <View
-                    style={{
-                      width: '100%',
-                      alignItems: 'center',
-                      marginStart: 16,
-                      zIndex: 10
-                    }}
-                  >
+                  <View style={editButtonContainerStyle}>
                     <Button
-                      style={{ width: '40%', paddingVertical: 4, paddingHorizontal: 0 }}
+                      style={editButtonStyle}
                       onPress={() => {
                         router.push({
                           pathname: `/rivalry/${rivalryId}/tierListEdit`,
@@ -195,7 +161,7 @@ export default function TiersRoute() {
                   <Button
                     onPress={() => setUnLinked(!unlinked)}
                     text={unlinked ? 'Unlinked' : 'Linked'}
-                    style={{ paddingVertical: 0 }}
+                    style={linkButtonStyle}
                   />
                 </>
               )}
@@ -206,3 +172,59 @@ export default function TiersRoute() {
     </>
   );
 }
+
+const center = 'center' as const;
+const bold = 'bold' as const;
+
+const centeredContainerStyle = {
+  flex: 1,
+  alignItems: center,
+  justifyContent: center
+};
+
+const loadingTextStyle = {
+  ...styles.text,
+  ...darkStyles.text,
+  fontSize: 18
+};
+
+const errorContainerStyle = {
+  flex: 1,
+  alignItems: center,
+  justifyContent: center,
+  paddingHorizontal: 16
+};
+
+const errorTitleStyle = {
+  ...styles.text,
+  ...darkStyles.text,
+  fontSize: 18,
+  fontWeight: bold,
+  color: '#ef4444',
+  marginBottom: 16
+};
+
+const debugTextStyle = {
+  ...styles.text,
+  ...darkStyles.text,
+  fontSize: 12,
+  marginTop: 8,
+  color: '#999'
+};
+
+const editButtonContainerStyle = {
+  width: '100%',
+  alignItems: center,
+  marginStart: 16,
+  zIndex: 10
+};
+
+const editButtonStyle = {
+  width: '40%',
+  paddingVertical: 4,
+  paddingHorizontal: 0
+};
+
+const linkButtonStyle = {
+  paddingVertical: 0
+};

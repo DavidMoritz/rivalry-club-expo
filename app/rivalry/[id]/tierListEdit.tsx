@@ -185,32 +185,15 @@ export default function TierListEditRoute() {
       >
         <SafeAreaView style={[styles.container, darkStyles.container]}>
             {isLoading && (
-              <View style={{ flex: 1, alignItems: 'center', justifyContent: 'center' }}>
+              <View style={centeredContainerStyle}>
                 <ActivityIndicator size="large" color="white" />
-                <Text style={[styles.text, darkStyles.text, { fontSize: 18, marginTop: 16 }]}>
-                  Loading Tier List...
-                </Text>
+                <Text style={loadingTextStyle}>Loading Tier List...</Text>
               </View>
             )}
 
             {isError && (
-              <View
-                style={{
-                  flex: 1,
-                  alignItems: 'center',
-                  justifyContent: 'center',
-                  paddingHorizontal: 16
-                }}
-              >
-                <Text
-                  style={[
-                    styles.text,
-                    darkStyles.text,
-                    { fontSize: 18, fontWeight: 'bold', color: '#ef4444', marginBottom: 16 }
-                  ]}
-                >
-                  Error
-                </Text>
+              <View style={errorContainerStyle}>
+                <Text style={errorTitleStyle}>Error</Text>
                 <Text
                   style={[styles.text, darkStyles.text]}
                 >{`Error loading tier list: ${error?.message}`}</Text>
@@ -218,95 +201,55 @@ export default function TierListEditRoute() {
             )}
 
             {!isLoading && !isError && rivalry && userTierList && (
-              <View style={{ flex: 1, padding: 16 }}>
-                <Text
-                  style={[darkStyles.text, { fontSize: 24, fontWeight: 'bold', marginBottom: 16 }]}
-                >
-                  Edit Your Tier List
-                </Text>
+              <View style={editContainerStyle}>
+                <Text style={editTitleStyle}>Edit Your Tier List</Text>
 
-                <View style={{ flex: 1 }}>
+                <View style={editDisplayContainerStyle}>
                   <TierListEditDisplay tierList={userTierList} onChange={handleTierListChange} />
                 </View>
 
                 <TouchableOpacity
                   onPress={handleSave}
                   disabled={!hasChanges || isPending}
-                  style={{
-                    backgroundColor: hasChanges && !isPending ? '#3b82f6' : '#6b7280',
-                    padding: 16,
-                    borderRadius: 8,
-                    alignItems: 'center',
-                    marginTop: 16
-                  }}
+                  style={[
+                    saveButtonBaseStyle,
+                    {
+                      backgroundColor: hasChanges && !isPending ? '#3b82f6' : '#6b7280'
+                    }
+                  ]}
                 >
                   {isPending ? (
                     <ActivityIndicator color="white" />
                   ) : (
-                    <Text style={{ color: 'white', fontSize: 18, fontWeight: 'bold' }}>
-                      {hasChanges ? 'Save List' : 'No Changes'}
-                    </Text>
+                    <Text style={saveButtonTextStyle}>{hasChanges ? 'Save List' : 'No Changes'}</Text>
                   )}
                 </TouchableOpacity>
               </View>
             )}
 
             {!isLoading && !isError && !rivalry && (
-              <View style={{ flex: 1, alignItems: 'center', justifyContent: 'center' }}>
-                <Text style={[styles.text, darkStyles.text, { fontSize: 18 }]}>
-                  Could not load rivalry
-                </Text>
+              <View style={centeredContainerStyle}>
+                <Text style={messageTextStyle}>Could not load rivalry</Text>
               </View>
             )}
 
             {!isLoading && !isError && rivalry && !userTierList && (
-              <View
-                style={{
-                  flex: 1,
-                  alignItems: 'center',
-                  justifyContent: 'center',
-                  paddingHorizontal: 16
-                }}
-              >
-                <Text
-                  style={[
-                    styles.text,
-                    darkStyles.text,
-                    { fontSize: 18, fontWeight: 'bold', color: '#f59e0b', marginBottom: 16 }
-                  ]}
-                >
-                  Could not load tier list
-                </Text>
-                <Text
-                  style={[styles.text, darkStyles.text, { textAlign: 'center', marginBottom: 8 }]}
-                >
+              <View style={errorContainerStyle}>
+                <Text style={warningTitleStyle}>Could not load tier list</Text>
+                <Text style={warningBodyStyle}>
                   {!userId
                     ? 'User ID is missing from navigation params'
                     : `Your user ID (${userId}) doesn't match either tier list`}
                 </Text>
                 {userId && rivalry.tierListA && rivalry.tierListB && (
-                  <Text
-                    style={[
-                      styles.text,
-                      darkStyles.text,
-                      { fontSize: 12, color: '#9ca3af', textAlign: 'center', marginTop: 16 }
-                    ]}
-                  >
+                  <Text style={debugInfoStyle}>
                     TierList A: {rivalry.tierListA.userId}
                     {'\n'}
                     TierList B: {rivalry.tierListB.userId}
                   </Text>
                 )}
-                <TouchableOpacity
-                  onPress={() => router.back()}
-                  style={{
-                    backgroundColor: '#3b82f6',
-                    padding: 12,
-                    borderRadius: 8,
-                    marginTop: 24
-                  }}
-                >
-                  <Text style={{ color: 'white', fontSize: 16 }}>Go Back</Text>
+                <TouchableOpacity onPress={() => router.back()} style={goBackButtonStyle}>
+                  <Text style={goBackButtonTextStyle}>Go Back</Text>
                 </TouchableOpacity>
               </View>
             )}
@@ -316,3 +259,107 @@ export default function TierListEditRoute() {
     </>
   );
 }
+
+const center = 'center' as const;
+const bold = 'bold' as const;
+
+const centeredContainerStyle = {
+  flex: 1,
+  alignItems: center,
+  justifyContent: center
+};
+
+const loadingTextStyle = {
+  ...styles.text,
+  ...darkStyles.text,
+  fontSize: 18,
+  marginTop: 16
+};
+
+const errorContainerStyle = {
+  flex: 1,
+  alignItems: center,
+  justifyContent: center,
+  paddingHorizontal: 16
+};
+
+const errorTitleStyle = {
+  ...styles.text,
+  ...darkStyles.text,
+  fontSize: 18,
+  fontWeight: bold,
+  color: '#ef4444',
+  marginBottom: 16
+};
+
+const editContainerStyle = {
+  flex: 1,
+  padding: 16
+};
+
+const editTitleStyle = {
+  ...darkStyles.text,
+  fontSize: 24,
+  fontWeight: bold,
+  marginBottom: 16
+};
+
+const editDisplayContainerStyle = {
+  flex: 1
+};
+
+const saveButtonBaseStyle = {
+  padding: 16,
+  borderRadius: 8,
+  alignItems: center,
+  marginTop: 16
+};
+
+const saveButtonTextStyle = {
+  color: 'white',
+  fontSize: 18,
+  fontWeight: bold
+};
+
+const messageTextStyle = {
+  ...styles.text,
+  ...darkStyles.text,
+  fontSize: 18
+};
+
+const warningTitleStyle = {
+  ...styles.text,
+  ...darkStyles.text,
+  fontSize: 18,
+  fontWeight: bold,
+  color: '#f59e0b',
+  marginBottom: 16
+};
+
+const warningBodyStyle = {
+  ...styles.text,
+  ...darkStyles.text,
+  textAlign: center,
+  marginBottom: 8
+};
+
+const debugInfoStyle = {
+  ...styles.text,
+  ...darkStyles.text,
+  fontSize: 12,
+  color: '#9ca3af',
+  textAlign: center,
+  marginTop: 16
+};
+
+const goBackButtonStyle = {
+  backgroundColor: '#3b82f6',
+  padding: 12,
+  borderRadius: 8,
+  marginTop: 24
+};
+
+const goBackButtonTextStyle = {
+  color: 'white',
+  fontSize: 16
+};

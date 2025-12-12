@@ -7,7 +7,7 @@ import { View, Text, ActivityIndicator } from 'react-native';
 import 'react-native-get-random-values';
 import 'react-native-url-polyfill/auto';
 
-import outputs from '../amplify_outputs.json';
+import outputs from '../amplify-config';
 import { AllRivalriesProvider } from '../src/providers/all-rivalries';
 import { GameProvider } from '../src/providers/game';
 import { preloadAssets } from '../src/utils/preloadAssets';

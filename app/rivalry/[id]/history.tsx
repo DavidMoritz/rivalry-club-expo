@@ -163,7 +163,9 @@ export default function HistoryRoute() {
         data: any[];
         errors?: any[];
       } = await getClient().models.Contest.contestsByRivalryIdAndCreatedAt({
-        rivalryId: rivalryId
+        rivalryId: rivalryId,
+        sortDirection: 'DESC',
+        limit: 100
       });
 
       if (errors) {

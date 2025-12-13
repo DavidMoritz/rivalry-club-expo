@@ -337,7 +337,9 @@ export const useRivalryWithAllInfoQuery = ({
       // This ensures we get the actual most recent contests, not a random subset
       const { data: recentContests, errors: contestErrors } =
         await getClient().models.Contest.contestsByRivalryIdAndCreatedAt({
-          rivalryId: rivalryData.id
+          rivalryId: rivalryData.id,
+          sortDirection: 'DESC',
+          limit: 100
         });
 
       if (contestErrors) {

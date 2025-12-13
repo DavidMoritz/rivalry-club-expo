@@ -134,11 +134,6 @@ export function getMRivalry({ rivalry }: GetMRivalryProps): MRivalry {
       const MIDPOINT = 42; // midpoint (0-based: 85/2) if also unknown
       // NEW: Position unknown fighters BEFORE adjusting positions
       const result = this.currentContest.result as number;
-
-      console.log(
-        `[Contest Resolution] Result: ${result} (${result > 0 ? 'Winner: A' : 'Winner: B'}), POSITION_BIAS: ${POSITION_BIAS}`
-      );
-
       const winnerInitalPosition = winner.tierSlot.position ?? MIDPOINT;
       const loserInitialPosition = loser.tierSlot.position ?? MIDPOINT;
 
@@ -146,28 +141,15 @@ export function getMRivalry({ rivalry }: GetMRivalryProps): MRivalry {
       if (winner.tierSlot.position === null || winner.tierSlot.position === undefined) {
         const winnerOffset = Math.abs(result) * POSITION_BIAS; // result is 1, 2, or 3
         const winnerNewPosition = loserInitialPosition - winnerOffset; // winner moves UP (lower position number)
-        console.log(
-          `[Contest Resolution] Winner (${winner.tierSlot.id}) is UNKNOWN - loserInitialPosition: ${loserInitialPosition}, winnerOffset: ${winnerOffset} (${result} stocks * ${POSITION_BIAS}), winnerNewPosition: ${winnerNewPosition}`
-        );
         winner.tierList.positionUnknownFighter(winner.tierSlot, winnerNewPosition);
-      } else {
-        console.log(
-          `[Contest Resolution] Winner (${winner.tierSlot.id}) already positioned at ${winner.tierSlot.position}`
-        );
       }
 
       // Position unknown fighter for loser
       if (loser.tierSlot.position === null || loser.tierSlot.position === undefined) {
         const offset = Math.abs(result) * POSITION_BIAS;
         const calculatedPosition = winnerInitalPosition + offset; // loser moves DOWN (higher position number)
-        console.log(
-          `[Contest Resolution] Loser (${loser.tierSlot.id}) is UNKNOWN - winnerInitalPosition: ${winnerInitalPosition}, offset: ${offset} (${result} stocks * ${POSITION_BIAS}), calculatedPosition: ${calculatedPosition}`
-        );
+
         loser.tierList.positionUnknownFighter(loser.tierSlot, calculatedPosition);
-      } else {
-        console.log(
-          `[Contest Resolution] Loser (${loser.tierSlot.id}) already positioned at ${loser.tierSlot.position}`
-        );
       }
 
       // EXISTING: Continue with normal standings adjustment
@@ -306,10 +288,7 @@ export function getMRivalry({ rivalry }: GetMRivalryProps): MRivalry {
     },
     getCurrentContest() {
       if (this.currentContest?.id !== this.currentContestId) {
-        // FIXME: we want to use the current contest and assign it
-        // this.currentContest = this.mContests.find(
-        //   ctst => ctst.id === this.currentContestId,
-        // );
+        console.warn('[MRivalry.getCurrentContest] this.currentContestId mismatch');
       }
 
       return this.currentContest;

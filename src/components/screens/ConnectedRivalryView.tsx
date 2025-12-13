@@ -14,7 +14,7 @@ import {
 } from '../../controllers/c-rivalry';
 import { MContest } from '../../models/m-contest';
 import { MFighter } from '../../models/m-fighter';
-import { MGame, PROVISIONAL_THRESHOLD, STEPS_PER_STOCK } from '../../models/m-game';
+import { PROVISIONAL_THRESHOLD, STEPS_PER_STOCK } from '../../models/m-game';
 import { MRivalry } from '../../models/m-rivalry';
 import { useGame } from '../../providers/game';
 import { useRivalry, useRivalryContext, useUpdateRivalry } from '../../providers/rivalry';
@@ -33,7 +33,9 @@ interface ConnectedRivalryViewProps {
   };
 }
 
-export function ConnectedRivalryView({ navigation }: ConnectedRivalryViewProps): React.ReactElement {
+export function ConnectedRivalryView({
+  navigation
+}: ConnectedRivalryViewProps): React.ReactElement {
   const updateRivalryProvider = useUpdateRivalry();
   const rivalry = useRivalry();
   const game = useGame();
@@ -47,6 +49,8 @@ export function ConnectedRivalryView({ navigation }: ConnectedRivalryViewProps):
     contest: MContest;
     fighterA: MFighter;
     fighterB: MFighter;
+    winnerPosition: number | null;
+    loserPosition: number | null;
   } | null>(null);
 
   const updateRivalryMutation = useUpdateRivalryMutation({
@@ -150,7 +154,9 @@ export function ConnectedRivalryView({ navigation }: ConnectedRivalryViewProps):
 
     if (!rivalry?.currentContest || !game) return;
 
-    // Capture battle results data for the results screen
+    const isATheWinner = (rivalry.currentContest.result || 0) > 0;
+
+    // Capture battle results data for the results screen with calculated new positions
     const gameData = (game as any).baseGame || game;
     const foundFighterA = fighterByIdFromGame(
       gameData,
@@ -160,16 +166,6 @@ export function ConnectedRivalryView({ navigation }: ConnectedRivalryViewProps):
       gameData,
       rivalry.currentContest.tierSlotB?.fighterId || ''
     );
-
-    if (foundFighterA && foundFighterB) {
-      setBattleResults({
-        contest: rivalry.currentContest,
-        fighterA: foundFighterA,
-        fighterB: foundFighterB
-      });
-    }
-
-    const isATheWinner = (rivalry.currentContest.result || 0) > 0;
 
     if (
       rivalry.currentContest.tierSlotA &&
@@ -193,7 +189,17 @@ export function ConnectedRivalryView({ navigation }: ConnectedRivalryViewProps):
       }
     }
 
-    rivalry.adjustStanding();
+    const standingResult = rivalry.adjustStanding();
+
+    if (foundFighterA && foundFighterB && standingResult) {
+      setBattleResults({
+        contest: rivalry.currentContest,
+        fighterA: foundFighterA,
+        fighterB: foundFighterB,
+        winnerPosition: standingResult.winnerPosition,
+        loserPosition: standingResult.loserPosition
+      });
+    }
 
     resolveContestMutation.mutate();
   }
@@ -238,6 +244,8 @@ export function ConnectedRivalryView({ navigation }: ConnectedRivalryViewProps):
           fighterB={battleResults.fighterB}
           rivalry={rivalry}
           isUserB={isUserB}
+          winnerPosition={battleResults.winnerPosition}
+          loserPosition={battleResults.loserPosition}
         />
       )}
 
@@ -261,7 +269,12 @@ export function ConnectedRivalryView({ navigation }: ConnectedRivalryViewProps):
         !createContestMutation.isPending &&
         createContestMutation.isError && (
           <View
-            style={{ flex: 1, alignItems: 'center', justifyContent: 'center', paddingHorizontal: 16 }}
+            style={{
+              flex: 1,
+              alignItems: 'center',
+              justifyContent: 'center',
+              paddingHorizontal: 16
+            }}
           >
             <Text
               style={[

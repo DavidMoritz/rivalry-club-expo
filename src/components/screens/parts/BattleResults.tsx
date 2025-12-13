@@ -4,8 +4,11 @@ import { Animated, Text, View } from 'react-native';
 import { MContest } from '../../../models/m-contest';
 import { MFighter } from '../../../models/m-fighter';
 import { MRivalry } from '../../../models/m-rivalry';
+import { computeTierFromPosition } from '../../../models/m-tier-slot';
+import { TIERS } from '../../../models/m-tier-list';
 import { colors } from '../../../utils/colors';
 import { CharacterDisplay } from '../../common/CharacterDisplay';
+import { STEPS_PER_STOCK } from '../../../models/m-game';
 
 interface BattleResultsProps {
   contest: MContest;
@@ -13,6 +16,8 @@ interface BattleResultsProps {
   fighterB: MFighter;
   rivalry: MRivalry;
   isUserB: boolean;
+  winnerPosition: number | null;
+  loserPosition: number | null;
 }
 
 export function BattleResults({
@@ -20,7 +25,9 @@ export function BattleResults({
   fighterA,
   fighterB,
   rivalry,
-  isUserB
+  isUserB,
+  winnerPosition,
+  loserPosition
 }: BattleResultsProps): ReactNode {
   const isATheWinner = (contest.result || 0) > 0;
   const winnerFighter = isATheWinner ? fighterA : fighterB;
@@ -31,6 +38,19 @@ export function BattleResults({
 
   const winnerTierSlot = isATheWinner ? contest.tierSlotA : contest.tierSlotB;
   const loserTierSlot = isATheWinner ? contest.tierSlotB : contest.tierSlotA;
+
+  // Calculate new tiers from positions returned by adjustStanding
+  // Subtract for winner (moves up = lower position number), add for loser (moves down = higher position number)
+  const winnerNewTier = computeTierFromPosition(
+    winnerPosition !== null ? winnerPosition - stockCount * STEPS_PER_STOCK : null
+  );
+  const loserNewTier = computeTierFromPosition(
+    loserPosition !== null ? loserPosition + stockCount * STEPS_PER_STOCK : null
+  );
+
+  // Get tier colors
+  const winnerTierData = TIERS.find((t) => t.label === winnerNewTier);
+  const loserTierData = TIERS.find((t) => t.label === loserNewTier);
 
   // Animation for winner growing
   const scaleAnim = useRef(new Animated.Value(1)).current;
@@ -59,14 +79,33 @@ export function BattleResults({
               }
             ]}
           >
-            <CharacterDisplay
-              fighter={winnerFighter}
-              tierSlot={winnerTierSlot}
-              hideName={true}
-              height={180}
-              width={140}
-              zoomMultiplier={1.75}
-            />
+            <View style={{ position: 'relative' }}>
+              <CharacterDisplay
+                fighter={winnerFighter}
+                tierSlot={winnerTierSlot}
+                hideName={true}
+                height={180}
+                width={140}
+                zoomMultiplier={1.75}
+              />
+              {/* Tier Badge Overlay */}
+              {winnerTierData && (
+                <View
+                  style={[
+                    tierBadgeStyle,
+                    {
+                      backgroundColor: winnerTierData.color,
+                      width: 140 * 0.25,
+                      height: 140 * 0.25,
+                      bottom: 8,
+                      right: 8
+                    }
+                  ]}
+                >
+                  <Text style={tierBadgeTextStyle}>{winnerNewTier}</Text>
+                </View>
+              )}
+            </View>
           </Animated.View>
           <Text style={winnerFighterNameStyle}>{winnerFighter.name}</Text>
           <Text style={victoryTextStyle}>VICTORY!</Text>
@@ -80,14 +119,33 @@ export function BattleResults({
           </View>
           <Text style={loserUserNameStyle}>{loserUser}</Text>
           <View style={loserFighterBoxStyle}>
-            <CharacterDisplay
-              fighter={loserFighter}
-              tierSlot={loserTierSlot}
-              hideName={true}
-              height={117}
-              width={91}
-              zoomMultiplier={0.95}
-            />
+            <View style={{ position: 'relative' }}>
+              <CharacterDisplay
+                fighter={loserFighter}
+                tierSlot={loserTierSlot}
+                hideName={true}
+                height={117}
+                width={91}
+                zoomMultiplier={0.95}
+              />
+              {/* Tier Badge Overlay */}
+              {loserTierData && (
+                <View
+                  style={[
+                    tierBadgeStyle,
+                    {
+                      backgroundColor: loserTierData.color,
+                      width: 91 * 0.35,
+                      height: 91 * 0.35,
+                      bottom: 4,
+                      right: 4
+                    }
+                  ]}
+                >
+                  <Text style={[tierBadgeTextStyle, { fontSize: 15 }]}>{loserNewTier}</Text>
+                </View>
+              )}
+            </View>
           </View>
           <Text style={loserFighterNameStyle}>{loserFighter.name}</Text>
           <Text style={defeatTextStyle}>DEFEAT</Text>
@@ -204,4 +262,20 @@ const scoreTextStyle = {
   fontWeight: bold,
   color: colors.white,
   marginBottom: 8
+};
+
+const tierBadgeStyle = {
+  position: 'absolute' as const,
+  borderRadius: 8,
+  alignItems: center,
+  justifyContent: center,
+  borderWidth: 2,
+  borderColor: colors.black,
+  padding: 2
+};
+
+const tierBadgeTextStyle = {
+  fontSize: 18,
+  fontWeight: bold,
+  color: colors.black
 };

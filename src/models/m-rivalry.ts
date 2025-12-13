@@ -28,7 +28,7 @@ export interface MRivalry extends Omit<Rivalry, 'game'> {
   _mTierListB?: MTierList;
   _mUserA?: MUser;
   _mUserB?: MUser;
-  adjustStanding: (nudge?: number) => void;
+  adjustStanding: (nudge?: number) => { winnerPosition: number | null; loserPosition: number | null } | void;
   reverseStanding: (contest: MContest) => void;
   baseRivalry: Rivalry;
   currentContest?: MContest;
@@ -117,9 +117,9 @@ export function getMRivalry({ rivalry }: GetMRivalryProps): MRivalry {
     // methods
     /**
      * Alter the tierLists' standings based on the current contest.
-     * @returns void
+     * @returns Object with winner and loser positions, or void if contest data is invalid
      */
-    adjustStanding(nudge?: number) {
+    adjustStanding(nudge?: number): { winnerPosition: number | null; loserPosition: number | null } | void {
       if (!(this.currentContest && this.tierListA && this.tierListB)) return;
 
       const winner = this.currentContest.getWinner();
@@ -129,6 +129,8 @@ export function getMRivalry({ rivalry }: GetMRivalryProps): MRivalry {
         return;
       }
 
+      let winnerPosition = winner.tierSlot.position;
+      let loserPosition = loser.tierSlot.position;
       // Arbitrary number to allow rapid tier placement of new fighters
       const POSITION_BIAS = 11;
       const MIDPOINT = 42; // midpoint (0-based: 85/2) if also unknown
@@ -142,6 +144,7 @@ export function getMRivalry({ rivalry }: GetMRivalryProps): MRivalry {
         const winnerOffset = Math.abs(result) * POSITION_BIAS; // result is 1, 2, or 3
         const winnerNewPosition = loserInitialPosition - winnerOffset; // winner moves UP (lower position number)
         winner.tierList.positionUnknownFighter(winner.tierSlot, winnerNewPosition);
+        winnerPosition = winnerNewPosition;
       }
 
       // Position unknown fighter for loser
@@ -150,6 +153,7 @@ export function getMRivalry({ rivalry }: GetMRivalryProps): MRivalry {
         const calculatedPosition = winnerInitalPosition + offset; // loser moves DOWN (higher position number)
 
         loser.tierList.positionUnknownFighter(loser.tierSlot, calculatedPosition);
+        loserPosition = calculatedPosition;
       }
 
       // EXISTING: Continue with normal standings adjustment
@@ -190,6 +194,11 @@ export function getMRivalry({ rivalry }: GetMRivalryProps): MRivalry {
         tlA.standing = Math.max((tlA.standing as number) - TIERS.length, 0);
         tlB.standing = Math.max((tlB.standing as number) - TIERS.length, 0);
       }
+
+      return {
+        winnerPosition: winnerPosition ?? null,
+        loserPosition: loserPosition ?? null
+      };
     },
     reverseStanding(contest: MContest) {
       if (!(contest && this.tierListA && this.tierListB)) return;

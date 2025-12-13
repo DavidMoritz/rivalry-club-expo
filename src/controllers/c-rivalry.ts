@@ -37,6 +37,7 @@ interface ContestQueryBaseProps {
 
 interface RivalryQueryProps extends RivalryQueryBaseProps {
   onSuccess?: (populatedRivalry: MRivalry) => void;
+  enabled?: boolean;
 }
 
 interface RivalryMutationProps extends RivalryQueryBaseProps {
@@ -291,9 +292,13 @@ export const useRivalryContestsQuery = ({
     }
   });
 
-export const useRivalryWithAllInfoQuery = ({ rivalry, onSuccess }: RivalryQueryProps) =>
+export const useRivalryWithAllInfoQuery = ({
+  rivalry,
+  onSuccess,
+  enabled = true
+}: RivalryQueryProps) =>
   useQuery({
-    enabled: !!rivalry?.id,
+    enabled: !!rivalry?.id && enabled,
     queryKey: ['rivalryId', rivalry?.id],
     queryFn: async () => {
       // Use Gen 2 client to fetch rivalry with related data

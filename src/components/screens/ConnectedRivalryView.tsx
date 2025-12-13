@@ -66,8 +66,10 @@ export function ConnectedRivalryView({ navigation }: ConnectedRivalryViewProps):
         currentContestId: currentContest.id,
         contestCount: newContestCount
       });
-      // Don't set tiersReady here - let useRivalryWithAllInfoQuery.onSuccess handle it
-      // after the query refetches with the new contest data
+
+      // Re-enable the query to fetch the new contest data
+      // This prevents the race condition where early refetches show stale contest data
+      setIsResolvingContest(false);
     }
   });
 
@@ -173,6 +175,7 @@ export function ConnectedRivalryView({ navigation }: ConnectedRivalryViewProps):
     error
   } = useRivalryWithAllInfoQuery({
     rivalry,
+    enabled: !isResolvingContest,
     onSuccess: (populatedRivalry: MRivalry) => {
       updateRivalryProvider(populatedRivalry);
       setIsResolvingContest(false);

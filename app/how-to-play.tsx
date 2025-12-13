@@ -50,7 +50,8 @@ export default function HowToPlay() {
           <Text style={bodyTextWithBottomMarginStyle}>After creating your accounts:</Text>
           <Text style={bulletTextStyle}>
             • Tap "Create New Rivalry"{'\n'}• Search for and select your opponent{'\n'}• Choose your
-            game (currently Super Smash Ultimate){'\n'}• Your tier lists will be randomly generated
+            game (currently Super Smash Ultimate){'\n'}• Your tier lists start empty, but you can
+            edit immediately
           </Text>
           <Text style={proTipTextStyle}>
             Pro Tip: Type "npc" in the search to instantly find test opponents and try out Rivalry
@@ -67,8 +68,8 @@ export default function HowToPlay() {
           </Text>
           <Text style={bodyTextWithBottomMarginStyle}>To edit your tier list:</Text>
           <Text style={bulletTextNoBtmMarginStyle}>
-            • Scroll to the bottom of your rivalry page{'\n'}• Tap "Edit Tier List"{'\n'}• Tap a
-            character icon, then tap the spot where you want it to go{'\n'}• Tap "Save" when
+            • Tap "View Tier Lists" on your rivalry page{'\n'}• Tap "Edit Tier List"{'\n'}• Tap a
+            character icon, then tap the spot where you want it to go{'\n'}• Tap "Save List" when
             finished
           </Text>
         </View>
@@ -84,9 +85,9 @@ export default function HowToPlay() {
           </Text>
           <Text style={bodyTextWithBottomMarginStyle}>In the app:</Text>
           <Text style={bulletTextStyle}>
-            • Tap "Start New Contest"{'\n'}• You'll each be assigned a random character from your
-            current tier{'\n'}• Apply the handicap shown (if any){'\n'}• Play the match!{'\n'}•
-            Return to the app and select the winner and stock difference
+            • Tap "Create new contest"{'\n'}• You'll each be assigned an unplaced character or a
+            random character from your current tier{'\n'}• Apply the handicap shown (if any){'\n'}•
+            Play the match!{'\n'}• Return to the app and select the winner and stock difference
           </Text>
         </View>
 
@@ -144,8 +145,8 @@ export default function HowToPlay() {
           <Text style={sectionTitleStyle}>8. Tips & Features</Text>
           <Text style={tipTextStyle}>
             <Text style={boldTextStyle}>Shuffle Characters:</Text> If you get a character you've
-            banned or don't want to play, tap "Shuffle" to get new random characters from your
-            current tier without counting as a contest.
+            banned or don't want to play, tap "Shuffle" to get a new random character from your
+            current tier, or unknown tier, without counting as a contest.
           </Text>
           <Text style={tipTextStyle}>
             <Text style={boldTextStyle}>Contest History:</Text> View all past contests and see how

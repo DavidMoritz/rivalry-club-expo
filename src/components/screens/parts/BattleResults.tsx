@@ -35,6 +35,7 @@ export function BattleResults({
   const winnerUser = isATheWinner ? rivalry.displayUserAName() : rivalry.displayUserBName();
   const loserUser = isATheWinner ? rivalry.displayUserBName() : rivalry.displayUserAName();
   const stockCount = Math.abs(contest.result || 0);
+  const isUserTheWinner = isUserB ? !isATheWinner : isATheWinner;
 
   const winnerTierSlot = isATheWinner ? contest.tierSlotA : contest.tierSlotB;
   const loserTierSlot = isATheWinner ? contest.tierSlotB : contest.tierSlotA;
@@ -67,7 +68,9 @@ export function BattleResults({
     <View style={containerStyle}>
       <Text style={titleStyle}>BATTLE RESULTS!</Text>
 
-      <View style={[fightersContainerStyle, { flexDirection: isUserB ? 'row-reverse' : 'row' }]}>
+      <View
+        style={[fightersContainerStyle, { flexDirection: isUserTheWinner ? 'row' : 'row-reverse' }]}
+      >
         {/* Winner Side */}
         <View style={winnerContainerStyle}>
           <Text style={winnerUserNameStyle}>{winnerUser}</Text>

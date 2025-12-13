@@ -19,12 +19,14 @@ function getClient() {
 export async function incrementTierSlotStats(tierSlotId: string, won: boolean) {
   const { data, errors } = await getClient().mutations.incrementTierSlotStats({
     tierSlotId,
-    won
+    won,
   });
 
   if (errors) {
     console.error('[incrementTierSlotStats] GraphQL errors:', errors);
-    throw new Error(errors[0]?.message || 'Failed to increment tier slot stats');
+    throw new Error(
+      errors[0]?.message || 'Failed to increment tier slot stats'
+    );
   }
 
   return data;
@@ -38,12 +40,14 @@ export async function incrementFighterStats(fighterId: string, won: boolean) {
   try {
     const { data, errors } = await getClient().mutations.incrementFighterStats({
       fighterId,
-      won
+      won,
     });
 
     if (errors) {
       console.error('[incrementFighterStats] GraphQL errors:', errors);
-      throw new Error(errors[0]?.message || 'Failed to increment fighter stats');
+      throw new Error(
+        errors[0]?.message || 'Failed to increment fighter stats'
+      );
     }
 
     return data;

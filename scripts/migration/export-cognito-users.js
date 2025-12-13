@@ -4,7 +4,10 @@
  * Export Cognito users from sandbox user pool
  */
 
-const { CognitoIdentityProviderClient, ListUsersCommand } = require('@aws-sdk/client-cognito-identity-provider');
+const {
+  CognitoIdentityProviderClient,
+  ListUsersCommand,
+} = require('@aws-sdk/client-cognito-identity-provider');
 const fs = require('fs');
 const path = require('path');
 
@@ -20,21 +23,22 @@ async function exportUsers() {
   console.log(`👥 Exporting users from pool: ${USER_POOL_ID}`);
 
   let users = [];
-  let paginationToken = undefined;
+  let paginationToken;
 
   try {
     do {
       const command = new ListUsersCommand({
         UserPoolId: USER_POOL_ID,
-        PaginationToken: paginationToken
+        PaginationToken: paginationToken,
       });
 
       const response = await cognitoClient.send(command);
       users = users.concat(response.Users || []);
       paginationToken = response.PaginationToken;
 
-      console.log(`  📊 Retrieved ${response.Users?.length || 0} users (Total: ${users.length})`);
-
+      console.log(
+        `  📊 Retrieved ${response.Users?.length || 0} users (Total: ${users.length})`
+      );
     } while (paginationToken);
 
     console.log(`✅ Exported ${users.length} users`);
@@ -51,17 +55,18 @@ async function exportUsers() {
       users: users.map(user => ({
         username: user.Username,
         email: user.Attributes?.find(a => a.Name === 'email')?.Value,
-        emailVerified: user.Attributes?.find(a => a.Name === 'email_verified')?.Value === 'true',
+        emailVerified:
+          user.Attributes?.find(a => a.Name === 'email_verified')?.Value ===
+          'true',
         enabled: user.Enabled,
         userStatus: user.UserStatus,
         userCreateDate: user.UserCreateDate,
-        attributes: user.Attributes
-      }))
+        attributes: user.Attributes,
+      })),
     };
 
     fs.writeFileSync(filepath, JSON.stringify(backupData, null, 2));
     console.log(`💾 Saved to: ${filename}`);
-
   } catch (error) {
     console.error('❌ Error exporting users:', error);
     throw error;

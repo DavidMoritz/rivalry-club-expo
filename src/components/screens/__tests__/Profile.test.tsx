@@ -8,15 +8,15 @@ const mockReplace = jest.fn();
 
 jest.mock('expo-router', () => ({
   useRouter: () => ({
-    replace: mockReplace
-  })
+    replace: mockReplace,
+  }),
 }));
 
 // Mock useAuthUser hook
 const mockUseAuthUser = jest.fn();
 
 jest.mock('../../../hooks/useAuthUser', () => ({
-  useAuthUser: () => mockUseAuthUser()
+  useAuthUser: () => mockUseAuthUser(),
 }));
 
 // Mock AWS Amplify Auth
@@ -34,10 +34,10 @@ jest.mock('aws-amplify/data', () => ({
   generateClient: jest.fn(() => ({
     models: {
       User: {
-        update: (...args: any[]) => mockUserUpdate(...args)
-      }
-    }
-  }))
+        update: (...args: any[]) => mockUserUpdate(...args),
+      },
+    },
+  })),
 }));
 
 describe('Profile Component', () => {
@@ -60,7 +60,7 @@ describe('Profile Component', () => {
       mockUseAuthUser.mockReturnValue({
         user: null,
         isLoading: true,
-        error: null
+        error: null,
       });
 
       const { getByText } = render(<Profile />);
@@ -78,16 +78,18 @@ describe('Profile Component', () => {
           firstName: null,
           lastName: null,
           role: 1,
-          awsSub: 'aws-sub-new'
+          awsSub: 'aws-sub-new',
         },
         isLoading: false,
-        error: null
+        error: null,
       });
 
       const { getByText } = render(<Profile />);
 
       expect(getByText('Welcome! 👋')).toBeTruthy();
-      expect(getByText('Please enter your first name to get started')).toBeTruthy();
+      expect(
+        getByText('Please enter your first name to get started')
+      ).toBeTruthy();
     });
 
     it('shows welcome message when firstName is empty string', () => {
@@ -98,10 +100,10 @@ describe('Profile Component', () => {
           firstName: '',
           lastName: '',
           role: 1,
-          awsSub: 'aws-sub-empty'
+          awsSub: 'aws-sub-empty',
         },
         isLoading: false,
-        error: null
+        error: null,
       });
 
       const { getByText } = render(<Profile />);
@@ -117,19 +119,19 @@ describe('Profile Component', () => {
           firstName: null,
           lastName: null,
           role: 1,
-          awsSub: 'aws-sub-complete'
+          awsSub: 'aws-sub-complete',
         },
         isLoading: false,
-        error: null
+        error: null,
       });
 
       mockUserUpdate.mockResolvedValue({
         data: {
           id: 'user-complete',
           firstName: 'New',
-          lastName: 'User'
+          lastName: 'User',
         },
-        errors: null
+        errors: null,
       });
 
       const { getByText, getByPlaceholderText } = render(<Profile />);
@@ -146,7 +148,7 @@ describe('Profile Component', () => {
         expect(mockUserUpdate).toHaveBeenCalledWith({
           id: 'user-complete',
           firstName: 'New',
-          lastName: 'User'
+          lastName: 'User',
         });
       });
 
@@ -172,16 +174,18 @@ describe('Profile Component', () => {
           firstName: 'Existing',
           lastName: 'User',
           role: 1,
-          awsSub: 'aws-sub-existing'
+          awsSub: 'aws-sub-existing',
         },
         isLoading: false,
-        error: null
+        error: null,
       });
 
       const { queryByText } = render(<Profile />);
 
       expect(queryByText('Welcome! 👋')).toBeNull();
-      expect(queryByText('Please enter your first name to get started')).toBeNull();
+      expect(
+        queryByText('Please enter your first name to get started')
+      ).toBeNull();
     });
 
     it('pre-fills form with existing user data', () => {
@@ -192,10 +196,10 @@ describe('Profile Component', () => {
           firstName: 'John',
           lastName: 'Doe',
           role: 1,
-          awsSub: 'aws-sub-prefill'
+          awsSub: 'aws-sub-prefill',
         },
         isLoading: false,
-        error: null
+        error: null,
       });
 
       const { getByDisplayValue } = render(<Profile />);
@@ -212,19 +216,19 @@ describe('Profile Component', () => {
           firstName: 'No',
           lastName: 'Redirect',
           role: 1,
-          awsSub: 'aws-sub-no-redirect'
+          awsSub: 'aws-sub-no-redirect',
         },
         isLoading: false,
-        error: null
+        error: null,
       });
 
       mockUserUpdate.mockResolvedValue({
         data: {
           id: 'user-no-redirect',
           firstName: 'Updated',
-          lastName: 'Name'
+          lastName: 'Name',
         },
-        errors: null
+        errors: null,
       });
 
       const { getByText, getByPlaceholderText } = render(<Profile />);
@@ -256,10 +260,10 @@ describe('Profile Component', () => {
           firstName: '',
           lastName: '',
           role: 1,
-          awsSub: 'aws-sub-validation'
+          awsSub: 'aws-sub-validation',
         },
         isLoading: false,
-        error: null
+        error: null,
       });
     });
 
@@ -284,9 +288,9 @@ describe('Profile Component', () => {
         data: {
           id: 'user-validation',
           firstName: 'OnlyFirst',
-          lastName: ' '
+          lastName: ' ',
         },
-        errors: null
+        errors: null,
       });
 
       const { getByText, getByPlaceholderText } = render(<Profile />);
@@ -301,7 +305,7 @@ describe('Profile Component', () => {
         expect(mockUserUpdate).toHaveBeenCalledWith({
           id: 'user-validation',
           firstName: 'OnlyFirst',
-          lastName: ' '
+          lastName: ' ',
         });
       });
     });
@@ -325,7 +329,7 @@ describe('Profile Component', () => {
     it('trims whitespace before saving', async () => {
       mockUserUpdate.mockResolvedValue({
         data: { id: 'user-validation', firstName: 'Trimmed', lastName: 'Name' },
-        errors: null
+        errors: null,
       });
 
       const { getByText, getByPlaceholderText } = render(<Profile />);
@@ -342,7 +346,7 @@ describe('Profile Component', () => {
         expect(mockUserUpdate).toHaveBeenCalledWith({
           id: 'user-validation',
           firstName: 'Trimmed',
-          lastName: 'Name'
+          lastName: 'Name',
         });
       });
     });
@@ -357,17 +361,17 @@ describe('Profile Component', () => {
           firstName: 'Error',
           lastName: 'User',
           role: 1,
-          awsSub: 'aws-sub-error'
+          awsSub: 'aws-sub-error',
         },
         isLoading: false,
-        error: null
+        error: null,
       });
     });
 
     it('displays error message when update fails', async () => {
       mockUserUpdate.mockResolvedValue({
         data: null,
-        errors: [{ message: 'Network error' }]
+        errors: [{ message: 'Network error' }],
       });
 
       const { getByText, getByPlaceholderText } = render(<Profile />);
@@ -409,10 +413,10 @@ describe('Profile Component', () => {
           firstName: 'Password',
           lastName: 'User',
           role: 1,
-          awsSub: 'aws-sub-password'
+          awsSub: 'aws-sub-password',
         },
         isLoading: false,
-        error: null
+        error: null,
       });
     });
 
@@ -430,7 +434,9 @@ describe('Profile Component', () => {
 
       await waitFor(() => {
         expect(getByPlaceholderText('Enter current password')).toBeTruthy();
-        expect(getByPlaceholderText('Enter new password (min 8 characters)')).toBeTruthy();
+        expect(
+          getByPlaceholderText('Enter new password (min 8 characters)')
+        ).toBeTruthy();
         expect(getByPlaceholderText('Re-enter new password')).toBeTruthy();
       });
     });
@@ -454,15 +460,23 @@ describe('Profile Component', () => {
     });
 
     it('validates new passwords match', async () => {
-      const { getByText, getAllByText, getByPlaceholderText } = render(<Profile />);
+      const { getByText, getAllByText, getByPlaceholderText } = render(
+        <Profile />
+      );
 
       const changePasswordButton = getByText('Change Password');
       fireEvent.press(changePasswordButton);
 
       await waitFor(() => {
-        const currentPasswordInput = getByPlaceholderText('Enter current password');
-        const newPasswordInput = getByPlaceholderText('Enter new password (min 8 characters)');
-        const confirmPasswordInput = getByPlaceholderText('Re-enter new password');
+        const currentPasswordInput = getByPlaceholderText(
+          'Enter current password'
+        );
+        const newPasswordInput = getByPlaceholderText(
+          'Enter new password (min 8 characters)'
+        );
+        const confirmPasswordInput = getByPlaceholderText(
+          'Re-enter new password'
+        );
 
         fireEvent.changeText(currentPasswordInput, 'oldpassword');
         fireEvent.changeText(newPasswordInput, 'newpassword123');
@@ -479,15 +493,23 @@ describe('Profile Component', () => {
     });
 
     it('validates password length', async () => {
-      const { getByText, getAllByText, getByPlaceholderText } = render(<Profile />);
+      const { getByText, getAllByText, getByPlaceholderText } = render(
+        <Profile />
+      );
 
       const changePasswordButton = getByText('Change Password');
       fireEvent.press(changePasswordButton);
 
       await waitFor(() => {
-        const currentPasswordInput = getByPlaceholderText('Enter current password');
-        const newPasswordInput = getByPlaceholderText('Enter new password (min 8 characters)');
-        const confirmPasswordInput = getByPlaceholderText('Re-enter new password');
+        const currentPasswordInput = getByPlaceholderText(
+          'Enter current password'
+        );
+        const newPasswordInput = getByPlaceholderText(
+          'Enter new password (min 8 characters)'
+        );
+        const confirmPasswordInput = getByPlaceholderText(
+          'Re-enter new password'
+        );
 
         fireEvent.changeText(currentPasswordInput, 'oldpassword');
         fireEvent.changeText(newPasswordInput, 'short');
@@ -499,22 +521,32 @@ describe('Profile Component', () => {
       fireEvent.press(submitButton);
 
       await waitFor(() => {
-        expect(getByText('Password must be at least 8 characters')).toBeTruthy();
+        expect(
+          getByText('Password must be at least 8 characters')
+        ).toBeTruthy();
       });
     });
 
     it('successfully changes password', async () => {
       mockUpdatePassword.mockResolvedValue(undefined);
 
-      const { getByText, getAllByText, getByPlaceholderText } = render(<Profile />);
+      const { getByText, getAllByText, getByPlaceholderText } = render(
+        <Profile />
+      );
 
       const changePasswordButton = getByText('Change Password');
       fireEvent.press(changePasswordButton);
 
       await waitFor(() => {
-        const currentPasswordInput = getByPlaceholderText('Enter current password');
-        const newPasswordInput = getByPlaceholderText('Enter new password (min 8 characters)');
-        const confirmPasswordInput = getByPlaceholderText('Re-enter new password');
+        const currentPasswordInput = getByPlaceholderText(
+          'Enter current password'
+        );
+        const newPasswordInput = getByPlaceholderText(
+          'Enter new password (min 8 characters)'
+        );
+        const confirmPasswordInput = getByPlaceholderText(
+          'Re-enter new password'
+        );
 
         fireEvent.changeText(currentPasswordInput, 'oldpassword');
         fireEvent.changeText(newPasswordInput, 'newpassword123');
@@ -526,7 +558,10 @@ describe('Profile Component', () => {
       fireEvent.press(submitButton);
 
       await waitFor(() => {
-        expect(mockUpdatePassword).toHaveBeenCalledWith('oldpassword', 'newpassword123');
+        expect(mockUpdatePassword).toHaveBeenCalledWith(
+          'oldpassword',
+          'newpassword123'
+        );
       });
 
       await waitFor(() => {
@@ -537,15 +572,23 @@ describe('Profile Component', () => {
     it('clears password fields after successful change', async () => {
       mockUpdatePassword.mockResolvedValue(undefined);
 
-      const { getByText, getAllByText, getByPlaceholderText } = render(<Profile />);
+      const { getByText, getAllByText, getByPlaceholderText } = render(
+        <Profile />
+      );
 
       const changePasswordButton = getByText('Change Password');
       fireEvent.press(changePasswordButton);
 
       await waitFor(() => {
-        const currentPasswordInput = getByPlaceholderText('Enter current password');
-        const newPasswordInput = getByPlaceholderText('Enter new password (min 8 characters)');
-        const confirmPasswordInput = getByPlaceholderText('Re-enter new password');
+        const currentPasswordInput = getByPlaceholderText(
+          'Enter current password'
+        );
+        const newPasswordInput = getByPlaceholderText(
+          'Enter new password (min 8 characters)'
+        );
+        const confirmPasswordInput = getByPlaceholderText(
+          'Re-enter new password'
+        );
 
         fireEvent.changeText(currentPasswordInput, 'oldpassword');
         fireEvent.changeText(newPasswordInput, 'newpassword123');
@@ -561,9 +604,15 @@ describe('Profile Component', () => {
       });
 
       // Check fields are cleared
-      const currentPasswordInput = getByPlaceholderText('Enter current password');
-      const newPasswordInput = getByPlaceholderText('Enter new password (min 8 characters)');
-      const confirmPasswordInput = getByPlaceholderText('Re-enter new password');
+      const currentPasswordInput = getByPlaceholderText(
+        'Enter current password'
+      );
+      const newPasswordInput = getByPlaceholderText(
+        'Enter new password (min 8 characters)'
+      );
+      const confirmPasswordInput = getByPlaceholderText(
+        'Re-enter new password'
+      );
 
       expect(currentPasswordInput.props.value).toBe('');
       expect(newPasswordInput.props.value).toBe('');
@@ -575,15 +624,23 @@ describe('Profile Component', () => {
       error.name = 'NotAuthorizedException';
       mockUpdatePassword.mockRejectedValue(error);
 
-      const { getByText, getAllByText, getByPlaceholderText } = render(<Profile />);
+      const { getByText, getAllByText, getByPlaceholderText } = render(
+        <Profile />
+      );
 
       const changePasswordButton = getByText('Change Password');
       fireEvent.press(changePasswordButton);
 
       await waitFor(() => {
-        const currentPasswordInput = getByPlaceholderText('Enter current password');
-        const newPasswordInput = getByPlaceholderText('Enter new password (min 8 characters)');
-        const confirmPasswordInput = getByPlaceholderText('Re-enter new password');
+        const currentPasswordInput = getByPlaceholderText(
+          'Enter current password'
+        );
+        const newPasswordInput = getByPlaceholderText(
+          'Enter new password (min 8 characters)'
+        );
+        const confirmPasswordInput = getByPlaceholderText(
+          'Re-enter new password'
+        );
 
         fireEvent.changeText(currentPasswordInput, 'wrongpassword');
         fireEvent.changeText(newPasswordInput, 'newpassword123');
@@ -607,10 +664,10 @@ describe('Profile Component', () => {
           firstName: 'Anonymous',
           lastName: 'User',
           role: 1,
-          awsSub: 'anonymous'
+          awsSub: 'anonymous',
         },
         isLoading: false,
-        error: null
+        error: null,
       });
 
       const { queryByText } = render(<Profile />);
@@ -629,10 +686,10 @@ describe('Profile Component', () => {
           firstName: 'UI',
           lastName: 'Test',
           role: 1,
-          awsSub: 'aws-sub-ui'
+          awsSub: 'aws-sub-ui',
         },
         isLoading: false,
-        error: null
+        error: null,
       });
 
       const { getByText } = render(<Profile />);
@@ -648,14 +705,14 @@ describe('Profile Component', () => {
           firstName: 'Updating',
           lastName: 'State',
           role: 1,
-          awsSub: 'aws-sub-updating'
+          awsSub: 'aws-sub-updating',
         },
         isLoading: false,
-        error: null
+        error: null,
       });
 
       let resolveUpdate: any;
-      const updatePromise = new Promise((resolve) => {
+      const updatePromise = new Promise(resolve => {
         resolveUpdate = resolve;
       });
 

@@ -1,13 +1,13 @@
-import { ReactNode, useState } from 'react';
+import type { UseMutationResult } from '@tanstack/react-query';
+import { type ReactNode, useState } from 'react';
 import { ActivityIndicator, FlatList, Text, View } from 'react-native';
-import { UseMutationResult } from '@tanstack/react-query';
 
-import { MContest } from '../../../models/m-contest';
-import { MGame } from '../../../models/m-game';
-import { MRivalry } from '../../../models/m-rivalry';
+import type { MContest } from '../../../models/m-contest';
+import type { MGame } from '../../../models/m-game';
+import type { MRivalry } from '../../../models/m-rivalry';
 import { useRivalryContext } from '../../../providers/rivalry';
-import { contestStyles, styles } from '../../../utils/styles';
 import { colors } from '../../../utils/colors';
+import { contestStyles, styles } from '../../../utils/styles';
 import { Button } from '../../common/Button';
 import { ContestRow } from '../../common/ContestRow';
 
@@ -30,7 +30,7 @@ export function ContestHistoryTable({
   loadMore,
   isLoadingMore,
   hideUndoButton,
-  onUndoClick
+  onUndoClick,
 }: ContestHistoryTableProps): ReactNode {
   const { userId } = useRivalryContext();
   const isUserB = userId === rivalry.userBId;
@@ -38,7 +38,7 @@ export function ContestHistoryTable({
 
   const handleUndoClick = () => {
     // Get the ID of the first contest with a result (the one being deleted)
-    const contestToDelete = contests.find((c) => c.result);
+    const contestToDelete = contests.find(c => c.result);
 
     if (!contestToDelete) return;
 
@@ -58,7 +58,7 @@ export function ContestHistoryTable({
 
     return (
       <View style={loaderContainerStyle}>
-        <ActivityIndicator size="small" color={colors.white} />
+        <ActivityIndicator color={colors.white} size="small" />
       </View>
     );
   };
@@ -68,14 +68,14 @@ export function ContestHistoryTable({
       {!hideUndoButton && (
         <View style={undoButtonContainerStyle}>
           <Button
-            style={undoButtonStyle}
-            onPress={handleUndoClick}
-            text="↺ Undo Recent Contest"
             disabled={
               deleteMostRecentContestMutation.isPending ||
               !contests.length ||
-              !contests.some((c) => c.result)
+              !contests.some(c => c.result)
             }
+            onPress={handleUndoClick}
+            style={undoButtonStyle}
+            text="↺ Undo Recent Contest"
           />
         </View>
       )}
@@ -110,24 +110,24 @@ export function ContestHistoryTable({
       </View>
       <FlatList
         data={contests}
-        keyExtractor={(item) => item.id}
-        renderItem={({ item }) => (
-          <ContestRow
-            contest={item}
-            game={game}
-            rivalry={rivalry}
-            flip={isUserB}
-            shouldFadeOut={fadingContestId === item.id}
-          />
-        )}
-        onEndReached={loadMore}
-        onEndReachedThreshold={0.5}
-        ListFooterComponent={renderFooter}
+        keyExtractor={item => item.id}
         ListEmptyComponent={
           <View style={emptyStateContainerStyle}>
             <Text style={emptyStateTextStyle}>No contests yet</Text>
           </View>
         }
+        ListFooterComponent={renderFooter}
+        onEndReached={loadMore}
+        onEndReachedThreshold={0.5}
+        renderItem={({ item }) => (
+          <ContestRow
+            contest={item}
+            flip={isUserB}
+            game={game}
+            rivalry={rivalry}
+            shouldFadeOut={fadingContestId === item.id}
+          />
+        )}
       />
     </View>
   );
@@ -138,61 +138,61 @@ const bold = 'bold' as const;
 
 const loaderContainerStyle = {
   paddingVertical: 20,
-  alignItems: center
+  alignItems: center,
 };
 
 const undoButtonContainerStyle = {
   alignSelf: 'flex-start' as const,
   marginBottom: 8,
-  marginTop: -14
+  marginTop: -14,
 };
 
 const undoButtonStyle = {
-  paddingVertical: 0
+  paddingVertical: 0,
 };
 
 const undoPlaceholderStyle = {
   alignSelf: 'flex-start' as const,
-  marginBottom: 8
+  marginBottom: 8,
 };
 
 const errorContainerStyle = {
   marginBottom: 16,
   padding: 12,
   backgroundColor: colors.red900,
-  borderRadius: 8
+  borderRadius: 8,
 };
 
 const errorTextStyle = {
   ...styles.text,
-  color: colors.red300
+  color: colors.red300,
 };
 
 const tableWrapperStyle = {
-  padding: 10
+  padding: 10,
 };
 
 const tableHeaderStyle = {
   fontWeight: bold,
-  fontSize: 20
+  fontSize: 20,
 };
 
 const headerTextStyle = {
   ...tableHeaderStyle,
-  color: colors.white
+  color: colors.white,
 };
 
 const tableHeaderRowStyle = {
   borderBottomWidth: 2,
-  borderBottomColor: 'yellow'
+  borderBottomColor: 'yellow',
 };
 
 const emptyStateContainerStyle = {
   paddingVertical: 40,
-  alignItems: center
+  alignItems: center,
 };
 
 const emptyStateTextStyle = {
   ...styles.text,
-  color: colors.gray400
+  color: colors.gray400,
 };

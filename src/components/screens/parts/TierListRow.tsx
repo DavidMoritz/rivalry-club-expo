@@ -1,11 +1,10 @@
-import React from 'react';
+import type React from 'react';
 import { Text, TouchableOpacity, View } from 'react-native';
-
+import type { MGame } from '../../../models/m-game';
+import type { MTierSlot } from '../../../models/m-tier-slot';
+import { useGame } from '../../../providers/game';
 import { fighterByIdFromGame } from '../../../utils';
 import { colors } from '../../../utils/colors';
-import { MGame } from '../../../models/m-game';
-import { MTierSlot } from '../../../models/m-tier-slot';
-import { useGame } from '../../../providers/game';
 import { CharacterDisplay } from '../../common/CharacterDisplay';
 
 interface TierListRowProps {
@@ -19,7 +18,7 @@ interface TierListRowProps {
   selectedSlotId?: string | null;
 }
 
-const TierListRow: React.FC<TierListRowProps> = (props) => {
+const TierListRow: React.FC<TierListRowProps> = props => {
   const game = useGame() as MGame;
 
   const TierLabel = props.onTierClick ? TouchableOpacity : View;
@@ -32,36 +31,41 @@ const TierListRow: React.FC<TierListRowProps> = (props) => {
         style={[
           tierLabelStyle,
           {
-            backgroundColor: props.onTierClick ? colors.tierRowDark : colors.tierRowLight
-          }
+            backgroundColor: props.onTierClick
+              ? colors.tierRowDark
+              : colors.tierRowLight,
+          },
         ]}
       >
         <Text style={tierLabelTextStyle}>{props.label}</Text>
       </TierLabel>
-      <TierBackground onPress={props.onTierBackgroundClick} style={tierBackgroundStyle}>
+      <TierBackground
+        onPress={props.onTierBackgroundClick}
+        style={tierBackgroundStyle}
+      >
         <View style={slotsContainerStyle}>
-          {props.slots.map((slot) => {
+          {props.slots.map(slot => {
             const fighter = fighterByIdFromGame(game, slot.fighterId);
             const isSelected = props.selectedSlotId === slot.id;
 
             return fighter ? (
               <TouchableOpacity
+                disabled={!props.onSlotClick}
                 key={slot.id}
                 onPress={() => props.onSlotClick?.(slot.id)}
-                disabled={!props.onSlotClick}
                 style={[
                   slotWrapperStyle,
                   {
                     borderWidth: isSelected ? 3 : 0,
-                    borderColor: isSelected ? colors.amber400 : colors.white
-                  }
+                    borderColor: isSelected ? colors.amber400 : colors.white,
+                  },
                 ]}
               >
                 <CharacterDisplay
                   fighter={fighter}
-                  tierSlot={slot}
-                  hideName={true}
                   height={50}
+                  hideName={true}
+                  tierSlot={slot}
                   zoomMultiplier={0.65}
                 />
               </TouchableOpacity>
@@ -81,7 +85,7 @@ const wrap = 'wrap' as const;
 const rowContainerStyle = {
   flexDirection: row,
   borderBottomWidth: 1,
-  borderBottomColor: colors.gray700
+  borderBottomColor: colors.gray700,
 };
 
 const tierLabelStyle = {
@@ -90,28 +94,28 @@ const tierLabelStyle = {
   alignItems: center,
   borderRightWidth: 2,
   borderRightColor: colors.slate800,
-  marginRight: 4
+  marginRight: 4,
 };
 
 const tierLabelTextStyle = {
   fontSize: 32,
   fontWeight: bold,
-  color: colors.black
+  color: colors.black,
 };
 
 const tierBackgroundStyle = {
   flex: 1,
-  paddingVertical: 4
+  paddingVertical: 4,
 };
 
 const slotsContainerStyle = {
   flexDirection: row,
   flexWrap: wrap,
-  gap: 4
+  gap: 4,
 };
 
 const slotWrapperStyle = {
-  borderRadius: 4
+  borderRadius: 4,
 };
 
 export default TierListRow;

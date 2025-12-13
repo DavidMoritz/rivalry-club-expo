@@ -1,7 +1,7 @@
-import { ReactNode } from 'react';
+import type { ReactNode } from 'react';
 import { Text, View } from 'react-native';
 
-import { MRivalry } from '../../../models/m-rivalry';
+import type { MRivalry } from '../../../models/m-rivalry';
 import { useRivalryContext } from '../../../providers/rivalry';
 import { darkStyles } from '../../../utils/styles';
 import { TierListDisplay } from './TierListDisplay';
@@ -11,7 +11,10 @@ interface TierListsDisplayProps {
   unlinked: boolean;
 }
 
-export function TierListsDisplay({ rivalry, unlinked }: TierListsDisplayProps): ReactNode {
+export function TierListsDisplay({
+  rivalry,
+  unlinked,
+}: TierListsDisplayProps): ReactNode {
   const { userId } = useRivalryContext();
 
   return (
@@ -19,20 +22,32 @@ export function TierListsDisplay({ rivalry, unlinked }: TierListsDisplayProps): 
       style={{
         marginTop: -45,
         flex: 1,
-        flexDirection: userId === rivalry.userBId ? 'column-reverse' : 'column'
+        flexDirection: userId === rivalry.userBId ? 'column-reverse' : 'column',
       }}
     >
       <View style={{ flex: 1 }}>
         <Text style={[darkStyles.text, tierListHeaderStyle]}>
           {rivalry.displayUserAName()} tier list
         </Text>
-        {rivalry.tierListA && <TierListDisplay tierList={rivalry.tierListA} tierListSignifier="A" unlinked={unlinked} />}
+        {rivalry.tierListA && (
+          <TierListDisplay
+            tierList={rivalry.tierListA}
+            tierListSignifier="A"
+            unlinked={unlinked}
+          />
+        )}
       </View>
       <View style={{ flex: 1 }}>
         <Text style={[darkStyles.text, tierListHeaderStyle]}>
           {rivalry.displayUserBName()} tier list
         </Text>
-        {rivalry.tierListB && <TierListDisplay tierList={rivalry.tierListB} tierListSignifier="B" unlinked={unlinked} />}
+        {rivalry.tierListB && (
+          <TierListDisplay
+            tierList={rivalry.tierListB}
+            tierListSignifier="B"
+            unlinked={unlinked}
+          />
+        )}
       </View>
     </View>
   );
@@ -41,5 +56,5 @@ export function TierListsDisplay({ rivalry, unlinked }: TierListsDisplayProps): 
 const tierListHeaderStyle = {
   fontSize: 18,
   marginBottom: 8,
-  marginTop: 16
+  marginTop: 16,
 };

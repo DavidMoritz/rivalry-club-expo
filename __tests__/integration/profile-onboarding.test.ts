@@ -3,10 +3,10 @@
  * Tests the complete flow from authentication to profile completion
  */
 
+import { act, render, waitFor } from '@testing-library/react-native';
 import { generateClient } from 'aws-amplify/data';
 import { useRouter } from 'expo-router';
 import React from 'react';
-import { act, render, waitFor } from '@testing-library/react-native';
 
 import type { Schema } from '../../amplify/data/resource';
 import { Auth } from '../../src/components/screens/Auth';
@@ -86,7 +86,9 @@ describe('Profile Onboarding Flow - Integration Tests', () => {
       };
 
       // Step 3: Simulate the checkUserProfileAndNavigate logic from auth.tsx
-      const hasCompletedProfile = !!(userFromDb.firstName && userFromDb.firstName.trim() !== '');
+      const hasCompletedProfile = !!(
+        userFromDb.firstName && userFromDb.firstName.trim() !== ''
+      );
       expect(hasCompletedProfile).toBe(false);
 
       // Step 4: When profile is incomplete, should redirect to /profile
@@ -108,7 +110,9 @@ describe('Profile Onboarding Flow - Integration Tests', () => {
       };
 
       // Rivalries route guard check
-      const hasCompletedProfile = !!(user.firstName && user.firstName.trim() !== '');
+      const hasCompletedProfile = !!(
+        user.firstName && user.firstName.trim() !== ''
+      );
       expect(hasCompletedProfile).toBe(false);
 
       // Should redirect back to /profile
@@ -136,7 +140,9 @@ describe('Profile Onboarding Flow - Integration Tests', () => {
       };
 
       // Simulate the checkUserProfileAndNavigate logic from auth.tsx
-      const hasCompletedProfile = !!(userFromDb.firstName && userFromDb.firstName.trim() !== '');
+      const hasCompletedProfile = !!(
+        userFromDb.firstName && userFromDb.firstName.trim() !== ''
+      );
       expect(hasCompletedProfile).toBe(true);
 
       // When profile is complete, should redirect to /rivalries
@@ -159,7 +165,8 @@ describe('Profile Onboarding Flow - Integration Tests', () => {
         email: 'update@test.com',
       };
 
-      const isNewUser = !userBefore.firstName || userBefore.firstName.trim() === '';
+      const isNewUser =
+        !userBefore.firstName || userBefore.firstName.trim() === '';
       expect(isNewUser).toBe(false);
 
       // User updates profile
@@ -184,7 +191,8 @@ describe('Profile Onboarding Flow - Integration Tests', () => {
         email: 'whitespace@test.com',
       };
 
-      const hasCompletedProfile = user.firstName && user.firstName.trim() !== '';
+      const hasCompletedProfile =
+        user.firstName && user.firstName.trim() !== '';
       expect(hasCompletedProfile).toBe(false);
 
       // Should redirect to profile
@@ -200,7 +208,9 @@ describe('Profile Onboarding Flow - Integration Tests', () => {
         email: 'empty@test.com',
       };
 
-      const hasCompletedProfile = !!(user.firstName && user.firstName.trim() !== '');
+      const hasCompletedProfile = !!(
+        user.firstName && user.firstName.trim() !== ''
+      );
       expect(hasCompletedProfile).toBe(false);
     });
 
@@ -300,7 +310,8 @@ describe('Profile Onboarding Flow - Integration Tests', () => {
       };
 
       // Before trim: appears to have content
-      const hasContentBeforeTrim = userInput.firstName !== '' && userInput.lastName !== '';
+      const hasContentBeforeTrim =
+        userInput.firstName !== '' && userInput.lastName !== '';
       expect(hasContentBeforeTrim).toBe(true);
 
       // After trim: revealed to be empty
@@ -323,7 +334,7 @@ describe('Profile Onboarding Flow - Integration Tests', () => {
         { event: 'SIGNED_IN', userId: 'user-123' },
       ];
 
-      authStateChanges.forEach((change) => {
+      authStateChanges.forEach(change => {
         if (change.event === 'SIGNED_IN' && change.userId) {
           // Should check profile on each sign-in
           const shouldCheckProfile = true;
@@ -348,7 +359,8 @@ describe('Profile Onboarding Flow - Integration Tests', () => {
       const newUser = { firstName: null };
       const existingUser = { firstName: 'John' };
 
-      const showWelcomeForNew = !newUser.firstName || newUser.firstName.trim() === '';
+      const showWelcomeForNew =
+        !newUser.firstName || newUser.firstName.trim() === '';
       const showWelcomeForExisting =
         !existingUser.firstName || existingUser.firstName.trim() === '';
 

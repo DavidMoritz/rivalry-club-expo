@@ -1,11 +1,10 @@
 import { render, screen, waitFor } from '@testing-library/react-native';
 import React from 'react';
-
-import { ContestRow } from '../ContestRow';
-import { getMContest, MContest } from '../../../models/m-contest';
-import { getMGame, MGame } from '../../../models/m-game';
-import { getMRivalry, MRivalry } from '../../../models/m-rivalry';
+import { getMContest, type MContest } from '../../../models/m-contest';
+import { getMGame, type MGame } from '../../../models/m-game';
+import { getMRivalry, type MRivalry } from '../../../models/m-rivalry';
 import { getMTierList } from '../../../models/m-tier-list';
+import { ContestRow } from '../ContestRow';
 
 describe('ContestRow', () => {
   const mockGame: MGame = getMGame({
@@ -85,7 +84,9 @@ describe('ContestRow', () => {
 
     contest.setRivalryAndSlots(mockRivalry);
 
-    render(<ContestRow contest={contest} game={mockGame} rivalry={mockRivalry} />);
+    render(
+      <ContestRow contest={contest} game={mockGame} rivalry={mockRivalry} />
+    );
 
     // Wait for the component to render with data from useEffect
     await waitFor(() => {
@@ -111,7 +112,9 @@ describe('ContestRow', () => {
 
     contest.setRivalryAndSlots(mockRivalry);
 
-    render(<ContestRow contest={contest} game={mockGame} rivalry={mockRivalry} />);
+    render(
+      <ContestRow contest={contest} game={mockGame} rivalry={mockRivalry} />
+    );
 
     // Check that the score is displayed correctly for negative result
     await waitFor(() => {
@@ -175,7 +178,9 @@ describe('ContestRow', () => {
 
     contest.setRivalryAndSlots(mockRivalry);
 
-    render(<ContestRow contest={contest} game={mockGame} rivalry={mockRivalry} />);
+    render(
+      <ContestRow contest={contest} game={mockGame} rivalry={mockRivalry} />
+    );
 
     // Date should not include year if it's the current year
     await waitFor(() => {
@@ -196,7 +201,9 @@ describe('ContestRow', () => {
 
     contest.setRivalryAndSlots(mockRivalry);
 
-    render(<ContestRow contest={contest} game={mockGame} rivalry={mockRivalry} />);
+    render(
+      <ContestRow contest={contest} game={mockGame} rivalry={mockRivalry} />
+    );
 
     // Date should include year if it's not the current year
     await waitFor(() => {

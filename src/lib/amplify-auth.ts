@@ -1,16 +1,16 @@
-import Constants from 'expo-constants';
 import {
-  signIn as authSignIn,
-  signUp as authSignUp,
-  signOut as authSignOut,
-  getCurrentUser as authGetCurrentUser,
-  updatePassword as authUpdatePassword,
-  confirmSignUp as authConfirmSignUp,
-  resetPassword as authResetPassword,
   confirmResetPassword as authConfirmResetPassword,
+  confirmSignUp as authConfirmSignUp,
+  getCurrentUser as authGetCurrentUser,
+  resetPassword as authResetPassword,
+  signIn as authSignIn,
+  signOut as authSignOut,
+  signUp as authSignUp,
+  updatePassword as authUpdatePassword,
   type SignInInput,
   type SignUpInput,
 } from 'aws-amplify/auth';
+import Constants from 'expo-constants';
 
 /**
  * Check if running in Expo Go (development mode without native modules)
@@ -65,7 +65,7 @@ function getDevUsers(): DevUser[] {
 export function findDevUserByEmail(email: string): DevUser | undefined {
   const users = getDevUsers();
 
-  return users.find((u) => u.email.toLowerCase() === email.toLowerCase());
+  return users.find(u => u.email.toLowerCase() === email.toLowerCase());
 }
 
 /**
@@ -74,12 +74,14 @@ export function findDevUserByEmail(email: string): DevUser | undefined {
 export function getDefaultDevUser(): DevUser {
   const users = getDevUsers();
 
-  return users[0] || {
-    email: 'dev@expo.go',
-    awsSub: 'expo-go-dev-user',
-    firstName: 'Dev',
-    lastName: 'User',
-  };
+  return (
+    users[0] || {
+      email: 'dev@expo.go',
+      awsSub: 'expo-go-dev-user',
+      firstName: 'Dev',
+      lastName: 'User',
+    }
+  );
 }
 
 /**
@@ -192,7 +194,11 @@ export async function resetPassword(email: string) {
 /**
  * Confirm password reset with code
  */
-export async function confirmResetPassword(email: string, code: string, newPassword: string) {
+export async function confirmResetPassword(
+  email: string,
+  code: string,
+  newPassword: string
+) {
   return authConfirmResetPassword({
     username: email,
     confirmationCode: code,

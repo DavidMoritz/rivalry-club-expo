@@ -1,8 +1,8 @@
 import type { Schema } from '../../amplify/data/resource';
-import { getMContest, MContest } from './m-contest';
-import { MGame, STEPS_PER_STOCK } from './m-game';
-import { getMTierList, MTierList, TIERS } from './m-tier-list';
-import { MUser } from './m-user';
+import { getMContest, type MContest } from './m-contest';
+import { type MGame, STEPS_PER_STOCK } from './m-game';
+import { getMTierList, type MTierList, TIERS } from './m-tier-list';
+import type { MUser } from './m-user';
 
 // Extract Gen 2 types from the schema
 type Rivalry = Schema['Rivalry']['type'];
@@ -28,7 +28,9 @@ export interface MRivalry extends Omit<Rivalry, 'game'> {
   _mTierListB?: MTierList;
   _mUserA?: MUser;
   _mUserB?: MUser;
-  adjustStanding: (nudge?: number) => { winnerPosition: number | null; loserPosition: number | null } | void;
+  adjustStanding: (
+    nudge?: number
+  ) => { winnerPosition: number | null; loserPosition: number | null } | void;
   reverseStanding: (contest: MContest) => void;
   baseRivalry: Rivalry;
   currentContest?: MContest;
@@ -41,7 +43,9 @@ export interface MRivalry extends Omit<Rivalry, 'game'> {
   mContests: MContest[];
   setCurrentContest: (contest: MContest) => void;
   setMContests: (contestConnection: ModelContestConnection | undefined) => void;
-  setMTierLists: (tierListConnection: ModelTierListConnection | undefined) => void;
+  setMTierLists: (
+    tierListConnection: ModelTierListConnection | undefined
+  ) => void;
   // title: string;
   tierListA?: MTierList;
   tierListB?: MTierList;
@@ -119,13 +123,22 @@ export function getMRivalry({ rivalry }: GetMRivalryProps): MRivalry {
      * Alter the tierLists' standings based on the current contest.
      * @returns Object with winner and loser positions, or void if contest data is invalid
      */
-    adjustStanding(nudge?: number): { winnerPosition: number | null; loserPosition: number | null } | void {
+    adjustStanding(
+      nudge?: number
+    ): { winnerPosition: number | null; loserPosition: number | null } | void {
       if (!(this.currentContest && this.tierListA && this.tierListB)) return;
 
       const winner = this.currentContest.getWinner();
       const loser = this.currentContest.getLoser();
 
-      if (!(winner?.tierList && winner?.tierSlot && loser?.tierList && loser?.tierSlot)) {
+      if (
+        !(
+          winner?.tierList &&
+          winner?.tierSlot &&
+          loser?.tierList &&
+          loser?.tierSlot
+        )
+      ) {
         return;
       }
 
@@ -140,19 +153,31 @@ export function getMRivalry({ rivalry }: GetMRivalryProps): MRivalry {
       const loserInitialPosition = loser.tierSlot.position ?? MIDPOINT;
 
       // Position unknown fighter for winner
-      if (winner.tierSlot.position === null || winner.tierSlot.position === undefined) {
+      if (
+        winner.tierSlot.position === null ||
+        winner.tierSlot.position === undefined
+      ) {
         const winnerOffset = Math.abs(result) * POSITION_BIAS; // result is 1, 2, or 3
         const winnerNewPosition = loserInitialPosition - winnerOffset; // winner moves UP (lower position number)
-        winner.tierList.positionUnknownFighter(winner.tierSlot, winnerNewPosition);
+        winner.tierList.positionUnknownFighter(
+          winner.tierSlot,
+          winnerNewPosition
+        );
         winnerPosition = winnerNewPosition;
       }
 
       // Position unknown fighter for loser
-      if (loser.tierSlot.position === null || loser.tierSlot.position === undefined) {
+      if (
+        loser.tierSlot.position === null ||
+        loser.tierSlot.position === undefined
+      ) {
         const offset = Math.abs(result) * POSITION_BIAS;
         const calculatedPosition = winnerInitalPosition + offset; // loser moves DOWN (higher position number)
 
-        loser.tierList.positionUnknownFighter(loser.tierSlot, calculatedPosition);
+        loser.tierList.positionUnknownFighter(
+          loser.tierSlot,
+          calculatedPosition
+        );
         loserPosition = calculatedPosition;
       }
 
@@ -174,12 +199,17 @@ export function getMRivalry({ rivalry }: GetMRivalryProps): MRivalry {
       if (additionalMove) {
         const winnerIsOnLowestTier =
           ((winner.tierList.standing as number) + 1) % TIERS.length === 0;
-        const loserIsOnHighestTier = (loser.tierList.standing as number) % TIERS.length === 0;
+        const loserIsOnHighestTier =
+          (loser.tierList.standing as number) % TIERS.length === 0;
         const preferLoserToMove =
           !loserIsOnHighestTier &&
-          ((nudge && nudge > 0) || (nudge === undefined && Math.random() < 0.5));
+          ((nudge && nudge > 0) ||
+            (nudge === undefined && Math.random() < 0.5));
 
-        if ((winnerIsOnLowestTier || preferLoserToMove) && loser.tierList.moveUpATier()) {
+        if (
+          (winnerIsOnLowestTier || preferLoserToMove) &&
+          loser.tierList.moveUpATier()
+        ) {
           this.currentContest.bias = 1;
         } else {
           winner?.tierList.moveDownATier();
@@ -190,14 +220,14 @@ export function getMRivalry({ rivalry }: GetMRivalryProps): MRivalry {
       const tlA = this.tierListA;
       const tlB = this.tierListB;
 
-      while ([tlA, tlB].every((tl) => tl.getPrestige() > 0)) {
+      while ([tlA, tlB].every(tl => tl.getPrestige() > 0)) {
         tlA.standing = Math.max((tlA.standing as number) - TIERS.length, 0);
         tlB.standing = Math.max((tlB.standing as number) - TIERS.length, 0);
       }
 
       return {
         winnerPosition: winnerPosition ?? null,
-        loserPosition: loserPosition ?? null
+        loserPosition: loserPosition ?? null,
       };
     },
     reverseStanding(contest: MContest) {
@@ -206,7 +236,14 @@ export function getMRivalry({ rivalry }: GetMRivalryProps): MRivalry {
       const winner = contest.getWinner();
       const loser = contest.getLoser();
 
-      if (!(winner?.tierList && winner?.tierSlot && loser?.tierList && loser?.tierSlot)) {
+      if (
+        !(
+          winner?.tierList &&
+          winner?.tierSlot &&
+          loser?.tierList &&
+          loser?.tierSlot
+        )
+      ) {
         return;
       }
 
@@ -297,7 +334,9 @@ export function getMRivalry({ rivalry }: GetMRivalryProps): MRivalry {
     },
     getCurrentContest() {
       if (this.currentContest?.id !== this.currentContestId) {
-        console.warn('[MRivalry.getCurrentContest] this.currentContestId mismatch');
+        console.warn(
+          '[MRivalry.getCurrentContest] this.currentContestId mismatch'
+        );
       }
 
       return this.currentContest;
@@ -318,7 +357,9 @@ export function getMRivalry({ rivalry }: GetMRivalryProps): MRivalry {
           .map((ctst: Contest | null) => ctst && getMContest(ctst))
           .filter(Boolean) as MContest[]) || [];
 
-      this.currentContest = this.mContests.find((ctst) => ctst.id === this.currentContestId);
+      this.currentContest = this.mContests.find(
+        ctst => ctst.id === this.currentContestId
+      );
     },
     setMTierLists(tierListConnection: ModelTierListConnection | undefined) {
       const tLists =
@@ -333,12 +374,14 @@ export function getMRivalry({ rivalry }: GetMRivalryProps): MRivalry {
           })
           .filter(Boolean) as MTierList[]) || [];
 
-      this.tierListA = tLists.find((tL) => tL.userId === this.userAId);
-      this.tierListB = tLists.find((tL) => tL.userId === this.userBId);
+      this.tierListA = tLists.find(tL => tL.userId === this.userAId);
+      this.tierListB = tLists.find(tL => tL.userId === this.userBId);
 
-      if (!this.tierListA || !this.tierListB) {
-        console.warn('[MRivalry.setMTierLists] Failed to match tier lists to users');
+      if (!(this.tierListA && this.tierListB)) {
+        console.warn(
+          '[MRivalry.setMTierLists] Failed to match tier lists to users'
+        );
       }
-    }
+    },
   };
 }

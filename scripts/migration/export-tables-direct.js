@@ -5,7 +5,10 @@
  */
 
 const { DynamoDBClient } = require('@aws-sdk/client-dynamodb');
-const { DynamoDBDocumentClient, ScanCommand } = require('@aws-sdk/lib-dynamodb');
+const {
+  DynamoDBDocumentClient,
+  ScanCommand,
+} = require('@aws-sdk/lib-dynamodb');
 const fs = require('fs');
 const path = require('path');
 
@@ -20,20 +23,20 @@ const dynamoClient = new DynamoDBClient({ region: REGION });
 const docClient = DynamoDBDocumentClient.from(dynamoClient);
 
 const TABLES = {
-  'Game': `Game-${API_ID}-${ENV_SUFFIX}`,
-  'Fighter': `Fighter-${API_ID}-${ENV_SUFFIX}`,
-  'User': `User-${API_ID}-${ENV_SUFFIX}`,
-  'Rivalry': `Rivalry-${API_ID}-${ENV_SUFFIX}`,
-  'Contest': `Contest-${API_ID}-${ENV_SUFFIX}`,
-  'TierList': `TierList-${API_ID}-${ENV_SUFFIX}`,
-  'TierSlot': `TierSlot-${API_ID}-${ENV_SUFFIX}`
+  Game: `Game-${API_ID}-${ENV_SUFFIX}`,
+  Fighter: `Fighter-${API_ID}-${ENV_SUFFIX}`,
+  User: `User-${API_ID}-${ENV_SUFFIX}`,
+  Rivalry: `Rivalry-${API_ID}-${ENV_SUFFIX}`,
+  Contest: `Contest-${API_ID}-${ENV_SUFFIX}`,
+  TierList: `TierList-${API_ID}-${ENV_SUFFIX}`,
+  TierSlot: `TierSlot-${API_ID}-${ENV_SUFFIX}`,
 };
 
 async function exportTable(modelName, tableName) {
   console.log(`\n📦 Exporting ${modelName} from: ${tableName}`);
 
   let items = [];
-  let lastEvaluatedKey = undefined;
+  let lastEvaluatedKey;
   let scanCount = 0;
 
   try {
@@ -41,7 +44,7 @@ async function exportTable(modelName, tableName) {
       scanCount++;
       const params = {
         TableName: tableName,
-        ExclusiveStartKey: lastEvaluatedKey
+        ExclusiveStartKey: lastEvaluatedKey,
       };
 
       const command = new ScanCommand(params);
@@ -50,7 +53,9 @@ async function exportTable(modelName, tableName) {
       items = items.concat(response.Items || []);
       lastEvaluatedKey = response.LastEvaluatedKey;
 
-      console.log(`  📊 Scan ${scanCount}: Retrieved ${response.Items?.length || 0} items (Total: ${items.length})`);
+      console.log(
+        `  📊 Scan ${scanCount}: Retrieved ${response.Items?.length || 0} items (Total: ${items.length})`
+      );
 
       if (lastEvaluatedKey) {
         await new Promise(resolve => setTimeout(resolve, 100));
@@ -75,7 +80,7 @@ function saveToFile(modelName, data, tableName) {
     tableName,
     exportDate: new Date().toISOString(),
     itemCount: data.length,
-    items: data
+    items: data,
   };
 
   fs.writeFileSync(filepath, JSON.stringify(backupData, null, 2));
@@ -106,7 +111,7 @@ async function main() {
         modelName,
         tableName,
         itemCount: items.length,
-        filepath
+        filepath,
       });
     }
 
@@ -122,22 +127,30 @@ async function main() {
     });
 
     console.log('-'.repeat(60));
-    console.log(`TOTAL: ${totalItems} items across ${exportResults.length} tables`);
+    console.log(
+      `TOTAL: ${totalItems} items across ${exportResults.length} tables`
+    );
     console.log(`\n✅ All data exported to: ${BACKUP_DIR}`);
 
     // Save summary file
     const summaryFile = path.join(BACKUP_DIR, 'export-summary.json');
-    fs.writeFileSync(summaryFile, JSON.stringify({
-      exportDate: new Date().toISOString(),
-      apiId: API_ID,
-      environment: ENV_SUFFIX,
-      totalItems,
-      totalTables: exportResults.length,
-      results: exportResults
-    }, null, 2));
+    fs.writeFileSync(
+      summaryFile,
+      JSON.stringify(
+        {
+          exportDate: new Date().toISOString(),
+          apiId: API_ID,
+          environment: ENV_SUFFIX,
+          totalItems,
+          totalTables: exportResults.length,
+          results: exportResults,
+        },
+        null,
+        2
+      )
+    );
 
-    console.log(`📄 Summary saved to: export-summary.json`);
-
+    console.log('📄 Summary saved to: export-summary.json');
   } catch (error) {
     console.error('\n❌ Export failed:', error);
     process.exit(1);

@@ -1,5 +1,5 @@
-import * as SecureStore from 'expo-secure-store';
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import * as SecureStore from 'expo-secure-store';
 
 const UUID_KEYCHAIN_KEY = 'rivalryClubUserUuid';
 const UUID_STORAGE_KEY = 'userUuid';
@@ -12,7 +12,7 @@ let uuidPromise: Promise<string> | null = null;
  * Generates a UUID v4
  */
 export function generateUuid(): string {
-  return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, (c) => {
+  return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, c => {
     const r = (Math.random() * 16) | 0;
     const v = c === 'x' ? r : (r & 0x3) | 0x8;
     return v.toString(16);
@@ -68,12 +68,15 @@ export async function getOrCreateUserUuid(): Promise<string> {
       // Store in both locations
       await Promise.all([
         SecureStore.setItemAsync(UUID_KEYCHAIN_KEY, uuid),
-        AsyncStorage.setItem(UUID_STORAGE_KEY, uuid)
+        AsyncStorage.setItem(UUID_STORAGE_KEY, uuid),
       ]);
 
       return uuid;
     } catch (error) {
-      console.error('[user-identity] ❌ Error getting/creating user UUID:', error);
+      console.error(
+        '[user-identity] ❌ Error getting/creating user UUID:',
+        error
+      );
       throw error;
     } finally {
       // Clear the lock after operation completes
@@ -91,7 +94,7 @@ export async function updateStoredUuid(newUuid: string): Promise<void> {
   try {
     await Promise.all([
       SecureStore.setItemAsync(UUID_KEYCHAIN_KEY, newUuid),
-      AsyncStorage.setItem(UUID_STORAGE_KEY, newUuid)
+      AsyncStorage.setItem(UUID_STORAGE_KEY, newUuid),
     ]);
   } catch (error) {
     console.error('Error updating stored UUID:', error);
@@ -138,7 +141,7 @@ export async function clearStoredUuid(): Promise<void> {
     await Promise.all([
       SecureStore.deleteItemAsync(UUID_KEYCHAIN_KEY),
       AsyncStorage.removeItem(UUID_STORAGE_KEY),
-      AsyncStorage.removeItem(FIRST_NAME_STORAGE_KEY) // Also clear firstName
+      AsyncStorage.removeItem(FIRST_NAME_STORAGE_KEY), // Also clear firstName
     ]);
   } catch (error) {
     console.error('[user-identity] ❌ Error clearing stored UUID:', error);
@@ -158,7 +161,10 @@ export async function storeFirstName(firstName: string): Promise<void> {
     }
 
     await AsyncStorage.setItem(FIRST_NAME_STORAGE_KEY, firstName.trim());
-    console.log('[user-identity] ✅ Stored firstName locally:', firstName.trim());
+    console.log(
+      '[user-identity] ✅ Stored firstName locally:',
+      firstName.trim()
+    );
   } catch (error) {
     console.error('[user-identity] ❌ Error storing firstName:', error);
     // Don't throw - this is not critical

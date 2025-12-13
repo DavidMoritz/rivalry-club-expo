@@ -3,8 +3,8 @@
  * Ensures that tier slots are created in batches to avoid API timeouts
  */
 
-import { renderHook } from '@testing-library/react-native';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
+import { renderHook } from '@testing-library/react-native';
 import React from 'react';
 
 // Mock the aws-amplify/data module
@@ -19,7 +19,7 @@ jest.mock('aws-amplify/data', () => {
     mockTierListQuery: jest.fn(),
     mockTierListList: jest.fn(),
     mockTierSlotCreate: jest.fn(),
-    mockTierSlotList: jest.fn()
+    mockTierSlotList: jest.fn(),
   };
 
   // Store references globally for use in tests
@@ -32,26 +32,29 @@ jest.mock('aws-amplify/data', () => {
           create: mockFns.mockRivalryCreate,
           get: mockFns.mockRivalryGet,
           update: mockFns.mockRivalryUpdate,
-          list: mockFns.mockRivalryList || jest.fn()
+          list: mockFns.mockRivalryList || jest.fn(),
         },
         Fighter: {
-          list: mockFns.mockFighterList
+          list: mockFns.mockFighterList,
         },
         TierList: {
           create: mockFns.mockTierListCreate,
           tierListsByUserIdAndUpdatedAt: mockFns.mockTierListQuery,
-          list: mockFns.mockTierListList || jest.fn()
+          list: mockFns.mockTierListList || jest.fn(),
         },
         TierSlot: {
           create: mockFns.mockTierSlotCreate,
-          list: mockFns.mockTierSlotList
-        }
-      }
-    }))
+          list: mockFns.mockTierSlotList,
+        },
+      },
+    })),
   };
 });
 
-import { useCreateRivalryMutation, useAcceptRivalryMutation } from '../../src/controllers/c-rivalry';
+import {
+  useAcceptRivalryMutation,
+  useCreateRivalryMutation,
+} from '../../src/controllers/c-rivalry';
 
 describe('Batched Tier Slot Creation', () => {
   let queryClient: QueryClient;
@@ -68,15 +71,15 @@ describe('Batched Tier Slot Creation', () => {
     queryClient = new QueryClient({
       defaultOptions: {
         queries: { retry: false },
-        mutations: { retry: false }
+        mutations: { retry: false },
       },
       logger: {
         log: console.log,
         warn: console.warn,
         error: () => {
           // suppress error logs in tests
-        }
-      }
+        },
+      },
     });
 
     // Get references to the mocked functions
@@ -102,7 +105,7 @@ describe('Batched Tier Slot Creation', () => {
       const mockFighters = Array.from({ length: 82 }, (_, i) => ({
         id: `fighter-${i + 1}`,
         name: `Fighter ${i + 1}`,
-        gameId: 'game-1'
+        gameId: 'game-1',
       }));
 
       const mockRivalry = {
@@ -113,29 +116,29 @@ describe('Batched Tier Slot Creation', () => {
         contestCount: 0,
         accepted: false,
         createdAt: new Date().toISOString(),
-        updatedAt: new Date().toISOString()
+        updatedAt: new Date().toISOString(),
       };
 
       mockRivalryCreate.mockResolvedValue({
         data: mockRivalry,
-        errors: null
+        errors: null,
       });
 
       mockFighterList.mockResolvedValue({
         data: mockFighters,
-        errors: null
+        errors: null,
       });
 
       // Mock Rivalry.list for template search (should return empty for this test)
       const mockRivalryList = jest.fn().mockResolvedValue({
         data: [],
-        errors: null
+        errors: null,
       });
       (global as any).mockBatchingFns.mockRivalryList = mockRivalryList;
 
       mockTierListCreate.mockResolvedValue({
         data: { id: 'tier-list-1' },
-        errors: null
+        errors: null,
       });
 
       // Track the order of tier slot creation calls
@@ -144,29 +147,28 @@ describe('Batched Tier Slot Creation', () => {
         tierSlotCreationOrder.push(Date.now());
         return Promise.resolve({
           data: { id: `tier-slot-${tierSlotCreationOrder.length}` },
-          errors: null
+          errors: null,
         });
       });
 
-      const { result } = renderHook(
-        () => useCreateRivalryMutation({}),
-        { wrapper }
-      );
+      const { result } = renderHook(() => useCreateRivalryMutation({}), {
+        wrapper,
+      });
 
       // Start the mutation
-      const mutatePromise = new Promise<void>((resolve) => {
+      const mutatePromise = new Promise<void>(resolve => {
         result.current.mutate(
           {
             userAId: 'user-1',
             userBId: 'user-2',
-            gameId: 'game-1'
+            gameId: 'game-1',
           },
           {
             onSuccess: () => resolve(),
-            onError: (error) => {
+            onError: error => {
               console.error('Mutation error:', error);
               resolve();
-            }
+            },
           }
         );
       });
@@ -189,7 +191,7 @@ describe('Batched Tier Slot Creation', () => {
       const mockFighters = Array.from({ length: 5 }, (_, i) => ({
         id: `fighter-${i + 1}`,
         name: `Fighter ${i + 1}`,
-        gameId: 'game-1'
+        gameId: 'game-1',
       }));
 
       const mockRivalry = {
@@ -200,44 +202,43 @@ describe('Batched Tier Slot Creation', () => {
         contestCount: 0,
         accepted: false,
         createdAt: new Date().toISOString(),
-        updatedAt: new Date().toISOString()
+        updatedAt: new Date().toISOString(),
       };
 
       mockRivalryCreate.mockResolvedValue({
         data: mockRivalry,
-        errors: null
+        errors: null,
       });
 
       mockFighterList.mockResolvedValue({
         data: mockFighters,
-        errors: null
+        errors: null,
       });
 
       mockTierListCreate.mockResolvedValue({
         data: { id: 'tier-list-1' },
-        errors: null
+        errors: null,
       });
 
       mockTierSlotCreate.mockResolvedValue({
         data: { id: 'tier-slot-1' },
-        errors: null
+        errors: null,
       });
 
-      const { result } = renderHook(
-        () => useCreateRivalryMutation({}),
-        { wrapper }
-      );
+      const { result } = renderHook(() => useCreateRivalryMutation({}), {
+        wrapper,
+      });
 
-      const mutatePromise = new Promise<void>((resolve) => {
+      const mutatePromise = new Promise<void>(resolve => {
         result.current.mutate(
           {
             userAId: 'user-1',
             userBId: 'user-2',
-            gameId: 'game-1'
+            gameId: 'game-1',
           },
           {
             onSuccess: () => resolve(),
-            onError: () => resolve()
+            onError: () => resolve(),
           }
         );
       });
@@ -255,7 +256,7 @@ describe('Batched Tier Slot Creation', () => {
       const mockFighters = Array.from({ length: 82 }, (_, i) => ({
         id: `fighter-${i + 1}`,
         name: `Fighter ${i + 1}`,
-        gameId: 'game-1'
+        gameId: 'game-1',
       }));
 
       const mockRivalry = {
@@ -266,54 +267,53 @@ describe('Batched Tier Slot Creation', () => {
         contestCount: 0,
         accepted: false,
         createdAt: new Date().toISOString(),
-        updatedAt: new Date().toISOString()
+        updatedAt: new Date().toISOString(),
       };
 
       mockRivalryGet.mockResolvedValue({
         data: mockRivalry,
-        errors: null
+        errors: null,
       });
 
       mockFighterList.mockResolvedValue({
         data: mockFighters,
-        errors: null
+        errors: null,
       });
 
       // Mock Rivalry.list for template search (should return empty for this test)
       const mockRivalryList = jest.fn().mockResolvedValue({
         data: [],
-        errors: null
+        errors: null,
       });
       (global as any).mockBatchingFns.mockRivalryList = mockRivalryList;
 
       mockTierListQuery.mockResolvedValue({
-        data: []
+        data: [],
       });
 
       mockTierListCreate.mockResolvedValue({
         data: { id: 'tier-list-1' },
-        errors: null
+        errors: null,
       });
 
       mockTierSlotCreate.mockResolvedValue({
         data: { id: 'tier-slot-1' },
-        errors: null
+        errors: null,
       });
 
       mockRivalryUpdate.mockResolvedValue({
         data: { ...mockRivalry, accepted: true },
-        errors: null
+        errors: null,
       });
 
-      const { result } = renderHook(
-        () => useAcceptRivalryMutation({}),
-        { wrapper }
-      );
+      const { result } = renderHook(() => useAcceptRivalryMutation({}), {
+        wrapper,
+      });
 
-      const mutatePromise = new Promise<void>((resolve) => {
+      const mutatePromise = new Promise<void>(resolve => {
         result.current.mutate('rivalry-1', {
           onSuccess: () => resolve(),
-          onError: () => resolve()
+          onError: () => resolve(),
         });
       });
 
@@ -330,7 +330,7 @@ describe('Batched Tier Slot Creation', () => {
       const mockFighters = Array.from({ length: 25 }, (_, i) => ({
         id: `fighter-${i + 1}`,
         name: `Fighter ${i + 1}`,
-        gameId: 'game-1'
+        gameId: 'game-1',
       }));
 
       const mockRivalry = {
@@ -341,29 +341,29 @@ describe('Batched Tier Slot Creation', () => {
         contestCount: 0,
         accepted: false,
         createdAt: new Date().toISOString(),
-        updatedAt: new Date().toISOString()
+        updatedAt: new Date().toISOString(),
       };
 
       mockRivalryCreate.mockResolvedValue({
         data: mockRivalry,
-        errors: null
+        errors: null,
       });
 
       mockFighterList.mockResolvedValue({
         data: mockFighters,
-        errors: null
+        errors: null,
       });
 
       // Mock Rivalry.list for template search (should return empty for this test)
       const mockRivalryList = jest.fn().mockResolvedValue({
         data: [],
-        errors: null
+        errors: null,
       });
       (global as any).mockBatchingFns.mockRivalryList = mockRivalryList;
 
       mockTierListCreate.mockResolvedValue({
         data: { id: 'tier-list-1' },
-        errors: null
+        errors: null,
       });
 
       // Simulate some failures in tier slot creation
@@ -374,37 +374,36 @@ describe('Batched Tier Slot Creation', () => {
         if (callCount % 10 === 0) {
           return Promise.resolve({
             data: null,
-            errors: [{ message: 'Creation failed' }]
+            errors: [{ message: 'Creation failed' }],
           });
         }
         return Promise.resolve({
           data: { id: `tier-slot-${callCount}` },
-          errors: null
+          errors: null,
         });
       });
 
-      const { result } = renderHook(
-        () => useCreateRivalryMutation({}),
-        { wrapper }
-      );
+      const { result } = renderHook(() => useCreateRivalryMutation({}), {
+        wrapper,
+      });
 
       let errorCaught = false;
-      const mutatePromise = new Promise<void>((resolve) => {
+      const mutatePromise = new Promise<void>(resolve => {
         result.current.mutate(
           {
             userAId: 'user-1',
             userBId: 'user-2',
-            gameId: 'game-1'
+            gameId: 'game-1',
           },
           {
             onSuccess: () => resolve(),
-            onError: (error) => {
+            onError: error => {
               errorCaught = true;
               // Verify the error message includes information about failures
               expect(error.message).toContain('Failed to create');
               expect(error.message).toContain('tier slots');
               resolve();
-            }
+            },
           }
         );
       });

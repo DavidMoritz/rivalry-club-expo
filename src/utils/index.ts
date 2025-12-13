@@ -1,6 +1,6 @@
-import { MGame } from '../models/m-game';
-import { MFighter } from '../models/m-fighter';
-import { Schema } from '../../amplify/data/resource';
+import type { Schema } from '../../amplify/data/resource';
+import type { MFighter } from '../models/m-fighter';
+import type { MGame } from '../models/m-game';
 
 type Fighter = Schema['Fighter']['type'];
 
@@ -13,16 +13,20 @@ type Game = {
 export function dateDisplay(dateString: string): string {
   const today = new Date();
   const updatedDate = new Date(dateString);
-  const year = today.getFullYear() !== updatedDate.getFullYear() ? 'numeric' : undefined;
+  const year =
+    today.getFullYear() !== updatedDate.getFullYear() ? 'numeric' : undefined;
 
   return updatedDate.toLocaleDateString('en', {
     day: '2-digit',
     month: '2-digit',
-    year
+    year,
   });
 }
 
-export function fighterByIdFromGame(game: Game | MGame, fighterId: string): MFighter | null {
+export function fighterByIdFromGame(
+  game: Game | MGame,
+  fighterId: string
+): MFighter | null {
   // Handle both Game and MGame types - fighters might be LazyLoader or { items: ... }
   const fighters = game.fighters as any;
   const fightersItems = fighters?.items || [];
@@ -36,7 +40,7 @@ export function fighterByIdFromGame(game: Game | MGame, fighterId: string): MFig
     ...fighter,
     baseFighter: fighter,
     _mGame: null,
-    game: null
+    game: null,
   } as MFighter;
 }
 

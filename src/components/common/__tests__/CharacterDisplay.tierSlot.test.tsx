@@ -1,8 +1,7 @@
+import { fireEvent, render } from '@testing-library/react-native';
 import React from 'react';
-import { render, fireEvent } from '@testing-library/react-native';
-
-import { CharacterDisplay } from '../CharacterDisplay';
 import { getMTierSlot } from '../../../models/m-tier-slot';
+import { CharacterDisplay } from '../CharacterDisplay';
 
 const mockFighter = {
   id: 'fighter-1',
@@ -35,8 +34,8 @@ describe('CharacterDisplay with TierSlot', () => {
     const { root } = render(
       <CharacterDisplay
         fighter={mockFighter}
-        tierSlot={mockTierSlot}
         hideName={true}
+        tierSlot={mockTierSlot}
       />
     );
 
@@ -56,8 +55,8 @@ describe('CharacterDisplay with TierSlot', () => {
     const { root } = render(
       <CharacterDisplay
         fighter={mockFighter}
-        tierSlot={mockTierSlot}
         hideName={true}
+        tierSlot={mockTierSlot}
       />
     );
 
@@ -77,8 +76,8 @@ describe('CharacterDisplay with TierSlot', () => {
     const { root } = render(
       <CharacterDisplay
         fighter={mockFighter}
-        tierSlot={mockTierSlot}
         hideName={true}
+        tierSlot={mockTierSlot}
       />
     );
 
@@ -124,8 +123,8 @@ describe('CharacterDisplay with TierSlot', () => {
     const { root } = render(
       <CharacterDisplay
         fighter={fighterWithStats}
-        tierSlot={mockTierSlot}
         hideName={true}
+        tierSlot={mockTierSlot}
       />
     );
 
@@ -145,8 +144,8 @@ describe('CharacterDisplay with TierSlot', () => {
     const { getByTestId, queryByText } = render(
       <CharacterDisplay
         fighter={mockFighter}
-        tierSlot={mockTierSlot}
         hideName={true}
+        tierSlot={mockTierSlot}
       />
     );
 

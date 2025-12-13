@@ -4,13 +4,6 @@
     "strict": true,
     "resolveJsonModule": true
   },
-  "include": [
-    "**/*.ts",
-    "**/*.tsx",
-    "**/*.json",
-    "nativewind-env.d.ts"
-  ],
-  "exclude": [
-    "amplify"
-  ]
+  "include": ["**/*.ts", "**/*.tsx", "**/*.json", "nativewind-env.d.ts"],
+  "exclude": ["amplify"]
 }

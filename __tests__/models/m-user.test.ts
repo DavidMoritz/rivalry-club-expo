@@ -1,4 +1,4 @@
-import { User } from '../../src/API';
+import type { User } from '../../src/API';
 import { getMUser, MUser } from '../../src/models/m-user';
 
 describe('MUser Model', () => {

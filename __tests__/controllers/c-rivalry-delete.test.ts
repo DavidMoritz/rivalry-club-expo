@@ -1,5 +1,5 @@
-import { renderHook, waitFor } from '@testing-library/react-native';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
+import { renderHook, waitFor } from '@testing-library/react-native';
 import React from 'react';
 
 // Mock the aws-amplify/data module
@@ -9,7 +9,7 @@ jest.mock('aws-amplify/data', () => {
     mockContestUpdate: jest.fn(),
     mockTierListUpdate: jest.fn(),
     mockTierSlotUpdate: jest.fn(),
-    mockRivalryUpdate: jest.fn()
+    mockRivalryUpdate: jest.fn(),
   };
 
   // Store references globally for use in tests
@@ -20,27 +20,27 @@ jest.mock('aws-amplify/data', () => {
       models: {
         Contest: {
           delete: mockFns.mockContestDelete,
-          update: mockFns.mockContestUpdate
+          update: mockFns.mockContestUpdate,
         },
         TierList: {
-          update: mockFns.mockTierListUpdate
+          update: mockFns.mockTierListUpdate,
         },
         TierSlot: {
-          update: mockFns.mockTierSlotUpdate
+          update: mockFns.mockTierSlotUpdate,
         },
         Rivalry: {
-          update: mockFns.mockRivalryUpdate
-        }
-      }
-    }))
+          update: mockFns.mockRivalryUpdate,
+        },
+      },
+    })),
   };
 });
 
+import type { Schema } from '../../amplify/data/resource';
 import { useDeleteMostRecentContestMutation } from '../../src/controllers/c-rivalry';
+import { getMContest } from '../../src/models/m-contest';
 import { getMRivalry } from '../../src/models/m-rivalry';
 import { getMTierList } from '../../src/models/m-tier-list';
-import { getMContest } from '../../src/models/m-contest';
-import type { Schema } from '../../amplify/data/resource';
 
 type Rivalry = Schema['Rivalry']['type'];
 type TierList = Schema['TierList']['type'];
@@ -58,8 +58,8 @@ describe('useDeleteMostRecentContestMutation', () => {
     queryClient = new QueryClient({
       defaultOptions: {
         queries: { retry: false },
-        mutations: { retry: false }
-      }
+        mutations: { retry: false },
+      },
     });
 
     // Get references to the mocked functions
@@ -106,10 +106,10 @@ describe('useDeleteMostRecentContestMutation', () => {
           winCount: 0,
           contestCount: 0,
           createdAt: '2024-01-01',
-          updatedAt: '2024-01-01'
-        }
-      ]
-    }
+          updatedAt: '2024-01-01',
+        },
+      ],
+    },
   });
 
   describe('1-stock win deletion', () => {
@@ -126,7 +126,7 @@ describe('useDeleteMostRecentContestMutation', () => {
         contestCount: 5,
         currentContestId: 'contest-123',
         createdAt: '2024-01-01',
-        updatedAt: '2024-01-01'
+        updatedAt: '2024-01-01',
       };
 
       const mRivalry = getMRivalry({ rivalry: mockRivalry });
@@ -146,7 +146,7 @@ describe('useDeleteMostRecentContestMutation', () => {
         result: 1,
         bias: 0,
         createdAt: '2024-01-01',
-        updatedAt: '2024-01-01'
+        updatedAt: '2024-01-01',
       };
 
       const mContest = getMContest(contest);
@@ -166,7 +166,7 @@ describe('useDeleteMostRecentContestMutation', () => {
         result: null,
         bias: null,
         createdAt: '2024-01-02',
-        updatedAt: '2024-01-02'
+        updatedAt: '2024-01-02',
       };
 
       const mCurrentContest = getMContest(currentContest);
@@ -182,7 +182,8 @@ describe('useDeleteMostRecentContestMutation', () => {
 
       const onSuccess = jest.fn();
       const { result } = renderHook(
-        () => useDeleteMostRecentContestMutation({ rivalry: mRivalry, onSuccess }),
+        () =>
+          useDeleteMostRecentContestMutation({ rivalry: mRivalry, onSuccess }),
         { wrapper }
       );
 
@@ -197,19 +198,19 @@ describe('useDeleteMostRecentContestMutation', () => {
       // Verify API calls
       expect(mockTierListUpdate).toHaveBeenCalledWith({
         id: 'tier-list-user-a',
-        standing: initialStandingA
+        standing: initialStandingA,
       });
       expect(mockTierListUpdate).toHaveBeenCalledWith({
         id: 'tier-list-user-b',
-        standing: initialStandingB
+        standing: initialStandingB,
       });
       expect(mockContestDelete).toHaveBeenCalledWith({
-        id: 'contest-current'
+        id: 'contest-current',
       });
       expect(mockRivalryUpdate).toHaveBeenCalledWith({
         id: 'rivalry-123',
         contestCount: 4,
-        currentContestId: 'contest-123'
+        currentContestId: 'contest-123',
       });
     });
 
@@ -226,7 +227,7 @@ describe('useDeleteMostRecentContestMutation', () => {
         contestCount: 5,
         currentContestId: 'contest-123',
         createdAt: '2024-01-01',
-        updatedAt: '2024-01-01'
+        updatedAt: '2024-01-01',
       };
 
       const mRivalry = getMRivalry({ rivalry: mockRivalry });
@@ -246,7 +247,7 @@ describe('useDeleteMostRecentContestMutation', () => {
         result: 1,
         bias: 0,
         createdAt: '2024-01-01',
-        updatedAt: '2024-01-01'
+        updatedAt: '2024-01-01',
       };
 
       const mContest = getMContest(contest);
@@ -266,7 +267,7 @@ describe('useDeleteMostRecentContestMutation', () => {
         result: null,
         bias: null,
         createdAt: '2024-01-02',
-        updatedAt: '2024-01-02'
+        updatedAt: '2024-01-02',
       };
 
       const mCurrentContest = getMContest(currentContest);
@@ -308,7 +309,7 @@ describe('useDeleteMostRecentContestMutation', () => {
         contestCount: 5,
         currentContestId: 'contest-123',
         createdAt: '2024-01-01',
-        updatedAt: '2024-01-01'
+        updatedAt: '2024-01-01',
       };
 
       const mRivalry = getMRivalry({ rivalry: mockRivalry });
@@ -328,7 +329,7 @@ describe('useDeleteMostRecentContestMutation', () => {
         result: 2,
         bias: 0,
         createdAt: '2024-01-01',
-        updatedAt: '2024-01-01'
+        updatedAt: '2024-01-01',
       };
 
       const mContest = getMContest(contest);
@@ -351,7 +352,7 @@ describe('useDeleteMostRecentContestMutation', () => {
         result: null,
         bias: null,
         createdAt: '2024-01-02',
-        updatedAt: '2024-01-02'
+        updatedAt: '2024-01-02',
       };
 
       const mCurrentContest = getMContest(currentContest);
@@ -386,7 +387,7 @@ describe('useDeleteMostRecentContestMutation', () => {
         contestCount: 5,
         currentContestId: 'contest-123',
         createdAt: '2024-01-01',
-        updatedAt: '2024-01-01'
+        updatedAt: '2024-01-01',
       };
 
       const mRivalry = getMRivalry({ rivalry: mockRivalry });
@@ -406,7 +407,7 @@ describe('useDeleteMostRecentContestMutation', () => {
         result: 2,
         bias: 0,
         createdAt: '2024-01-01',
-        updatedAt: '2024-01-01'
+        updatedAt: '2024-01-01',
       };
 
       const mContest = getMContest(contest);
@@ -429,7 +430,7 @@ describe('useDeleteMostRecentContestMutation', () => {
         result: null,
         bias: null,
         createdAt: '2024-01-02',
-        updatedAt: '2024-01-02'
+        updatedAt: '2024-01-02',
       };
 
       const mCurrentContest = getMContest(currentContest);
@@ -466,7 +467,7 @@ describe('useDeleteMostRecentContestMutation', () => {
         contestCount: 5,
         currentContestId: 'contest-123',
         createdAt: '2024-01-01',
-        updatedAt: '2024-01-01'
+        updatedAt: '2024-01-01',
       };
 
       const mRivalry = getMRivalry({ rivalry: mockRivalry });
@@ -486,7 +487,7 @@ describe('useDeleteMostRecentContestMutation', () => {
         result: 3,
         bias: 1,
         createdAt: '2024-01-01',
-        updatedAt: '2024-01-01'
+        updatedAt: '2024-01-01',
       };
 
       const mContest = getMContest(contest);
@@ -509,7 +510,7 @@ describe('useDeleteMostRecentContestMutation', () => {
         result: null,
         bias: null,
         createdAt: '2024-01-02',
-        updatedAt: '2024-01-02'
+        updatedAt: '2024-01-02',
       };
 
       const mCurrentContest = getMContest(currentContest);
@@ -544,7 +545,7 @@ describe('useDeleteMostRecentContestMutation', () => {
         contestCount: 5,
         currentContestId: 'contest-123',
         createdAt: '2024-01-01',
-        updatedAt: '2024-01-01'
+        updatedAt: '2024-01-01',
       };
 
       const mRivalry = getMRivalry({ rivalry: mockRivalry });
@@ -564,7 +565,7 @@ describe('useDeleteMostRecentContestMutation', () => {
         result: 3,
         bias: 0,
         createdAt: '2024-01-01',
-        updatedAt: '2024-01-01'
+        updatedAt: '2024-01-01',
       };
 
       const mContest = getMContest(contest);
@@ -591,7 +592,7 @@ describe('useDeleteMostRecentContestMutation', () => {
         result: null,
         bias: null,
         createdAt: '2024-01-02',
-        updatedAt: '2024-01-02'
+        updatedAt: '2024-01-02',
       };
 
       const mCurrentContest = getMContest(currentContest);
@@ -637,7 +638,7 @@ describe('useDeleteMostRecentContestMutation', () => {
         contestCount: 0,
         currentContestId: null,
         createdAt: '2024-01-01',
-        updatedAt: '2024-01-01'
+        updatedAt: '2024-01-01',
       };
 
       const mRivalry = getMRivalry({ rivalry: mockRivalry });
@@ -664,7 +665,7 @@ describe('useDeleteMostRecentContestMutation', () => {
         contestCount: 1,
         currentContestId: 'contest-123',
         createdAt: '2024-01-01',
-        updatedAt: '2024-01-01'
+        updatedAt: '2024-01-01',
       };
 
       const mRivalry = getMRivalry({ rivalry: mockRivalry });
@@ -678,7 +679,7 @@ describe('useDeleteMostRecentContestMutation', () => {
         result: null,
         bias: null,
         createdAt: '2024-01-01',
-        updatedAt: '2024-01-01'
+        updatedAt: '2024-01-01',
       };
 
       mRivalry.currentContest = getMContest(contest);
@@ -693,7 +694,7 @@ describe('useDeleteMostRecentContestMutation', () => {
         result: null,
         bias: null,
         createdAt: '2024-01-02',
-        updatedAt: '2024-01-02'
+        updatedAt: '2024-01-02',
       };
 
       const mCurrentContest = getMContest(currentContest);
@@ -709,7 +710,9 @@ describe('useDeleteMostRecentContestMutation', () => {
       result.current.mutate();
 
       await waitFor(() => expect(result.current.isError).toBe(true));
-      expect(result.current.error).toEqual(new Error('Cannot delete unresolved contest'));
+      expect(result.current.error).toEqual(
+        new Error('Cannot delete unresolved contest')
+      );
     });
 
     it('should handle tier list update errors', async () => {
@@ -722,12 +725,16 @@ describe('useDeleteMostRecentContestMutation', () => {
         contestCount: 1,
         currentContestId: 'contest-123',
         createdAt: '2024-01-01',
-        updatedAt: '2024-01-01'
+        updatedAt: '2024-01-01',
       };
 
       const mRivalry = getMRivalry({ rivalry: mockRivalry });
-      mRivalry.tierListA = getMTierList(createTierListWithStanding('user-a', 3));
-      mRivalry.tierListB = getMTierList(createTierListWithStanding('user-b', 3));
+      mRivalry.tierListA = getMTierList(
+        createTierListWithStanding('user-a', 3)
+      );
+      mRivalry.tierListB = getMTierList(
+        createTierListWithStanding('user-b', 3)
+      );
 
       const contest: Contest = {
         __typename: 'Contest',
@@ -738,7 +745,7 @@ describe('useDeleteMostRecentContestMutation', () => {
         result: 2,
         bias: 0,
         createdAt: '2024-01-01',
-        updatedAt: '2024-01-01'
+        updatedAt: '2024-01-01',
       };
 
       const mContest = getMContest(contest);
@@ -755,7 +762,7 @@ describe('useDeleteMostRecentContestMutation', () => {
         result: null,
         bias: null,
         createdAt: '2024-01-02',
-        updatedAt: '2024-01-02'
+        updatedAt: '2024-01-02',
       };
 
       const mCurrentContest = getMContest(currentContest);
@@ -766,7 +773,7 @@ describe('useDeleteMostRecentContestMutation', () => {
       mockTierSlotUpdate.mockResolvedValue({ data: {}, errors: null });
       mockTierListUpdate.mockResolvedValue({
         data: null,
-        errors: [{ message: 'Update failed' }]
+        errors: [{ message: 'Update failed' }],
       });
 
       const { result } = renderHook(
@@ -792,12 +799,16 @@ describe('useDeleteMostRecentContestMutation', () => {
         contestCount: 1,
         currentContestId: 'contest-123',
         createdAt: '2024-01-01',
-        updatedAt: '2024-01-01'
+        updatedAt: '2024-01-01',
       };
 
       const mRivalry = getMRivalry({ rivalry: mockRivalry });
-      mRivalry.tierListA = getMTierList(createTierListWithStanding('user-a', 3));
-      mRivalry.tierListB = getMTierList(createTierListWithStanding('user-b', 3));
+      mRivalry.tierListA = getMTierList(
+        createTierListWithStanding('user-a', 3)
+      );
+      mRivalry.tierListB = getMTierList(
+        createTierListWithStanding('user-b', 3)
+      );
 
       const contest: Contest = {
         __typename: 'Contest',
@@ -808,7 +819,7 @@ describe('useDeleteMostRecentContestMutation', () => {
         result: 2,
         bias: 0,
         createdAt: '2024-01-01',
-        updatedAt: '2024-01-01'
+        updatedAt: '2024-01-01',
       };
 
       const mContest = getMContest(contest);
@@ -825,7 +836,7 @@ describe('useDeleteMostRecentContestMutation', () => {
         result: null,
         bias: null,
         createdAt: '2024-01-02',
-        updatedAt: '2024-01-02'
+        updatedAt: '2024-01-02',
       };
 
       const mCurrentContest = getMContest(currentContest);
@@ -839,7 +850,7 @@ describe('useDeleteMostRecentContestMutation', () => {
       mockRivalryUpdate.mockResolvedValue({ data: {}, errors: null });
       mockContestDelete.mockResolvedValue({
         data: null,
-        errors: [{ message: 'Delete failed' }]
+        errors: [{ message: 'Delete failed' }],
       });
 
       const { result } = renderHook(
@@ -865,12 +876,16 @@ describe('useDeleteMostRecentContestMutation', () => {
         contestCount: 1,
         currentContestId: 'contest-123',
         createdAt: '2024-01-01',
-        updatedAt: '2024-01-01'
+        updatedAt: '2024-01-01',
       };
 
       const mRivalry = getMRivalry({ rivalry: mockRivalry });
-      mRivalry.tierListA = getMTierList(createTierListWithStanding('user-a', 3));
-      mRivalry.tierListB = getMTierList(createTierListWithStanding('user-b', 3));
+      mRivalry.tierListA = getMTierList(
+        createTierListWithStanding('user-a', 3)
+      );
+      mRivalry.tierListB = getMTierList(
+        createTierListWithStanding('user-b', 3)
+      );
 
       const contest: Contest = {
         __typename: 'Contest',
@@ -881,7 +896,7 @@ describe('useDeleteMostRecentContestMutation', () => {
         result: 2,
         bias: 0,
         createdAt: '2024-01-01',
-        updatedAt: '2024-01-01'
+        updatedAt: '2024-01-01',
       };
 
       const mContest = getMContest(contest);
@@ -898,7 +913,7 @@ describe('useDeleteMostRecentContestMutation', () => {
         result: null,
         bias: null,
         createdAt: '2024-01-02',
-        updatedAt: '2024-01-02'
+        updatedAt: '2024-01-02',
       };
 
       const mCurrentContest = getMContest(currentContest);
@@ -909,7 +924,8 @@ describe('useDeleteMostRecentContestMutation', () => {
       const onSuccess = jest.fn();
 
       const { result } = renderHook(
-        () => useDeleteMostRecentContestMutation({ rivalry: mRivalry, onSuccess }),
+        () =>
+          useDeleteMostRecentContestMutation({ rivalry: mRivalry, onSuccess }),
         { wrapper }
       );
 

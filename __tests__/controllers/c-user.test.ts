@@ -11,27 +11,30 @@ const mockClient = {
   models: {
     User: {
       list: mockUserList,
-      get: mockUserGet
+      get: mockUserGet,
     },
     Rivalry: {
-      list: mockRivalryList
-    }
-  }
+      list: mockRivalryList,
+    },
+  },
 };
 
 // Mock the aws-amplify/data module
 jest.mock('aws-amplify/data', () => ({
-  generateClient: jest.fn(() => mockClient)
+  generateClient: jest.fn(() => mockClient),
 }));
 
-import { useUserDataQuery, useUserWithRivalriesByAwsSubQuery } from '../../src/controllers/c-user';
-import { getMRivalry } from '../../src/models/m-rivalry';
-import { TestRivalry } from '../test-helpers';
 import {
-  createTestQueryWrapper,
-  waitForQuerySuccess,
+  useUserDataQuery,
+  useUserWithRivalriesByAwsSubQuery,
+} from '../../src/controllers/c-user';
+import { getMRivalry } from '../../src/models/m-rivalry';
+import type { TestRivalry } from '../test-helpers';
+import {
   createGraphQLResponse,
-  TEST_TIMEOUTS
+  createTestQueryWrapper,
+  TEST_TIMEOUTS,
+  waitForQuerySuccess,
 } from '../test-utils';
 
 describe('c-user Controller', () => {
@@ -55,7 +58,7 @@ describe('c-user Controller', () => {
         awsSub: 'aws-sub-123',
         role: 1,
         createdAt: '2024-01-01',
-        updatedAt: '2024-01-01'
+        updatedAt: '2024-01-01',
       };
 
       const mockRivalriesA = [
@@ -66,8 +69,8 @@ describe('c-user Controller', () => {
           gameId: 'game-1',
           contestCount: 5,
           createdAt: '2024-01-01',
-          updatedAt: '2024-01-01'
-        }
+          updatedAt: '2024-01-01',
+        },
       ];
 
       const mockRivalriesB = [
@@ -78,13 +81,11 @@ describe('c-user Controller', () => {
           gameId: 'game-1',
           contestCount: 3,
           createdAt: '2024-01-01',
-          updatedAt: '2024-01-01'
-        }
+          updatedAt: '2024-01-01',
+        },
       ];
 
-      mockUserList.mockResolvedValue(
-        createGraphQLResponse([mockUser])
-      );
+      mockUserList.mockResolvedValue(createGraphQLResponse([mockUser]));
 
       mockRivalryList
         .mockResolvedValueOnce(createGraphQLResponse(mockRivalriesA))
@@ -93,7 +94,7 @@ describe('c-user Controller', () => {
       const { result } = renderHook(
         () =>
           useUserWithRivalriesByAwsSubQuery({
-            amplifyUser: { username: 'aws-sub-123' }
+            amplifyUser: { username: 'aws-sub-123' },
           }),
         { wrapper }
       );
@@ -105,7 +106,7 @@ describe('c-user Controller', () => {
       expect(result.current.data).toEqual({
         user: mockUser,
         rivalriesA: mockRivalriesA,
-        rivalriesB: mockRivalriesB
+        rivalriesB: mockRivalriesB,
       });
     });
 
@@ -113,7 +114,7 @@ describe('c-user Controller', () => {
       const { result } = renderHook(
         () =>
           useUserWithRivalriesByAwsSubQuery({
-            amplifyUser: {}
+            amplifyUser: {},
           }),
         { wrapper }
       );
@@ -136,8 +137,8 @@ describe('c-user Controller', () => {
             gameId: 'game-123',
             contestCount: 10,
             createdAt: '2024-01-01',
-            updatedAt: '2024-01-01'
-          } as TestRivalry
+            updatedAt: '2024-01-01',
+          } as TestRivalry,
         }),
         getMRivalry({
           rivalry: {
@@ -147,9 +148,9 @@ describe('c-user Controller', () => {
             gameId: 'game-123',
             contestCount: 5,
             createdAt: '2024-01-01',
-            updatedAt: '2024-01-01'
-          } as TestRivalry
-        })
+            updatedAt: '2024-01-01',
+          } as TestRivalry,
+        }),
       ];
 
       const mockUsers = [
@@ -161,7 +162,7 @@ describe('c-user Controller', () => {
           role: 1,
           awsSub: 'aws-a',
           createdAt: '2024-01-01',
-          updatedAt: '2024-01-01'
+          updatedAt: '2024-01-01',
         },
         {
           id: 'user-b',
@@ -171,7 +172,7 @@ describe('c-user Controller', () => {
           role: 1,
           awsSub: 'aws-b',
           createdAt: '2024-01-01',
-          updatedAt: '2024-01-01'
+          updatedAt: '2024-01-01',
         },
         {
           id: 'user-c',
@@ -181,8 +182,8 @@ describe('c-user Controller', () => {
           role: 1,
           awsSub: 'aws-c',
           createdAt: '2024-01-01',
-          updatedAt: '2024-01-01'
-        }
+          updatedAt: '2024-01-01',
+        },
       ];
 
       mockUserGet
@@ -190,9 +191,12 @@ describe('c-user Controller', () => {
         .mockResolvedValueOnce(createGraphQLResponse(mockUsers[1]))
         .mockResolvedValueOnce(createGraphQLResponse(mockUsers[2]));
 
-      const { result } = renderHook(() => useUserDataQuery({ rivalries: mockRivalries }), {
-        wrapper
-      });
+      const { result } = renderHook(
+        () => useUserDataQuery({ rivalries: mockRivalries }),
+        {
+          wrapper,
+        }
+      );
 
       await waitForQuerySuccess(result);
 
@@ -202,7 +206,7 @@ describe('c-user Controller', () => {
 
     it('should return early if no rivalries provided', async () => {
       const { result } = renderHook(() => useUserDataQuery({ rivalries: [] }), {
-        wrapper
+        wrapper,
       });
 
       await waitForQuerySuccess(result);
@@ -221,8 +225,8 @@ describe('c-user Controller', () => {
             gameId: 'game-123',
             contestCount: 10,
             createdAt: '2024-01-01',
-            updatedAt: '2024-01-01'
-          } as TestRivalry
+            updatedAt: '2024-01-01',
+          } as TestRivalry,
         }),
         getMRivalry({
           rivalry: {
@@ -232,9 +236,9 @@ describe('c-user Controller', () => {
             gameId: 'game-123',
             contestCount: 5,
             createdAt: '2024-01-01',
-            updatedAt: '2024-01-01'
-          } as TestRivalry
-        })
+            updatedAt: '2024-01-01',
+          } as TestRivalry,
+        }),
       ];
 
       const mockUserA = {
@@ -245,7 +249,7 @@ describe('c-user Controller', () => {
         role: 1,
         awsSub: 'aws-a',
         createdAt: '2024-01-01',
-        updatedAt: '2024-01-01'
+        updatedAt: '2024-01-01',
       };
 
       const mockUserB = {
@@ -256,23 +260,32 @@ describe('c-user Controller', () => {
         role: 1,
         awsSub: 'aws-b',
         createdAt: '2024-01-01',
-        updatedAt: '2024-01-01'
+        updatedAt: '2024-01-01',
       };
 
       mockUserGet
         .mockResolvedValueOnce(createGraphQLResponse(mockUserA))
         .mockResolvedValueOnce(createGraphQLResponse(mockUserB));
 
-      const { result } = renderHook(() => useUserDataQuery({ rivalries: mockRivalries }), {
-        wrapper
-      });
+      const { result } = renderHook(
+        () => useUserDataQuery({ rivalries: mockRivalries }),
+        {
+          wrapper,
+        }
+      );
 
       await waitForQuerySuccess(result);
 
       // Should only fetch each unique user once
       expect(mockUserGet).toHaveBeenCalledTimes(2);
-      expect(mockUserGet).toHaveBeenCalledWith({ id: 'user-a' }, expect.any(Object));
-      expect(mockUserGet).toHaveBeenCalledWith({ id: 'user-b' }, expect.any(Object));
+      expect(mockUserGet).toHaveBeenCalledWith(
+        { id: 'user-a' },
+        expect.any(Object)
+      );
+      expect(mockUserGet).toHaveBeenCalledWith(
+        { id: 'user-b' },
+        expect.any(Object)
+      );
     });
   });
 });

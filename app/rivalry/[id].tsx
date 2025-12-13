@@ -1,4 +1,4 @@
-import { useLocalSearchParams, useRouter, Stack } from 'expo-router';
+import { Stack, useLocalSearchParams, useRouter } from 'expo-router';
 import { StatusBar } from 'expo-status-bar';
 import React, { useMemo } from 'react';
 
@@ -37,19 +37,19 @@ export default function RivalryDetailRoute() {
       if (screen === 'RivalryTiersView') {
         router.push({
           pathname: `/rivalry/${rivalryId}/tiers`,
-          params: { userId, userAName, userBName }
+          params: { userId, userAName, userBName },
         });
       } else if (screen === 'ContestHistory') {
         router.push({
           pathname: `/rivalry/${rivalryId}/history`,
-          params: { userId, userAName, userBName }
+          params: { userId, userAName, userBName },
         });
       }
     },
     setOptions: (_options: { title?: string; headerTitle?: string }) => {
       // In Expo Router, we can use Stack.Screen to set options
       // For now, we'll handle this with Stack.Screen below
-    }
+    },
   };
 
   return (

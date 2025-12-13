@@ -4,7 +4,11 @@
  * Import Cognito users to production user pool
  */
 
-const { CognitoIdentityProviderClient, AdminCreateUserCommand, AdminSetUserPasswordCommand } = require('@aws-sdk/client-cognito-identity-provider');
+const {
+  CognitoIdentityProviderClient,
+  AdminCreateUserCommand,
+  AdminSetUserPasswordCommand,
+} = require('@aws-sdk/client-cognito-identity-provider');
 const fs = require('fs');
 const path = require('path');
 
@@ -18,7 +22,8 @@ const cognitoClient = new CognitoIdentityProviderClient({ region: REGION });
  * Find the most recent Cognito backup file
  */
 function findCognitoBackup() {
-  const files = fs.readdirSync(BACKUP_DIR)
+  const files = fs
+    .readdirSync(BACKUP_DIR)
     .filter(f => f.startsWith('cognito-users-') && f.endsWith('.json'))
     .sort()
     .reverse();
@@ -36,14 +41,16 @@ function findCognitoBackup() {
 async function createUser(user) {
   try {
     // Filter out 'sub' attribute - Cognito will generate a new one
-    const filteredAttributes = user.attributes.filter(attr => attr.Name !== 'sub');
+    const filteredAttributes = user.attributes.filter(
+      attr => attr.Name !== 'sub'
+    );
 
     // Create user
     const createCommand = new AdminCreateUserCommand({
       UserPoolId: PRODUCTION_USER_POOL_ID,
       Username: user.email,
       UserAttributes: filteredAttributes,
-      MessageAction: 'SUPPRESS' // Don't send welcome email
+      MessageAction: 'SUPPRESS', // Don't send welcome email
     });
 
     await cognitoClient.send(createCommand);
@@ -55,15 +62,16 @@ async function createUser(user) {
         UserPoolId: PRODUCTION_USER_POOL_ID,
         Username: user.email,
         Password: '12345678', // Default password - users should change
-        Permanent: true
+        Permanent: true,
       });
       await cognitoClient.send(passwordCommand);
     } catch (pwError) {
-      console.log(`  ⚠️  Could not set password for ${user.email}: ${pwError.message}`);
+      console.log(
+        `  ⚠️  Could not set password for ${user.email}: ${pwError.message}`
+      );
     }
 
     console.log(`  ✅ Created: ${user.email}`);
-
   } catch (error) {
     if (error.name === 'UsernameExistsException') {
       console.log(`  ⚠️  Already exists: ${user.email}`);
@@ -83,7 +91,9 @@ async function main() {
   console.log(`👥 Importing to pool: ${PRODUCTION_USER_POOL_ID}`);
 
   if (PRODUCTION_USER_POOL_ID === 'REPLACE_WITH_PRODUCTION_POOL_ID') {
-    console.error('\n❌ ERROR: Please update PRODUCTION_USER_POOL_ID in this script!');
+    console.error(
+      '\n❌ ERROR: Please update PRODUCTION_USER_POOL_ID in this script!'
+    );
     console.error('   Get the value from amplify_outputs.production.json');
     process.exit(1);
   }
@@ -95,7 +105,9 @@ async function main() {
     console.log(`📄 Loaded ${backup.userCount} users from backup`);
 
     for (let i = 0; i < backup.users.length; i++) {
-      console.log(`\n👤 User ${i + 1}/${backup.userCount}: ${backup.users[i].email}`);
+      console.log(
+        `\n👤 User ${i + 1}/${backup.userCount}: ${backup.users[i].email}`
+      );
       await createUser(backup.users[i]);
 
       // Small delay to avoid throttling
@@ -106,7 +118,6 @@ async function main() {
     console.log(`✅ Imported ${backup.userCount} users successfully`);
     console.log('\n⚠️  NOTE: All users have default password: 12345678');
     console.log('   Users should change their password on first login');
-
   } catch (error) {
     console.error('\n❌ Import failed:', error);
     process.exit(1);

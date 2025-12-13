@@ -1,19 +1,30 @@
 import { useRouter } from 'expo-router';
 import React, { useState } from 'react';
-import { ActivityIndicator, FlatList, Text, TouchableOpacity, View } from 'react-native';
+import {
+  ActivityIndicator,
+  FlatList,
+  Text,
+  TouchableOpacity,
+  View,
+} from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
 import { useAcceptRivalryMutation } from '../../controllers/c-rivalry';
 import { useAuthUser } from '../../hooks/useAuthUser';
 import { MRivalry } from '../../models/m-rivalry';
-import { useAllRivalries, useAllRivalriesUpdate } from '../../providers/all-rivalries';
-import { darkStyles, styles } from '../../utils/styles';
+import {
+  useAllRivalries,
+  useAllRivalriesUpdate,
+} from '../../providers/all-rivalries';
 import { colors } from '../../utils/colors';
+import { darkStyles, styles } from '../../utils/styles';
 
 export function PendingRivalries() {
   const router = useRouter();
   const { user } = useAuthUser();
-  const [acceptingRivalryId, setAcceptingRivalryId] = useState<string | null>(null);
+  const [acceptingRivalryId, setAcceptingRivalryId] = useState<string | null>(
+    null
+  );
 
   const { pendingRivalries, rivalries } = useAllRivalries();
   const { updateRivalry } = useAllRivalriesUpdate();
@@ -26,7 +37,7 @@ export function PendingRivalries() {
 
         // Find the accepted rivalry to get user names for navigation
         const acceptedRivalry = pendingRivalries.awaitingAcceptance.find(
-          (r) => r.id === acceptingRivalryId
+          r => r.id === acceptingRivalryId
         );
 
         if (acceptedRivalry) {
@@ -36,18 +47,18 @@ export function PendingRivalries() {
             params: {
               userAName: acceptedRivalry.userAName,
               userBName: acceptedRivalry.userBName,
-              userId: user?.id
-            }
+              userId: user?.id,
+            },
           });
         }
       }
       setAcceptingRivalryId(null);
     },
-    onError: (error) => {
+    onError: error => {
       console.error('[PendingRivalries] Failed to accept rivalry:', error);
       setAcceptingRivalryId(null);
       // TODO: Show error toast to user
-    }
+    },
   });
 
   const handleAcceptRivalry = (rivalryId: string) => {
@@ -62,18 +73,19 @@ export function PendingRivalries() {
   const handleCreateRivalry = () => {
     // Get gameId from the first rivalry, or use the default game
     // TODO: In the future, let users select from multiple games
-    const gameId = rivalries[0]?.gameId || '73ed69cf-2775-43d6-bece-aed10da3e25a';
+    const gameId =
+      rivalries[0]?.gameId || '73ed69cf-2775-43d6-bece-aed10da3e25a';
 
     // Navigate to create rivalry screen using Expo Router
     router.push({
       pathname: '/rivalry/create',
-      params: { gameId }
+      params: { gameId },
     });
   };
 
   const renderRivalryItem = ({
     item,
-    isAwaitingAcceptance
+    isAwaitingAcceptance,
   }: {
     item: any;
     isAwaitingAcceptance: boolean;
@@ -91,7 +103,7 @@ export function PendingRivalries() {
           borderBottomColor: colors.gray750,
           flexDirection: 'row',
           alignItems: 'center',
-          justifyContent: 'space-between'
+          justifyContent: 'space-between',
         }}
       >
         <View style={{ flex: 1 }}>
@@ -99,30 +111,48 @@ export function PendingRivalries() {
             {isAwaitingAcceptance ? 'Challenge from ' : 'Sent to '}
             {displayName}
           </Text>
-          <Text style={[styles.text, { fontSize: 14, color: colors.gray400, marginTop: 4 }]}>
-            {isAwaitingAcceptance ? 'Waiting for you to accept' : 'Waiting for acceptance'}
+          <Text
+            style={[
+              styles.text,
+              { fontSize: 14, color: colors.gray400, marginTop: 4 },
+            ]}
+          >
+            {isAwaitingAcceptance
+              ? 'Waiting for you to accept'
+              : 'Waiting for acceptance'}
           </Text>
         </View>
 
         {isAwaitingAcceptance && (
           <TouchableOpacity
-            onPress={() => handleAcceptRivalry(item.id)}
             disabled={acceptingRivalryId === item.id}
+            onPress={() => handleAcceptRivalry(item.id)}
             style={{
-              backgroundColor: acceptingRivalryId === item.id ? colors.slate600 : colors.green600,
+              backgroundColor:
+                acceptingRivalryId === item.id
+                  ? colors.slate600
+                  : colors.green600,
               paddingHorizontal: 16,
               paddingVertical: 8,
               borderRadius: 6,
               flexDirection: 'row',
-              alignItems: 'center'
+              alignItems: 'center',
             }}
           >
             {acceptingRivalryId === item.id ? (
-              <ActivityIndicator size="small" color="white" />
+              <ActivityIndicator color="white" size="small" />
             ) : (
               <>
-                <Text style={{ fontSize: 14, color: colors.white, marginRight: 8 }}>✓</Text>
-                <Text style={[styles.text, { fontSize: 14, fontWeight: 'bold' }]}>Accept</Text>
+                <Text
+                  style={{ fontSize: 14, color: colors.white, marginRight: 8 }}
+                >
+                  ✓
+                </Text>
+                <Text
+                  style={[styles.text, { fontSize: 14, fontWeight: 'bold' }]}
+                >
+                  Accept
+                </Text>
               </>
             )}
           </TouchableOpacity>
@@ -134,16 +164,21 @@ export function PendingRivalries() {
   const { awaitingAcceptance, initiated } = pendingRivalries;
 
   return (
-    <SafeAreaView style={[styles.container, darkStyles.container]} edges={['top', 'bottom']}>
+    <SafeAreaView
+      edges={['top', 'bottom']}
+      style={[styles.container, darkStyles.container]}
+    >
       <View
         style={{
           paddingHorizontal: 16,
           paddingVertical: 16,
           borderBottomWidth: 1,
-          borderBottomColor: colors.gray750
+          borderBottomColor: colors.gray750,
         }}
       >
-        <Text style={[styles.text, { fontSize: 24, fontWeight: 'bold' }]}>Pending Rivalries</Text>
+        <Text style={[styles.text, { fontSize: 24, fontWeight: 'bold' }]}>
+          Pending Rivalries
+        </Text>
         <Text style={[styles.text, { marginTop: 4, color: colors.gray400 }]}>
           Challenges waiting for acceptance
         </Text>
@@ -157,7 +192,7 @@ export function PendingRivalries() {
               paddingVertical: 12,
               borderRadius: 8,
               marginTop: 16,
-              alignItems: 'center'
+              alignItems: 'center',
             }}
           >
             <Text style={[styles.text, { fontSize: 16, fontWeight: 'bold' }]}>
@@ -169,16 +204,35 @@ export function PendingRivalries() {
 
       {awaitingAcceptance.length === 0 && initiated.length === 0 ? (
         <View
-          style={{ flex: 1, alignItems: 'center', justifyContent: 'center', paddingHorizontal: 16 }}
+          style={{
+            flex: 1,
+            alignItems: 'center',
+            justifyContent: 'center',
+            paddingHorizontal: 16,
+          }}
         >
-          <Text style={{ fontSize: 48, color: colors.gray500, marginBottom: 16 }}>📥</Text>
-          <Text style={[styles.text, { fontSize: 18, color: colors.gray400, textAlign: 'center' }]}>
+          <Text
+            style={{ fontSize: 48, color: colors.gray500, marginBottom: 16 }}
+          >
+            📥
+          </Text>
+          <Text
+            style={[
+              styles.text,
+              { fontSize: 18, color: colors.gray400, textAlign: 'center' },
+            ]}
+          >
             No pending rivalries
           </Text>
           <Text
             style={[
               styles.text,
-              { fontSize: 14, color: colors.gray500, textAlign: 'center', marginTop: 8 }
+              {
+                fontSize: 14,
+                color: colors.gray500,
+                textAlign: 'center',
+                marginTop: 8,
+              },
             ]}
           >
             Create a new rivalry to get started!
@@ -188,9 +242,9 @@ export function PendingRivalries() {
         <FlatList
           data={[
             { section: 'awaitingAcceptance', data: awaitingAcceptance },
-            { section: 'initiated', data: initiated }
+            { section: 'initiated', data: initiated },
           ]}
-          keyExtractor={(item) => item.section}
+          keyExtractor={item => item.section}
           renderItem={({ item }) => (
             <>
               {item.data.length > 0 && (
@@ -199,13 +253,17 @@ export function PendingRivalries() {
                     style={{
                       paddingHorizontal: 16,
                       paddingVertical: 12,
-                      backgroundColor: colors.slate900
+                      backgroundColor: colors.slate900,
                     }}
                   >
                     <Text
                       style={[
                         styles.text,
-                        { fontSize: 14, fontWeight: 'bold', color: colors.slate400 }
+                        {
+                          fontSize: 14,
+                          fontWeight: 'bold',
+                          color: colors.slate400,
+                        },
                       ]}
                     >
                       {item.section === 'awaitingAcceptance'
@@ -213,11 +271,12 @@ export function PendingRivalries() {
                         : 'SENT BY YOU'}
                     </Text>
                   </View>
-                  {item.data.map((rivalry) => (
+                  {item.data.map(rivalry => (
                     <View key={rivalry.id}>
                       {renderRivalryItem({
                         item: rivalry,
-                        isAwaitingAcceptance: item.section === 'awaitingAcceptance'
+                        isAwaitingAcceptance:
+                          item.section === 'awaitingAcceptance',
                       })}
                     </View>
                   ))}

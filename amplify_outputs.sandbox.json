@@ -5,15 +5,9 @@
     "user_pool_client_id": "659m3kp3pe8cddq5isd5vbtjp5",
     "identity_pool_id": "us-east-1:c977861d-b1e5-4ac9-b5fb-6b053313dd62",
     "mfa_methods": [],
-    "standard_required_attributes": [
-      "email"
-    ],
-    "username_attributes": [
-      "email"
-    ],
-    "user_verification_types": [
-      "email"
-    ],
+    "standard_required_attributes": ["email"],
+    "username_attributes": ["email"],
+    "user_verification_types": ["email"],
     "groups": [],
     "mfa_configuration": "NONE",
     "password_policy": {
@@ -30,10 +24,7 @@
     "aws_region": "us-east-1",
     "api_key": "da2-fgncqwcblze6jj2s5v7u74eooa",
     "default_authorization_type": "API_KEY",
-    "authorization_types": [
-      "AMAZON_COGNITO_USER_POOLS",
-      "AWS_IAM"
-    ],
+    "authorization_types": ["AMAZON_COGNITO_USER_POOLS", "AWS_IAM"],
     "model_introspection": {
       "version": 1,
       "models": {
@@ -65,9 +56,7 @@
               "isArrayNullable": true,
               "association": {
                 "connectionType": "HAS_MANY",
-                "associatedWith": [
-                  "gameId"
-                ]
+                "associatedWith": ["gameId"]
               }
             },
             "rivalries": {
@@ -81,9 +70,7 @@
               "isArrayNullable": true,
               "association": {
                 "connectionType": "HAS_MANY",
-                "associatedWith": [
-                  "gameId"
-                ]
+                "associatedWith": ["gameId"]
               }
             },
             "deletedAt": {
@@ -124,12 +111,7 @@
                   {
                     "allow": "public",
                     "provider": "apiKey",
-                    "operations": [
-                      "create",
-                      "update",
-                      "delete",
-                      "read"
-                    ]
+                    "operations": ["create", "update", "delete", "read"]
                   }
                 ]
               }
@@ -175,9 +157,7 @@
               "attributes": [],
               "association": {
                 "connectionType": "BELONGS_TO",
-                "targetNames": [
-                  "gameId"
-                ]
+                "targetNames": ["gameId"]
               }
             },
             "gamePosition": {
@@ -219,9 +199,7 @@
               "isArrayNullable": true,
               "association": {
                 "connectionType": "HAS_MANY",
-                "associatedWith": [
-                  "fighterId"
-                ]
+                "associatedWith": ["fighterId"]
               }
             },
             "createdAt": {
@@ -255,12 +233,7 @@
                   {
                     "allow": "public",
                     "provider": "apiKey",
-                    "operations": [
-                      "create",
-                      "update",
-                      "delete",
-                      "read"
-                    ]
+                    "operations": ["create", "update", "delete", "read"]
                   }
                 ]
               }
@@ -355,12 +328,7 @@
                   {
                     "allow": "public",
                     "provider": "apiKey",
-                    "operations": [
-                      "create",
-                      "update",
-                      "delete",
-                      "read"
-                    ]
+                    "operations": ["create", "update", "delete", "read"]
                   }
                 ]
               }
@@ -413,9 +381,7 @@
               "attributes": [],
               "association": {
                 "connectionType": "BELONGS_TO",
-                "targetNames": [
-                  "gameId"
-                ]
+                "targetNames": ["gameId"]
               }
             },
             "contestCount": {
@@ -464,9 +430,7 @@
               "isArrayNullable": true,
               "association": {
                 "connectionType": "HAS_MANY",
-                "associatedWith": [
-                  "rivalryId"
-                ]
+                "associatedWith": ["rivalryId"]
               }
             },
             "tierLists": {
@@ -480,9 +444,7 @@
               "isArrayNullable": true,
               "association": {
                 "connectionType": "HAS_MANY",
-                "associatedWith": [
-                  "rivalryId"
-                ]
+                "associatedWith": ["rivalryId"]
               }
             },
             "deletedAt": {
@@ -523,12 +485,7 @@
                   {
                     "allow": "public",
                     "provider": "apiKey",
-                    "operations": [
-                      "create",
-                      "update",
-                      "delete",
-                      "read"
-                    ]
+                    "operations": ["create", "update", "delete", "read"]
                   }
                 ]
               }
@@ -567,9 +524,7 @@
               "attributes": [],
               "association": {
                 "connectionType": "BELONGS_TO",
-                "targetNames": [
-                  "rivalryId"
-                ]
+                "targetNames": ["rivalryId"]
               }
             },
             "tierSlotAId": {
@@ -635,10 +590,7 @@
               "properties": {
                 "name": "contestsByRivalryIdAndCreatedAt",
                 "queryField": "contestsByRivalryIdAndCreatedAt",
-                "fields": [
-                  "rivalryId",
-                  "createdAt"
-                ]
+                "fields": ["rivalryId", "createdAt"]
               }
             },
             {
@@ -648,12 +600,7 @@
                   {
                     "allow": "public",
                     "provider": "apiKey",
-                    "operations": [
-                      "create",
-                      "update",
-                      "delete",
-                      "read"
-                    ]
+                    "operations": ["create", "update", "delete", "read"]
                   }
                 ]
               }
@@ -692,9 +639,7 @@
               "attributes": [],
               "association": {
                 "connectionType": "BELONGS_TO",
-                "targetNames": [
-                  "rivalryId"
-                ]
+                "targetNames": ["rivalryId"]
               }
             },
             "userId": {
@@ -722,9 +667,7 @@
               "isArrayNullable": true,
               "association": {
                 "connectionType": "HAS_MANY",
-                "associatedWith": [
-                  "tierListId"
-                ]
+                "associatedWith": ["tierListId"]
               }
             },
             "createdAt": {
@@ -761,10 +704,7 @@
               "properties": {
                 "name": "tierListsByUserIdAndUpdatedAt",
                 "queryField": "tierListsByUserIdAndUpdatedAt",
-                "fields": [
-                  "userId",
-                  "updatedAt"
-                ]
+                "fields": ["userId", "updatedAt"]
               }
             },
             {
@@ -774,12 +714,7 @@
                   {
                     "allow": "public",
                     "provider": "apiKey",
-                    "operations": [
-                      "create",
-                      "update",
-                      "delete",
-                      "read"
-                    ]
+                    "operations": ["create", "update", "delete", "read"]
                   }
                 ]
               }
@@ -818,9 +753,7 @@
               "attributes": [],
               "association": {
                 "connectionType": "BELONGS_TO",
-                "targetNames": [
-                  "tierListId"
-                ]
+                "targetNames": ["tierListId"]
               }
             },
             "fighterId": {
@@ -840,9 +773,7 @@
               "attributes": [],
               "association": {
                 "connectionType": "BELONGS_TO",
-                "targetNames": [
-                  "fighterId"
-                ]
+                "targetNames": ["fighterId"]
               }
             },
             "position": {
@@ -904,12 +835,7 @@
                   {
                     "allow": "public",
                     "provider": "apiKey",
-                    "operations": [
-                      "create",
-                      "update",
-                      "delete",
-                      "read"
-                    ]
+                    "operations": ["create", "update", "delete", "read"]
                   }
                 ]
               }

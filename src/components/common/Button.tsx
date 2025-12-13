@@ -1,4 +1,10 @@
-import { StyleSheet, Text, TextStyle, TouchableOpacity, ViewStyle } from 'react-native';
+import {
+  StyleSheet,
+  Text,
+  type TextStyle,
+  TouchableOpacity,
+  type ViewStyle,
+} from 'react-native';
 import { colors } from '../../utils/colors';
 import { styles } from '../../utils/styles';
 
@@ -19,13 +25,13 @@ export function Button({
   rightContent,
   style,
   text,
-  textStyle
+  textStyle,
 }: ButtonProps) {
   return (
     <TouchableOpacity
-      style={[buttonStyles.button, disabled && buttonStyles.disabled, style]}
-      onPress={onPress}
       disabled={disabled}
+      onPress={onPress}
+      style={[buttonStyles.button, disabled && buttonStyles.disabled, style]}
     >
       {leftContent && leftContent}
       <Text style={[styles.text, buttonStyles.text, textStyle]}>{text}</Text>
@@ -46,16 +52,16 @@ const buttonStyles = StyleSheet.create({
     borderRadius: 25,
     height: 36,
     paddingHorizontal: 24,
-    paddingVertical: 12
+    paddingVertical: 12,
   },
   disabled: {
-    opacity: 0.5
+    opacity: 0.5,
   },
   text: {
     paddingHorizontal: 12,
     paddingVertical: 4,
     color: colors.white,
     fontSize: 16,
-    fontWeight: 'bold'
-  }
+    fontWeight: 'bold',
+  },
 });

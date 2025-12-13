@@ -6,16 +6,19 @@ type TierSlot = Schema['TierSlot']['type'];
 
 describe('MTierList Model', () => {
   const createMockTierSlots = (count: number): TierSlot[] => {
-    return new Array(count).fill(null).map((_, i) => ({
-      id: `slot-${i}`,
-      tierListId: 'tier-list-123',
-      fighterId: `fighter-${i}`,
-      position: i,
-      contestCount: 0,
-      winCount: 0,
-      createdAt: '2024-01-01',
-      updatedAt: '2024-01-01',
-    } as TierSlot));
+    return new Array(count).fill(null).map(
+      (_, i) =>
+        ({
+          id: `slot-${i}`,
+          tierListId: 'tier-list-123',
+          fighterId: `fighter-${i}`,
+          position: i,
+          contestCount: 0,
+          winCount: 0,
+          createdAt: '2024-01-01',
+          updatedAt: '2024-01-01',
+        }) as TierSlot
+    );
   };
 
   const mockTierList = {

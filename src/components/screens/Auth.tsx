@@ -6,11 +6,16 @@ import {
   Text,
   TextInput,
   TouchableOpacity,
-  View
+  View,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
-import { confirmSignUp, getCurrentUser, signIn, signUp } from '../../lib/amplify-auth';
+import {
+  confirmSignUp,
+  getCurrentUser,
+  signIn,
+  signUp,
+} from '../../lib/amplify-auth';
 import { colors } from '../../utils/colors';
 import { darkStyles, styles } from '../../utils/styles';
 import { ForgotPassword } from './ForgotPassword';
@@ -143,15 +148,23 @@ export function Auth({ onAuthSuccess }: AuthProps) {
 
   // Show forgot password screen if requested
   if (showForgotPassword) {
-    return <ForgotPassword onBack={() => setShowForgotPassword(false)} initialEmail={email} />;
+    return (
+      <ForgotPassword
+        initialEmail={email}
+        onBack={() => setShowForgotPassword(false)}
+      />
+    );
   }
 
   return (
-    <SafeAreaView style={[styles.container, darkStyles.container]} edges={['top', 'bottom']}>
+    <SafeAreaView
+      edges={['top', 'bottom']}
+      style={[styles.container, darkStyles.container]}
+    >
       <KeyboardAvoidingView
-        style={{ flex: 1 }}
         behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
         keyboardVerticalOffset={0}
+        style={{ flex: 1 }}
       >
         <ScrollView
           contentContainerStyle={{
@@ -159,26 +172,44 @@ export function Auth({ onAuthSuccess }: AuthProps) {
             justifyContent: 'center',
             alignItems: 'center',
             paddingHorizontal: 32,
-            paddingBottom: 40
+            paddingBottom: 40,
           }}
           keyboardShouldPersistTaps="handled"
           showsVerticalScrollIndicator={false}
         >
           <Text style={[styles.title, { marginBottom: 48 }]}>
-            {needsVerification ? 'Verify Email' : isSignUp ? 'Sign Up' : 'Sign In'}
+            {needsVerification
+              ? 'Verify Email'
+              : isSignUp
+                ? 'Sign Up'
+                : 'Sign In'}
           </Text>
 
           {needsVerification ? (
             <>
-              <Text style={[styles.text, { marginBottom: 24, textAlign: 'center' }]}>
+              <Text
+                style={[styles.text, { marginBottom: 24, textAlign: 'center' }]}
+              >
                 Please enter your email and the verification code we sent you.
               </Text>
 
               <View style={{ width: '100%', marginBottom: 20 }}>
-                <Text style={[styles.text, { marginBottom: 8, fontSize: 16, fontWeight: '500' }]}>
+                <Text
+                  style={[
+                    styles.text,
+                    { marginBottom: 8, fontSize: 16, fontWeight: '500' },
+                  ]}
+                >
                   Email
                 </Text>
                 <TextInput
+                  autoCapitalize="none"
+                  autoCorrect={false}
+                  keyboardType="email-address"
+                  onChangeText={setEmail}
+                  placeholder="Enter your email"
+                  placeholderTextColor={colors.gray200}
+                  secureTextEntry={false}
                   style={[
                     styles.text,
                     {
@@ -189,25 +220,28 @@ export function Auth({ onAuthSuccess }: AuthProps) {
                       paddingVertical: 14,
                       backgroundColor: colors.gray800,
                       borderWidth: 2,
-                      borderColor: colors.gray600
-                    }
+                      borderColor: colors.gray600,
+                    },
                   ]}
-                  placeholder="Enter your email"
-                  placeholderTextColor={colors.gray200}
                   value={email}
-                  onChangeText={setEmail}
-                  keyboardType="email-address"
-                  autoCapitalize="none"
-                  autoCorrect={false}
-                  secureTextEntry={false}
                 />
               </View>
 
               <View style={{ width: '100%', marginBottom: 20 }}>
-                <Text style={[styles.text, { marginBottom: 8, fontSize: 16, fontWeight: '500' }]}>
+                <Text
+                  style={[
+                    styles.text,
+                    { marginBottom: 8, fontSize: 16, fontWeight: '500' },
+                  ]}
+                >
                   Verification Code
                 </Text>
                 <TextInput
+                  autoCapitalize="none"
+                  keyboardType="number-pad"
+                  onChangeText={setVerificationCode}
+                  placeholder="Enter verification code"
+                  placeholderTextColor={colors.gray200}
                   style={[
                     styles.text,
                     {
@@ -218,15 +252,10 @@ export function Auth({ onAuthSuccess }: AuthProps) {
                       paddingVertical: 14,
                       backgroundColor: colors.gray800,
                       borderWidth: 2,
-                      borderColor: colors.gray600
-                    }
+                      borderColor: colors.gray600,
+                    },
                   ]}
-                  placeholder="Enter verification code"
-                  placeholderTextColor={colors.gray200}
                   value={verificationCode}
-                  onChangeText={setVerificationCode}
-                  keyboardType="number-pad"
-                  autoCapitalize="none"
                 />
               </View>
 
@@ -234,7 +263,11 @@ export function Auth({ onAuthSuccess }: AuthProps) {
                 <Text
                   style={[
                     styles.text,
-                    { marginBottom: 16, textAlign: 'center', color: colors.red400 }
+                    {
+                      marginBottom: 16,
+                      textAlign: 'center',
+                      color: colors.red400,
+                    },
                   ]}
                 >
                   {error}
@@ -242,7 +275,11 @@ export function Auth({ onAuthSuccess }: AuthProps) {
               )}
 
               <TouchableOpacity
-                testID="verify-submit-button"
+                accessibilityState={{
+                  disabled: loading || !verificationCode || !email,
+                }}
+                disabled={loading || !verificationCode || !email}
+                onPress={handleVerifyCode}
                 style={{
                   backgroundColor: colors.purple900,
                   paddingHorizontal: 32,
@@ -253,13 +290,17 @@ export function Auth({ onAuthSuccess }: AuthProps) {
                   width: '75%',
                   alignItems: 'center',
                   marginTop: 8,
-                  marginBottom: 16
+                  marginBottom: 16,
                 }}
-                onPress={handleVerifyCode}
-                disabled={loading || !verificationCode || !email}
-                accessibilityState={{ disabled: loading || !verificationCode || !email }}
+                testID="verify-submit-button"
               >
-                <Text style={{ color: colors.white, fontSize: 18, fontWeight: 'bold' }}>
+                <Text
+                  style={{
+                    color: colors.white,
+                    fontSize: 18,
+                    fontWeight: 'bold',
+                  }}
+                >
                   {loading ? 'Verifying...' : 'Verify'}
                 </Text>
               </TouchableOpacity>
@@ -272,16 +313,29 @@ export function Auth({ onAuthSuccess }: AuthProps) {
                 }}
                 style={{ marginTop: 8 }}
               >
-                <Text style={{ color: colors.cyan400, fontSize: 16 }}>Back to Sign Up</Text>
+                <Text style={{ color: colors.cyan400, fontSize: 16 }}>
+                  Back to Sign Up
+                </Text>
               </TouchableOpacity>
             </>
           ) : (
             <>
               <View style={{ width: '100%', marginBottom: 20 }}>
-                <Text style={[styles.text, { marginBottom: 8, fontSize: 16, fontWeight: '500' }]}>
+                <Text
+                  style={[
+                    styles.text,
+                    { marginBottom: 8, fontSize: 16, fontWeight: '500' },
+                  ]}
+                >
                   Email
                 </Text>
                 <TextInput
+                  autoCapitalize="none"
+                  autoCorrect={false}
+                  keyboardType="email-address"
+                  onChangeText={setEmail}
+                  placeholder="Enter your email"
+                  placeholderTextColor={colors.gray200}
                   style={[
                     styles.text,
                     {
@@ -292,24 +346,28 @@ export function Auth({ onAuthSuccess }: AuthProps) {
                       paddingVertical: 14,
                       backgroundColor: colors.gray800,
                       borderWidth: 2,
-                      borderColor: colors.gray600
-                    }
+                      borderColor: colors.gray600,
+                    },
                   ]}
-                  placeholder="Enter your email"
-                  placeholderTextColor={colors.gray200}
                   value={email}
-                  onChangeText={setEmail}
-                  keyboardType="email-address"
-                  autoCapitalize="none"
-                  autoCorrect={false}
                 />
               </View>
 
               <View style={{ width: '100%', marginBottom: 20 }}>
-                <Text style={[styles.text, { marginBottom: 8, fontSize: 16, fontWeight: '500' }]}>
+                <Text
+                  style={[
+                    styles.text,
+                    { marginBottom: 8, fontSize: 16, fontWeight: '500' },
+                  ]}
+                >
                   Password
                 </Text>
                 <TextInput
+                  autoCapitalize="none"
+                  onChangeText={setPassword}
+                  placeholder="Enter your password"
+                  placeholderTextColor={colors.gray200}
+                  secureTextEntry
                   style={[
                     styles.text,
                     {
@@ -320,24 +378,29 @@ export function Auth({ onAuthSuccess }: AuthProps) {
                       paddingVertical: 14,
                       backgroundColor: colors.gray800,
                       borderWidth: 2,
-                      borderColor: colors.gray600
-                    }
+                      borderColor: colors.gray600,
+                    },
                   ]}
-                  placeholder="Enter your password"
-                  placeholderTextColor={colors.gray200}
                   value={password}
-                  onChangeText={setPassword}
-                  secureTextEntry
-                  autoCapitalize="none"
                 />
               </View>
 
               {isSignUp && (
                 <View style={{ width: '100%', marginBottom: 20 }}>
-                  <Text style={[styles.text, { marginBottom: 8, fontSize: 16, fontWeight: '500' }]}>
+                  <Text
+                    style={[
+                      styles.text,
+                      { marginBottom: 8, fontSize: 16, fontWeight: '500' },
+                    ]}
+                  >
                     Confirm Password
                   </Text>
                   <TextInput
+                    autoCapitalize="none"
+                    onChangeText={setConfirmPassword}
+                    placeholder="Confirm your password"
+                    placeholderTextColor={colors.gray200}
+                    secureTextEntry
                     style={[
                       styles.text,
                       {
@@ -348,15 +411,10 @@ export function Auth({ onAuthSuccess }: AuthProps) {
                         paddingVertical: 14,
                         backgroundColor: colors.gray800,
                         borderWidth: 2,
-                        borderColor: colors.gray600
-                      }
+                        borderColor: colors.gray600,
+                      },
                     ]}
-                    placeholder="Confirm your password"
-                    placeholderTextColor={colors.gray200}
                     value={confirmPassword}
-                    onChangeText={setConfirmPassword}
-                    secureTextEntry
-                    autoCapitalize="none"
                   />
                 </View>
               )}
@@ -371,8 +429,8 @@ export function Auth({ onAuthSuccess }: AuthProps) {
                       color:
                         error.includes('verified') || error.includes('success')
                           ? colors.green300
-                          : colors.red400
-                    }
+                          : colors.red400,
+                    },
                   ]}
                 >
                   {error}
@@ -380,7 +438,11 @@ export function Auth({ onAuthSuccess }: AuthProps) {
               )}
 
               <TouchableOpacity
-                testID="auth-submit-button"
+                accessibilityState={{
+                  disabled: loading || !email || !password,
+                }}
+                disabled={loading || !email || !password}
+                onPress={isSignUp ? handleSignUp : handleSignIn}
                 style={{
                   backgroundColor: colors.purple900,
                   paddingHorizontal: 32,
@@ -391,13 +453,17 @@ export function Auth({ onAuthSuccess }: AuthProps) {
                   width: '75%',
                   alignItems: 'center',
                   marginTop: 8,
-                  marginBottom: 16
+                  marginBottom: 16,
                 }}
-                onPress={isSignUp ? handleSignUp : handleSignIn}
-                disabled={loading || !email || !password}
-                accessibilityState={{ disabled: loading || !email || !password }}
+                testID="auth-submit-button"
               >
-                <Text style={{ color: colors.white, fontSize: 18, fontWeight: 'bold' }}>
+                <Text
+                  style={{
+                    color: colors.white,
+                    fontSize: 18,
+                    fontWeight: 'bold',
+                  }}
+                >
                   {loading ? 'Loading...' : isSignUp ? 'Sign Up' : 'Sign In'}
                 </Text>
               </TouchableOpacity>
@@ -410,7 +476,9 @@ export function Auth({ onAuthSuccess }: AuthProps) {
                 style={{ marginTop: 8 }}
               >
                 <Text style={{ color: colors.cyan400, fontSize: 16 }}>
-                  {isSignUp ? 'Already have an account? Sign In' : "Don't have an account? Sign Up"}
+                  {isSignUp
+                    ? 'Already have an account? Sign In'
+                    : "Don't have an account? Sign Up"}
                 </Text>
               </TouchableOpacity>
 
@@ -422,7 +490,9 @@ export function Auth({ onAuthSuccess }: AuthProps) {
                   }}
                   style={{ marginTop: 12 }}
                 >
-                  <Text style={{ color: colors.gray200, fontSize: 16 }}>Forgot Password?</Text>
+                  <Text style={{ color: colors.gray200, fontSize: 16 }}>
+                    Forgot Password?
+                  </Text>
                 </TouchableOpacity>
               )}
 

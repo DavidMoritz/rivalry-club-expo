@@ -9,11 +9,11 @@ export function request(ctx) {
 
   // Build the update expression dynamically
   const expressionNames = {
-    '#contestCount': 'contestCount'
+    '#contestCount': 'contestCount',
   };
 
   const expressionValues = {
-    ':contestIncrement': 1
+    ':contestIncrement': 1,
   };
 
   let updateExpression = 'ADD #contestCount :contestIncrement';
@@ -31,8 +31,8 @@ export function request(ctx) {
     update: {
       expression: updateExpression,
       expressionNames,
-      expressionValues: util.dynamodb.toMapValues(expressionValues)
-    }
+      expressionValues: util.dynamodb.toMapValues(expressionValues),
+    },
   };
 }
 

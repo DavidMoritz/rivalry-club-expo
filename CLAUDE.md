@@ -206,12 +206,6 @@ cd ios && NO_FLIPPER=1 npx pod-install && cd -
 - Icons: FontAwesome (configured in `src/assets/icons.ts`)
 - Cached assets: `src/assets/cache/`
 
-## Test Credentials
-
-**AWS Cognito:**
-Email: t@t.t
-Password: 12345678
-
 ## Backend Services
 
 - **Authentication**: AWS Cognito (email/password, session management)

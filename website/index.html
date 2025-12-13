@@ -36,6 +36,13 @@
         padding: 40px 0;
       }
 
+      .logo {
+        width: 250px;
+        height: 250px;
+        margin-bottom: 20px;
+        border-radius: 30px;
+      }
+
       h1 {
         font-size: 4rem;
         font-weight: bold;
@@ -43,6 +50,7 @@
         text-shadow:
           2px 2px 0 black,
           4px 4px 8px rgba(0, 0, 0, 0.5);
+        margin-top: 20px;
         margin-bottom: 10px;
         letter-spacing: 2px;
       }
@@ -64,6 +72,14 @@
         text-transform: uppercase;
         letter-spacing: 1px;
         box-shadow: 0 4px 15px rgba(139, 92, 246, 0.4);
+        text-decoration: none;
+        cursor: pointer;
+        transition: all 0.3s ease;
+      }
+
+      .app-badge:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 6px 20px rgba(139, 92, 246, 0.6);
       }
 
       .hero {
@@ -237,6 +253,16 @@
         margin-top: 20px;
       }
 
+      .coming-soon a {
+        color: #cbd5e1;
+        text-decoration: none;
+        transition: color 0.3s ease;
+      }
+
+      .coming-soon a:hover {
+        color: #22d3ee;
+      }
+
       footer {
         text-align: center;
         padding: 40px 20px;
@@ -260,7 +286,69 @@
         margin: 10px 0;
       }
 
+      .modal-overlay {
+        display: none;
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background: rgba(0, 0, 0, 0.8);
+        justify-content: center;
+        align-items: center;
+        z-index: 1000;
+      }
+
+      .modal-overlay.active {
+        display: flex;
+      }
+
+      .modal {
+        background: linear-gradient(135deg, #1e293b 0%, #111 100%);
+        border: 2px solid #22d3ee;
+        border-radius: 20px;
+        padding: 40px;
+        max-width: 450px;
+        text-align: center;
+        box-shadow: 0 20px 60px rgba(34, 211, 238, 0.3);
+      }
+
+      .modal h2 {
+        color: aqua;
+        font-size: 1.8rem;
+        margin-bottom: 20px;
+      }
+
+      .modal p {
+        color: #cbd5e1;
+        font-size: 1.1rem;
+        margin-bottom: 25px;
+        line-height: 1.6;
+      }
+
+      .modal-close {
+        background: linear-gradient(135deg, #8b5cf6 0%, #3b82f6 100%);
+        color: white;
+        border: none;
+        padding: 12px 30px;
+        border-radius: 25px;
+        font-size: 1rem;
+        font-weight: bold;
+        cursor: pointer;
+        transition: all 0.3s ease;
+      }
+
+      .modal-close:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 8px 20px rgba(139, 92, 246, 0.4);
+      }
+
       @media (max-width: 768px) {
+        .logo {
+          width: 180px;
+          height: 180px;
+        }
+
         h1 {
           font-size: 2.5rem;
         }
@@ -292,9 +380,10 @@
   <body>
     <div class="container">
       <header>
-        <h1>RIVALRY CLUB</h1>
+        <img src="logo.png" alt="Rivalry Club Logo" class="logo" />
         <p class="subtitle">Fighting Game Tier Lists</p>
-        <div class="app-badge">iOS App</div>
+        <a href="#" class="app-badge" onclick="showModal(event)">iOS App</a>
+        <h1>RIVALRY CLUB</h1>
       </header>
 
       <div class="hero">
@@ -390,8 +479,16 @@
       </div>
 
       <div class="cta-section">
-        <a href="#" class="cta-button">Download on App Store</a>
-        <p class="coming-soon">Coming Soon to the App Store</p>
+        <a href="#" class="cta-button" onclick="showModal(event)">Download on App Store</a>
+        <p class="coming-soon"><a href="#" onclick="showModal(event)">Coming Soon to the App Store</a></p>
+      </div>
+
+      <div class="modal-overlay" id="modal" onclick="hideModal(event)">
+        <div class="modal" onclick="event.stopPropagation()">
+          <h2>Coming Soon!</h2>
+          <p>Rivalry Club is currently pending review with the App Store. It should be available for download very soon!</p>
+          <button class="modal-close" onclick="hideModal(event)">Got it</button>
+        </div>
       </div>
 
       <footer>
@@ -402,5 +499,22 @@
         <p>&copy; 2025 Rivalry Club. All rights reserved.</p>
       </footer>
     </div>
+
+    <script>
+      function showModal(event) {
+        event.preventDefault();
+        document.getElementById('modal').classList.add('active');
+      }
+
+      function hideModal(event) {
+        document.getElementById('modal').classList.remove('active');
+      }
+
+      document.addEventListener('keydown', function(event) {
+        if (event.key === 'Escape') {
+          hideModal();
+        }
+      });
+    </script>
   </body>
 </html>

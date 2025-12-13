@@ -367,6 +367,41 @@ const center = 'center';            // ❌ Bad - TypeScript infers as string
 - Easy to update if the value needs to change
 - The constant preserves the literal type with one `as const` declaration
 
+### 6. Concise Single-Line Conditionals
+
+**✅ DO THIS**: If an `if` condition and a `return` statement fit on the same line with fewer than 80 characters, put them on the same line.
+
+```typescript
+// ❌ BEFORE: Unnecessarily verbose
+if (!tierList) {
+  return null;
+}
+
+if (position < 0) {
+  return 0;
+}
+
+// ✅ AFTER: Concise single-line format
+if (!tierList) return null;
+
+if (position < 0) return 0;
+```
+
+**When to use single-line conditionals**:
+- The entire line (including `if`, condition, and `return`) is under 80 characters
+- It's a simple guard clause or early return
+- No `else` branch is needed
+
+**When NOT to use**:
+- The line would exceed 80 characters
+- There's an `else` or `else if` branch
+- The body has multiple statements
+
+**Why this is good**:
+- Reduces visual noise for simple guard clauses
+- Keeps the file shorter and easier to scan
+- Common convention for early returns
+
 ---
 
 ## ❌ BAD Refactoring Examples

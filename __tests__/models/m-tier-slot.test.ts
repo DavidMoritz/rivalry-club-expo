@@ -1,10 +1,10 @@
 import type { Schema } from '../../amplify/data/resource';
+import { getMTierList, TIERS } from '../../src/models/m-tier-list';
 import {
   getMTierSlot,
   MTierSlot,
   normalizeTierSlotPositionToIndex,
 } from '../../src/models/m-tier-slot';
-import { getMTierList, TIERS } from '../../src/models/m-tier-list';
 
 type TierSlot = Schema['TierSlot']['type'];
 
@@ -122,7 +122,6 @@ describe('MTierSlot Model', () => {
       expect(mTierSlot.tierList).toBeDefined();
       expect(mTierSlot.tierList).toBe(mockTierList);
     });
-
   });
 
   describe('normalizeTierSlotPositionToIndex', () => {

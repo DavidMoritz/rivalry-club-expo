@@ -9,15 +9,15 @@ import {
   Text,
   TextInput,
   TouchableOpacity,
-  View
+  View,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
 import type { Schema } from '../../../amplify/data/resource';
-import { signIn, getCurrentUser } from '../../lib/amplify-auth';
-import { updateStoredUuid, storeFirstName } from '../../lib/user-identity';
-import { darkStyles, styles } from '../../utils/styles';
+import { getCurrentUser, signIn } from '../../lib/amplify-auth';
+import { storeFirstName, updateStoredUuid } from '../../lib/user-identity';
 import { colors } from '../../utils/colors';
+import { darkStyles, styles } from '../../utils/styles';
 
 interface LinkAccountModalProps {
   visible: boolean;
@@ -26,7 +26,12 @@ interface LinkAccountModalProps {
   onSuccess: () => void;
 }
 
-export function LinkAccountModal({ visible, currentUserId, onClose, onSuccess }: LinkAccountModalProps) {
+export function LinkAccountModal({
+  visible,
+  currentUserId,
+  onClose,
+  onSuccess,
+}: LinkAccountModalProps) {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [error, setError] = useState<string | null>(null);
@@ -70,7 +75,10 @@ export function LinkAccountModal({ visible, currentUserId, onClose, onSuccess }:
         // Store the existing user's firstName locally so they never see "Player_${shortId}" again
         if (existingUser.firstName && existingUser.firstName.trim() !== '') {
           await storeFirstName(existingUser.firstName.trim());
-          console.log('[LinkAccountModal] Stored existing user firstName:', existingUser.firstName);
+          console.log(
+            '[LinkAccountModal] Stored existing user firstName:',
+            existingUser.firstName
+          );
         }
 
         // Success! The app will reload with the existing user
@@ -107,12 +115,20 @@ export function LinkAccountModal({ visible, currentUserId, onClose, onSuccess }:
   }
 
   return (
-    <Modal visible={visible} animationType="slide" presentationStyle="pageSheet">
-      <SafeAreaView style={[styles.container, darkStyles.container]} edges={['top', 'bottom']}>
+    <Modal
+      animationType="slide"
+      presentationStyle="pageSheet"
+      visible={visible}
+    >
+      <SafeAreaView
+        edges={['top', 'bottom']}
+        style={[styles.container, darkStyles.container]}
+      >
         <KeyboardAvoidingView
-          style={{ flex: 1 }}
           behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
-          keyboardVerticalOffset={0}>
+          keyboardVerticalOffset={0}
+          style={{ flex: 1 }}
+        >
           <View style={{ flex: 1, paddingHorizontal: 24 }}>
             <View
               style={{
@@ -122,107 +138,156 @@ export function LinkAccountModal({ visible, currentUserId, onClose, onSuccess }:
                 paddingVertical: 16,
                 borderBottomWidth: 1,
                 borderBottomColor: colors.gray750,
-              }}>
+              }}
+            >
               <Text style={[styles.text, { fontSize: 24, fontWeight: 'bold' }]}>
                 Link Existing Account
               </Text>
               <TouchableOpacity onPress={onClose}>
-                <Text style={[styles.text, { fontSize: 16, color: colors.slate500 }]}>Cancel</Text>
+                <Text
+                  style={[
+                    styles.text,
+                    { fontSize: 16, color: colors.slate500 },
+                  ]}
+                >
+                  Cancel
+                </Text>
               </TouchableOpacity>
             </View>
 
             <ScrollView
-              style={{ flex: 1 }}
-              contentContainerStyle={{ flexGrow: 1, justifyContent: 'center', paddingBottom: 40 }}
-              keyboardShouldPersistTaps="handled"
-              showsVerticalScrollIndicator={false}>
-            <Text style={[styles.text, { marginBottom: 24, textAlign: 'center', color: colors.gray300 }]}>
-              Sign in with your existing account to restore your data and rivalries
-            </Text>
-
-            <View style={{ marginBottom: 20 }}>
-              <Text style={[styles.text, { marginBottom: 8, fontSize: 16, fontWeight: '500' }]}>
-                Email
-              </Text>
-              <TextInput
-                style={[
-                  styles.text,
-                  {
-                    width: '100%',
-                    borderRadius: 8,
-                    fontSize: 16,
-                    paddingHorizontal: 16,
-                    paddingVertical: 14,
-                    backgroundColor: colors.gray800,
-                    borderWidth: 2,
-                    borderColor: colors.gray600,
-                  },
-                ]}
-                placeholder="Enter your email"
-                placeholderTextColor={colors.gray200}
-                value={email}
-                onChangeText={setEmail}
-                keyboardType="email-address"
-                autoCapitalize="none"
-                autoCorrect={false}
-              />
-            </View>
-
-            <View style={{ marginBottom: 20 }}>
-              <Text style={[styles.text, { marginBottom: 8, fontSize: 16, fontWeight: '500' }]}>
-                Password
-              </Text>
-              <TextInput
-                style={[
-                  styles.text,
-                  {
-                    width: '100%',
-                    borderRadius: 8,
-                    fontSize: 16,
-                    paddingHorizontal: 16,
-                    paddingVertical: 14,
-                    backgroundColor: colors.gray800,
-                    borderWidth: 2,
-                    borderColor: colors.gray600,
-                  },
-                ]}
-                placeholder="Enter your password"
-                placeholderTextColor={colors.gray200}
-                value={password}
-                onChangeText={setPassword}
-                secureTextEntry
-                autoCapitalize="none"
-              />
-            </View>
-
-            {error && (
-              <Text style={[styles.text, { marginBottom: 16, textAlign: 'center', color: colors.red400 }]}>
-                {error}
-              </Text>
-            )}
-
-            <TouchableOpacity
-              style={{
-                backgroundColor: colors.amber400,
-                paddingHorizontal: 32,
-                paddingVertical: 16,
-                borderRadius: 25,
-                borderWidth: 1,
-                borderColor: colors.slate300,
-                width: '100%',
-                alignItems: 'center',
-                marginTop: 8,
+              contentContainerStyle={{
+                flexGrow: 1,
+                justifyContent: 'center',
+                paddingBottom: 40,
               }}
-              onPress={handleLinkAccount}
-              disabled={loading || !email || !password}>
-              {loading ? (
-                <ActivityIndicator color={colors.darkText} />
-              ) : (
-                <Text style={{ color: colors.darkText, fontSize: 18, fontWeight: 'bold' }}>
-                  Link Account
+              keyboardShouldPersistTaps="handled"
+              showsVerticalScrollIndicator={false}
+              style={{ flex: 1 }}
+            >
+              <Text
+                style={[
+                  styles.text,
+                  {
+                    marginBottom: 24,
+                    textAlign: 'center',
+                    color: colors.gray300,
+                  },
+                ]}
+              >
+                Sign in with your existing account to restore your data and
+                rivalries
+              </Text>
+
+              <View style={{ marginBottom: 20 }}>
+                <Text
+                  style={[
+                    styles.text,
+                    { marginBottom: 8, fontSize: 16, fontWeight: '500' },
+                  ]}
+                >
+                  Email
+                </Text>
+                <TextInput
+                  autoCapitalize="none"
+                  autoCorrect={false}
+                  keyboardType="email-address"
+                  onChangeText={setEmail}
+                  placeholder="Enter your email"
+                  placeholderTextColor={colors.gray200}
+                  style={[
+                    styles.text,
+                    {
+                      width: '100%',
+                      borderRadius: 8,
+                      fontSize: 16,
+                      paddingHorizontal: 16,
+                      paddingVertical: 14,
+                      backgroundColor: colors.gray800,
+                      borderWidth: 2,
+                      borderColor: colors.gray600,
+                    },
+                  ]}
+                  value={email}
+                />
+              </View>
+
+              <View style={{ marginBottom: 20 }}>
+                <Text
+                  style={[
+                    styles.text,
+                    { marginBottom: 8, fontSize: 16, fontWeight: '500' },
+                  ]}
+                >
+                  Password
+                </Text>
+                <TextInput
+                  autoCapitalize="none"
+                  onChangeText={setPassword}
+                  placeholder="Enter your password"
+                  placeholderTextColor={colors.gray200}
+                  secureTextEntry
+                  style={[
+                    styles.text,
+                    {
+                      width: '100%',
+                      borderRadius: 8,
+                      fontSize: 16,
+                      paddingHorizontal: 16,
+                      paddingVertical: 14,
+                      backgroundColor: colors.gray800,
+                      borderWidth: 2,
+                      borderColor: colors.gray600,
+                    },
+                  ]}
+                  value={password}
+                />
+              </View>
+
+              {error && (
+                <Text
+                  style={[
+                    styles.text,
+                    {
+                      marginBottom: 16,
+                      textAlign: 'center',
+                      color: colors.red400,
+                    },
+                  ]}
+                >
+                  {error}
                 </Text>
               )}
-            </TouchableOpacity>
+
+              <TouchableOpacity
+                disabled={loading || !email || !password}
+                onPress={handleLinkAccount}
+                style={{
+                  backgroundColor: colors.amber400,
+                  paddingHorizontal: 32,
+                  paddingVertical: 16,
+                  borderRadius: 25,
+                  borderWidth: 1,
+                  borderColor: colors.slate300,
+                  width: '100%',
+                  alignItems: 'center',
+                  marginTop: 8,
+                }}
+              >
+                {loading ? (
+                  <ActivityIndicator color={colors.darkText} />
+                ) : (
+                  <Text
+                    style={{
+                      color: colors.darkText,
+                      fontSize: 18,
+                      fontWeight: 'bold',
+                    }}
+                  >
+                    Link Account
+                  </Text>
+                )}
+              </TouchableOpacity>
             </ScrollView>
           </View>
         </KeyboardAvoidingView>

@@ -1,9 +1,11 @@
+import { render } from '@testing-library/react-native';
 import React from 'react';
 import { Animated, Text, View } from 'react-native';
-import { render } from '@testing-library/react-native';
-
+import {
+  SyncedScrollViewContext,
+  syncedScrollViewState,
+} from '../../../../providers/scroll-view';
 import { SyncedScrollView } from '../SyncedScrollView';
-import { SyncedScrollViewContext, syncedScrollViewState } from '../../../../providers/scroll-view';
 
 describe('SyncedScrollView', () => {
   it('renders children correctly', () => {
@@ -33,7 +35,7 @@ describe('SyncedScrollView', () => {
   it('accepts ScrollView props', () => {
     const { getByText } = render(
       <SyncedScrollViewContext.Provider value={syncedScrollViewState}>
-        <SyncedScrollView id={1} horizontal={true}>
+        <SyncedScrollView horizontal={true} id={1}>
           <Text>Horizontal Content</Text>
         </SyncedScrollView>
       </SyncedScrollViewContext.Provider>

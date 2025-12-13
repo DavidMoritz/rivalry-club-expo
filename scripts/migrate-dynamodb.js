@@ -1,15 +1,19 @@
 #!/usr/bin/env node
 
 const { DynamoDBClient } = require('@aws-sdk/client-dynamodb');
-const { DynamoDBDocumentClient, ScanCommand, BatchWriteCommand } = require('@aws-sdk/lib-dynamodb');
+const {
+  DynamoDBDocumentClient,
+  ScanCommand,
+  BatchWriteCommand,
+} = require('@aws-sdk/lib-dynamodb');
 const fs = require('fs');
 const path = require('path');
 
 const client = new DynamoDBClient({ region: 'us-east-1' });
 const docClient = DynamoDBDocumentClient.from(client, {
   marshallOptions: {
-    removeUndefinedValues: true
-  }
+    removeUndefinedValues: true,
+  },
 });
 
 // Load awsSub mappings from external/data/users.csv
@@ -40,7 +44,9 @@ function loadUserAwsSubMappings() {
 }
 
 const userChanges = loadUserAwsSubMappings();
-console.log(`Loaded ${Object.keys(userChanges).length} awsSub mappings from users.csv`);
+console.log(
+  `Loaded ${Object.keys(userChanges).length} awsSub mappings from users.csv`
+);
 
 // Source tables (old app - staging environment from 2023)
 const SOURCE_SUFFIX = '-zgox4hnry5aeblka7pk4mzmqle-staging';
@@ -54,32 +60,32 @@ const TARGET_SUFFIX = '-eufbm2g2krhd3kvltqwnkdayb4-NONE';
 const TABLE_MAPPINGS = {
   Game: {
     source: `Game${SOURCE_SUFFIX}`,
-    target: `Game${TARGET_SUFFIX}`
+    target: `Game${TARGET_SUFFIX}`,
   },
   Fighter: {
     source: `Fighter${SOURCE_SUFFIX}`,
-    target: `Fighter${TARGET_SUFFIX}`
+    target: `Fighter${TARGET_SUFFIX}`,
   },
   User: {
     source: `User${SOURCE_SUFFIX}`,
-    target: `User${TARGET_SUFFIX}`
+    target: `User${TARGET_SUFFIX}`,
   },
   Rivalry: {
     source: `Rivalry${SOURCE_SUFFIX}`,
-    target: `Rivalry${TARGET_SUFFIX}`
+    target: `Rivalry${TARGET_SUFFIX}`,
   },
   Contest: {
     source: `Contest${SOURCE_SUFFIX}`,
-    target: `Contest${TARGET_SUFFIX}`
+    target: `Contest${TARGET_SUFFIX}`,
   },
   TierList: {
     source: `TierList${SOURCE_SUFFIX}`,
-    target: `TierList${TARGET_SUFFIX}`
+    target: `TierList${TARGET_SUFFIX}`,
   },
   TierSlot: {
     source: `TierSlot${SOURCE_SUFFIX}`,
-    target: `TierSlot${TARGET_SUFFIX}`
-  }
+    target: `TierSlot${TARGET_SUFFIX}`,
+  },
 };
 
 async function verifyTables() {
@@ -106,22 +112,25 @@ async function scanTable(tableName) {
       console.log(`  Scan iteration ${scanCount}...`);
 
       const scanParams = {
-        TableName: tableName
+        TableName: tableName,
       };
 
       if (lastEvaluatedKey) {
         scanParams.ExclusiveStartKey = lastEvaluatedKey;
       }
 
-      console.log(`  Creating ScanCommand with params:`, JSON.stringify(scanParams, null, 2));
+      console.log(
+        '  Creating ScanCommand with params:',
+        JSON.stringify(scanParams, null, 2)
+      );
 
       const command = new ScanCommand(scanParams);
 
-      console.log(`  Sending scan command...`);
+      console.log('  Sending scan command...');
 
       const response = await docClient.send(command);
 
-      console.log(`  Got response`);
+      console.log('  Got response');
 
       console.log(`  Response Items: ${response.Items?.length || 0}`);
 
@@ -158,22 +167,24 @@ async function batchWrite(tableName, items) {
     const batch = items.slice(i, i + BATCH_SIZE);
 
     const requestItems = {
-      [tableName]: batch.map((item) => ({
+      [tableName]: batch.map(item => ({
         PutRequest: {
-          Item: item
-        }
-      }))
+          Item: item,
+        },
+      })),
     };
 
     const command = new BatchWriteCommand({
-      RequestItems: requestItems
+      RequestItems: requestItems,
     });
 
     await docClient.send(command);
-    console.log(`  Written ${Math.min(i + BATCH_SIZE, items.length)}/${items.length} items`);
+    console.log(
+      `  Written ${Math.min(i + BATCH_SIZE, items.length)}/${items.length} items`
+    );
   }
 
-  console.log(`  ✓ Complete`);
+  console.log('  ✓ Complete');
 }
 
 async function migrateTable(modelName) {
@@ -215,7 +226,7 @@ async function updateUsers() {
 
     // Step 2: Update user 'a129627a-cd3f-43b9-a685-45909395c202' email to t@t.com
     const testUserId = 'a129627a-cd3f-43b9-a685-45909395c202';
-    const testUser = users.find((u) => u.id === testUserId);
+    const testUser = users.find(u => u.id === testUserId);
     if (testUser) {
       console.log(`\nUpdating user ${testUserId} email to t@t.com...`);
       const updateCmd = new UpdateCommand({
@@ -223,8 +234,8 @@ async function updateUsers() {
         Key: { id: testUserId },
         UpdateExpression: 'SET email = :email',
         ExpressionAttributeValues: {
-          ':email': 't@t.com'
-        }
+          ':email': 't@t.com',
+        },
       });
       await docClient.send(updateCmd);
       console.log('✓ Email updated');
@@ -238,7 +249,7 @@ async function updateUsers() {
       const updateCmd = new UpdateCommand({
         TableName: userTableName,
         Key: { id: user.id },
-        UpdateExpression: 'REMOVE awsSub'
+        UpdateExpression: 'REMOVE awsSub',
       });
       await docClient.send(updateCmd);
     }
@@ -254,11 +265,11 @@ async function updateUsers() {
         Key: { id: userId },
         UpdateExpression: 'SET awsSub = :awsSub',
         ExpressionAttributeValues: {
-          ':awsSub': awsSub
-        }
+          ':awsSub': awsSub,
+        },
       });
       await docClient.send(updateCmd);
-      console.log(`  ✓ Updated`);
+      console.log('  ✓ Updated');
     }
 
     console.log('\n✓ User updates complete');
@@ -283,7 +294,7 @@ async function main() {
       'Rivalry',
       'TierList',
       'Contest',
-      'TierSlot'
+      'TierSlot',
     ];
 
     for (const modelName of migrationOrder) {

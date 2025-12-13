@@ -5,7 +5,7 @@ const {
   AdminConfirmSignUpCommand,
   AdminUpdateUserAttributesCommand,
   AdminSetUserPasswordCommand,
-  AdminGetUserCommand
+  AdminGetUserCommand,
 } = require('@aws-sdk/client-cognito-identity-provider');
 
 // Get the Cognito User Pool ID
@@ -29,7 +29,7 @@ async function confirmUser(username, password = 'qwerqwer') {
     // Step 0: Get current user status
     const getUserCommand = new AdminGetUserCommand({
       UserPoolId: userPoolId,
-      Username: username
+      Username: username,
     });
 
     const userResponse = await client.send(getUserCommand);
@@ -40,7 +40,7 @@ async function confirmUser(username, password = 'qwerqwer') {
       UserPoolId: userPoolId,
       Username: username,
       Password: password,
-      Permanent: true
+      Permanent: true,
     });
 
     await client.send(setPasswordCommand);
@@ -53,9 +53,9 @@ async function confirmUser(username, password = 'qwerqwer') {
       UserAttributes: [
         {
           Name: 'email_verified',
-          Value: 'true'
-        }
-      ]
+          Value: 'true',
+        },
+      ],
     });
 
     await client.send(updateAttributesCommand);
@@ -65,7 +65,7 @@ async function confirmUser(username, password = 'qwerqwer') {
     if (userResponse.UserStatus === 'UNCONFIRMED') {
       const confirmCommand = new AdminConfirmSignUpCommand({
         UserPoolId: userPoolId,
-        Username: username
+        Username: username,
       });
 
       await client.send(confirmCommand);
@@ -79,7 +79,9 @@ async function confirmUser(username, password = 'qwerqwer') {
     console.error('Error confirming user:', error.message);
 
     if (error.name === 'UserNotFoundException') {
-      console.error('\nUser not found. Check the username/email or user pool ID.');
+      console.error(
+        '\nUser not found. Check the username/email or user pool ID.'
+      );
     } else if (error.name === 'NotAuthorizedException') {
       console.error('\nUser may already be confirmed.');
     }
@@ -102,10 +104,16 @@ async function main() {
   }
 
   if (!username) {
-    console.error('Usage: node confirm-user.js <username-or-email> [--password=Password]');
+    console.error(
+      'Usage: node confirm-user.js <username-or-email> [--password=Password]'
+    );
     console.error('\nExample: node confirm-user.js test@example.com');
-    console.error('Example: node confirm-user.js 1418a4b8-f0c1-7098-1701-79f095e17e61');
-    console.error('Example: node confirm-user.js test@example.com --password=mypass123');
+    console.error(
+      'Example: node confirm-user.js 1418a4b8-f0c1-7098-1701-79f095e17e61'
+    );
+    console.error(
+      'Example: node confirm-user.js test@example.com --password=mypass123'
+    );
     process.exit(1);
   }
 

@@ -6,8 +6,14 @@
  */
 
 const { DynamoDBClient } = require('@aws-sdk/client-dynamodb');
-const { DynamoDBDocumentClient, ScanCommand } = require('@aws-sdk/lib-dynamodb');
-const { CloudFormationClient, DescribeStackResourcesCommand } = require('@aws-sdk/client-cloudformation');
+const {
+  DynamoDBDocumentClient,
+  ScanCommand,
+} = require('@aws-sdk/lib-dynamodb');
+const {
+  CloudFormationClient,
+  DescribeStackResourcesCommand,
+} = require('@aws-sdk/client-cloudformation');
 const fs = require('fs');
 const path = require('path');
 
@@ -20,7 +26,15 @@ const docClient = DynamoDBDocumentClient.from(dynamoClient);
 const cfnClient = new CloudFormationClient({ region: REGION });
 
 // Model names from your schema
-const MODEL_NAMES = ['Game', 'Fighter', 'User', 'Rivalry', 'Contest', 'TierList', 'TierSlot'];
+const MODEL_NAMES = [
+  'Game',
+  'Fighter',
+  'User',
+  'Rivalry',
+  'Contest',
+  'TierList',
+  'TierSlot',
+];
 
 // IMPORTANT: Also export the original Cognito backup for awsSub mapping
 // This is needed to map old awsSub values to new ones after Cognito migration
@@ -45,13 +59,13 @@ async function getTableNames(stackName) {
 
   try {
     const command = new DescribeStackResourcesCommand({
-      StackName: stackName
+      StackName: stackName,
     });
 
     const response = await cfnClient.send(command);
-    const tableNames = response.StackResources
-      .filter(resource => resource.ResourceType === 'AWS::DynamoDB::Table')
-      .map(resource => resource.PhysicalResourceId);
+    const tableNames = response.StackResources.filter(
+      resource => resource.ResourceType === 'AWS::DynamoDB::Table'
+    ).map(resource => resource.PhysicalResourceId);
 
     console.log(`✅ Found ${tableNames.length} DynamoDB tables`);
     return tableNames;
@@ -68,7 +82,7 @@ async function exportTable(tableName) {
   console.log(`\n📦 Exporting table: ${tableName}`);
 
   let items = [];
-  let lastEvaluatedKey = undefined;
+  let lastEvaluatedKey;
   let scanCount = 0;
 
   try {
@@ -76,7 +90,7 @@ async function exportTable(tableName) {
       scanCount++;
       const params = {
         TableName: tableName,
-        ExclusiveStartKey: lastEvaluatedKey
+        ExclusiveStartKey: lastEvaluatedKey,
       };
 
       const command = new ScanCommand(params);
@@ -85,7 +99,9 @@ async function exportTable(tableName) {
       items = items.concat(response.Items || []);
       lastEvaluatedKey = response.LastEvaluatedKey;
 
-      console.log(`  📊 Scan ${scanCount}: Retrieved ${response.Items?.length || 0} items (Total: ${items.length})`);
+      console.log(
+        `  📊 Scan ${scanCount}: Retrieved ${response.Items?.length || 0} items (Total: ${items.length})`
+      );
 
       // Add a small delay to avoid throttling
       if (lastEvaluatedKey) {
@@ -126,7 +142,7 @@ function saveToFile(modelName, data, tableName) {
     tableName,
     exportDate: new Date().toISOString(),
     itemCount: data.length,
-    items: data
+    items: data,
   };
 
   fs.writeFileSync(filepath, JSON.stringify(backupData, null, 2));
@@ -140,7 +156,7 @@ function saveToFile(modelName, data, tableName) {
  */
 async function main() {
   console.log('🚀 Starting Amplify Sandbox Data Export');
-  console.log('=' .repeat(60));
+  console.log('='.repeat(60));
 
   // Ensure backup directory exists
   if (!fs.existsSync(BACKUP_DIR)) {
@@ -170,7 +186,7 @@ async function main() {
         modelName,
         tableName,
         itemCount: items.length,
-        filepath
+        filepath,
       });
     }
 
@@ -186,20 +202,28 @@ async function main() {
     });
 
     console.log('-'.repeat(60));
-    console.log(`TOTAL: ${totalItems} items across ${exportResults.length} tables`);
+    console.log(
+      `TOTAL: ${totalItems} items across ${exportResults.length} tables`
+    );
     console.log(`\n✅ All data exported to: ${BACKUP_DIR}`);
 
     // Save summary file
     const summaryFile = path.join(BACKUP_DIR, 'export-summary.json');
-    fs.writeFileSync(summaryFile, JSON.stringify({
-      exportDate: new Date().toISOString(),
-      totalItems,
-      totalTables: exportResults.length,
-      results: exportResults
-    }, null, 2));
+    fs.writeFileSync(
+      summaryFile,
+      JSON.stringify(
+        {
+          exportDate: new Date().toISOString(),
+          totalItems,
+          totalTables: exportResults.length,
+          results: exportResults,
+        },
+        null,
+        2
+      )
+    );
 
-    console.log(`📄 Summary saved to: export-summary.json`);
-
+    console.log('📄 Summary saved to: export-summary.json');
   } catch (error) {
     console.error('\n❌ Export failed:', error);
     process.exit(1);

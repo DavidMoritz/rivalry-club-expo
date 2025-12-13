@@ -1,11 +1,15 @@
-import { render, screen, waitFor, fireEvent } from '@testing-library/react-native';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
+import {
+  fireEvent,
+  render,
+  screen,
+  waitFor,
+} from '@testing-library/react-native';
 import { useLocalSearchParams } from 'expo-router';
-import React from 'react';
-
-import HistoryRoute from '../history';
-import { GameProvider } from '../../../../src/providers/game';
+import type React from 'react';
 import { createMockAsyncGenerator } from '../../../../__tests__/test-utils';
+import { GameProvider } from '../../../../src/providers/game';
+import HistoryRoute from '../history';
 
 // Mock expo-router
 jest.mock('expo-router', () => ({
@@ -105,14 +109,16 @@ describe('HistoryRoute', () => {
 
   // Helper to create properly structured rivalry data with async generators
   const createMockRivalryWithAsyncGenerators = (rivalryData: any) => {
-    const tierListsWithGenerators = rivalryData.tierLists.map((tierList: any) => ({
-      ...tierList,
-      tierSlots: createMockAsyncGenerator(tierList.tierSlots || [])
-    }));
+    const tierListsWithGenerators = rivalryData.tierLists.map(
+      (tierList: any) => ({
+        ...tierList,
+        tierSlots: createMockAsyncGenerator(tierList.tierSlots || []),
+      })
+    );
 
     return {
       ...rivalryData,
-      tierLists: createMockAsyncGenerator(tierListsWithGenerators)
+      tierLists: createMockAsyncGenerator(tierListsWithGenerators),
     };
   };
 
@@ -138,9 +144,7 @@ describe('HistoryRoute', () => {
 
     return render(
       <QueryClientProvider client={queryClient}>
-        <GameProvider game={mockGame as any}>
-          {component}
-        </GameProvider>
+        <GameProvider game={mockGame as any}>{component}</GameProvider>
       </QueryClientProvider>
     );
   };
@@ -271,9 +275,12 @@ describe('HistoryRoute', () => {
     renderWithProviders(<HistoryRoute />);
 
     // Wait for data to load - check for the table headers
-    await waitFor(() => {
-      expect(screen.getByText('John')).toBeTruthy();
-    }, { timeout: 5000 });
+    await waitFor(
+      () => {
+        expect(screen.getByText('John')).toBeTruthy();
+      },
+      { timeout: 5000 }
+    );
 
     // Check that user names are displayed in the table header
     expect(screen.getByText('John')).toBeTruthy();
@@ -292,9 +299,12 @@ describe('HistoryRoute', () => {
 
     renderWithProviders(<HistoryRoute />);
 
-    await waitFor(() => {
-      expect(screen.getByText(/error loading data/i)).toBeTruthy();
-    }, { timeout: 5000 });
+    await waitFor(
+      () => {
+        expect(screen.getByText(/error loading data/i)).toBeTruthy();
+      },
+      { timeout: 5000 }
+    );
 
     expect(screen.getByText(/rivalry not found/i)).toBeTruthy();
   });
@@ -357,9 +367,12 @@ describe('HistoryRoute', () => {
 
     renderWithProviders(<HistoryRoute />);
 
-    await waitFor(() => {
-      expect(screen.getByText(/no contests yet/i)).toBeTruthy();
-    }, { timeout: 5000 });
+    await waitFor(
+      () => {
+        expect(screen.getByText(/no contests yet/i)).toBeTruthy();
+      },
+      { timeout: 5000 }
+    );
   });
 
   it.skip('handles pagination correctly', async () => {
@@ -465,9 +478,12 @@ describe('HistoryRoute', () => {
 
     renderWithProviders(<HistoryRoute />);
 
-    await waitFor(() => {
-      expect(screen.getByText('John')).toBeTruthy();
-    }, { timeout: 5000 });
+    await waitFor(
+      () => {
+        expect(screen.getByText('John')).toBeTruthy();
+      },
+      { timeout: 5000 }
+    );
 
     // Verify pagination was called correctly (component fetches all pages automatically)
     expect(mockContestsByRivalryIdAndCreatedAt).toHaveBeenCalledWith(
@@ -500,7 +516,13 @@ describe('HistoryRoute', () => {
             rivalryId: 'rivalry-123',
             standing: 15,
             tierSlots: [
-              { id: 'slot-1', fighterId: 'fighter-1', position: 5, contestCount: 10, winCount: 6 },
+              {
+                id: 'slot-1',
+                fighterId: 'fighter-1',
+                position: 5,
+                contestCount: 10,
+                winCount: 6,
+              },
             ],
           },
           {
@@ -509,7 +531,13 @@ describe('HistoryRoute', () => {
             rivalryId: 'rivalry-123',
             standing: 9,
             tierSlots: [
-              { id: 'slot-2', fighterId: 'fighter-2', position: 3, contestCount: 9, winCount: 3 },
+              {
+                id: 'slot-2',
+                fighterId: 'fighter-2',
+                position: 3,
+                contestCount: 9,
+                winCount: 3,
+              },
             ],
           },
         ],
@@ -553,15 +581,24 @@ describe('HistoryRoute', () => {
       const { generateClient } = require('aws-amplify/data');
       const mockClient = generateClient();
       mockClient.models.User.get
-        .mockResolvedValue({ data: { id: 'user-1', firstName: 'Alice' }, errors: null })
-        .mockResolvedValue({ data: { id: 'user-2', firstName: 'Bob' }, errors: null });
+        .mockResolvedValue({
+          data: { id: 'user-1', firstName: 'Alice' },
+          errors: null,
+        })
+        .mockResolvedValue({
+          data: { id: 'user-2', firstName: 'Bob' },
+          errors: null,
+        });
 
       renderWithProviders(<HistoryRoute />);
 
       // Wait for undo button to appear
-      await waitFor(() => {
-        expect(screen.getByText(/Undo Recent Contest/i)).toBeTruthy();
-      }, { timeout: 5000 });
+      await waitFor(
+        () => {
+          expect(screen.getByText(/Undo Recent Contest/i)).toBeTruthy();
+        },
+        { timeout: 5000 }
+      );
 
       // Verify button is enabled (there are contests with results)
       const undoButton = screen.getByText(/Undo Recent Contest/i);
@@ -585,7 +622,13 @@ describe('HistoryRoute', () => {
             rivalryId: 'rivalry-123',
             standing: 6,
             tierSlots: [
-              { id: 'slot-1', fighterId: 'fighter-1', position: 2, contestCount: 5, winCount: 3 },
+              {
+                id: 'slot-1',
+                fighterId: 'fighter-1',
+                position: 2,
+                contestCount: 5,
+                winCount: 3,
+              },
             ],
           },
           {
@@ -594,7 +637,13 @@ describe('HistoryRoute', () => {
             rivalryId: 'rivalry-123',
             standing: 3,
             tierSlots: [
-              { id: 'slot-2', fighterId: 'fighter-2', position: 8, contestCount: 5, winCount: 2 },
+              {
+                id: 'slot-2',
+                fighterId: 'fighter-2',
+                position: 8,
+                contestCount: 5,
+                winCount: 2,
+              },
             ],
           },
         ],
@@ -637,8 +686,14 @@ describe('HistoryRoute', () => {
       const { generateClient } = require('aws-amplify/data');
       const mockClient = generateClient();
       mockClient.models.User.get
-        .mockResolvedValue({ data: { id: 'user-1', firstName: 'Alice' }, errors: null })
-        .mockResolvedValue({ data: { id: 'user-2', firstName: 'Bob' }, errors: null });
+        .mockResolvedValue({
+          data: { id: 'user-1', firstName: 'Alice' },
+          errors: null,
+        })
+        .mockResolvedValue({
+          data: { id: 'user-2', firstName: 'Bob' },
+          errors: null,
+        });
 
       // Mock successful undo operation
       mockTierListUpdate.mockResolvedValue({ data: {}, errors: null });
@@ -649,17 +704,23 @@ describe('HistoryRoute', () => {
 
       renderWithProviders(<HistoryRoute />);
 
-      await waitFor(() => {
-        expect(screen.getByText(/Undo Recent Contest/i)).toBeTruthy();
-      }, { timeout: 5000 });
+      await waitFor(
+        () => {
+          expect(screen.getByText(/Undo Recent Contest/i)).toBeTruthy();
+        },
+        { timeout: 5000 }
+      );
 
       const undoButton = screen.getByText(/Undo Recent Contest/i);
       fireEvent.press(undoButton);
 
       // Button should be hidden after clicking (due to hideUndoButton state)
-      await waitFor(() => {
-        expect(screen.queryByText(/Undo Recent Contest/i)).toBeNull();
-      }, { timeout: 5000 });
+      await waitFor(
+        () => {
+          expect(screen.queryByText(/Undo Recent Contest/i)).toBeNull();
+        },
+        { timeout: 5000 }
+      );
     });
   });
 });

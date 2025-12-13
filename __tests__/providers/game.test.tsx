@@ -1,10 +1,9 @@
+import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { render } from '@testing-library/react-native';
 import React from 'react';
 import { Text } from 'react-native';
-import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
-
-import { GameProvider, useGame } from '../../src/providers/game';
 import { getMGame } from '../../src/models/m-game';
+import { GameProvider, useGame } from '../../src/providers/game';
 
 // Create a test query client
 const createTestQueryClient = () =>
@@ -38,11 +37,11 @@ describe('GameProvider', () => {
         <GameProvider game={mockGame}>
           <TestComponent />
         </GameProvider>
-      </QueryClientProvider>,
+      </QueryClientProvider>
     );
 
     expect(getByTestId('game-name').props.children).toBe(
-      'Super Smash Bros Ultimate',
+      'Super Smash Bros Ultimate'
     );
   });
 
@@ -59,7 +58,7 @@ describe('GameProvider', () => {
         <GameProvider game={null}>
           <TestComponent />
         </GameProvider>
-      </QueryClientProvider>,
+      </QueryClientProvider>
     );
 
     // Should initially show 'No game' before query runs
@@ -84,12 +83,12 @@ describe('GameProvider', () => {
         <GameProvider game={mockGame}>
           <TestComponent />
         </GameProvider>
-      </QueryClientProvider>,
+      </QueryClientProvider>
     );
 
     expect(getByTestId('game-abbr').props.children).toBe('SSBU');
     expect(getByTestId('game-title').props.children).toBe(
-      'Super Smash Bros Ultimate (unofficial)',
+      'Super Smash Bros Ultimate (unofficial)'
     );
   });
 
@@ -127,9 +126,7 @@ describe('GameProvider', () => {
       const game = useGame();
 
       return (
-        <Text testID="fighter-count">
-          {game?.fighters?.items?.length || 0}
-        </Text>
+        <Text testID="fighter-count">{game?.fighters?.items?.length || 0}</Text>
       );
     };
 
@@ -138,7 +135,7 @@ describe('GameProvider', () => {
         <GameProvider game={gameWithStats}>
           <TestComponent />
         </GameProvider>
-      </QueryClientProvider>,
+      </QueryClientProvider>
     );
 
     expect(getByTestId('fighter-count').props.children).toBe(2);

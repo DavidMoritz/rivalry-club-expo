@@ -20,7 +20,7 @@ export function getMGame(game: Game): MGame {
     get abbr() {
       return `${game.name
         .split(' ')
-        .map((word) => word.charAt(0))
+        .map(word => word.charAt(0))
         .join('')
         .toUpperCase()}`;
     },
@@ -31,6 +31,6 @@ export function getMGame(game: Game): MGame {
 
     get title() {
       return `${game.name} (unofficial)`;
-    }
+    },
   };
 }

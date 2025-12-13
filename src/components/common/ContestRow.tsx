@@ -1,14 +1,13 @@
-import { useEffect, useState, useRef } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { Animated, Text, View } from 'react-native';
-
-import { contestStyles } from '../../utils/styles';
+import type { MContest } from '../../models/m-contest';
+import type { MGame } from '../../models/m-game';
+import type { MRivalry } from '../../models/m-rivalry';
+import type { MTierSlot } from '../../models/m-tier-slot';
 import { dateDisplay, fighterByIdFromGame, scoreDisplay } from '../../utils';
-import { MContest } from '../../models/m-contest';
-import { MGame } from '../../models/m-game';
-import { MRivalry } from '../../models/m-rivalry';
-import { MTierSlot } from '../../models/m-tier-slot';
-import { CharacterDisplay } from './CharacterDisplay';
 import { colors } from '../../utils/colors';
+import { contestStyles } from '../../utils/styles';
+import { CharacterDisplay } from './CharacterDisplay';
 
 interface ContestRowProps {
   contest: MContest;
@@ -18,7 +17,13 @@ interface ContestRowProps {
   shouldFadeOut?: boolean;
 }
 
-export function ContestRow({ contest, game, rivalry, flip, shouldFadeOut }: ContestRowProps) {
+export function ContestRow({
+  contest,
+  game,
+  rivalry,
+  flip,
+  shouldFadeOut,
+}: ContestRowProps) {
   const [updatedDisplay, setUpdatedDisplay] = useState<string>('');
   const [fighterA, setFighterA] = useState<any>();
   const [fighterB, setFighterB] = useState<any>();
@@ -37,17 +42,17 @@ export function ContestRow({ contest, game, rivalry, flip, shouldFadeOut }: Cont
       Animated.timing(fadeAnim, {
         toValue: 0,
         duration: 2000,
-        useNativeDriver: true
+        useNativeDriver: true,
       }).start();
     }
   }, [shouldFadeOut, fadeAnim, contest.id]);
 
   useEffect(() => {
     const foundTierSlotA = rivalry?.tierListA?.slots.find(
-      (thisTierSlot) => thisTierSlot?.id === contest?.tierSlotAId
+      thisTierSlot => thisTierSlot?.id === contest?.tierSlotAId
     );
     const foundTierSlotB = rivalry?.tierListB?.slots.find(
-      (thisTierSlot) => thisTierSlot?.id === contest?.tierSlotBId
+      thisTierSlot => thisTierSlot?.id === contest?.tierSlotBId
     );
 
     setTierSlotA(foundTierSlotA);
@@ -67,30 +72,34 @@ export function ContestRow({ contest, game, rivalry, flip, shouldFadeOut }: Cont
       style={[
         contestStyles.row,
         {
-          opacity: fadeAnim
-        }
+          opacity: fadeAnim,
+        },
       ]}
     >
       <View style={contestStyles.item}>
         <Text style={textStyle}>{updatedDisplay}</Text>
       </View>
-      <View style={[contestStyles.item, contest.result > 0 ? winnerStyle : null]}>
+      <View
+        style={[contestStyles.item, contest.result > 0 ? winnerStyle : null]}
+      >
         <CharacterDisplay
           fighter={flip ? fighterB : fighterA}
-          tierSlot={flip ? tierSlotB : tierSlotA}
-          hideName={true}
           height={75}
+          hideName={true}
+          tierSlot={flip ? tierSlotB : tierSlotA}
         />
       </View>
       <View style={contestStyles.item}>
         <Text style={textStyle}>{scoreDisplay(contest.result)}</Text>
       </View>
-      <View style={[contestStyles.item, contest.result < 0 ? winnerStyle : null]}>
+      <View
+        style={[contestStyles.item, contest.result < 0 ? winnerStyle : null]}
+      >
         <CharacterDisplay
           fighter={flip ? fighterA : fighterB}
-          tierSlot={flip ? tierSlotA : tierSlotB}
-          hideName={true}
           height={75}
+          hideName={true}
+          tierSlot={flip ? tierSlotA : tierSlotB}
         />
       </View>
     </Animated.View>
@@ -99,9 +108,9 @@ export function ContestRow({ contest, game, rivalry, flip, shouldFadeOut }: Cont
 
 const textStyle = {
   color: colors.white,
-  fontSize: 14
+  fontSize: 14,
 };
 
 const winnerStyle = {
-  backgroundColor: colors.green900
+  backgroundColor: colors.green900,
 };

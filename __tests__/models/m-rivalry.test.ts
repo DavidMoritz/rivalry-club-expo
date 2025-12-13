@@ -246,7 +246,7 @@ describe('MRivalry Model', () => {
   describe('adjustStanding', () => {
     const createTierListWithStanding = (
       userId: string,
-      standing: number,
+      standing: number
     ): TierList => ({
       __typename: 'TierList',
       id: `tier-list-${userId}`,
@@ -273,8 +273,12 @@ describe('MRivalry Model', () => {
 
     it('should adjust standings for 2-stock win', () => {
       const mRivalry = getMRivalry({ rivalry: mockRivalry });
-      mRivalry.tierListA = getMTierList(createTierListWithStanding('user-a', 3));
-      mRivalry.tierListB = getMTierList(createTierListWithStanding('user-b', 3));
+      mRivalry.tierListA = getMTierList(
+        createTierListWithStanding('user-a', 3)
+      );
+      mRivalry.tierListB = getMTierList(
+        createTierListWithStanding('user-b', 3)
+      );
 
       const contest = getMContest({
         __typename: 'Contest',
@@ -299,8 +303,12 @@ describe('MRivalry Model', () => {
 
     it('should handle loser at top tier', () => {
       const mRivalry = getMRivalry({ rivalry: mockRivalry });
-      mRivalry.tierListA = getMTierList(createTierListWithStanding('user-a', 3));
-      mRivalry.tierListB = getMTierList(createTierListWithStanding('user-b', 0));
+      mRivalry.tierListA = getMTierList(
+        createTierListWithStanding('user-a', 3)
+      );
+      mRivalry.tierListB = getMTierList(
+        createTierListWithStanding('user-b', 0)
+      );
 
       const contest = getMContest({
         __typename: 'Contest',
@@ -326,10 +334,10 @@ describe('MRivalry Model', () => {
     it('should handle prestige adjustment', () => {
       const mRivalry = getMRivalry({ rivalry: mockRivalry });
       mRivalry.tierListA = getMTierList(
-        createTierListWithStanding('user-a', 14),
+        createTierListWithStanding('user-a', 14)
       ); // prestige 2
       mRivalry.tierListB = getMTierList(
-        createTierListWithStanding('user-b', 14),
+        createTierListWithStanding('user-b', 14)
       ); // prestige 2
 
       const contest = getMContest({
@@ -387,10 +395,10 @@ describe('MRivalry Model', () => {
             winCount: 0,
             contestCount: 0,
             createdAt: '2024-01-01',
-            updatedAt: '2024-01-01'
-          }
-        ]
-      }
+            updatedAt: '2024-01-01',
+          },
+        ],
+      },
     });
 
     describe('1-stock win reversal', () => {
@@ -399,8 +407,12 @@ describe('MRivalry Model', () => {
         const initialStandingA = 3;
         const initialStandingB = 3;
 
-        mRivalry.tierListA = getMTierList(createTierListWithStanding('user-a', initialStandingA));
-        mRivalry.tierListB = getMTierList(createTierListWithStanding('user-b', initialStandingB));
+        mRivalry.tierListA = getMTierList(
+          createTierListWithStanding('user-a', initialStandingA)
+        );
+        mRivalry.tierListB = getMTierList(
+          createTierListWithStanding('user-b', initialStandingB)
+        );
 
         const contest = getMContest({
           __typename: 'Contest',
@@ -411,7 +423,7 @@ describe('MRivalry Model', () => {
           result: 1, // A wins by 1 stock
           bias: 0,
           createdAt: '2024-01-01',
-          updatedAt: '2024-01-01'
+          updatedAt: '2024-01-01',
         } as any);
 
         contest.setRivalryAndSlots(mRivalry);
@@ -438,8 +450,12 @@ describe('MRivalry Model', () => {
         const initialStandingA = 3;
         const initialStandingB = 3;
 
-        mRivalry.tierListA = getMTierList(createTierListWithStanding('user-a', initialStandingA));
-        mRivalry.tierListB = getMTierList(createTierListWithStanding('user-b', initialStandingB));
+        mRivalry.tierListA = getMTierList(
+          createTierListWithStanding('user-a', initialStandingA)
+        );
+        mRivalry.tierListB = getMTierList(
+          createTierListWithStanding('user-b', initialStandingB)
+        );
 
         const contest = getMContest({
           __typename: 'Contest',
@@ -450,7 +466,7 @@ describe('MRivalry Model', () => {
           result: 1, // A wins by 1 stock
           bias: 0,
           createdAt: '2024-01-01',
-          updatedAt: '2024-01-01'
+          updatedAt: '2024-01-01',
         } as any);
 
         contest.setRivalryAndSlots(mRivalry);
@@ -479,8 +495,12 @@ describe('MRivalry Model', () => {
         const initialStandingA = 3;
         const initialStandingB = 3;
 
-        mRivalry.tierListA = getMTierList(createTierListWithStanding('user-a', initialStandingA));
-        mRivalry.tierListB = getMTierList(createTierListWithStanding('user-b', initialStandingB));
+        mRivalry.tierListA = getMTierList(
+          createTierListWithStanding('user-a', initialStandingA)
+        );
+        mRivalry.tierListB = getMTierList(
+          createTierListWithStanding('user-b', initialStandingB)
+        );
 
         const contest = getMContest({
           __typename: 'Contest',
@@ -491,7 +511,7 @@ describe('MRivalry Model', () => {
           result: 2, // A wins by 2 stocks
           bias: 0, // No bias for even stock count
           createdAt: '2024-01-01',
-          updatedAt: '2024-01-01'
+          updatedAt: '2024-01-01',
         } as any);
 
         contest.setRivalryAndSlots(mRivalry);
@@ -517,8 +537,12 @@ describe('MRivalry Model', () => {
         const initialStandingA = 3;
         const initialStandingB = 0; // At top tier
 
-        mRivalry.tierListA = getMTierList(createTierListWithStanding('user-a', initialStandingA));
-        mRivalry.tierListB = getMTierList(createTierListWithStanding('user-b', initialStandingB));
+        mRivalry.tierListA = getMTierList(
+          createTierListWithStanding('user-a', initialStandingA)
+        );
+        mRivalry.tierListB = getMTierList(
+          createTierListWithStanding('user-b', initialStandingB)
+        );
 
         const contest = getMContest({
           __typename: 'Contest',
@@ -529,7 +553,7 @@ describe('MRivalry Model', () => {
           result: 2, // A wins by 2 stocks
           bias: 0,
           createdAt: '2024-01-01',
-          updatedAt: '2024-01-01'
+          updatedAt: '2024-01-01',
         } as any);
 
         contest.setRivalryAndSlots(mRivalry);
@@ -557,8 +581,12 @@ describe('MRivalry Model', () => {
         const initialStandingA = 5;
         const initialStandingB = 5;
 
-        mRivalry.tierListA = getMTierList(createTierListWithStanding('user-a', initialStandingA));
-        mRivalry.tierListB = getMTierList(createTierListWithStanding('user-b', initialStandingB));
+        mRivalry.tierListA = getMTierList(
+          createTierListWithStanding('user-a', initialStandingA)
+        );
+        mRivalry.tierListB = getMTierList(
+          createTierListWithStanding('user-b', initialStandingB)
+        );
 
         const contest = getMContest({
           __typename: 'Contest',
@@ -569,7 +597,7 @@ describe('MRivalry Model', () => {
           result: 3, // A wins by 3 stocks
           bias: 1, // Loser moved up for the odd stock
           createdAt: '2024-01-01',
-          updatedAt: '2024-01-01'
+          updatedAt: '2024-01-01',
         } as any);
 
         contest.setRivalryAndSlots(mRivalry);
@@ -599,8 +627,12 @@ describe('MRivalry Model', () => {
         const initialStandingA = 2;
         const initialStandingB = 2;
 
-        mRivalry.tierListA = getMTierList(createTierListWithStanding('user-a', initialStandingA));
-        mRivalry.tierListB = getMTierList(createTierListWithStanding('user-b', initialStandingB));
+        mRivalry.tierListA = getMTierList(
+          createTierListWithStanding('user-a', initialStandingA)
+        );
+        mRivalry.tierListB = getMTierList(
+          createTierListWithStanding('user-b', initialStandingB)
+        );
 
         const contest = getMContest({
           __typename: 'Contest',
@@ -610,7 +642,7 @@ describe('MRivalry Model', () => {
           tierSlotBId: 'slot-user-b',
           result: 3, // A wins by 3 stocks
           createdAt: '2024-01-01',
-          updatedAt: '2024-01-01'
+          updatedAt: '2024-01-01',
         } as any);
 
         contest.setRivalryAndSlots(mRivalry);
@@ -647,7 +679,7 @@ describe('MRivalry Model', () => {
         result: 2,
         bias: 0,
         createdAt: '2024-01-01',
-        updatedAt: '2024-01-01'
+        updatedAt: '2024-01-01',
       } as any);
 
       mRivalry.reverseStanding(contest);

@@ -2,8 +2,8 @@ import { useMutation, useQuery } from '@tanstack/react-query';
 import { generateClient } from 'aws-amplify/data';
 import type { Schema } from '../../amplify/data/resource';
 
-import { MRivalry } from '../models/m-rivalry';
-import { getMUser, MUser } from '../models/m-user';
+import type { MRivalry } from '../models/m-rivalry';
+import { getMUser, type MUser } from '../models/m-user';
 
 // Lazy client initialization to avoid crashes when Amplify isn't configured (e.g., Expo Go)
 let client: ReturnType<typeof generateClient<Schema>> | null = null;
@@ -26,7 +26,7 @@ const USER_SELECTION_SET = [
   'awsSub',
   'createdAt',
   'updatedAt',
-  'deletedAt'
+  'deletedAt',
 ] as const;
 
 const RIVALRY_SELECTION_SET = [
@@ -40,7 +40,7 @@ const RIVALRY_SELECTION_SET = [
   'hiddenByB',
   'createdAt',
   'updatedAt',
-  'deletedAt'
+  'deletedAt',
 ] as const;
 
 // User search scoring constants
@@ -55,7 +55,7 @@ const SEARCH_SCORE = {
   CONTAINS_FIRST_NAME: 20,
   CONTAINS_LAST_NAME: 20,
   CONTAINS_EMAIL: 15,
-  CONTAINS_FULL_NAME: 10
+  CONTAINS_FULL_NAME: 10,
 } as const;
 
 interface UserDataQueryProps {
@@ -74,7 +74,7 @@ interface UserSearchQueryProps {
 /** Queries */
 
 export const useUserWithRivalriesByAwsSubQuery = ({
-  amplifyUser
+  amplifyUser,
 }: UserWithRivalriesByAwsSubProps) =>
   useQuery({
     queryKey: ['usersByAwsSub', amplifyUser?.username],
@@ -85,10 +85,10 @@ export const useUserWithRivalriesByAwsSubQuery = ({
       const { data: users, errors } = await getClient().models.User.list({
         filter: {
           awsSub: {
-            eq: amplifyUser.username
-          }
+            eq: amplifyUser.username,
+          },
         },
-        selectionSet: USER_SELECTION_SET
+        selectionSet: USER_SELECTION_SET,
       });
 
       if (errors) {
@@ -104,36 +104,36 @@ export const useUserWithRivalriesByAwsSubQuery = ({
         const { data: rivalriesA } = await getClient().models.Rivalry.list({
           filter: {
             userAId: {
-              eq: user.id
-            }
+              eq: user.id,
+            },
           },
-          selectionSet: RIVALRY_SELECTION_SET
+          selectionSet: RIVALRY_SELECTION_SET,
         });
 
         // Fetch rivalries where user is userB
         const { data: rivalriesB } = await getClient().models.Rivalry.list({
           filter: {
             userBId: {
-              eq: user.id
-            }
+              eq: user.id,
+            },
           },
-          selectionSet: RIVALRY_SELECTION_SET
+          selectionSet: RIVALRY_SELECTION_SET,
         });
 
         return {
           user,
           rivalriesA: rivalriesA || [],
-          rivalriesB: rivalriesB || []
+          rivalriesB: rivalriesB || [],
         };
       }
 
       return null;
-    }
+    },
   });
 
 export const useUserDataQuery = ({ rivalries }: UserDataQueryProps) => {
   const uniqueUserIds: string[] = [
-    ...new Set(rivalries.map(({ userAId, userBId }) => [userAId, userBId]).flat())
+    ...new Set(rivalries.flatMap(({ userAId, userBId }) => [userAId, userBId])),
   ].filter(Boolean);
 
   return useQuery({
@@ -143,11 +143,11 @@ export const useUserDataQuery = ({ rivalries }: UserDataQueryProps) => {
 
       // Fetch all users in parallel using Gen 2 client
       const client = getClient();
-      const userPromises = uniqueUserIds.map((userId) =>
+      const userPromises = uniqueUserIds.map(userId =>
         client.models.User.get(
           { id: userId },
           {
-            selectionSet: USER_SELECTION_SET
+            selectionSet: USER_SELECTION_SET,
           }
         )
       );
@@ -156,15 +156,18 @@ export const useUserDataQuery = ({ rivalries }: UserDataQueryProps) => {
 
       // Filter out errors and extract data
       const users = results
-        .filter((result) => !result.errors && result.data)
-        .map((result) => result.data);
+        .filter(result => !result.errors && result.data)
+        .map(result => result.data);
 
       return users;
-    }
+    },
   });
 };
 
-export const useUserSearchQuery = ({ searchText, currentUserId }: UserSearchQueryProps) => {
+export const useUserSearchQuery = ({
+  searchText,
+  currentUserId,
+}: UserSearchQueryProps) => {
   return useQuery({
     queryKey: ['userSearch', searchText, currentUserId],
     queryFn: async () => {
@@ -181,7 +184,7 @@ export const useUserSearchQuery = ({ searchText, currentUserId }: UserSearchQuer
 
       // Fetch all users (in production, you'd want server-side filtering)
       const { data: users, errors } = await getClient().models.User.list({
-        selectionSet: USER_SELECTION_SET
+        selectionSet: USER_SELECTION_SET,
       });
 
       if (errors) {
@@ -191,25 +194,27 @@ export const useUserSearchQuery = ({ searchText, currentUserId }: UserSearchQuer
 
       // Separate NPC users (role = 13) from other users
       const npcUsers = users.filter(
-        (user) => user.role === 13 && user.id !== currentUserId && !user.deletedAt
+        user => user.role === 13 && user.id !== currentUserId && !user.deletedAt
       );
       const regularUsers = users.filter(
-        (user) => user.role !== 13 && user.id !== currentUserId && !user.deletedAt
+        user => user.role !== 13 && user.id !== currentUserId && !user.deletedAt
       );
 
-      let finalResults: MUser[] = [];
+      const finalResults: MUser[] = [];
 
       // If NPC search, add 5 random NPCs at the top
       if (isNpcSearch && npcUsers.length > 0) {
         // Shuffle and take 5 random NPCs
         const shuffledNpcs = [...npcUsers].sort(() => Math.random() - 0.5);
-        const randomNpcs = shuffledNpcs.slice(0, 5).map((user) => getMUser({ user: user as any }));
+        const randomNpcs = shuffledNpcs
+          .slice(0, 5)
+          .map(user => getMUser({ user: user as any }));
         finalResults.push(...randomNpcs);
       }
 
       // Filter and score regular users based on search relevance
       const scoredUsers = regularUsers
-        .map((user) => {
+        .map(user => {
           const firstName = (user.firstName || '').toLowerCase();
           const lastName = (user.lastName || '').toLowerCase();
           const email = (user.email || '').toLowerCase();
@@ -218,7 +223,11 @@ export const useUserSearchQuery = ({ searchText, currentUserId }: UserSearchQuer
           let score = 0;
 
           // Exact matches get highest priority
-          if (firstName === searchLower || lastName === searchLower || email === searchLower) {
+          if (
+            firstName === searchLower ||
+            lastName === searchLower ||
+            email === searchLower
+          ) {
             score += SEARCH_SCORE.EXACT_MATCH;
           }
 
@@ -228,16 +237,23 @@ export const useUserSearchQuery = ({ searchText, currentUserId }: UserSearchQuer
           }
 
           // Starts with matches
-          if (firstName.startsWith(searchLower)) score += SEARCH_SCORE.STARTS_WITH_FIRST_NAME;
-          if (lastName.startsWith(searchLower)) score += SEARCH_SCORE.STARTS_WITH_LAST_NAME;
-          if (email.startsWith(searchLower)) score += SEARCH_SCORE.STARTS_WITH_EMAIL;
-          if (fullName.startsWith(searchLower)) score += SEARCH_SCORE.STARTS_WITH_FULL_NAME;
+          if (firstName.startsWith(searchLower))
+            score += SEARCH_SCORE.STARTS_WITH_FIRST_NAME;
+          if (lastName.startsWith(searchLower))
+            score += SEARCH_SCORE.STARTS_WITH_LAST_NAME;
+          if (email.startsWith(searchLower))
+            score += SEARCH_SCORE.STARTS_WITH_EMAIL;
+          if (fullName.startsWith(searchLower))
+            score += SEARCH_SCORE.STARTS_WITH_FULL_NAME;
 
           // Contains matches
-          if (firstName.includes(searchLower)) score += SEARCH_SCORE.CONTAINS_FIRST_NAME;
-          if (lastName.includes(searchLower)) score += SEARCH_SCORE.CONTAINS_LAST_NAME;
+          if (firstName.includes(searchLower))
+            score += SEARCH_SCORE.CONTAINS_FIRST_NAME;
+          if (lastName.includes(searchLower))
+            score += SEARCH_SCORE.CONTAINS_LAST_NAME;
           if (email.includes(searchLower)) score += SEARCH_SCORE.CONTAINS_EMAIL;
-          if (fullName.includes(searchLower)) score += SEARCH_SCORE.CONTAINS_FULL_NAME;
+          if (fullName.includes(searchLower))
+            score += SEARCH_SCORE.CONTAINS_FULL_NAME;
 
           // Word boundary matches (e.g., "john doe" matches "j d")
           const searchWords = searchLower.split(/\s+/);
@@ -261,6 +277,6 @@ export const useUserSearchQuery = ({ searchText, currentUserId }: UserSearchQuer
 
       return finalResults;
     },
-    enabled: searchText.trim().length >= 2
+    enabled: searchText.trim().length >= 2,
   });
 };

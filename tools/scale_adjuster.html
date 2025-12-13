@@ -235,7 +235,7 @@
 
     <div class="grid" id="character-grid"></div>
 
-    <script>
+    <script>'use strict';
         const IMAGE_DIR = '../assets/images/games/ssbu/professor_fandango/';
 
         // Import face center data
@@ -414,7 +414,7 @@
             zero_suit_samus: 1
         };
 
-        let characters = Object.keys(faceCenters).sort();
+        const characters = Object.keys(faceCenters).sort();
         let scaleData = {};
 
         // Load saved data from localStorage
@@ -445,7 +445,7 @@
 
         // Handle scale change
         function handleScaleChange(characterName, scale) {
-            const numericScale = parseFloat(scale);
+            const numericScale = Number.parseFloat(scale);
             const defaultScale = defaultScales[characterName];
 
             // Only store if different from default
@@ -503,7 +503,7 @@
 
             characters.forEach(char => {
                 const scale = scaleData[char] || defaultScales[char];
-                output[char] = parseFloat(scale.toFixed(3));
+                output[char] = Number.parseFloat(scale.toFixed(3));
             });
 
             const jsonString = JSON.stringify(output, null, 2);
@@ -630,7 +630,7 @@
         // Adjust scale by increment
         function adjustScale(charName, increment) {
             const slider = document.getElementById(`slider-${charName}`);
-            const newValue = Math.max(0.3, Math.min(3.0, parseFloat(slider.value) + increment));
+            const newValue = Math.max(0.3, Math.min(3.0, Number.parseFloat(slider.value) + increment));
             slider.value = newValue;
             handleScaleChange(charName, newValue);
             document.getElementById(`value-${charName}`).textContent = newValue.toFixed(2);

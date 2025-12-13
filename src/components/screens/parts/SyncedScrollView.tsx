@@ -1,5 +1,5 @@
 import React, { useContext, useEffect, useRef, useState } from 'react';
-import { Animated, ScrollView, ScrollViewProps } from 'react-native';
+import { Animated, type ScrollView, type ScrollViewProps } from 'react-native';
 
 import { SyncedScrollViewContext } from '../../../providers/scroll-view';
 
@@ -17,7 +17,7 @@ interface SyncedScrollViewProps extends Omit<ScrollViewProps, 'id'> {
 export const SyncedScrollView = (props: SyncedScrollViewProps) => {
   const { id, unlinked, ...rest } = props;
   const { activeScrollView, offsetPercent } = useContext(
-    SyncedScrollViewContext,
+    SyncedScrollViewContext
   );
 
   // Get relevant ScrollView Dimensions --------------------------------------------------
@@ -80,7 +80,7 @@ export const SyncedScrollView = (props: SyncedScrollViewProps) => {
         },
       },
     ],
-    { useNativeDriver: true },
+    { useNativeDriver: true }
   );
 
   offset.addListener(({ value }) => {
@@ -101,12 +101,12 @@ export const SyncedScrollView = (props: SyncedScrollViewProps) => {
   return (
     <Animated.ScrollView
       {...rest}
-      ref={scrollViewRef}
-      onScroll={handleScroll}
-      scrollEventThrottle={16}
-      onTouchStart={handleTouchStart}
-      onLayout={handleLayout}
       onContentSizeChange={handleContentSizeChange}
+      onLayout={handleLayout}
+      onScroll={handleScroll}
+      onTouchStart={handleTouchStart}
+      ref={scrollViewRef}
+      scrollEventThrottle={16}
     />
   );
 };

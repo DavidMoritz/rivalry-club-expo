@@ -1,5 +1,5 @@
-import { renderHook, waitFor } from '@testing-library/react-native';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
+import { renderHook, waitFor } from '@testing-library/react-native';
 import React from 'react';
 
 // Mock the aws-amplify/data module
@@ -13,7 +13,7 @@ jest.mock('aws-amplify/data', () => {
     mockContestsByRivalryIdAndCreatedAt: jest.fn(),
     mockTierListUpdate: jest.fn(),
     mockTierSlotUpdate: jest.fn(),
-    mockUserGet: jest.fn()
+    mockUserGet: jest.fn(),
   };
 
   // Store references globally for use in tests
@@ -24,24 +24,25 @@ jest.mock('aws-amplify/data', () => {
       models: {
         Rivalry: {
           get: mockFns.mockRivalryGet,
-          update: mockFns.mockRivalryUpdate
+          update: mockFns.mockRivalryUpdate,
         },
         Contest: {
           create: mockFns.mockContestCreate,
           update: mockFns.mockContestUpdate,
-          contestsByRivalryIdAndCreatedAt: mockFns.mockContestsByRivalryIdAndCreatedAt
+          contestsByRivalryIdAndCreatedAt:
+            mockFns.mockContestsByRivalryIdAndCreatedAt,
         },
         TierList: {
-          update: mockFns.mockTierListUpdate
+          update: mockFns.mockTierListUpdate,
         },
         TierSlot: {
-          update: mockFns.mockTierSlotUpdate
+          update: mockFns.mockTierSlotUpdate,
         },
         User: {
-          get: mockFns.mockUserGet
-        }
-      }
-    }))
+          get: mockFns.mockUserGet,
+        },
+      },
+    })),
   };
 });
 
@@ -49,11 +50,11 @@ import {
   useCreateContestMutation,
   useRivalryWithAllInfoQuery,
   useUpdateContestMutation,
-  useUpdateRivalryMutation
+  useUpdateRivalryMutation,
 } from '../../src/controllers/c-rivalry';
 import { getMRivalry } from '../../src/models/m-rivalry';
 import { getMTierList } from '../../src/models/m-tier-list';
-import { TestRivalry } from '../test-helpers';
+import type { TestRivalry } from '../test-helpers';
 
 describe('c-rivalry Controller', () => {
   let queryClient: QueryClient;
@@ -72,8 +73,8 @@ describe('c-rivalry Controller', () => {
     queryClient = new QueryClient({
       defaultOptions: {
         queries: { retry: false },
-        mutations: { retry: false }
-      }
+        mutations: { retry: false },
+      },
     });
 
     // Get references to the mocked functions
@@ -82,7 +83,8 @@ describe('c-rivalry Controller', () => {
     mockRivalryUpdate = globalMocks.mockRivalryUpdate;
     mockContestCreate = globalMocks.mockContestCreate;
     mockContestUpdate = globalMocks.mockContestUpdate;
-    mockContestsByRivalryIdAndCreatedAt = globalMocks.mockContestsByRivalryIdAndCreatedAt;
+    mockContestsByRivalryIdAndCreatedAt =
+      globalMocks.mockContestsByRivalryIdAndCreatedAt;
     mockTierListUpdate = globalMocks.mockTierListUpdate;
     mockTierSlotUpdate = globalMocks.mockTierSlotUpdate;
     mockUserGet = globalMocks.mockUserGet;
@@ -97,8 +99,8 @@ describe('c-rivalry Controller', () => {
         contestCount: 10,
         currentContestId: 'contest-current',
         createdAt: '2024-01-01',
-        updatedAt: '2024-01-01'
-      } as TestRivalry
+        updatedAt: '2024-01-01',
+      } as TestRivalry,
     });
 
     jest.clearAllMocks();
@@ -135,8 +137,14 @@ describe('c-rivalry Controller', () => {
               createdAt: '2024-01-01',
               updatedAt: '2024-01-01',
               tierSlots: (async function* () {
-                yield { id: 'slot-1', fighterId: 'fighter-1', position: 0, contestCount: 0, winCount: 0 };
-              })()
+                yield {
+                  id: 'slot-1',
+                  fighterId: 'fighter-1',
+                  position: 0,
+                  contestCount: 0,
+                  winCount: 0,
+                };
+              })(),
             };
             yield {
               id: 'tierlist-b',
@@ -145,18 +153,24 @@ describe('c-rivalry Controller', () => {
               createdAt: '2024-01-01',
               updatedAt: '2024-01-01',
               tierSlots: (async function* () {
-                yield { id: 'slot-2', fighterId: 'fighter-2', position: 0, contestCount: 0, winCount: 0 };
-              })()
+                yield {
+                  id: 'slot-2',
+                  fighterId: 'fighter-2',
+                  position: 0,
+                  contestCount: 0,
+                  winCount: 0,
+                };
+              })(),
             };
-          })()
+          })(),
         },
-        errors: null
+        errors: null,
       }));
 
       // Mock contest query
       mockContestsByRivalryIdAndCreatedAt.mockResolvedValue({
         data: [{ id: 'contest-1' }],
-        errors: null
+        errors: null,
       });
 
       // Mock user data
@@ -167,9 +181,9 @@ describe('c-rivalry Controller', () => {
           firstName: id,
           lastName: 'User',
           role: 0,
-          awsSub: `aws-${id}`
+          awsSub: `aws-${id}`,
         },
-        errors: null
+        errors: null,
       }));
 
       let populatedRivalry: any = null;
@@ -177,9 +191,9 @@ describe('c-rivalry Controller', () => {
         () =>
           useRivalryWithAllInfoQuery({
             rivalry: mockRivalry,
-            onSuccess: (r) => {
+            onSuccess: r => {
               populatedRivalry = r;
-            }
+            },
           }),
         { wrapper }
       );
@@ -226,8 +240,14 @@ describe('c-rivalry Controller', () => {
               createdAt: '2024-01-01',
               updatedAt: '2024-01-01',
               tierSlots: (async function* () {
-                yield { id: 'slot-a1', fighterId: 'fighter-1', position: 0, contestCount: 0, winCount: 0 };
-              })()
+                yield {
+                  id: 'slot-a1',
+                  fighterId: 'fighter-1',
+                  position: 0,
+                  contestCount: 0,
+                  winCount: 0,
+                };
+              })(),
             };
             yield {
               id: 'tierlist-beta',
@@ -236,18 +256,24 @@ describe('c-rivalry Controller', () => {
               createdAt: '2024-01-01',
               updatedAt: '2024-01-01',
               tierSlots: (async function* () {
-                yield { id: 'slot-b1', fighterId: 'fighter-2', position: 0, contestCount: 0, winCount: 0 };
-              })()
+                yield {
+                  id: 'slot-b1',
+                  fighterId: 'fighter-2',
+                  position: 0,
+                  contestCount: 0,
+                  winCount: 0,
+                };
+              })(),
             };
-          })()
+          })(),
         },
-        errors: null
+        errors: null,
       }));
 
       // Mock the Contest query
       mockContestsByRivalryIdAndCreatedAt.mockResolvedValue({
         data: [],
-        errors: null
+        errors: null,
       });
 
       // Mock User.get for both users
@@ -258,9 +284,9 @@ describe('c-rivalry Controller', () => {
           firstName: id,
           lastName: 'User',
           role: 0,
-          awsSub: `aws-${id}`
+          awsSub: `aws-${id}`,
         },
-        errors: null
+        errors: null,
       }));
 
       let populatedRivalry: any = null;
@@ -268,9 +294,9 @@ describe('c-rivalry Controller', () => {
         () =>
           useRivalryWithAllInfoQuery({
             rivalry: mockRivalry,
-            onSuccess: (r) => {
+            onSuccess: r => {
               populatedRivalry = r;
-            }
+            },
           }),
         { wrapper }
       );
@@ -291,12 +317,11 @@ describe('c-rivalry Controller', () => {
       expect(populatedRivalry.tierListB.userId).toBe('user-beta');
     });
 
-
     it('should not execute query if rivalry is not provided', () => {
       const { result } = renderHook(
         () =>
           useRivalryWithAllInfoQuery({
-            rivalry: null
+            rivalry: null,
           }),
         { wrapper }
       );
@@ -316,12 +341,12 @@ describe('c-rivalry Controller', () => {
         result: 0,
         bias: 0,
         createdAt: '2024-01-01',
-        updatedAt: '2024-01-01'
+        updatedAt: '2024-01-01',
       };
 
       mockContestCreate.mockResolvedValue({
         data: mockContest,
-        errors: null
+        errors: null,
       });
 
       // Add tier lists with slots to rivalry for sampling
@@ -342,10 +367,10 @@ describe('c-rivalry Controller', () => {
               contestCount: 0,
               winCount: 0,
               createdAt: '2024-01-01',
-              updatedAt: '2024-01-01'
-            }
-          ]
-        }
+              updatedAt: '2024-01-01',
+            },
+          ],
+        },
       } as any);
 
       mockRivalry.tierListB = getMTierList({
@@ -365,10 +390,10 @@ describe('c-rivalry Controller', () => {
               contestCount: 0,
               winCount: 0,
               createdAt: '2024-01-01',
-              updatedAt: '2024-01-01'
-            }
-          ]
-        }
+              updatedAt: '2024-01-01',
+            },
+          ],
+        },
       } as any);
 
       const onSuccess = jest.fn();
@@ -376,14 +401,16 @@ describe('c-rivalry Controller', () => {
         () =>
           useCreateContestMutation({
             rivalry: mockRivalry,
-            onSuccess
+            onSuccess,
           }),
         { wrapper }
       );
 
       result.current.mutate();
 
-      await waitFor(() => expect(result.current.isSuccess).toBe(true), { timeout: 5000 });
+      await waitFor(() => expect(result.current.isSuccess).toBe(true), {
+        timeout: 5000,
+      });
 
       expect(mockContestCreate).toHaveBeenCalled();
       expect(onSuccess).toHaveBeenCalled();
@@ -401,8 +428,8 @@ describe('c-rivalry Controller', () => {
           contestCount: 10,
           currentContestId: 'contest-123',
           createdAt: '2024-01-01',
-          updatedAt: '2024-01-01'
-        } as TestRivalry
+          updatedAt: '2024-01-01',
+        } as TestRivalry,
       });
 
       // Set up the current contest with getMContest to get the proper model
@@ -415,16 +442,16 @@ describe('c-rivalry Controller', () => {
         result: 2,
         bias: 1,
         createdAt: '2024-01-01',
-        updatedAt: '2024-01-01'
+        updatedAt: '2024-01-01',
       } as any);
 
       mockContestUpdate.mockResolvedValue({
         data: {
           id: 'contest-123',
           result: 2,
-          bias: 1
+          bias: 1,
         },
-        errors: null
+        errors: null,
       });
 
       const onSuccess = jest.fn();
@@ -432,14 +459,16 @@ describe('c-rivalry Controller', () => {
         () =>
           useUpdateContestMutation({
             rivalry: contestRivalry,
-            onSuccess
+            onSuccess,
           }),
         { wrapper }
       );
 
       result.current.mutate();
 
-      await waitFor(() => expect(result.current.isSuccess).toBe(true), { timeout: 5000 });
+      await waitFor(() => expect(result.current.isSuccess).toBe(true), {
+        timeout: 5000,
+      });
 
       expect(mockContestUpdate).toHaveBeenCalled();
       expect(onSuccess).toHaveBeenCalled();
@@ -452,14 +481,17 @@ describe('c-rivalry Controller', () => {
         data: {
           id: 'rivalry-123',
           contestCount: 10,
-          currentContestId: null
+          currentContestId: null,
         },
-        errors: null
+        errors: null,
       });
 
-      const { result } = renderHook(() => useUpdateRivalryMutation({ rivalry: mockRivalry }), {
-        wrapper
-      });
+      const { result } = renderHook(
+        () => useUpdateRivalryMutation({ rivalry: mockRivalry }),
+        {
+          wrapper,
+        }
+      );
 
       await result.current.mutateAsync();
 
@@ -468,7 +500,7 @@ describe('c-rivalry Controller', () => {
       expect(mockRivalryUpdate).toHaveBeenCalledWith(
         expect.objectContaining({
           id: 'rivalry-123',
-          contestCount: 10
+          contestCount: 10,
         })
       );
     });
@@ -478,21 +510,24 @@ describe('c-rivalry Controller', () => {
         data: {
           id: 'rivalry-123',
           contestCount: 11,
-          currentContestId: null
+          currentContestId: null,
         },
-        errors: null
+        errors: null,
       });
 
-      const { result } = renderHook(() => useUpdateRivalryMutation({ rivalry: mockRivalry }), {
-        wrapper
-      });
+      const { result } = renderHook(
+        () => useUpdateRivalryMutation({ rivalry: mockRivalry }),
+        {
+          wrapper,
+        }
+      );
 
       await result.current.mutateAsync({ contestCount: 11 });
 
       expect(mockRivalryUpdate).toHaveBeenCalledWith(
         expect.objectContaining({
           id: 'rivalry-123',
-          contestCount: 11
+          contestCount: 11,
         })
       );
     });
@@ -507,22 +542,25 @@ describe('c-rivalry Controller', () => {
           contestCount: 0,
           currentContestId: 'contest-1',
           createdAt: '2024-01-01',
-          updatedAt: '2024-01-01'
-        } as TestRivalry
+          updatedAt: '2024-01-01',
+        } as TestRivalry,
       });
 
       mockRivalryUpdate.mockResolvedValue({
         data: {
           id: 'rivalry-new',
           contestCount: 1,
-          currentContestId: 'contest-1'
+          currentContestId: 'contest-1',
         },
-        errors: null
+        errors: null,
       });
 
-      const { result } = renderHook(() => useUpdateRivalryMutation({ rivalry: newRivalry }), {
-        wrapper
-      });
+      const { result } = renderHook(
+        () => useUpdateRivalryMutation({ rivalry: newRivalry }),
+        {
+          wrapper,
+        }
+      );
 
       // Simulate the increment logic from ConnectedRivalryView
       const newContestCount = (newRivalry.contestCount || 0) + 1;
@@ -531,7 +569,7 @@ describe('c-rivalry Controller', () => {
       expect(mockRivalryUpdate).toHaveBeenCalledWith({
         id: 'rivalry-new',
         contestCount: 1,
-        currentContestId: 'contest-1'
+        currentContestId: 'contest-1',
       });
     });
 
@@ -540,14 +578,17 @@ describe('c-rivalry Controller', () => {
         data: {
           id: 'rivalry-123',
           contestCount: 11,
-          currentContestId: null
+          currentContestId: null,
         },
-        errors: null
+        errors: null,
       });
 
-      const { result } = renderHook(() => useUpdateRivalryMutation({ rivalry: mockRivalry }), {
-        wrapper
-      });
+      const { result } = renderHook(
+        () => useUpdateRivalryMutation({ rivalry: mockRivalry }),
+        {
+          wrapper,
+        }
+      );
 
       // Simulate the increment logic from ConnectedRivalryView
       const newContestCount = (mockRivalry.contestCount || 0) + 1;
@@ -556,7 +597,7 @@ describe('c-rivalry Controller', () => {
       expect(mockRivalryUpdate).toHaveBeenCalledWith(
         expect.objectContaining({
           id: 'rivalry-123',
-          contestCount: 11
+          contestCount: 11,
         })
       );
     });
@@ -571,23 +612,23 @@ describe('c-rivalry Controller', () => {
           contestCount: null as any,
           currentContestId: 'contest-1',
           createdAt: '2024-01-01',
-          updatedAt: '2024-01-01'
-        } as TestRivalry
+          updatedAt: '2024-01-01',
+        } as TestRivalry,
       });
 
       mockRivalryUpdate.mockResolvedValue({
         data: {
           id: 'rivalry-null',
           contestCount: 1,
-          currentContestId: 'contest-1'
+          currentContestId: 'contest-1',
         },
-        errors: null
+        errors: null,
       });
 
       const { result } = renderHook(
         () => useUpdateRivalryMutation({ rivalry: nullCountRivalry }),
         {
-          wrapper
+          wrapper,
         }
       );
 
@@ -598,7 +639,7 @@ describe('c-rivalry Controller', () => {
       expect(mockRivalryUpdate).toHaveBeenCalledWith({
         id: 'rivalry-null',
         contestCount: 1,
-        currentContestId: 'contest-1'
+        currentContestId: 'contest-1',
       });
     });
 
@@ -607,21 +648,24 @@ describe('c-rivalry Controller', () => {
         data: {
           id: 'rivalry-123',
           contestCount: 10,
-          currentContestId: 'contest-new'
+          currentContestId: 'contest-new',
         },
-        errors: null
+        errors: null,
       });
 
-      const { result } = renderHook(() => useUpdateRivalryMutation({ rivalry: mockRivalry }), {
-        wrapper
-      });
+      const { result } = renderHook(
+        () => useUpdateRivalryMutation({ rivalry: mockRivalry }),
+        {
+          wrapper,
+        }
+      );
 
       await result.current.mutateAsync({ currentContestId: 'contest-new' });
 
       expect(mockRivalryUpdate).toHaveBeenCalledWith({
         id: 'rivalry-123',
         contestCount: 10,
-        currentContestId: 'contest-new'
+        currentContestId: 'contest-new',
       });
     });
   });

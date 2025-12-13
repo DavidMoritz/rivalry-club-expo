@@ -25,7 +25,7 @@ global.__ExpoImportMetaRegistry = {
 };
 
 // Polyfill structuredClone for tests
-global.structuredClone = (obj) => JSON.parse(JSON.stringify(obj));
+global.structuredClone = obj => JSON.parse(JSON.stringify(obj));
 
 // Mock SafeAreaView
 jest.mock('react-native-safe-area-context', () => ({

@@ -500,7 +500,7 @@
       </footer>
     </div>
 
-    <script>
+    <script>'use strict';
       function showModal(event) {
         event.preventDefault();
         document.getElementById('modal').classList.add('active');
@@ -510,7 +510,7 @@
         document.getElementById('modal').classList.remove('active');
       }
 
-      document.addEventListener('keydown', function(event) {
+      document.addEventListener('keydown', (event) => {
         if (event.key === 'Escape') {
           hideModal();
         }

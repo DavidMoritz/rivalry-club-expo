@@ -1,21 +1,27 @@
+import { useQuery } from '@tanstack/react-query';
+import { generateClient } from 'aws-amplify/data';
 import { Stack, useLocalSearchParams, useRouter } from 'expo-router';
 import { StatusBar } from 'expo-status-bar';
 import React, { useEffect, useState } from 'react';
-import { ActivityIndicator, SafeAreaView, Text, TouchableOpacity, View } from 'react-native';
-import { useQuery } from '@tanstack/react-query';
-import { generateClient } from 'aws-amplify/data';
+import {
+  ActivityIndicator,
+  SafeAreaView,
+  Text,
+  TouchableOpacity,
+  View,
+} from 'react-native';
 import type { Schema } from '../../../amplify/data/resource';
 
 import { HamburgerMenu } from '../../../src/components/common/HamburgerMenu';
 import { TierListEditDisplay } from '../../../src/components/screens/parts/TierListEditDisplay';
 import { useUpdateTierSlotsMutation } from '../../../src/controllers/c-rivalry';
-import { getMRivalry, MRivalry } from '../../../src/models/m-rivalry';
-import { MTierList } from '../../../src/models/m-tier-list';
+import { getStoredUuid } from '../../../src/lib/user-identity';
+import { getMRivalry, type MRivalry } from '../../../src/models/m-rivalry';
+import type { MTierList } from '../../../src/models/m-tier-list';
 import { getMUser } from '../../../src/models/m-user';
 import { RivalryProvider } from '../../../src/providers/rivalry';
 import { colors } from '../../../src/utils/colors';
 import { darkStyles, styles } from '../../../src/utils/styles';
-import { getStoredUuid } from '../../../src/lib/user-identity';
 
 // Lazy client initialization to avoid crashes when Amplify isn't configured
 let client: ReturnType<typeof generateClient<Schema>> | null = null;
@@ -65,24 +71,25 @@ export default function TierListEditRoute() {
     queryKey: ['rivalryTierEdit', rivalryId],
     structuralSharing: false,
     queryFn: async () => {
-      const { data: rivalryData, errors } = await getClient().models.Rivalry.get(
-        { id: rivalryId },
-        {
-          selectionSet: [
-            'id',
-            'userAId',
-            'userBId',
-            'gameId',
-            'contestCount',
-            'currentContestId',
-            'createdAt',
-            'updatedAt',
-            'deletedAt',
-            'tierLists.*',
-            'tierLists.tierSlots.*'
-          ]
-        }
-      );
+      const { data: rivalryData, errors } =
+        await getClient().models.Rivalry.get(
+          { id: rivalryId },
+          {
+            selectionSet: [
+              'id',
+              'userAId',
+              'userBId',
+              'gameId',
+              'contestCount',
+              'currentContestId',
+              'createdAt',
+              'updatedAt',
+              'deletedAt',
+              'tierLists.*',
+              'tierLists.tierSlots.*',
+            ],
+          }
+        );
 
       if (errors) {
         console.error('[TierListEditRoute] GraphQL errors:', errors);
@@ -102,7 +109,10 @@ export default function TierListEditRoute() {
               tierSlotsArray.push(tierSlot);
             }
           }
-          tierListsArray.push({ ...tierListData, tierSlots: { items: tierSlotsArray } });
+          tierListsArray.push({
+            ...tierListData,
+            tierSlots: { items: tierSlotsArray },
+          });
         }
       }
       const tierLists = { items: tierListsArray };
@@ -113,7 +123,7 @@ export default function TierListEditRoute() {
       // Load user data
       const [userAResult, userBResult] = await Promise.all([
         getClient().models.User.get({ id: rivalryData.userAId }),
-        getClient().models.User.get({ id: rivalryData.userBId })
+        getClient().models.User.get({ id: rivalryData.userBId }),
       ]);
 
       if (userAResult.data) {
@@ -126,7 +136,7 @@ export default function TierListEditRoute() {
       setRivalry(mRivalry);
 
       return mRivalry;
-    }
+    },
   });
 
   // Determine which tier list belongs to the current user
@@ -163,7 +173,7 @@ export default function TierListEditRoute() {
 
       // Navigate back
       router.back();
-    }
+    },
   });
 
   const handleSave = () => {
@@ -185,75 +195,85 @@ export default function TierListEditRoute() {
         userId={userId}
       >
         <SafeAreaView style={[styles.container, darkStyles.container]}>
-            {isLoading && (
-              <View style={centeredContainerStyle}>
-                <ActivityIndicator size="large" color={colors.white} />
-                <Text style={loadingTextStyle}>Loading Tier List...</Text>
+          {isLoading && (
+            <View style={centeredContainerStyle}>
+              <ActivityIndicator color={colors.white} size="large" />
+              <Text style={loadingTextStyle}>Loading Tier List...</Text>
+            </View>
+          )}
+
+          {isError && (
+            <View style={errorContainerStyle}>
+              <Text style={errorTitleStyle}>Error</Text>
+              <Text
+                style={[styles.text, darkStyles.text]}
+              >{`Error loading tier list: ${error?.message}`}</Text>
+            </View>
+          )}
+
+          {!(isLoading || isError) && rivalry && userTierList && (
+            <View style={editContainerStyle}>
+              <Text style={editTitleStyle}>Edit Your Tier List</Text>
+
+              <View style={editDisplayContainerStyle}>
+                <TierListEditDisplay
+                  onChange={handleTierListChange}
+                  tierList={userTierList}
+                />
               </View>
-            )}
 
-            {isError && (
-              <View style={errorContainerStyle}>
-                <Text style={errorTitleStyle}>Error</Text>
-                <Text
-                  style={[styles.text, darkStyles.text]}
-                >{`Error loading tier list: ${error?.message}`}</Text>
-              </View>
-            )}
-
-            {!isLoading && !isError && rivalry && userTierList && (
-              <View style={editContainerStyle}>
-                <Text style={editTitleStyle}>Edit Your Tier List</Text>
-
-                <View style={editDisplayContainerStyle}>
-                  <TierListEditDisplay tierList={userTierList} onChange={handleTierListChange} />
-                </View>
-
-                <TouchableOpacity
-                  onPress={handleSave}
-                  disabled={!hasChanges || isPending}
-                  style={[
-                    saveButtonBaseStyle,
-                    {
-                      backgroundColor: hasChanges && !isPending ? colors.blue500 : colors.slate500
-                    }
-                  ]}
-                >
-                  {isPending ? (
-                    <ActivityIndicator color={colors.white} />
-                  ) : (
-                    <Text style={saveButtonTextStyle}>{hasChanges ? 'Save List' : 'No Changes'}</Text>
-                  )}
-                </TouchableOpacity>
-              </View>
-            )}
-
-            {!isLoading && !isError && !rivalry && (
-              <View style={centeredContainerStyle}>
-                <Text style={messageTextStyle}>Could not load rivalry</Text>
-              </View>
-            )}
-
-            {!isLoading && !isError && rivalry && !userTierList && (
-              <View style={errorContainerStyle}>
-                <Text style={warningTitleStyle}>Could not load tier list</Text>
-                <Text style={warningBodyStyle}>
-                  {!userId
-                    ? 'User ID is missing from navigation params'
-                    : `Your user ID (${userId}) doesn't match either tier list`}
-                </Text>
-                {userId && rivalry.tierListA && rivalry.tierListB && (
-                  <Text style={debugInfoStyle}>
-                    TierList A: {rivalry.tierListA.userId}
-                    {'\n'}
-                    TierList B: {rivalry.tierListB.userId}
+              <TouchableOpacity
+                disabled={!hasChanges || isPending}
+                onPress={handleSave}
+                style={[
+                  saveButtonBaseStyle,
+                  {
+                    backgroundColor:
+                      hasChanges && !isPending
+                        ? colors.blue500
+                        : colors.slate500,
+                  },
+                ]}
+              >
+                {isPending ? (
+                  <ActivityIndicator color={colors.white} />
+                ) : (
+                  <Text style={saveButtonTextStyle}>
+                    {hasChanges ? 'Save List' : 'No Changes'}
                   </Text>
                 )}
-                <TouchableOpacity onPress={() => router.back()} style={goBackButtonStyle}>
-                  <Text style={goBackButtonTextStyle}>Go Back</Text>
-                </TouchableOpacity>
-              </View>
-            )}
+              </TouchableOpacity>
+            </View>
+          )}
+
+          {!(isLoading || isError || rivalry) && (
+            <View style={centeredContainerStyle}>
+              <Text style={messageTextStyle}>Could not load rivalry</Text>
+            </View>
+          )}
+
+          {!(isLoading || isError) && rivalry && !userTierList && (
+            <View style={errorContainerStyle}>
+              <Text style={warningTitleStyle}>Could not load tier list</Text>
+              <Text style={warningBodyStyle}>
+                {userId
+                  ? `Your user ID (${userId}) doesn't match either tier list`
+                  : 'User ID is missing from navigation params'}
+              </Text>
+              {userId && rivalry.tierListA && rivalry.tierListB && (
+                <Text style={debugInfoStyle}>
+                  TierList A: {rivalry.tierListA.userId}
+                  \n TierList B: {rivalry.tierListB.userId}
+                </Text>
+              )}
+              <TouchableOpacity
+                onPress={() => router.back()}
+                style={goBackButtonStyle}
+              >
+                <Text style={goBackButtonTextStyle}>Go Back</Text>
+              </TouchableOpacity>
+            </View>
+          )}
         </SafeAreaView>
       </RivalryProvider>
       <StatusBar style="light" />
@@ -267,21 +287,21 @@ const bold = 'bold' as const;
 const centeredContainerStyle = {
   flex: 1,
   alignItems: center,
-  justifyContent: center
+  justifyContent: center,
 };
 
 const loadingTextStyle = {
   ...styles.text,
   ...darkStyles.text,
   fontSize: 18,
-  marginTop: 16
+  marginTop: 16,
 };
 
 const errorContainerStyle = {
   flex: 1,
   alignItems: center,
   justifyContent: center,
-  paddingHorizontal: 16
+  paddingHorizontal: 16,
 };
 
 const errorTitleStyle = {
@@ -290,42 +310,42 @@ const errorTitleStyle = {
   fontSize: 18,
   fontWeight: bold,
   color: colors.red600,
-  marginBottom: 16
+  marginBottom: 16,
 };
 
 const editContainerStyle = {
   flex: 1,
-  padding: 16
+  padding: 16,
 };
 
 const editTitleStyle = {
   ...darkStyles.text,
   fontSize: 24,
   fontWeight: bold,
-  marginBottom: 16
+  marginBottom: 16,
 };
 
 const editDisplayContainerStyle = {
-  flex: 1
+  flex: 1,
 };
 
 const saveButtonBaseStyle = {
   padding: 16,
   borderRadius: 8,
   alignItems: center,
-  marginTop: 16
+  marginTop: 16,
 };
 
 const saveButtonTextStyle = {
   color: colors.white,
   fontSize: 18,
-  fontWeight: bold
+  fontWeight: bold,
 };
 
 const messageTextStyle = {
   ...styles.text,
   ...darkStyles.text,
-  fontSize: 18
+  fontSize: 18,
 };
 
 const warningTitleStyle = {
@@ -334,14 +354,14 @@ const warningTitleStyle = {
   fontSize: 18,
   fontWeight: bold,
   color: colors.amber400,
-  marginBottom: 16
+  marginBottom: 16,
 };
 
 const warningBodyStyle = {
   ...styles.text,
   ...darkStyles.text,
   textAlign: center,
-  marginBottom: 8
+  marginBottom: 8,
 };
 
 const debugInfoStyle = {
@@ -350,17 +370,17 @@ const debugInfoStyle = {
   fontSize: 12,
   color: colors.gray300,
   textAlign: center,
-  marginTop: 16
+  marginTop: 16,
 };
 
 const goBackButtonStyle = {
   backgroundColor: colors.blue500,
   padding: 12,
   borderRadius: 8,
-  marginTop: 24
+  marginTop: 24,
 };
 
 const goBackButtonTextStyle = {
   color: colors.white,
-  fontSize: 16
+  fontSize: 16,
 };

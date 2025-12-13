@@ -5,8 +5,14 @@
  */
 
 const { DynamoDBClient } = require('@aws-sdk/client-dynamodb');
-const { DynamoDBDocumentClient, ScanCommand } = require('@aws-sdk/lib-dynamodb');
-const { CognitoIdentityProviderClient, ListUsersCommand } = require('@aws-sdk/client-cognito-identity-provider');
+const {
+  DynamoDBDocumentClient,
+  ScanCommand,
+} = require('@aws-sdk/lib-dynamodb');
+const {
+  CognitoIdentityProviderClient,
+  ListUsersCommand,
+} = require('@aws-sdk/client-cognito-identity-provider');
 const fs = require('fs');
 const path = require('path');
 
@@ -21,20 +27,19 @@ const cognitoClient = new CognitoIdentityProviderClient({ region: REGION });
 async function verifyTable(modelName, tableName, expectedCount) {
   try {
     let totalCount = 0;
-    let lastEvaluatedKey = undefined;
+    let lastEvaluatedKey;
 
     // Paginate through all results
     do {
       const command = new ScanCommand({
         TableName: tableName,
         Select: 'COUNT',
-        ExclusiveStartKey: lastEvaluatedKey
+        ExclusiveStartKey: lastEvaluatedKey,
       });
 
       const response = await docClient.send(command);
       totalCount += response.Count || 0;
       lastEvaluatedKey = response.LastEvaluatedKey;
-
     } while (lastEvaluatedKey);
 
     const actualCount = totalCount;
@@ -42,11 +47,11 @@ async function verifyTable(modelName, tableName, expectedCount) {
     if (actualCount === expectedCount) {
       console.log(`✅ ${modelName}: ${actualCount} items (matches backup)`);
       return true;
-    } else {
-      console.log(`❌ ${modelName}: ${actualCount} items (expected ${expectedCount})`);
-      return false;
     }
-
+    console.log(
+      `❌ ${modelName}: ${actualCount} items (expected ${expectedCount})`
+    );
+    return false;
   } catch (error) {
     console.error(`❌ ${modelName}: Error - ${error.message}`);
     return false;
@@ -57,7 +62,9 @@ async function verifyAwsSubMapping() {
   console.log('\n🔍 Verifying awsSub Mapping...');
 
   if (PRODUCTION_USER_POOL_ID === 'REPLACE_WITH_PRODUCTION_POOL_ID') {
-    console.log('⚠️  Skipping awsSub verification (PRODUCTION_USER_POOL_ID not set)');
+    console.log(
+      '⚠️  Skipping awsSub verification (PRODUCTION_USER_POOL_ID not set)'
+    );
     return;
   }
 
@@ -85,7 +92,7 @@ async function verifyAwsSubMapping() {
     // Get a sample user from DynamoDB
     const scanCommand = new ScanCommand({
       TableName: userTableName,
-      Limit: 1
+      Limit: 1,
     });
     const scanResponse = await docClient.send(scanCommand);
 
@@ -104,29 +111,34 @@ async function verifyAwsSubMapping() {
     // Get the same user from Cognito
     const cognitoCommand = new ListUsersCommand({
       UserPoolId: PRODUCTION_USER_POOL_ID,
-      Filter: `email = "${userEmail}"`
+      Filter: `email = "${userEmail}"`,
     });
     const cognitoResponse = await cognitoClient.send(cognitoCommand);
 
     if (!cognitoResponse.Users || cognitoResponse.Users.length === 0) {
-      console.log(`  ❌ User not found in Cognito`);
+      console.log('  ❌ User not found in Cognito');
       return;
     }
 
     const cognitoUser = cognitoResponse.Users[0];
-    const cognitoSub = cognitoUser.Attributes?.find(a => a.Name === 'sub')?.Value;
+    const cognitoSub = cognitoUser.Attributes?.find(
+      a => a.Name === 'sub'
+    )?.Value;
 
     console.log(`  Cognito sub: ${cognitoSub?.substring(0, 12)}...`);
 
     if (dbAwsSub === cognitoSub) {
-      console.log(`  ✅ awsSub values MATCH - Authentication will work!`);
+      console.log('  ✅ awsSub values MATCH - Authentication will work!');
     } else {
-      console.log(`  ❌ awsSub values DO NOT MATCH - Authentication will FAIL!`);
-      console.log(`  Action required: Re-run create-awssub-mapping.js and import User table again`);
+      console.log(
+        '  ❌ awsSub values DO NOT MATCH - Authentication will FAIL!'
+      );
+      console.log(
+        '  Action required: Re-run create-awssub-mapping.js and import User table again'
+      );
     }
-
   } catch (error) {
-    console.error(`  ❌ Error verifying awsSub:`, error.message);
+    console.error('  ❌ Error verifying awsSub:', error.message);
   }
 }
 
@@ -156,7 +168,11 @@ async function main() {
     const tableName = tableMappings[result.modelName];
     if (!tableName) continue;
 
-    const passed = await verifyTable(result.modelName, tableName, result.itemCount);
+    const passed = await verifyTable(
+      result.modelName,
+      tableName,
+      result.itemCount
+    );
     if (!passed) allPassed = false;
   }
 
@@ -167,7 +183,9 @@ async function main() {
   if (allPassed) {
     console.log('✅ ALL TABLE COUNTS PASSED');
     console.log('\n📌 Next steps:');
-    console.log('   1. Test application authentication (sign in with test user)');
+    console.log(
+      '   1. Test application authentication (sign in with test user)'
+    );
     console.log('   2. Verify data loads correctly in the app');
     console.log('   3. Update amplify_outputs.json to use production');
   } else {

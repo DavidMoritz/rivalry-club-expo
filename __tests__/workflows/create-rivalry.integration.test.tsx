@@ -1,5 +1,10 @@
-import { fireEvent, render, screen, waitFor } from '@testing-library/react-native';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
+import {
+  fireEvent,
+  render,
+  screen,
+  waitFor,
+} from '@testing-library/react-native';
 import React from 'react';
 
 import { CreateRivalry } from '../../src/components/screens/CreateRivalry';
@@ -9,20 +14,25 @@ import * as cUser from '../../src/controllers/c-user';
 // Mock dependencies
 jest.mock('expo-router', () => ({
   useRouter: jest.fn(),
-  useLocalSearchParams: jest.fn()
+  useLocalSearchParams: jest.fn(),
 }));
 jest.mock('../../src/hooks/useAuthUser');
 jest.mock('../../src/providers/game');
 jest.mock('../../src/providers/all-rivalries', () => ({
   useAllRivalries: jest.fn(() => ({ rivalries: [] })),
-  useAllRivalriesUpdate: jest.fn(() => ({ addRivalry: jest.fn(), updateRivalry: jest.fn() }))
+  useAllRivalriesUpdate: jest.fn(() => ({
+    addRivalry: jest.fn(),
+    updateRivalry: jest.fn(),
+  })),
 }));
 jest.mock('../../src/controllers/c-user');
 jest.mock('../../src/controllers/c-rivalry');
 
 const mockUseRouter = require('expo-router').useRouter as jest.Mock;
-const mockUseLocalSearchParams = require('expo-router').useLocalSearchParams as jest.Mock;
-const mockUseAuthUser = require('../../src/hooks/useAuthUser').useAuthUser as jest.Mock;
+const mockUseLocalSearchParams = require('expo-router')
+  .useLocalSearchParams as jest.Mock;
+const mockUseAuthUser = require('../../src/hooks/useAuthUser')
+  .useAuthUser as jest.Mock;
 const mockUseGame = require('../../src/providers/game').useGame as jest.Mock;
 
 describe('Create Rivalry Integration Test', () => {
@@ -41,16 +51,16 @@ describe('Create Rivalry Integration Test', () => {
       updatedAt: new Date().toISOString(),
       deletedAt: null,
       fullName: 'Jane Smith',
-      displayName: jest.fn().mockReturnValue('Jane')
-    }
+      displayName: jest.fn().mockReturnValue('Jane'),
+    },
   ];
 
   beforeEach(() => {
     queryClient = new QueryClient({
       defaultOptions: {
         queries: { retry: false },
-        mutations: { retry: false }
-      }
+        mutations: { retry: false },
+      },
     });
 
     mockRouter = { back: jest.fn(), push: jest.fn() };
@@ -62,22 +72,27 @@ describe('Create Rivalry Integration Test', () => {
         id: 'user-1',
         email: 'john@example.com',
         firstName: 'John',
-        lastName: 'Doe'
+        lastName: 'Doe',
       },
       isLoading: false,
-      error: null
+      error: null,
     });
 
     mockUseGame.mockReturnValue({
       id: 'game-1',
-      name: 'Super Smash Bros. Ultimate'
+      name: 'Super Smash Bros. Ultimate',
     });
 
     // Mock user search to respond to searchText - return users when searchText includes 'jane'
-    (cUser.useUserSearchQuery as jest.Mock).mockImplementation(({ searchText }) => ({
-      data: searchText && searchText.toLowerCase().includes('jane') ? mockUsers : [],
-      isLoading: false
-    }));
+    (cUser.useUserSearchQuery as jest.Mock).mockImplementation(
+      ({ searchText }) => ({
+        data:
+          searchText && searchText.toLowerCase().includes('jane')
+            ? mockUsers
+            : [],
+        isLoading: false,
+      })
+    );
 
     // Mock rivalry creation mutation
     mockCreateRivalryMutate = jest.fn();
@@ -85,7 +100,7 @@ describe('Create Rivalry Integration Test', () => {
       mutate: mockCreateRivalryMutate,
       isLoading: false,
       isSuccess: false,
-      error: null
+      error: null,
     });
 
     // Mock accept rivalry mutation
@@ -93,7 +108,7 @@ describe('Create Rivalry Integration Test', () => {
       mutate: jest.fn(),
       isLoading: false,
       isSuccess: false,
-      error: null
+      error: null,
     });
 
     // Mock NPC rivalry mutation
@@ -101,7 +116,7 @@ describe('Create Rivalry Integration Test', () => {
       mutate: jest.fn(),
       isLoading: false,
       isSuccess: false,
-      error: null
+      error: null,
     });
   });
 
@@ -128,17 +143,22 @@ describe('Create Rivalry Integration Test', () => {
     );
 
     // Wait for user to appear in results
-    const userItem = await screen.findByText('Jane Smith', {}, { timeout: 3000 });
-    
+    const userItem = await screen.findByText(
+      'Jane Smith',
+      {},
+      { timeout: 3000 }
+    );
+
     // Select user from results
     fireEvent.press(userItem);
 
     // Wait for and click the "Initiate Rivalry" button
     const createButton = await screen.findByText('Initiate Rivalry');
-    
+
     // Setup mutation to call onSuccess callback
-    mockCreateRivalryMutate.mockImplementation((params) => {
-      const { onSuccess } = (cRivalry.useCreateRivalryMutation as jest.Mock).mock.calls[0][0] || {};
+    mockCreateRivalryMutate.mockImplementation(params => {
+      const { onSuccess } =
+        (cRivalry.useCreateRivalryMutation as jest.Mock).mock.calls[0][0] || {};
       if (onSuccess) {
         onSuccess({ id: 'rivalry-1', ...params });
       }
@@ -151,7 +171,7 @@ describe('Create Rivalry Integration Test', () => {
       expect(mockCreateRivalryMutate).toHaveBeenCalledWith({
         userAId: 'user-1',
         userBId: 'user-2',
-        gameId: 'game-1'
+        gameId: 'game-1',
       });
     });
 
@@ -165,14 +185,16 @@ describe('Create Rivalry Integration Test', () => {
     // Setup mutation to call onError callback
     (cRivalry.useCreateRivalryMutation as jest.Mock).mockReturnValue({
       mutate: (params: any) => {
-        const { onError } = (cRivalry.useCreateRivalryMutation as jest.Mock).mock.calls[0][0] || {};
+        const { onError } =
+          (cRivalry.useCreateRivalryMutation as jest.Mock).mock.calls[0][0] ||
+          {};
         if (onError) {
           onError(new Error('Failed to create rivalry'));
         }
       },
       isLoading: false,
       isSuccess: false,
-      error: null
+      error: null,
     });
 
     const { getByPlaceholderText } = render(
@@ -194,9 +216,11 @@ describe('Create Rivalry Integration Test', () => {
     fireEvent.press(createButton);
 
     // Verify error message is displayed
-    const errorMessage = await screen.findByText(/Error:.*Failed to create rivalry/);
+    const errorMessage = await screen.findByText(
+      /Error:.*Failed to create rivalry/
+    );
     expect(errorMessage).toBeTruthy();
-    
+
     // Router back should NOT be called on error
     expect(mockRouter.back).not.toHaveBeenCalled();
   });

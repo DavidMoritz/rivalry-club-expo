@@ -1,6 +1,6 @@
-import { renderHook } from '@testing-library/react-native';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
-import React from 'react';
+import { renderHook } from '@testing-library/react-native';
+import type React from 'react';
 
 import * as cUser from '../../src/controllers/c-user';
 
@@ -10,7 +10,7 @@ jest.mock('../../src/controllers/c-user', () => {
 
   return {
     ...actual,
-    useUserSearchQuery: jest.fn()
+    useUserSearchQuery: jest.fn(),
   };
 });
 
@@ -22,8 +22,8 @@ describe('useUserSearchQuery', () => {
     queryClient = new QueryClient({
       defaultOptions: {
         queries: { retry: false },
-        mutations: { retry: false }
-      }
+        mutations: { retry: false },
+      },
     });
 
     wrapper = ({ children }) => (
@@ -37,14 +37,14 @@ describe('useUserSearchQuery', () => {
     (cUser.useUserSearchQuery as jest.Mock).mockReturnValue({
       data: [],
       isLoading: false,
-      error: null
+      error: null,
     });
 
     const { result } = renderHook(
       () =>
         useUserSearchQuery({
           searchText: 'a',
-          currentUserId: 'user-1'
+          currentUserId: 'user-1',
         }),
       { wrapper }
     );
@@ -65,21 +65,21 @@ describe('useUserSearchQuery', () => {
         updatedAt: new Date().toISOString(),
         deletedAt: null,
         fullName: 'John Doe',
-        displayName: jest.fn().mockReturnValue('John')
-      }
+        displayName: jest.fn().mockReturnValue('John'),
+      },
     ];
 
     (cUser.useUserSearchQuery as jest.Mock).mockReturnValue({
       data: mockUsers,
       isLoading: false,
-      error: null
+      error: null,
     });
 
     const { result } = renderHook(
       () =>
         useUserSearchQuery({
           searchText: 'john',
-          currentUserId: 'user-3'
+          currentUserId: 'user-3',
         }),
       { wrapper }
     );
@@ -102,21 +102,21 @@ describe('useUserSearchQuery', () => {
         updatedAt: new Date().toISOString(),
         deletedAt: null,
         fullName: 'Jane Smith',
-        displayName: jest.fn().mockReturnValue('Jane')
-      }
+        displayName: jest.fn().mockReturnValue('Jane'),
+      },
     ];
 
     (cUser.useUserSearchQuery as jest.Mock).mockReturnValue({
       data: mockUsers,
       isLoading: false,
-      error: null
+      error: null,
     });
 
     const { result } = renderHook(
       () =>
         useUserSearchQuery({
           searchText: 'smith',
-          currentUserId: 'user-3'
+          currentUserId: 'user-3',
         }),
       { wrapper }
     );
@@ -139,21 +139,21 @@ describe('useUserSearchQuery', () => {
         updatedAt: new Date().toISOString(),
         deletedAt: null,
         fullName: 'John Doe',
-        displayName: jest.fn().mockReturnValue('John')
-      }
+        displayName: jest.fn().mockReturnValue('John'),
+      },
     ];
 
     (cUser.useUserSearchQuery as jest.Mock).mockReturnValue({
       data: mockUsers,
       isLoading: false,
-      error: null
+      error: null,
     });
 
     const { result } = renderHook(
       () =>
         useUserSearchQuery({
           searchText: 'john@example',
-          currentUserId: 'user-3'
+          currentUserId: 'user-3',
         }),
       { wrapper }
     );
@@ -176,7 +176,7 @@ describe('useUserSearchQuery', () => {
         updatedAt: new Date().toISOString(),
         deletedAt: null,
         fullName: 'John Doe',
-        displayName: jest.fn().mockReturnValue('John')
+        displayName: jest.fn().mockReturnValue('John'),
       },
       {
         id: 'user-2',
@@ -189,21 +189,21 @@ describe('useUserSearchQuery', () => {
         updatedAt: new Date().toISOString(),
         deletedAt: null,
         fullName: 'Johnny Smith',
-        displayName: jest.fn().mockReturnValue('Johnny')
-      }
+        displayName: jest.fn().mockReturnValue('Johnny'),
+      },
     ];
 
     (cUser.useUserSearchQuery as jest.Mock).mockReturnValue({
       data: mockUsers,
       isLoading: false,
-      error: null
+      error: null,
     });
 
     const { result } = renderHook(
       () =>
         useUserSearchQuery({
           searchText: 'john',
-          currentUserId: 'user-3'
+          currentUserId: 'user-3',
         }),
       { wrapper }
     );
@@ -218,14 +218,14 @@ describe('useUserSearchQuery', () => {
     (cUser.useUserSearchQuery as jest.Mock).mockReturnValue({
       data: [],
       isLoading: false,
-      error: null
+      error: null,
     });
 
     const { result } = renderHook(
       () =>
         useUserSearchQuery({
           searchText: 'jo',
-          currentUserId: 'user-1'
+          currentUserId: 'user-1',
         }),
       { wrapper }
     );
@@ -247,21 +247,21 @@ describe('useUserSearchQuery', () => {
         updatedAt: new Date().toISOString(),
         deletedAt: null,
         fullName: 'Jane Smith',
-        displayName: jest.fn().mockReturnValue('Jane')
-      }
+        displayName: jest.fn().mockReturnValue('Jane'),
+      },
     ];
 
     (cUser.useUserSearchQuery as jest.Mock).mockReturnValue({
       data: mockUsers,
       isLoading: false,
-      error: null
+      error: null,
     });
 
     const { result } = renderHook(
       () =>
         useUserSearchQuery({
           searchText: 'jo',
-          currentUserId: 'user-3'
+          currentUserId: 'user-3',
         }),
       { wrapper }
     );
@@ -284,21 +284,21 @@ describe('useUserSearchQuery', () => {
         updatedAt: new Date().toISOString(),
         deletedAt: null,
         fullName: 'John Doe',
-        displayName: jest.fn().mockReturnValue('John')
-      }
+        displayName: jest.fn().mockReturnValue('John'),
+      },
     ];
 
     (cUser.useUserSearchQuery as jest.Mock).mockReturnValue({
       data: mockUsers,
       isLoading: false,
-      error: null
+      error: null,
     });
 
     const { result } = renderHook(
       () =>
         useUserSearchQuery({
           searchText: 'j d',
-          currentUserId: 'user-3'
+          currentUserId: 'user-3',
         }),
       { wrapper }
     );
@@ -310,6 +310,9 @@ describe('useUserSearchQuery', () => {
 });
 
 // Helper function to access the mocked hook
-function useUserSearchQuery(props: { searchText: string; currentUserId?: string }) {
+function useUserSearchQuery(props: {
+  searchText: string;
+  currentUserId?: string;
+}) {
   return cUser.useUserSearchQuery(props);
 }

@@ -1,6 +1,10 @@
 #!/usr/bin/env node
 
-const { DynamoDBClient, ListTablesCommand, DescribeTableCommand } = require('@aws-sdk/client-dynamodb');
+const {
+  DynamoDBClient,
+  ListTablesCommand,
+  DescribeTableCommand,
+} = require('@aws-sdk/client-dynamodb');
 
 const client = new DynamoDBClient({ region: 'us-east-1' });
 
@@ -14,7 +18,9 @@ async function findRecentTables() {
 
   for (const tableName of TableNames) {
     try {
-      const describeCommand = new DescribeTableCommand({ TableName: tableName });
+      const describeCommand = new DescribeTableCommand({
+        TableName: tableName,
+      });
       const { Table } = await client.send(describeCommand);
 
       tableDetails.push({
@@ -42,7 +48,7 @@ async function findRecentTables() {
   console.log('\nTables matching Game/Fighter/User/etc:');
   console.log('='.repeat(80));
 
-  const modelTables = tableDetails.filter((t) =>
+  const modelTables = tableDetails.filter(t =>
     t.name.match(/^(Game|Fighter|User|Rivalry|Contest|TierList|TierSlot)-/)
   );
 

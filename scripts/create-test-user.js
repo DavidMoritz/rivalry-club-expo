@@ -3,7 +3,7 @@
 const {
   CognitoIdentityProviderClient,
   AdminCreateUserCommand,
-  AdminSetUserPasswordCommand
+  AdminSetUserPasswordCommand,
 } = require('@aws-sdk/client-cognito-identity-provider');
 const { DynamoDBClient } = require('@aws-sdk/client-dynamodb');
 const { DynamoDBDocumentClient, PutCommand } = require('@aws-sdk/lib-dynamodb');
@@ -15,8 +15,8 @@ const { randomUUID } = require('crypto');
 const dynamoClient = new DynamoDBClient({ region: 'us-east-1' });
 const docClient = DynamoDBDocumentClient.from(dynamoClient, {
   marshallOptions: {
-    removeUndefinedValues: true
-  }
+    removeUndefinedValues: true,
+  },
 });
 
 const USER_TABLE = 'User-eufbm2g2krhd3kvltqwnkdayb4-NONE';
@@ -28,7 +28,7 @@ function parseArgs() {
     email: null,
     firstName: null,
     lastName: null,
-    password: 'qwerqwer'
+    password: 'qwerqwer',
   };
 
   for (let i = 0; i < args.length; i++) {
@@ -64,9 +64,20 @@ function generateRandomName(firstLetter) {
       'Alexandra',
       'Alex',
       'Anthony',
-      'Amanda'
+      'Amanda',
     ],
-    b: ['Bob', 'Ben', 'Brian', 'Blake', 'Brandon', 'Bradley', 'Bella', 'Bailey', 'Brianna', 'Beth'],
+    b: [
+      'Bob',
+      'Ben',
+      'Brian',
+      'Blake',
+      'Brandon',
+      'Bradley',
+      'Bella',
+      'Bailey',
+      'Brianna',
+      'Beth',
+    ],
     c: [
       'Charlie',
       'Chris',
@@ -77,10 +88,32 @@ function generateRandomName(firstLetter) {
       'Claire',
       'Caroline',
       'Cynthia',
-      'Cole'
+      'Cole',
     ],
-    d: ['David', 'Daniel', 'Derek', 'Dylan', 'Dean', 'Diana', 'Danielle', 'Daisy', 'Donna', 'Drew'],
-    e: ['Emma', 'Emily', 'Ethan', 'Evan', 'Eric', 'Elizabeth', 'Elena', 'Ella', 'Evelyn', 'Eddie'],
+    d: [
+      'David',
+      'Daniel',
+      'Derek',
+      'Dylan',
+      'Dean',
+      'Diana',
+      'Danielle',
+      'Daisy',
+      'Donna',
+      'Drew',
+    ],
+    e: [
+      'Emma',
+      'Emily',
+      'Ethan',
+      'Evan',
+      'Eric',
+      'Elizabeth',
+      'Elena',
+      'Ella',
+      'Evelyn',
+      'Eddie',
+    ],
     f: [
       'Frank',
       'Fred',
@@ -91,7 +124,7 @@ function generateRandomName(firstLetter) {
       'Felicity',
       'Frances',
       'Fernando',
-      'Floyd'
+      'Floyd',
     ],
     g: [
       'George',
@@ -103,10 +136,32 @@ function generateRandomName(firstLetter) {
       'Gemma',
       'Gina',
       'Gabriel',
-      'Gavin'
+      'Gavin',
     ],
-    h: ['Henry', 'Harry', 'Howard', 'Hunter', 'Hannah', 'Haley', 'Harper', 'Hope', 'Helen', 'Hugh'],
-    i: ['Isaac', 'Ian', 'Ivan', 'Isaiah', 'Isabella', 'Iris', 'Ivy', 'Irene', 'Isla', 'India'],
+    h: [
+      'Henry',
+      'Harry',
+      'Howard',
+      'Hunter',
+      'Hannah',
+      'Haley',
+      'Harper',
+      'Hope',
+      'Helen',
+      'Hugh',
+    ],
+    i: [
+      'Isaac',
+      'Ian',
+      'Ivan',
+      'Isaiah',
+      'Isabella',
+      'Iris',
+      'Ivy',
+      'Irene',
+      'Isla',
+      'India',
+    ],
     j: [
       'Jack',
       'James',
@@ -117,12 +172,56 @@ function generateRandomName(firstLetter) {
       'Jennifer',
       'Julia',
       'Jasmine',
-      'Jane'
+      'Jane',
     ],
-    k: ['Kevin', 'Keith', 'Kyle', 'Ken', 'Katherine', 'Kelly', 'Kate', 'Kimberly', 'Kara', 'Kylie'],
-    l: ['Luke', 'Logan', 'Leo', 'Lewis', 'Laura', 'Lucy', 'Lily', 'Lauren', 'Leah', 'Linda'],
-    m: ['Mike', 'Matt', 'Mark', 'Max', 'Mason', 'Mary', 'Maria', 'Michelle', 'Megan', 'Madison'],
-    n: ['Nathan', 'Nick', 'Noah', 'Neil', 'Nolan', 'Natalie', 'Nicole', 'Nina', 'Naomi', 'Nancy'],
+    k: [
+      'Kevin',
+      'Keith',
+      'Kyle',
+      'Ken',
+      'Katherine',
+      'Kelly',
+      'Kate',
+      'Kimberly',
+      'Kara',
+      'Kylie',
+    ],
+    l: [
+      'Luke',
+      'Logan',
+      'Leo',
+      'Lewis',
+      'Laura',
+      'Lucy',
+      'Lily',
+      'Lauren',
+      'Leah',
+      'Linda',
+    ],
+    m: [
+      'Mike',
+      'Matt',
+      'Mark',
+      'Max',
+      'Mason',
+      'Mary',
+      'Maria',
+      'Michelle',
+      'Megan',
+      'Madison',
+    ],
+    n: [
+      'Nathan',
+      'Nick',
+      'Noah',
+      'Neil',
+      'Nolan',
+      'Natalie',
+      'Nicole',
+      'Nina',
+      'Naomi',
+      'Nancy',
+    ],
     o: [
       'Oliver',
       'Oscar',
@@ -133,7 +232,7 @@ function generateRandomName(firstLetter) {
       'Odette',
       'Ophelia',
       'Octavia',
-      'Orla'
+      'Orla',
     ],
     p: [
       'Peter',
@@ -145,7 +244,7 @@ function generateRandomName(firstLetter) {
       'Paige',
       'Penelope',
       'Phoebe',
-      'Pearl'
+      'Pearl',
     ],
     q: [
       'Quinn',
@@ -157,9 +256,20 @@ function generateRandomName(firstLetter) {
       'Quiana',
       'Quilla',
       'Quest',
-      'Quade'
+      'Quade',
     ],
-    r: ['Ryan', 'Robert', 'Richard', 'Roger', 'Ross', 'Rachel', 'Rebecca', 'Riley', 'Rose', 'Ruby'],
+    r: [
+      'Ryan',
+      'Robert',
+      'Richard',
+      'Roger',
+      'Ross',
+      'Rachel',
+      'Rebecca',
+      'Riley',
+      'Rose',
+      'Ruby',
+    ],
     s: [
       'Sam',
       'Steve',
@@ -170,10 +280,32 @@ function generateRandomName(firstLetter) {
       'Sophia',
       'Samantha',
       'Stella',
-      'Sophie'
+      'Sophie',
     ],
-    t: ['Tom', 'Tim', 'Tyler', 'Travis', 'Trevor', 'Tara', 'Taylor', 'Tiffany', 'Teresa', 'Tina'],
-    u: ['Ulysses', 'Uriel', 'Urban', 'Umar', 'Ulrich', 'Uma', 'Ursula', 'Unity', 'Unique', 'Una'],
+    t: [
+      'Tom',
+      'Tim',
+      'Tyler',
+      'Travis',
+      'Trevor',
+      'Tara',
+      'Taylor',
+      'Tiffany',
+      'Teresa',
+      'Tina',
+    ],
+    u: [
+      'Ulysses',
+      'Uriel',
+      'Urban',
+      'Umar',
+      'Ulrich',
+      'Uma',
+      'Ursula',
+      'Unity',
+      'Unique',
+      'Una',
+    ],
     v: [
       'Victor',
       'Vincent',
@@ -184,7 +316,7 @@ function generateRandomName(firstLetter) {
       'Violet',
       'Vanessa',
       'Vera',
-      'Valerie'
+      'Valerie',
     ],
     w: [
       'William',
@@ -196,7 +328,7 @@ function generateRandomName(firstLetter) {
       'Willow',
       'Whitney',
       'Wanda',
-      'Winnie'
+      'Winnie',
     ],
     x: [
       'Xavier',
@@ -208,10 +340,32 @@ function generateRandomName(firstLetter) {
       'Ximena',
       'Xyla',
       'Xiomara',
-      'Xandra'
+      'Xandra',
     ],
-    y: ['Yusuf', 'Yuri', 'Yale', 'Yosef', 'York', 'Yvonne', 'Yara', 'Yasmin', 'Yolanda', 'Yvette'],
-    z: ['Zachary', 'Zane', 'Zack', 'Zeke', 'Zeus', 'Zoe', 'Zelda', 'Zara', 'Zuri', 'Zinnia']
+    y: [
+      'Yusuf',
+      'Yuri',
+      'Yale',
+      'Yosef',
+      'York',
+      'Yvonne',
+      'Yara',
+      'Yasmin',
+      'Yolanda',
+      'Yvette',
+    ],
+    z: [
+      'Zachary',
+      'Zane',
+      'Zack',
+      'Zeke',
+      'Zeus',
+      'Zoe',
+      'Zelda',
+      'Zara',
+      'Zuri',
+      'Zinnia',
+    ],
   };
 
   const letter = firstLetter.toLowerCase();
@@ -238,23 +392,27 @@ function addToDevUsers(email, awsSub) {
     const devUsers = JSON.parse(fileContent);
 
     // Check if user already exists
-    const existingUser = devUsers.users.find((u) => u.email === email);
+    const existingUser = devUsers.users.find(u => u.email === email);
 
     if (existingUser) {
       // Update existing user's awsSub
       existingUser.awsSub = awsSub;
-      console.log(`✓ Updated existing entry in dev-users.json`);
+      console.log('✓ Updated existing entry in dev-users.json');
     } else {
       // Add new user
       devUsers.users.push({
         email,
-        awsSub
+        awsSub,
       });
-      console.log(`✓ Added new entry to dev-users.json`);
+      console.log('✓ Added new entry to dev-users.json');
     }
 
     // Write back to file with pretty formatting
-    fs.writeFileSync(devUsersPath, JSON.stringify(devUsers, null, 2) + '\n', 'utf-8');
+    fs.writeFileSync(
+      devUsersPath,
+      JSON.stringify(devUsers, null, 2) + '\n',
+      'utf-8'
+    );
 
     return true;
   } catch (error) {
@@ -271,23 +429,25 @@ async function addToDynamoDB(email, firstName, lastName, awsSub) {
 
     const userItem = {
       id: userId,
-      email: email,
-      firstName: firstName,
-      lastName: lastName,
-      awsSub: awsSub,
+      email,
+      firstName,
+      lastName,
+      awsSub,
       role: 0, // Default role
       createdAt: now,
       updatedAt: now,
-      __typename: 'User'
+      __typename: 'User',
     };
 
     const putCommand = new PutCommand({
       TableName: USER_TABLE,
-      Item: userItem
+      Item: userItem,
     });
 
     await docClient.send(putCommand);
-    console.log(`✓ Added user to DynamoDB Users table (id: ${userId.substring(0, 8)}...)`);
+    console.log(
+      `✓ Added user to DynamoDB Users table (id: ${userId.substring(0, 8)}...)`
+    );
 
     return userId;
   } catch (error) {
@@ -316,14 +476,14 @@ async function createTestUser(email, firstName, lastName, password) {
       UserAttributes: [
         {
           Name: 'email',
-          Value: email
+          Value: email,
         },
         {
           Name: 'email_verified',
-          Value: 'true'
-        }
+          Value: 'true',
+        },
       ],
-      MessageAction: 'SUPPRESS' // Don't send welcome email
+      MessageAction: 'SUPPRESS', // Don't send welcome email
     });
 
     const createResponse = await client.send(createUserCommand);
@@ -337,7 +497,7 @@ async function createTestUser(email, firstName, lastName, password) {
       UserPoolId: userPoolId,
       Username: email,
       Password: password,
-      Permanent: true
+      Permanent: true,
     });
 
     await client.send(setPasswordCommand);
@@ -366,7 +526,9 @@ async function createTestUser(email, firstName, lastName, password) {
     console.error('Error creating test user:', error.message);
 
     if (error.name === 'UsernameExistsException') {
-      console.error('\nThis user already exists. Delete it first or use a different email.');
+      console.error(
+        '\nThis user already exists. Delete it first or use a different email.'
+      );
     }
 
     process.exit(1);

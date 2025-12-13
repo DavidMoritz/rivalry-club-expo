@@ -1,10 +1,9 @@
-import React from 'react';
-import { render } from '@testing-library/react-native';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
-
-import TierListRow from '../TierListRow';
-import { GameProvider } from '../../../../providers/game';
+import { render } from '@testing-library/react-native';
+import React from 'react';
 import { getMGame } from '../../../../models/m-game';
+import { GameProvider } from '../../../../providers/game';
+import TierListRow from '../TierListRow';
 
 const createTestQueryClient = () =>
   new QueryClient({
@@ -22,8 +21,8 @@ const mockGame = getMGame({
     items: [
       { id: 'fighter-1', name: 'Mario', gameId: 'game-1' },
       { id: 'fighter-2', name: 'Link', gameId: 'game-1' },
-    ]
-  }
+    ],
+  },
 } as any);
 
 const mockSlots = [
@@ -38,9 +37,9 @@ describe('TierListRow', () => {
       <QueryClientProvider client={queryClient}>
         <GameProvider game={mockGame}>
           <TierListRow
-            label="S"
-            color="hsl(0, 100%, 75%)"
             active={false}
+            color="hsl(0, 100%, 75%)"
+            label="S"
             slots={mockSlots as any}
           />
         </GameProvider>
@@ -56,9 +55,9 @@ describe('TierListRow', () => {
       <QueryClientProvider client={queryClient}>
         <GameProvider game={mockGame}>
           <TierListRow
-            label="A"
-            color="hsl(30, 100%, 75%)"
             active={false}
+            color="hsl(30, 100%, 75%)"
+            label="A"
             slots={mockSlots as any}
           />
         </GameProvider>
@@ -75,9 +74,9 @@ describe('TierListRow', () => {
       <QueryClientProvider client={queryClient}>
         <GameProvider game={mockGame}>
           <TierListRow
-            label="B"
-            color="hsl(45, 100%, 75%)"
             active={false}
+            color="hsl(45, 100%, 75%)"
+            label="B"
             slots={mockSlots as any}
           />
         </GameProvider>
@@ -94,9 +93,9 @@ describe('TierListRow', () => {
       <QueryClientProvider client={queryClient}>
         <GameProvider game={mockGame}>
           <TierListRow
-            label="C"
-            color="hsl(60, 100%, 75%)"
             active={false}
+            color="hsl(60, 100%, 75%)"
+            label="C"
             slots={[]}
           />
         </GameProvider>
@@ -116,9 +115,9 @@ describe('TierListRow', () => {
       <QueryClientProvider client={queryClient}>
         <GameProvider game={mockGame}>
           <TierListRow
-            label="D"
-            color="hsl(90, 100%, 75%)"
             active={false}
+            color="hsl(90, 100%, 75%)"
+            label="D"
             slots={slotsWithInvalidFighter as any}
           />
         </GameProvider>

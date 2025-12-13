@@ -4,7 +4,7 @@ module.exports = {
   preset: 'jest-expo',
   setupFilesAfterEnv: ['<rootDir>/jest.setup.js'],
   testEnvironment: 'node',
-  testTimeout: 10000, // Increased from default 5000ms for async React Query tests
+  testTimeout: 10_000, // Increased from default 5000ms for async React Query tests
   transform: {
     '^.+\\.(js|jsx|ts|tsx)$': [
       'babel-jest',
@@ -35,6 +35,7 @@ module.exports = {
       '<rootDir>/__mocks__/fileMock.js',
     '\\.(css)$': '<rootDir>/__mocks__/styleMock.js',
     // Mock react-native-reanimated
-    '^react-native-reanimated$': '<rootDir>/__mocks__/react-native-reanimated.js',
+    '^react-native-reanimated$':
+      '<rootDir>/__mocks__/react-native-reanimated.js',
   },
 };

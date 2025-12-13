@@ -14,37 +14,37 @@
 
 // API testing helpers
 export {
-  TEST_TIMEOUTS,
-  DEFAULT_WAIT_FOR_OPTIONS,
-  waitForQuerySuccess,
-  waitForMutationSuccess,
-  waitForError,
-  waitForMockCall,
-  createGraphQLResponse,
   createGraphQLListResponse,
+  createGraphQLResponse,
   createMockAsyncGenerator,
   createMockAsyncGeneratorFromArray,
-  isGraphQLError,
+  createTestQueryWrapper,
+  DEFAULT_WAIT_FOR_OPTIONS,
   expectGraphQLMutationCall,
   expectGraphQLQueryCall,
-  createTestQueryWrapper,
-  waitForMultipleQueries,
+  isGraphQLError,
   resetMockGraphQLClient,
-  spyOnConsole
+  spyOnConsole,
+  TEST_TIMEOUTS,
+  waitForError,
+  waitForMockCall,
+  waitForMultipleQueries,
+  waitForMutationSuccess,
+  waitForQuerySuccess,
 } from './api-test-helpers';
 
 // Mock factories
 export {
-  createMockUser,
-  createMockGame,
-  createMockFighter,
-  createMockRivalry,
-  createMockContest,
-  createMockTierList,
-  createMockTierSlot,
-  createMockRivalryWithData,
-  createMockTierListWithSlots,
+  createMockAPIResponse,
   createMockConnection,
+  createMockContest,
+  createMockFighter,
+  createMockGame,
   createMockGraphQLClient,
-  createMockAPIResponse
+  createMockRivalry,
+  createMockRivalryWithData,
+  createMockTierList,
+  createMockTierListWithSlots,
+  createMockTierSlot,
+  createMockUser,
 } from './mock-factories';

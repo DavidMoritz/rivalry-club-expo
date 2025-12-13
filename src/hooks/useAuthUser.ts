@@ -1,10 +1,10 @@
-import { Hub } from 'aws-amplify/utils';
 import { generateClient } from 'aws-amplify/data';
+import { Hub } from 'aws-amplify/utils';
 import { useEffect, useState } from 'react';
 
 import type { Schema } from '../../amplify/data/resource';
 import { getCurrentUser } from '../lib/amplify-auth';
-import { getOrCreateUserUuid, getDisplayName } from '../lib/user-identity';
+import { getDisplayName, getOrCreateUserUuid } from '../lib/user-identity';
 
 interface AuthUser {
   id: string;
@@ -32,14 +32,14 @@ export function useAuthUser() {
   // Listen for auth changes from Cognito
   useEffect(() => {
     getCurrentUser()
-      .then((user) => setCognitoUserId(user.userId))
+      .then(user => setCognitoUserId(user.userId))
       .catch(() => setCognitoUserId(null));
 
     const hubListener = Hub.listen('auth', ({ payload }) => {
       switch (payload.event) {
         case 'signedIn':
           getCurrentUser()
-            .then((user) => setCognitoUserId(user.userId))
+            .then(user => setCognitoUserId(user.userId))
             .catch(() => setCognitoUserId(null));
           break;
         case 'signedOut':
@@ -70,9 +70,9 @@ export function useAuthUser() {
           const listResult = await client.models.User.list({
             filter: {
               awsSub: {
-                eq: awsSub
-              }
-            }
+                eq: awsSub,
+              },
+            },
           });
 
           const users = listResult.data;
@@ -91,7 +91,7 @@ export function useAuthUser() {
             const createResult = await client.models.User.create({
               email,
               awsSub,
-              role: 0 // Default role for Cognito users
+              role: 0, // Default role for Cognito users
             });
 
             const newUser = createResult.data;
@@ -127,7 +127,7 @@ export function useAuthUser() {
               firstName: displayName,
               lastName: ' ', // Empty space as requested
               role: 9, // Anonymous user role
-              awsSub: 'anonymous' // Placeholder awsSub
+              awsSub: 'anonymous', // Placeholder awsSub
             });
 
             const newUser = createResult.data;
@@ -158,6 +158,6 @@ export function useAuthUser() {
   return {
     user,
     isLoading,
-    error
+    error,
   };
 }

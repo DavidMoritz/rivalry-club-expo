@@ -6,10 +6,12 @@
  * - Production builds: amplify_outputs.json (production database, set by EAS prebuild)
  */
 
-// @ts-ignore - TypeScript doesn't know which file we're importing
-import productionOutputs from './amplify_outputs.json';
-// @ts-ignore - TypeScript doesn't know which file we're importing
-import sandboxOutputs from './amplify_outputs.sandbox.json';
+// @ts-expect-error - TypeScript doesn't know which file we're importing
+import productionOutputs from './amplify_outputs.json' with { type: 'json' };
+// @ts-expect-error - TypeScript doesn't know which file we're importing
+import sandboxOutputs from './amplify_outputs.sandbox.json' with {
+  type: 'json',
+};
 
 // Use sandbox in development, production in builds
 const isDevelopment = __DEV__ || process.env.NODE_ENV === 'development';

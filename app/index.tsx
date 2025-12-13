@@ -18,7 +18,7 @@ export default function IndexRoute() {
     // Navigate directly to rivalries (anonymous users auto-created)
     router.push({
       pathname: '/rivalries',
-      params: { gameId: game.id, gameName: game.name }
+      params: { gameId: game.id, gameName: game.name },
     });
   }
 
@@ -28,7 +28,10 @@ export default function IndexRoute() {
 
   return (
     <>
-      <Home onEnterClick={handleEnterClick} onHowToPlayClick={handleHowToPlayClick} />
+      <Home
+        onEnterClick={handleEnterClick}
+        onHowToPlayClick={handleHowToPlayClick}
+      />
       <StatusBar style="light" />
     </>
   );

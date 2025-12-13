@@ -1,4 +1,4 @@
-import { ImageSourcePropType } from 'react-native';
+import type { ImageSourcePropType } from 'react-native';
 import { characterImageMap } from './character_image_map';
 
 // Import all fighter images
@@ -193,8 +193,9 @@ export const fighterImages: DynamicImages = {
   yoshi,
   young_link,
   zelda,
-  zero_suit_samus
+  zero_suit_samus,
 };
 
 // Export the character zoom data for face close-ups
-export const characterZoomMap: CharacterImageMap = characterImageMap as CharacterImageMap;
+export const characterZoomMap: CharacterImageMap =
+  characterImageMap as CharacterImageMap;

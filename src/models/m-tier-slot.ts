@@ -1,6 +1,6 @@
 import type { Schema } from '../../amplify/data/resource';
-import { MFighter } from './m-fighter';
-import { MTierList, Tier, TIERS, FIGHTER_COUNT } from './m-tier-list';
+import type { MFighter } from './m-fighter';
+import { FIGHTER_COUNT, type MTierList, TIERS, type Tier } from './m-tier-list';
 
 // Extract Gen 2 type
 type TierSlot = Schema['TierSlot']['type'];
@@ -8,7 +8,7 @@ type TierSlot = Schema['TierSlot']['type'];
 export function normalizeTierSlotPositionToIndex(slot: MTierSlot, idx: number) {
   return {
     ...slot,
-    position: idx
+    position: idx,
   };
 }
 
@@ -40,7 +40,9 @@ export function getMTierSlot(tierSlot: TierSlot): MTierSlot {
       return this.position as number;
     },
     lowerItemsCount() {
-      return (this.tierList?.slots?.length as number) - 1 - (this.position as number);
+      return (
+        (this.tierList?.slots?.length as number) - 1 - (this.position as number)
+      );
     },
 
     // setters
@@ -56,11 +58,15 @@ export function getMTierSlot(tierSlot: TierSlot): MTierSlot {
       return this._mFighter;
     },
     get fighterTier() {
-      return TIERS[Math.floor(Number(tierSlot.position) / Number(this.tierList?.slotsPerTier))];
+      return TIERS[
+        Math.floor(
+          Number(tierSlot.position) / Number(this.tierList?.slotsPerTier)
+        )
+      ];
     },
     get tierList() {
       return this._mTierList;
-    }
+    },
   };
 }
 
@@ -77,7 +83,12 @@ const TIER_COUNT = 7;
  */
 export function computeTierFromPosition(position: number | null): string {
   // Handle null, undefined, or out-of-range positions (0-based: 0-85)
-  if (position === null || position === undefined || position < 0 || position >= FIGHTER_COUNT) {
+  if (
+    position === null ||
+    position === undefined ||
+    position < 0 ||
+    position >= FIGHTER_COUNT
+  ) {
     return 'U';
   }
 

@@ -1,23 +1,22 @@
-import { useLocalSearchParams, Stack } from 'expo-router';
-import { StatusBar } from 'expo-status-bar';
-import React, { useState, useCallback } from 'react';
-import { Text, View, ActivityIndicator } from 'react-native';
-import { SafeAreaView } from 'react-native-safe-area-context';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { generateClient } from 'aws-amplify/data';
+import { Stack, useLocalSearchParams } from 'expo-router';
+import { StatusBar } from 'expo-status-bar';
+import React, { useCallback, useState } from 'react';
+import { ActivityIndicator, Text, View } from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
 import type { Schema } from '../../../amplify/data/resource';
-
-import { darkStyles, styles } from '../../../src/utils/styles';
 import { HamburgerMenu } from '../../../src/components/common/HamburgerMenu';
 import { ContestHistoryTable } from '../../../src/components/screens/parts/ContestHistoryTable';
-import { getMContest, MContest } from '../../../src/models/m-contest';
-import { MGame } from '../../../src/models/m-game';
-import { getMRivalry, MRivalry } from '../../../src/models/m-rivalry';
-import { getMUser } from '../../../src/models/m-user';
-import { RivalryProvider } from '../../../src/providers/rivalry';
-import { useGame } from '../../../src/providers/game';
 import { useDeleteMostRecentContestMutation } from '../../../src/controllers/c-rivalry';
+import { getMContest, type MContest } from '../../../src/models/m-contest';
+import type { MGame } from '../../../src/models/m-game';
+import { getMRivalry, type MRivalry } from '../../../src/models/m-rivalry';
+import { getMUser } from '../../../src/models/m-user';
+import { useGame } from '../../../src/providers/game';
+import { RivalryProvider } from '../../../src/providers/rivalry';
 import { colors } from '../../../src/utils/colors';
+import { darkStyles, styles } from '../../../src/utils/styles';
 
 // Lazy client initialization to avoid crashes when Amplify isn't configured
 let client: ReturnType<typeof generateClient<Schema>> | null = null;
@@ -47,9 +46,13 @@ export default function HistoryRoute() {
     rivalry,
     onSuccess: () => {
       // Invalidate queries to refetch contests after undo
-      queryClient.invalidateQueries({ queryKey: ['rivalryContests', rivalryId] });
-      queryClient.invalidateQueries({ queryKey: ['rivalryWithInfo', rivalryId] });
-    }
+      queryClient.invalidateQueries({
+        queryKey: ['rivalryContests', rivalryId],
+      });
+      queryClient.invalidateQueries({
+        queryKey: ['rivalryWithInfo', rivalryId],
+      });
+    },
   });
 
   // Get game from global GameProvider (includes fighter stats)
@@ -58,30 +61,31 @@ export default function HistoryRoute() {
   const {
     data: _rivalryData,
     isLoading: isLoadingRivalry,
-    error: rivalryError
+    error: rivalryError,
   } = useQuery({
     enabled: !!rivalryId,
     queryKey: ['rivalryWithInfo', rivalryId],
     structuralSharing: false,
     queryFn: async () => {
-      const { data: rivalryData, errors } = await getClient().models.Rivalry.get(
-        { id: rivalryId },
-        {
-          selectionSet: [
-            'id',
-            'userAId',
-            'userBId',
-            'gameId',
-            'contestCount',
-            'currentContestId',
-            'createdAt',
-            'updatedAt',
-            'deletedAt',
-            'tierLists.*',
-            'tierLists.tierSlots.*'
-          ]
-        }
-      );
+      const { data: rivalryData, errors } =
+        await getClient().models.Rivalry.get(
+          { id: rivalryId },
+          {
+            selectionSet: [
+              'id',
+              'userAId',
+              'userBId',
+              'gameId',
+              'contestCount',
+              'currentContestId',
+              'createdAt',
+              'updatedAt',
+              'deletedAt',
+              'tierLists.*',
+              'tierLists.tierSlots.*',
+            ],
+          }
+        );
 
       if (errors) {
         console.error('[HistoryRoute] GraphQL errors loading rivalry:', errors);
@@ -101,7 +105,10 @@ export default function HistoryRoute() {
               tierSlotsArray.push(tierSlot);
             }
           }
-          tierListsArray.push({ ...tierListData, tierSlots: { items: tierSlotsArray } });
+          tierListsArray.push({
+            ...tierListData,
+            tierSlots: { items: tierSlotsArray },
+          });
         }
       }
       const tierLists = { items: tierListsArray };
@@ -119,21 +126,21 @@ export default function HistoryRoute() {
           user: {
             id: rivalryData.userAId,
             firstName: firstNameA,
-            lastName: lastNamePartsA.join(' ')
-          } as any
+            lastName: lastNamePartsA.join(' '),
+          } as any,
         });
         mRivalry.userB = getMUser({
           user: {
             id: rivalryData.userBId,
             firstName: firstNameB,
-            lastName: lastNamePartsB.join(' ')
-          } as any
+            lastName: lastNamePartsB.join(' '),
+          } as any,
         });
       } else {
         // Load user data separately if not in context
         const [userAResult, userBResult] = await Promise.all([
           getClient().models.User.get({ id: rivalryData.userAId }),
-          getClient().models.User.get({ id: rivalryData.userBId })
+          getClient().models.User.get({ id: rivalryData.userBId }),
         ]);
 
         if (userAResult.data) {
@@ -147,7 +154,7 @@ export default function HistoryRoute() {
       setRivalry(mRivalry);
 
       return mRivalry;
-    }
+    },
   });
 
   const { isLoading: isLoadingContests, error } = useQuery({
@@ -158,14 +165,14 @@ export default function HistoryRoute() {
       // Use the GSI query for efficient sorting by createdAt
       const {
         data: contestData,
-        errors
+        errors,
       }: {
         data: any[];
         errors?: any[];
       } = await getClient().models.Contest.contestsByRivalryIdAndCreatedAt({
-        rivalryId: rivalryId,
+        rivalryId,
         sortDirection: 'DESC',
-        limit: 100
+        limit: 100,
       });
 
       if (errors) {
@@ -174,7 +181,7 @@ export default function HistoryRoute() {
       }
 
       const newNextToken = null;
-      const mContests = contestData.map((c) => {
+      const mContests = contestData.map(c => {
         const mContest = getMContest(c as any);
         if (rivalry) {
           mContest.setRivalryAndSlots(rivalry);
@@ -193,7 +200,7 @@ export default function HistoryRoute() {
       setNextToken(newNextToken || null);
 
       return mContests;
-    }
+    },
   });
 
   const isLoading = isLoadingRivalry || isLoadingContests;
@@ -211,11 +218,11 @@ export default function HistoryRoute() {
       const {
         data: contestData,
         errors,
-        nextToken: newNextToken
+        nextToken: newNextToken,
       } = await getClient().models.Contest.list({
         filter: { rivalryId: { eq: rivalryId } },
         limit: 100,
-        nextToken
+        nextToken,
       });
 
       if (errors) {
@@ -224,7 +231,7 @@ export default function HistoryRoute() {
         return;
       }
 
-      const mContests = contestData.map((c) => {
+      const mContests = contestData.map(c => {
         const mContest = getMContest(c as any);
         mContest.setRivalryAndSlots(rivalry);
 
@@ -239,7 +246,7 @@ export default function HistoryRoute() {
         return dateB - dateA; // Descending order
       });
 
-      setContests((prev) => {
+      setContests(prev => {
         // Combine and re-sort to maintain order
         const combined = [...prev, ...mContests];
         combined.sort((a, b) => {
@@ -265,9 +272,11 @@ export default function HistoryRoute() {
         <Stack.Screen options={{ title: 'Contest History' }} />
         <SafeAreaView style={[styles.container, darkStyles.container]}>
           <View style={centeredContainerStyle}>
-            <ActivityIndicator size="large" color={colors.white} />
+            <ActivityIndicator color={colors.white} size="large" />
             <Text style={loadingTextStyle}>
-              {isLoadingRivalry ? 'Loading rivalry data...' : 'Loading contests...'}
+              {isLoadingRivalry
+                ? 'Loading rivalry data...'
+                : 'Loading contests...'}
             </Text>
           </View>
         </SafeAreaView>
@@ -285,7 +294,9 @@ export default function HistoryRoute() {
             <Text style={errorTitleStyle}>Error loading data</Text>
             <Text style={errorMessageStyle}>
               {(error instanceof Error ? error.message : null) ||
-                (rivalryError instanceof Error ? rivalryError.message : 'Unknown error')}
+                (rivalryError instanceof Error
+                  ? rivalryError.message
+                  : 'Unknown error')}
             </Text>
           </View>
         </SafeAreaView>
@@ -319,19 +330,19 @@ export default function HistoryRoute() {
         userId={userId}
       >
         <SafeAreaView
-          style={[styles.container, darkStyles.container]}
           edges={['left', 'right', 'bottom']}
+          style={[styles.container, darkStyles.container]}
         >
           <View style={historyContainerStyle}>
             <ContestHistoryTable
               contests={contests}
-              game={game as MGame}
-              rivalry={rivalry}
               deleteMostRecentContestMutation={deleteMostRecentContestMutation}
-              loadMore={loadMore}
-              isLoadingMore={isLoadingMore}
+              game={game as MGame}
               hideUndoButton={hideUndoButton}
+              isLoadingMore={isLoadingMore}
+              loadMore={loadMore}
               onUndoClick={handleUndoClick}
+              rivalry={rivalry}
             />
           </View>
         </SafeAreaView>
@@ -346,33 +357,33 @@ const center = 'center' as const;
 const centeredContainerStyle = {
   flex: 1,
   alignItems: center,
-  justifyContent: center
+  justifyContent: center,
 };
 
 const loadingTextStyle = {
   ...styles.text,
-  marginTop: 16
+  marginTop: 16,
 };
 
 const errorContainerStyle = {
   flex: 1,
   alignItems: center,
   justifyContent: center,
-  paddingHorizontal: 16
+  paddingHorizontal: 16,
 };
 
 const errorTitleStyle = {
   ...styles.text,
   fontSize: 18,
   color: colors.red450,
-  marginBottom: 8
+  marginBottom: 8,
 };
 
 const errorMessageStyle = {
   ...styles.text,
-  color: colors.gray400
+  color: colors.gray400,
 };
 
 const historyContainerStyle = {
-  paddingTop: 72
+  paddingTop: 72,
 };

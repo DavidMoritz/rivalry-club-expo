@@ -1,5 +1,5 @@
-import { ImageStyle } from 'react-native';
-import { characterZoomMap, CharacterZoomData } from './index';
+import type { ImageStyle } from 'react-native';
+import { type CharacterZoomData, characterZoomMap } from './index';
 
 /**
  * Get zoom/crop styling for a character image to focus on their face
@@ -26,9 +26,10 @@ export function getCharacterZoomStyle(
   characterKey: string,
   displayWidth: number,
   displayHeight: number,
-  zoomMultiplier: number = 1.0
+  zoomMultiplier = 1.0
 ): ImageStyle {
-  const zoomData: CharacterZoomData | undefined = characterZoomMap[characterKey];
+  const zoomData: CharacterZoomData | undefined =
+    characterZoomMap[characterKey];
 
   if (!zoomData) {
     // Fallback: no zoom data, return centered style
@@ -55,10 +56,7 @@ export function getCharacterZoomStyle(
   return {
     width: scaledImageSize,
     height: scaledImageSize,
-    transform: [
-      { translateX },
-      { translateY },
-    ],
+    transform: [{ translateX }, { translateY }],
   };
 }
 
@@ -75,9 +73,14 @@ export function useCharacterZoom(
   characterKey: string,
   displayWidth: number,
   displayHeight: number,
-  zoomMultiplier: number = 1.0
+  zoomMultiplier = 1.0
 ): ImageStyle {
-  return getCharacterZoomStyle(characterKey, displayWidth, displayHeight, zoomMultiplier);
+  return getCharacterZoomStyle(
+    characterKey,
+    displayWidth,
+    displayHeight,
+    zoomMultiplier
+  );
 }
 
 /**
@@ -86,6 +89,8 @@ export function useCharacterZoom(
  * @param characterKey - The character identifier
  * @returns The zoom data object or undefined if not found
  */
-export function getCharacterZoomData(characterKey: string): CharacterZoomData | undefined {
+export function getCharacterZoomData(
+  characterKey: string
+): CharacterZoomData | undefined {
   return characterZoomMap[characterKey];
 }

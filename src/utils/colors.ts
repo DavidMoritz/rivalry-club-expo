@@ -91,5 +91,5 @@ export const colors = {
 
   // Dark text shade (for text on light backgrounds)
   darkText: '#1f2937',
-  darkText2: '#222'
+  darkText2: '#222',
 } as const;

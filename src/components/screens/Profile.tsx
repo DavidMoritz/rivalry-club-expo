@@ -2,6 +2,7 @@ import { generateClient } from 'aws-amplify/data';
 import { useRouter } from 'expo-router';
 import React, { useEffect, useRef, useState } from 'react';
 import {
+  Alert,
   KeyboardAvoidingView,
   Platform,
   ScrollView,
@@ -9,18 +10,17 @@ import {
   TextInput,
   TouchableOpacity,
   View,
-  Alert
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
 import type { Schema } from '../../../amplify/data/resource';
 import { useAuthUser } from '../../hooks/useAuthUser';
-import { updatePassword, signOut } from '../../lib/amplify-auth';
+import { signOut, updatePassword } from '../../lib/amplify-auth';
 import { clearStoredUuid, storeFirstName } from '../../lib/user-identity';
-import { darkStyles, styles } from '../../utils/styles';
 import { colors } from '../../utils/colors';
-import { LinkAccountModal } from './LinkAccountModal';
+import { darkStyles, styles } from '../../utils/styles';
 import { CreateAccountModal } from './CreateAccountModal';
+import { LinkAccountModal } from './LinkAccountModal';
 
 export function Profile() {
   const router = useRouter();
@@ -69,7 +69,7 @@ export function Profile() {
       const result = await client.models.User.update({
         id: user.id,
         firstName: firstName.trim(),
-        lastName: lastName.trim() || ' '
+        lastName: lastName.trim() || ' ',
       });
 
       if (result.errors && result.errors.length > 0) {
@@ -90,7 +90,9 @@ export function Profile() {
         setTimeout(() => setSuccessMessage(''), 3000);
       }
     } catch (error) {
-      setErrorMessage(error instanceof Error ? error.message : 'Failed to update profile');
+      setErrorMessage(
+        error instanceof Error ? error.message : 'Failed to update profile'
+      );
     } finally {
       setIsUpdating(false);
     }
@@ -100,7 +102,7 @@ export function Profile() {
     setErrorMessage('');
     setSuccessMessage('');
 
-    if (!currentPassword || !newPassword || !confirmPassword) {
+    if (!(currentPassword && newPassword && confirmPassword)) {
       setErrorMessage('All password fields are required');
 
       return;
@@ -167,7 +169,9 @@ export function Profile() {
             style: 'destructive',
             onPress: async () => {
               try {
-                console.log('[Profile] 🛠️ DEV MODE: Clearing UUID and signing out...');
+                console.log(
+                  '[Profile] 🛠️ DEV MODE: Clearing UUID and signing out...'
+                );
                 await clearStoredUuid();
                 await signOut();
                 console.log('[Profile] ✅ UUID cleared, signed out');
@@ -178,8 +182,8 @@ export function Profile() {
                 console.error('[Profile] Error clearing UUID:', error);
                 Alert.alert('Error', 'Failed to reset UUID');
               }
-            }
-          }
+            },
+          },
         ]
       );
     }
@@ -188,7 +192,9 @@ export function Profile() {
   if (userLoading) {
     return (
       <SafeAreaView style={[styles.container, darkStyles.container]}>
-        <View style={{ flex: 1, alignItems: 'center', justifyContent: 'center' }}>
+        <View
+          style={{ flex: 1, alignItems: 'center', justifyContent: 'center' }}
+        >
           <Text style={styles.text}>Loading...</Text>
         </View>
       </SafeAreaView>
@@ -199,19 +205,22 @@ export function Profile() {
   const isNewUser = !user?.firstName || user.firstName.trim() === '';
 
   return (
-    <SafeAreaView style={[styles.container, darkStyles.container]} edges={['top', 'bottom']}>
+    <SafeAreaView
+      edges={['top', 'bottom']}
+      style={[styles.container, darkStyles.container]}
+    >
       <KeyboardAvoidingView
         behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
-        style={{ flex: 1 }}
         keyboardVerticalOffset={0}
+        style={{ flex: 1 }}
       >
         <ScrollView
-          ref={scrollViewRef}
-          style={{ flex: 1 }}
           contentContainerStyle={{ padding: 24 }}
           keyboardShouldPersistTaps="handled"
+          ref={scrollViewRef}
+          style={{ flex: 1 }}
         >
-          <TouchableOpacity onPress={handleDevTap} activeOpacity={0.9}>
+          <TouchableOpacity activeOpacity={0.9} onPress={handleDevTap}>
             <Text style={[styles.title, { marginBottom: 24 }]}>Profile</Text>
           </TouchableOpacity>
 
@@ -221,7 +230,7 @@ export function Profile() {
                 backgroundColor: colors.blue500,
                 padding: 16,
                 borderRadius: 8,
-                marginBottom: 16
+                marginBottom: 16,
               }}
             >
               <Text
@@ -229,7 +238,7 @@ export function Profile() {
                   color: colors.white,
                   textAlign: 'center',
                   fontWeight: '600',
-                  marginBottom: 4
+                  marginBottom: 4,
                 }}
               >
                 Welcome! 👋
@@ -246,10 +255,12 @@ export function Profile() {
                 backgroundColor: colors.green600,
                 padding: 12,
                 borderRadius: 8,
-                marginBottom: 16
+                marginBottom: 16,
               }}
             >
-              <Text style={{ color: colors.white, textAlign: 'center' }}>{successMessage}</Text>
+              <Text style={{ color: colors.white, textAlign: 'center' }}>
+                {successMessage}
+              </Text>
             </View>
           ) : null}
 
@@ -259,21 +270,32 @@ export function Profile() {
                 backgroundColor: colors.red600,
                 padding: 12,
                 borderRadius: 8,
-                marginBottom: 16
+                marginBottom: 16,
               }}
             >
-              <Text style={{ color: colors.white, textAlign: 'center' }}>{errorMessage}</Text>
+              <Text style={{ color: colors.white, textAlign: 'center' }}>
+                {errorMessage}
+              </Text>
             </View>
           ) : null}
 
           <View style={{ marginBottom: 32 }}>
-            <Text style={[styles.text, { fontSize: 20, fontWeight: '600', marginBottom: 16 }]}>
+            <Text
+              style={[
+                styles.text,
+                { fontSize: 20, fontWeight: '600', marginBottom: 16 },
+              ]}
+            >
               Personal Information
             </Text>
 
             <View style={{ marginBottom: 16 }}>
               <Text style={[styles.text, { marginBottom: 8 }]}>First Name</Text>
               <TextInput
+                autoCapitalize="words"
+                onChangeText={setFirstName}
+                placeholder="Enter first name"
+                placeholderTextColor={colors.gray400}
                 style={[
                   styles.text,
                   {
@@ -283,20 +305,20 @@ export function Profile() {
                     paddingVertical: 12,
                     borderRadius: 8,
                     borderWidth: 1,
-                    borderColor: colors.gray600
-                  }
+                    borderColor: colors.gray600,
+                  },
                 ]}
                 value={firstName}
-                onChangeText={setFirstName}
-                placeholder="Enter first name"
-                placeholderTextColor={colors.gray400}
-                autoCapitalize="words"
               />
             </View>
 
             <View style={{ marginBottom: 16 }}>
               <Text style={[styles.text, { marginBottom: 8 }]}>Last Name</Text>
               <TextInput
+                autoCapitalize="words"
+                onChangeText={setLastName}
+                placeholder="Enter last name"
+                placeholderTextColor={colors.gray400}
                 style={[
                   styles.text,
                   {
@@ -306,19 +328,22 @@ export function Profile() {
                     paddingVertical: 12,
                     borderRadius: 8,
                     borderWidth: 1,
-                    borderColor: colors.gray600
-                  }
+                    borderColor: colors.gray600,
+                  },
                 ]}
                 value={lastName}
-                onChangeText={setLastName}
-                placeholder="Enter last name"
-                placeholderTextColor={colors.gray400}
-                autoCapitalize="words"
               />
             </View>
 
             <View style={{ marginBottom: 16 }}>
-              <Text style={[styles.text, { marginBottom: 8, color: colors.gray300 }]}>Email</Text>
+              <Text
+                style={[
+                  styles.text,
+                  { marginBottom: 8, color: colors.gray300 },
+                ]}
+              >
+                Email
+              </Text>
               <Text
                 style={[
                   styles.text,
@@ -329,8 +354,8 @@ export function Profile() {
                     paddingVertical: 12,
                     borderRadius: 8,
                     borderWidth: 1,
-                    borderColor: colors.gray700
-                  }
+                    borderColor: colors.gray700,
+                  },
                 ]}
               >
                 {user?.email}
@@ -338,6 +363,8 @@ export function Profile() {
             </View>
 
             <TouchableOpacity
+              disabled={isUpdating}
+              onPress={handleUpdateProfile}
               style={{
                 backgroundColor: colors.purple900,
                 paddingHorizontal: 32,
@@ -347,12 +374,16 @@ export function Profile() {
                 borderColor: colors.slate300,
                 width: '100%',
                 alignItems: 'center',
-                marginTop: 8
+                marginTop: 8,
               }}
-              onPress={handleUpdateProfile}
-              disabled={isUpdating}
             >
-              <Text style={{ color: colors.white, fontSize: 18, fontWeight: 'bold' }}>
+              <Text
+                style={{
+                  color: colors.white,
+                  fontSize: 18,
+                  fontWeight: 'bold',
+                }}
+              >
                 {isUpdating ? 'Updating...' : 'Update Profile'}
               </Text>
             </TouchableOpacity>
@@ -363,10 +394,15 @@ export function Profile() {
               borderTopWidth: 1,
               borderTopColor: colors.gray700,
               paddingTop: 32,
-              marginBottom: 32
+              marginBottom: 32,
             }}
           >
-            <Text style={[styles.text, { fontSize: 20, fontWeight: '600', marginBottom: 16 }]}>
+            <Text
+              style={[
+                styles.text,
+                { fontSize: 20, fontWeight: '600', marginBottom: 16 },
+              ]}
+            >
               Account Linking
             </Text>
 
@@ -377,10 +413,16 @@ export function Profile() {
                     backgroundColor: colors.slate600,
                     padding: 12,
                     borderRadius: 8,
-                    marginBottom: 16
+                    marginBottom: 16,
                   }}
                 >
-                  <Text style={{ color: colors.white, textAlign: 'center', fontWeight: '600' }}>
+                  <Text
+                    style={{
+                      color: colors.white,
+                      textAlign: 'center',
+                      fontWeight: '600',
+                    }}
+                  >
                     📱 Anonymous Account
                   </Text>
                   <Text
@@ -388,25 +430,32 @@ export function Profile() {
                       color: colors.slate300,
                       textAlign: 'center',
                       marginTop: 4,
-                      fontSize: 13
+                      fontSize: 13,
                     }}
                   >
-                    Your data is saved locally. Link an account for recovery and multi-device sync.
+                    Your data is saved locally. Link an account for recovery and
+                    multi-device sync.
                   </Text>
                 </View>
 
                 <TouchableOpacity
+                  onPress={() => setShowLinkAccountModal(true)}
                   style={{
                     backgroundColor: colors.amber400,
                     paddingHorizontal: 24,
                     paddingVertical: 14,
                     borderRadius: 8,
                     alignItems: 'center',
-                    marginBottom: 12
+                    marginBottom: 12,
                   }}
-                  onPress={() => setShowLinkAccountModal(true)}
                 >
-                  <Text style={{ color: colors.darkText, fontSize: 16, fontWeight: 'bold' }}>
+                  <Text
+                    style={{
+                      color: colors.darkText,
+                      fontSize: 16,
+                      fontWeight: 'bold',
+                    }}
+                  >
                     Link Existing Account
                   </Text>
                   <Text
@@ -414,28 +463,40 @@ export function Profile() {
                       color: colors.darkText,
                       fontSize: 12,
                       marginTop: 2,
-                      textAlign: 'center'
+                      textAlign: 'center',
                     }}
                   >
-                    Already have an account? Restore your data. This will remove all data for{' '}
-                    {user?.email.split('@')[0] ?? 'this profile'}.
+                    Already have an account? Restore your data. This will remove
+                    all data for {user?.email.split('@')[0] ?? 'this profile'}.
                   </Text>
                 </TouchableOpacity>
 
                 <TouchableOpacity
+                  onPress={() => setShowCreateAccountModal(true)}
                   style={{
                     backgroundColor: colors.purple900,
                     paddingHorizontal: 24,
                     paddingVertical: 14,
                     borderRadius: 8,
-                    alignItems: 'center'
+                    alignItems: 'center',
                   }}
-                  onPress={() => setShowCreateAccountModal(true)}
                 >
-                  <Text style={{ color: colors.white, fontSize: 16, fontWeight: 'bold' }}>
+                  <Text
+                    style={{
+                      color: colors.white,
+                      fontSize: 16,
+                      fontWeight: 'bold',
+                    }}
+                  >
                     Create New Account
                   </Text>
-                  <Text style={{ color: colors.slate300, fontSize: 12, marginTop: 2 }}>
+                  <Text
+                    style={{
+                      color: colors.slate300,
+                      fontSize: 12,
+                      marginTop: 2,
+                    }}
+                  >
                     Link email for recovery
                   </Text>
                 </TouchableOpacity>
@@ -446,10 +507,16 @@ export function Profile() {
                   backgroundColor: colors.green600,
                   padding: 12,
                   borderRadius: 8,
-                  marginBottom: 16
+                  marginBottom: 16,
                 }}
               >
-                <Text style={{ color: colors.white, textAlign: 'center', fontWeight: '600' }}>
+                <Text
+                  style={{
+                    color: colors.white,
+                    textAlign: 'center',
+                    fontWeight: '600',
+                  }}
+                >
                   ✅ Linked to Account
                 </Text>
                 <Text
@@ -457,7 +524,7 @@ export function Profile() {
                     color: colors.green100,
                     textAlign: 'center',
                     marginTop: 4,
-                    fontSize: 13
+                    fontSize: 13,
                   }}
                 >
                   Your data is backed up and synced across devices
@@ -471,10 +538,11 @@ export function Profile() {
               style={{
                 borderTopWidth: 1,
                 borderTopColor: colors.gray700,
-                paddingTop: 32
+                paddingTop: 32,
               }}
             >
               <TouchableOpacity
+                onPress={() => setViewChangePassword(true)}
                 style={{
                   backgroundColor: colors.purple900,
                   paddingHorizontal: 32,
@@ -484,11 +552,16 @@ export function Profile() {
                   borderColor: colors.slate300,
                   width: '100%',
                   alignItems: 'center',
-                  marginTop: 8
+                  marginTop: 8,
                 }}
-                onPress={() => setViewChangePassword(true)}
               >
-                <Text style={{ color: colors.white, fontSize: 18, fontWeight: 'bold' }}>
+                <Text
+                  style={{
+                    color: colors.white,
+                    fontSize: 18,
+                    fontWeight: 'bold',
+                  }}
+                >
                   Change Password
                 </Text>
               </TouchableOpacity>
@@ -499,40 +572,28 @@ export function Profile() {
               style={{
                 borderTopWidth: 1,
                 borderTopColor: colors.gray700,
-                paddingTop: 32
+                paddingTop: 32,
               }}
             >
-              <Text style={[styles.text, { fontSize: 20, fontWeight: '600', marginBottom: 16 }]}>
+              <Text
+                style={[
+                  styles.text,
+                  { fontSize: 20, fontWeight: '600', marginBottom: 16 },
+                ]}
+              >
                 Change Password
               </Text>
 
               <View style={{ marginBottom: 16 }}>
-                <Text style={[styles.text, { marginBottom: 8 }]}>Current Password</Text>
+                <Text style={[styles.text, { marginBottom: 8 }]}>
+                  Current Password
+                </Text>
                 <TextInput
-                  style={[
-                    styles.text,
-                    {
-                      backgroundColor: colors.gray800,
-                      color: colors.white,
-                      paddingHorizontal: 16,
-                      paddingVertical: 12,
-                      borderRadius: 8,
-                      borderWidth: 1,
-                      borderColor: colors.gray600
-                    }
-                  ]}
-                  value={currentPassword}
+                  autoCapitalize="none"
                   onChangeText={setCurrentPassword}
                   placeholder="Enter current password"
                   placeholderTextColor={colors.gray400}
                   secureTextEntry
-                  autoCapitalize="none"
-                />
-              </View>
-
-              <View style={{ marginBottom: 16 }}>
-                <Text style={[styles.text, { marginBottom: 8 }]}>New Password</Text>
-                <TextInput
                   style={[
                     styles.text,
                     {
@@ -542,21 +603,23 @@ export function Profile() {
                       paddingVertical: 12,
                       borderRadius: 8,
                       borderWidth: 1,
-                      borderColor: colors.gray600
-                    }
+                      borderColor: colors.gray600,
+                    },
                   ]}
-                  value={newPassword}
+                  value={currentPassword}
+                />
+              </View>
+
+              <View style={{ marginBottom: 16 }}>
+                <Text style={[styles.text, { marginBottom: 8 }]}>
+                  New Password
+                </Text>
+                <TextInput
+                  autoCapitalize="none"
                   onChangeText={setNewPassword}
                   placeholder="Enter new password (min 8 characters)"
                   placeholderTextColor={colors.gray400}
                   secureTextEntry
-                  autoCapitalize="none"
-                />
-              </View>
-
-              <View style={{ marginBottom: 16 }}>
-                <Text style={[styles.text, { marginBottom: 8 }]}>Confirm New Password</Text>
-                <TextInput
                   style={[
                     styles.text,
                     {
@@ -566,19 +629,42 @@ export function Profile() {
                       paddingVertical: 12,
                       borderRadius: 8,
                       borderWidth: 1,
-                      borderColor: colors.gray600
-                    }
+                      borderColor: colors.gray600,
+                    },
                   ]}
-                  value={confirmPassword}
+                  value={newPassword}
+                />
+              </View>
+
+              <View style={{ marginBottom: 16 }}>
+                <Text style={[styles.text, { marginBottom: 8 }]}>
+                  Confirm New Password
+                </Text>
+                <TextInput
+                  autoCapitalize="none"
                   onChangeText={setConfirmPassword}
                   placeholder="Re-enter new password"
                   placeholderTextColor={colors.gray400}
                   secureTextEntry
-                  autoCapitalize="none"
+                  style={[
+                    styles.text,
+                    {
+                      backgroundColor: colors.gray800,
+                      color: colors.white,
+                      paddingHorizontal: 16,
+                      paddingVertical: 12,
+                      borderRadius: 8,
+                      borderWidth: 1,
+                      borderColor: colors.gray600,
+                    },
+                  ]}
+                  value={confirmPassword}
                 />
               </View>
 
               <TouchableOpacity
+                disabled={isChangingPassword}
+                onPress={handleChangePassword}
                 style={{
                   backgroundColor: colors.purple900,
                   paddingHorizontal: 32,
@@ -588,12 +674,16 @@ export function Profile() {
                   borderColor: colors.slate300,
                   width: '100%',
                   alignItems: 'center',
-                  marginTop: 8
+                  marginTop: 8,
                 }}
-                onPress={handleChangePassword}
-                disabled={isChangingPassword}
               >
-                <Text style={{ color: colors.white, fontSize: 18, fontWeight: 'bold' }}>
+                <Text
+                  style={{
+                    color: colors.white,
+                    fontSize: 18,
+                    fontWeight: 'bold',
+                  }}
+                >
                   {isChangingPassword ? 'Changing...' : 'Change Password'}
                 </Text>
               </TouchableOpacity>
@@ -606,7 +696,6 @@ export function Profile() {
       {user && (
         <>
           <LinkAccountModal
-            visible={showLinkAccountModal}
             currentUserId={user.id}
             onClose={() => setShowLinkAccountModal(false)}
             onSuccess={() => {
@@ -617,10 +706,10 @@ export function Profile() {
                 router.replace('/rivalries');
               }, 1500);
             }}
+            visible={showLinkAccountModal}
           />
 
           <CreateAccountModal
-            visible={showCreateAccountModal}
             currentUserId={user.id}
             onClose={() => setShowCreateAccountModal(false)}
             onSuccess={() => {
@@ -631,6 +720,7 @@ export function Profile() {
                 router.replace('/rivalries');
               }, 1500);
             }}
+            visible={showCreateAccountModal}
           />
         </>
       )}

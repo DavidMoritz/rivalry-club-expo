@@ -1,7 +1,7 @@
+import { generateClient } from 'aws-amplify/data';
 import { useRouter } from 'expo-router';
 import { StatusBar } from 'expo-status-bar';
 import React, { useEffect, useState } from 'react';
-import { generateClient } from 'aws-amplify/data';
 import type { Schema } from '../amplify/data/resource';
 
 import { Auth } from '../src/components/screens/Auth';
@@ -36,9 +36,9 @@ export default function AuthRoute() {
       const listResult = await getClient().models.User.list({
         filter: {
           awsSub: {
-            eq: cognitoUserId
-          }
-        }
+            eq: cognitoUserId,
+          },
+        },
       });
 
       const users = listResult.data;

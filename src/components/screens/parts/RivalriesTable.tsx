@@ -3,8 +3,8 @@ import React from 'react';
 import { FlatList, Text, TouchableOpacity, View } from 'react-native';
 
 import { useAllRivalries } from '../../../providers/all-rivalries';
-import { styles } from '../../../utils/styles';
 import { colors } from '../../../utils/colors';
+import { styles } from '../../../utils/styles';
 import { RivalryRow } from './RivalryRow';
 
 interface Rivalry {
@@ -30,14 +30,14 @@ export function RivalriesTable({
   rivalries,
   currentUserId,
   onSelectRivalry,
-  showHidden = false
+  showHidden = false,
 }: RivalriesTableProps) {
   const router = useRouter();
   const { pendingRivalries } = useAllRivalries();
   const hasPendingRivalries = pendingRivalries.awaitingAcceptance.length > 0;
 
   // Filter rivalries based on showHidden prop
-  const visibleRivalries = rivalries.filter((rivalry) => {
+  const visibleRivalries = rivalries.filter(rivalry => {
     const isUserA = rivalry.userAId === currentUserId;
     const isHidden = isUserA ? rivalry.hiddenByA : rivalry.hiddenByB;
 
@@ -50,8 +50,9 @@ export function RivalriesTable({
     <>
       {visibleRivalries && visibleRivalries.length > 0 && (
         <FlatList
+          contentContainerStyle={{ padding: 16 }}
           data={visibleRivalries}
-          keyExtractor={(item) => item.id}
+          keyExtractor={item => item.id}
           renderItem={({ item }) => {
             // Determine opponent's name based on current user
             const isUserA = item.userAId === currentUserId;
@@ -59,20 +60,22 @@ export function RivalriesTable({
 
             return (
               <RivalryRow
-                updatedAt={item.updatedAt}
-                opponentName={opponentName}
                 contestCount={item.contestCount}
                 onPress={() => onSelectRivalry(item)}
+                opponentName={opponentName}
+                updatedAt={item.updatedAt}
               />
             );
           }}
-          contentContainerStyle={{ padding: 16 }}
         />
       )}
 
       {hasPendingRivalries && (
         <View style={buttonContainerStyle}>
-          <TouchableOpacity onPress={() => router.push('/pending')} style={pendingButtonStyle}>
+          <TouchableOpacity
+            onPress={() => router.push('/pending')}
+            style={pendingButtonStyle}
+          >
             <Text style={buttonTextStyle}>Pending Rivalry Found</Text>
           </TouchableOpacity>
         </View>
@@ -80,7 +83,10 @@ export function RivalriesTable({
 
       {(!visibleRivalries || visibleRivalries.length === 0) && (
         <View style={buttonContainerStyle}>
-          <TouchableOpacity onPress={() => router.push('/how-to-play')} style={howToPlayButtonStyle}>
+          <TouchableOpacity
+            onPress={() => router.push('/how-to-play')}
+            style={howToPlayButtonStyle}
+          >
             <Text style={buttonTextStyle}>How to Play</Text>
           </TouchableOpacity>
         </View>
@@ -94,7 +100,7 @@ const bold = 'bold' as const;
 
 const buttonContainerStyle = {
   paddingHorizontal: 16,
-  paddingBottom: 16
+  paddingBottom: 16,
 };
 
 const baseButtonStyle = {
@@ -102,22 +108,22 @@ const baseButtonStyle = {
   paddingHorizontal: 24,
   paddingVertical: 12,
   borderRadius: 8,
-  alignItems: center
+  alignItems: center,
 };
 
 const pendingButtonStyle = {
   ...baseButtonStyle,
-  marginTop: 8
+  marginTop: 8,
 };
 
 const howToPlayButtonStyle = {
   ...baseButtonStyle,
-  marginTop: 20
+  marginTop: 20,
 };
 
 const buttonTextStyle = {
   ...styles.text,
   fontSize: 16,
   fontWeight: bold,
-  color: colors.darkText2
+  color: colors.darkText2,
 };

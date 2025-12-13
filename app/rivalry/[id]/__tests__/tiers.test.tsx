@@ -1,11 +1,10 @@
-import React from 'react';
+import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { render, waitFor } from '@testing-library/react-native';
 import { useLocalSearchParams } from 'expo-router';
-import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
-
-import TiersRoute from '../tiers';
-import { RivalryProvider } from '../../../../src/providers/rivalry';
+import React from 'react';
 import { getMRivalry } from '../../../../src/models/m-rivalry';
+import { RivalryProvider } from '../../../../src/providers/rivalry';
+import TiersRoute from '../tiers';
 
 // Mock expo-router
 jest.mock('expo-router', () => ({
@@ -118,7 +117,11 @@ describe('TiersRoute', () => {
 
     render(
       <QueryClientProvider client={queryClient}>
-        <RivalryProvider rivalry={mockRivalry} userAName="Alice" userBName="Bob">
+        <RivalryProvider
+          rivalry={mockRivalry}
+          userAName="Alice"
+          userBName="Bob"
+        >
           <TiersRoute />
         </RivalryProvider>
       </QueryClientProvider>

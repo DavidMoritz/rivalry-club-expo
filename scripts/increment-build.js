@@ -7,7 +7,7 @@ const appJsonPath = path.join(__dirname, '../app.json');
 const appJson = JSON.parse(fs.readFileSync(appJsonPath, 'utf8'));
 
 // Get current build number or default to 1
-const currentBuild = parseInt(appJson.expo.ios.buildNumber || '1', 10);
+const currentBuild = Number.parseInt(appJson.expo.ios.buildNumber || '1', 10);
 const newBuild = currentBuild + 1;
 
 // Update build number

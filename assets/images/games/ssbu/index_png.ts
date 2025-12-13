@@ -1,4 +1,4 @@
-import { ImageSourcePropType } from 'react-native';
+import type { ImageSourcePropType } from 'react-native';
 
 // Import all fighter images
 const banjo_kazooie = require('./fighters/banjo_kazooie.png');
@@ -182,5 +182,5 @@ export const fighterImages: DynamicImages = {
   yoshi,
   young_link,
   zelda,
-  zero_suit_samus
+  zero_suit_samus,
 };

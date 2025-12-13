@@ -1,8 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { Text, TouchableOpacity, View } from 'react-native';
-
-import { darkStyles, styles } from '../../../utils/styles';
 import { colors } from '../../../utils/colors';
+import { darkStyles, styles } from '../../../utils/styles';
 
 interface RivalryRowProps {
   updatedAt: string;
@@ -42,7 +41,7 @@ export function RivalryRow({
   updatedAt,
   opponentName,
   onPress,
-  contestCount = 0
+  contestCount = 0,
 }: RivalryRowProps) {
   const [updatedDisplay, setUpdatedDisplay] = useState<string>('');
 
@@ -53,14 +52,29 @@ export function RivalryRow({
   }, [updatedAt]);
 
   return (
-    <TouchableOpacity onPress={onPress} style={[rivalryRowStyle, darkStyles.container]}>
-      <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' }}>
+    <TouchableOpacity
+      onPress={onPress}
+      style={[rivalryRowStyle, darkStyles.container]}
+    >
+      <View
+        style={{
+          flexDirection: 'row',
+          alignItems: 'center',
+          justifyContent: 'space-between',
+        }}
+      >
         <View style={{ flex: 1 }}>
-          <Text style={[styles.text, { fontSize: 18, fontWeight: '600', marginBottom: 4 }]}>
+          <Text
+            style={[
+              styles.text,
+              { fontSize: 18, fontWeight: '600', marginBottom: 4 },
+            ]}
+          >
             vs. {opponentName || 'Unknown'}
           </Text>
           <Text style={[styles.text, { fontSize: 12, color: colors.gray400 }]}>
-            {updatedDisplay} • {contestCount} contest{contestCount !== 1 ? 's' : ''}
+            {updatedDisplay} • {contestCount} contest
+            {contestCount !== 1 ? 's' : ''}
           </Text>
         </View>
         <View
@@ -71,7 +85,7 @@ export function RivalryRow({
             borderColor: colors.green600,
             borderRadius: 4,
             alignItems: 'center',
-            justifyContent: 'center'
+            justifyContent: 'center',
           }}
         >
           <Text style={{ color: colors.green600, fontSize: 10 }}>✓</Text>
@@ -84,5 +98,5 @@ export function RivalryRow({
 const rivalryRowStyle = {
   borderWidth: 1,
   paddingHorizontal: 10,
-  paddingVertical: 15
+  paddingVertical: 15,
 };

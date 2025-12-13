@@ -8,6 +8,11 @@
       name="description"
       content="Compete with friends in private tier list rivalries. Create rankings for your favorite fighting game characters and settle the debate."
     />
+    <!-- Favicons -->
+    <link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png" />
+    <link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png" />
+    <link rel="icon" type="image/png" sizes="16x16" href="/favicon-16x16.png" />
+    <link rel="manifest" href="/site.webmanifest" />
     <style>
       * {
         margin: 0;
@@ -480,13 +485,18 @@
 
       <div class="cta-section">
         <a href="#" class="cta-button" onclick="showModal(event)">Download on App Store</a>
-        <p class="coming-soon"><a href="#" onclick="showModal(event)">Coming Soon to the App Store</a></p>
+        <p class="coming-soon">
+          <a href="#" onclick="showModal(event)">Coming Soon to the App Store</a>
+        </p>
       </div>
 
       <div class="modal-overlay" id="modal" onclick="hideModal(event)">
         <div class="modal" onclick="event.stopPropagation()">
           <h2>Coming Soon!</h2>
-          <p>Rivalry Club is currently pending review with the App Store. It should be available for download very soon!</p>
+          <p>
+            Rivalry Club is currently pending review with the App Store. It should be available for
+            download very soon!
+          </p>
           <button class="modal-close" onclick="hideModal(event)">Got it</button>
         </div>
       </div>
@@ -510,7 +520,7 @@
         document.getElementById('modal').classList.remove('active');
       }
 
-      document.addEventListener('keydown', function(event) {
+      document.addEventListener('keydown', function (event) {
         if (event.key === 'Escape') {
           hideModal();
         }

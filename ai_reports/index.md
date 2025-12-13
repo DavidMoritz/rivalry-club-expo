@@ -94,6 +94,20 @@ This directory contains technical reports and documentation generated during dev
 **Key Learning**: Always check official source code repositories for correct configuration; TypeScript type checks passing ≠ runtime success
 **Research Sources**: [AWS amplify-backend tsconfig](https://github.com/aws-amplify/amplify-backend/blob/main/tsconfig.base.json)
 
+## Legal & Compliance Documents
+
+### PRIVACY_POLICY.md
+**Topic**: Privacy policy for Rivalry Club mobile app
+**Summary**: Accurate, mobile-specific privacy policy that reflects the actual data practices of the Rivalry Club app. Addresses issues from the generic template including web-focused language, non-existent features (purchases, business partners, affiliates), and unclear data sharing. Specifically mentions AWS Cognito, Amplify, and S3 as service providers. Clarifies that rivalries are private 1-on-1 (not public), and that there are no purchases, ads, or third-party data sharing. Written in plain language appropriate for App Store requirements.
+**Use when**: Preparing for App Store submission, updating privacy documentation, responding to user privacy questions, legal compliance review
+**Key Points**:
+- Mobile app language (device type, screens viewed) instead of web language (browser type, pages visited)
+- AWS service providers explicitly listed (Cognito, Amplify, S3)
+- Removes false claims about purchases, business partners, and affiliates
+- Clarifies private 1-on-1 rivalries (no public features)
+- No third-party advertising or marketing
+**Status**: Draft - needs contact email added before publication
+
 ## Code Quality & Development Guidelines
 
 ### REFACTORING_PREFERENCES.md

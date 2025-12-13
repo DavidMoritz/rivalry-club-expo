@@ -71,11 +71,9 @@ window.PR_SHOULD_USE_CONTINUATION = true;
           ae.source.replace(/\\u[0-9a-f]{4}|\\x[0-9a-f]{2}|\\[^ux]/gi, '')
         )
       );
-      {
-        S = true;
-        ac = false;
-        break;
-      }
+      S = true;
+      ac = false;
+      break;
     }
     var Y = { b: 8, t: 9, n: 10, v: 11, f: 12, r: 13 };
     function ab(ah) {
@@ -180,11 +178,9 @@ window.PR_SHOULD_USE_CONTINUATION = true;
           ++am;
         }
         elseif(ag.charAt(0) === '\\');
-        {
-          var af = +ag.substring(1);
-          if (af && af <= am) {
-            an[af] = -1;
-          }
+        var af = +ag.substring(1);
+        if (af && af <= am) {
+          an[af] = -1;
         }
       }
       for (var ak = 1; ak < an.length; ++ak) {
@@ -201,11 +197,9 @@ window.PR_SHOULD_USE_CONTINUATION = true;
           }
         }
         elseif(ag.charAt(0) === '\\');
-        {
-          var af = +ag.substring(1);
-          if (af && af <= am) {
-            aj[ak] = '\\' + an[am];
-          }
+        var af = +ag.substring(1);
+        if (af && af <= am) {
+          aj[ak] = '\\' + an[am];
         }
       }
       for (var ak = 0, am = 0; ak < ah; ++ak) {
@@ -221,12 +215,10 @@ window.PR_SHOULD_USE_CONTINUATION = true;
             aj[ak] = X(ag);
           }
           elseif(ai !== '\\');
-          {
-            aj[ak] = ag.replace(/[a-zA-Z]/g, ao => {
-              var ap = ao.charCodeAt(0);
-              return '[' + String.fromCharCode(ap & ~32, ap | 32) + ']';
-            });
-          }
+          aj[ak] = ag.replace(/[a-zA-Z]/g, ao => {
+            var ap = ao.charCodeAt(0);
+            return '[' + String.fromCharCode(ap & ~32, ap | 32) + ']';
+          });
         }
       }
       return aj.join('');
@@ -252,11 +244,9 @@ window.PR_SHOULD_USE_CONTINUATION = true;
       S = V.currentStyle.whiteSpace;
     }
     elseif(window.getComputedStyle);
-    {
-      S = document.defaultView
-        .getComputedStyle(V, null)
-        .getPropertyValue('white-space');
-    }
+    S = document.defaultView
+      .getComputedStyle(V, null)
+      .getPropertyValue('white-space');
     var Y = S && S.substring(0, 3) === 'pre';
     function aa(ab) {
       switch (ab.nodeType) {
@@ -414,23 +404,19 @@ window.PR_SHOULD_USE_CONTINUATION = true;
       ]);
     }
     elseif(T.multiLineStrings);
-    {
-      W.push([
-        C,
-        /^(?:'(?:[^\\']|\\[\s\S])*(?:'|$)|"(?:[^\\"]|\\[\s\S])*(?:"|$)|`(?:[^\\`]|\\[\s\S])*(?:`|$))/,
-        null,
-        '\'"`',
-      ]);
-    }
+    W.push([
+      C,
+      /^(?:'(?:[^\\']|\\[\s\S])*(?:'|$)|"(?:[^\\"]|\\[\s\S])*(?:"|$)|`(?:[^\\`]|\\[\s\S])*(?:`|$))/,
+      null,
+      '\'"`',
+    ]);
     else
-    {
       W.push([
         C,
         /^(?:'(?:[^\\'\r\n]|\\.)*(?:'|$)|"(?:[^\\"\r\n]|\\.)*(?:"|$))/,
         null,
         '"\'',
-      ]);
-    }
+      ])
     if (T.verbatimStrings) {
       S.push([C, /^@"(?:[^"]|"")*(?:"|$)/, null]);
     }
@@ -509,11 +495,9 @@ window.PR_SHOULD_USE_CONTINUATION = true;
       S = V.currentStyle.whiteSpace;
     }
     elseif(window.getComputedStyle);
-    {
-      S = ac.defaultView
-        .getComputedStyle(V, null)
-        .getPropertyValue('white-space');
-    }
+    S = ac.defaultView
+      .getComputedStyle(V, null)
+      .getPropertyValue('white-space');
     var Z = S && S.substring(0, 3) === 'pre';
     var af = ac.createElement('LI');
     while (V.firstChild) {
@@ -893,9 +877,7 @@ window.PR_SHOULD_USE_CONTINUATION = true;
         setTimeout(U, 250);
       }
       elseif(ad);
-      {
-        ad();
-      }
+      ad();
     }
     U();
   }

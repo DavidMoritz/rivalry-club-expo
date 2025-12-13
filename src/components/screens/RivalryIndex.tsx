@@ -34,12 +34,14 @@ export function RivalryIndex() {
   } = useUserRivalries(user?.id);
   const { setRivalries } = useAllRivalriesUpdate();
   const [showHiddenRivalries, setShowHiddenRivalries] = useState(false);
+  const [providerInitialized, setProviderInitialized] = useState(false);
 
   // Refetch rivalries when the screen comes into focus
   useFocusEffect(
     useCallback(() => {
       refetch();
       setShowHiddenRivalries(false);
+      setProviderInitialized(false);
     }, [refetch])
   );
 
@@ -47,6 +49,7 @@ export function RivalryIndex() {
   useEffect(() => {
     if (allRivalries && user?.id) {
       setRivalries(allRivalries as any, user.id);
+      setProviderInitialized(true);
     }
   }, [allRivalries, user?.id, setRivalries]);
 
@@ -88,16 +91,14 @@ export function RivalryIndex() {
     });
   }
 
-  const isLoading = userLoading || rivalriesLoading;
+  const isLoading = userLoading || rivalriesLoading || !providerInitialized;
   const error = userError || rivalriesError;
 
   if (isLoading) {
     return (
       <SafeAreaView style={[styles.container, darkStyles.container]}>
         <View style={centeredContainerStyle}>
-          <Text style={loadingTextStyle}>
-            {userLoading ? 'Loading user data...' : 'Loading rivalries...'}
-          </Text>
+          <Text style={loadingTextStyle}>Loading rivalries...</Text>
         </View>
       </SafeAreaView>
     );

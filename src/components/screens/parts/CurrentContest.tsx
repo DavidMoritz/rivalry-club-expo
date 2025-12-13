@@ -65,6 +65,9 @@ export function CurrentContest({
     const foundFighterB = fighterByIdFromGame(gameData, contest.tierSlotB.fighterId);
     if (foundFighterA) setFighterA(foundFighterA);
     if (foundFighterB) setFighterB(foundFighterB);
+
+    // Clear winner when contest changes (after shuffle or new contest)
+    setWinner(undefined);
   }, [contest, game, rivalry]);
 
   if (!rivalry) return null;
@@ -103,13 +106,15 @@ export function CurrentContest({
         >
           {fighterA && (
             <View
-              style={[fighterContainerStyle, getFighterBorderStyle(contest?.tierSlotA === winner)]}
+              style={[
+                fighterContainerStyle,
+                winner && contest?.tierSlotA === winner ? fighterWinnerStyle : fighterNonWinnerStyle
+              ]}
             >
               {canShuffle && (
                 <TouchableOpacity
                   style={[shuffleButtonStyle, { [isUserB ? 'right' : 'left']: -10 }]}
                   onPress={() => {
-                    setWinner(undefined);
                     onPressShuffle('A');
                   }}
                   disabled={shufflingSlot === 'A'}
@@ -120,7 +125,7 @@ export function CurrentContest({
               <Text
                 style={[
                   currentContestUserStyle,
-                  { color: getTextColor(contest?.tierSlotA === winner) }
+                  { color: getTextColor(!!(winner && contest?.tierSlotA === winner)) }
                 ]}
               >
                 {rivalry.displayUserAName()} {rivalry.tierListA?.prestigeDisplay}
@@ -137,7 +142,10 @@ export function CurrentContest({
                 }}
               />
               <Text
-                style={[fighterNameStyle, { color: getTextColor(contest?.tierSlotA === winner) }]}
+                style={[
+                  fighterNameStyle,
+                  { color: getTextColor(!!(winner && contest?.tierSlotA === winner)) }
+                ]}
               >
                 {fighterA.name}{' '}
               </Text>
@@ -155,13 +163,15 @@ export function CurrentContest({
           )}
           {fighterB && (
             <View
-              style={[fighterContainerStyle, getFighterBorderStyle(contest?.tierSlotB === winner)]}
+              style={[
+                fighterContainerStyle,
+                winner && contest?.tierSlotB === winner ? fighterWinnerStyle : fighterNonWinnerStyle
+              ]}
             >
               {canShuffle && (
                 <TouchableOpacity
                   style={[shuffleButtonStyle, { [isUserB ? 'left' : 'right']: -10 }]}
                   onPress={() => {
-                    setWinner(undefined);
                     onPressShuffle('B');
                   }}
                   disabled={shufflingSlot === 'B'}
@@ -172,7 +182,7 @@ export function CurrentContest({
               <Text
                 style={[
                   currentContestUserStyle,
-                  { color: getTextColor(contest?.tierSlotB === winner) }
+                  { color: getTextColor(!!(winner && contest?.tierSlotB === winner)) }
                 ]}
               >
                 {rivalry.displayUserBName()} {rivalry.tierListB?.prestigeDisplay}
@@ -189,7 +199,10 @@ export function CurrentContest({
                 }}
               />
               <Text
-                style={[fighterNameStyle, { color: getTextColor(contest?.tierSlotB === winner) }]}
+                style={[
+                  fighterNameStyle,
+                  { color: getTextColor(!!(winner && contest?.tierSlotB === winner)) }
+                ]}
               >
                 {fighterB.name}
               </Text>
@@ -254,11 +267,16 @@ export function CurrentContest({
   );
 }
 
-// Helper function to get border and background color based on winner status
-const getFighterBorderStyle = (isWinner: boolean) => ({
-  borderColor: isWinner ? colors.green700 : colors.none,
-  backgroundColor: isWinner ? colors.blue100 : colors.none
-});
+// Static style objects for winner/non-winner states
+const fighterWinnerStyle = {
+  borderColor: colors.green700,
+  backgroundColor: colors.blue100
+};
+
+const fighterNonWinnerStyle = {
+  borderColor: colors.none,
+  backgroundColor: colors.none
+};
 
 // Style constants
 const center = 'center' as const;
@@ -324,7 +342,9 @@ const fighterContainerStyle = {
   alignItems: center,
   marginVertical: 20,
   padding: 8,
-  borderRadius: 12
+  borderRadius: 12,
+  backgroundColor: colors.none,
+  borderColor: colors.none
 };
 
 const shuffleButtonStyle = {

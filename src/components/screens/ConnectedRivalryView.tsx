@@ -144,6 +144,7 @@ export function ConnectedRivalryView({
 
         rivalry.currentContest = currentContest;
         setShufflingSlot(null); // Clear shuffling state when done
+        // Note: CurrentContest component will clear winner state via useEffect
       }
     });
 
@@ -211,7 +212,7 @@ export function ConnectedRivalryView({
     error
   } = useRivalryWithAllInfoQuery({
     rivalry,
-    enabled: !isResolvingContest,
+    enabled: !isResolvingContest && !shufflingSlot,
     onSuccess: (populatedRivalry: MRivalry) => {
       updateRivalryProvider(populatedRivalry);
       setIsResolvingContest(false);

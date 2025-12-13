@@ -42,10 +42,10 @@ export function BattleResults({
   // Calculate new tiers from positions returned by adjustStanding
   // Subtract for winner (moves up = lower position number), add for loser (moves down = higher position number)
   const winnerNewTier = computeTierFromPosition(
-    winnerPosition !== null ? winnerPosition - stockCount * STEPS_PER_STOCK : null
+    winnerPosition !== null ? Math.max(0, winnerPosition - stockCount * STEPS_PER_STOCK) : null
   );
   const loserNewTier = computeTierFromPosition(
-    loserPosition !== null ? loserPosition + stockCount * STEPS_PER_STOCK : null
+    loserPosition !== null ? Math.min(82, loserPosition + stockCount * STEPS_PER_STOCK) : null
   );
 
   // Get tier colors

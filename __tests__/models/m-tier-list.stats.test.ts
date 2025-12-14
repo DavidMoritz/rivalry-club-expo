@@ -365,7 +365,7 @@ describe('MTierList - Diff Checking', () => {
       });
       expect(pojo.tierSlot2).toEqual({
         id: 'slot-3',
-        position: null,
+        position: 0, // null coalesces to 0 in getPositionsPojo
         contestCount: 0,
         winCount: 0,
       });

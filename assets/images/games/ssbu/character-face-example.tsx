@@ -2,7 +2,7 @@ import type React from 'react';
 import { Image, StyleSheet, View, type ViewStyle } from 'react-native';
 import { colors } from '../../../../src/utils/colors';
 import { fighterImages } from './index';
-import { getCharacterZoomStyle } from './useCharacterZoom';
+import { getCharacterZoomStyle } from './use-character-zoom';
 
 interface CharacterFaceProps {
   characterKey: string;

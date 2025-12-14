@@ -47,13 +47,19 @@ export function RivalryIndex() {
 
   // Populate the AllRivalriesProvider when rivalries are loaded
   useEffect(() => {
-    if (allRivalries.length > 0 && user?.id) {
-      // Type assertion needed: hook returns simplified RivalryWithUsers,
-      // provider expects MRivalry-based type (structurally compatible for this use)
-      setRivalries(allRivalries as Parameters<typeof setRivalries>[0], user.id);
+    // Mark as initialized once rivalries query completes (even if empty)
+    if (!rivalriesLoading && user?.id) {
+      if (allRivalries.length > 0) {
+        // Type assertion needed: hook returns simplified RivalryWithUsers,
+        // provider expects MRivalry-based type (structurally compatible for this use)
+        setRivalries(
+          allRivalries as Parameters<typeof setRivalries>[0],
+          user.id
+        );
+      }
       setProviderInitialized(true);
     }
-  }, [allRivalries, user?.id, setRivalries]);
+  }, [allRivalries, rivalriesLoading, user?.id, setRivalries]);
 
   // Check if there are any hidden rivalries
   const hasHiddenRivalries = useMemo(() => {
@@ -94,8 +100,10 @@ export function RivalryIndex() {
     });
   }
 
-  const isLoading = userLoading || rivalriesLoading || !providerInitialized;
   const error = userError || rivalriesError;
+  // Check for errors before provider initialization to avoid stuck loading state
+  const isLoading =
+    userLoading || rivalriesLoading || !(providerInitialized || error);
 
   if (isLoading) {
     return (

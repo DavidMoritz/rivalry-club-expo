@@ -66,7 +66,8 @@ describe('RivalryIndex', () => {
 
       const { getByText } = render(<RivalryIndex />);
 
-      expect(getByText('Loading user data...')).toBeTruthy();
+      // Component shows unified loading message for all loading states
+      expect(getByText('Loading rivalries...')).toBeTruthy();
     });
 
     it('shows loading state when rivalries are loading', () => {
@@ -77,6 +78,7 @@ describe('RivalryIndex', () => {
       });
       mockUseUserRivalries.mockReturnValue({
         rivalries: [],
+        allRivalries: [],
         isLoading: true,
         error: null,
         refetch: jest.fn(),
@@ -117,6 +119,7 @@ describe('RivalryIndex', () => {
       });
       mockUseUserRivalries.mockReturnValue({
         rivalries: [],
+        allRivalries: [],
         isLoading: false,
         error: new Error('Failed to fetch rivalries'),
         refetch: jest.fn(),

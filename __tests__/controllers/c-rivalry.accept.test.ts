@@ -15,22 +15,17 @@ interface MockTierListData {
   };
 }
 
-interface MockFunctions {
-  mockRivalryGet: jest.Mock;
-  mockRivalryUpdate: jest.Mock;
-  mockRivalryList: jest.Mock;
-  mockFighterList: jest.Mock;
-  mockTierListQuery: jest.Mock;
-  mockTierListCreate: jest.Mock;
-  mockTierListList: jest.Mock;
-  mockTierListGet: jest.Mock;
-  mockTierSlotList: jest.Mock;
-  mockTierSlotCreate: jest.Mock;
-}
-
-declare const global: typeof globalThis & {
-  mockAcceptRivalryFns: MockFunctions;
-};
+// Define mocks in outer scope with 'mock' prefix (allowed by Jest)
+const mockRivalryGet = jest.fn();
+const mockRivalryUpdate = jest.fn();
+const mockRivalryList = jest.fn();
+const mockFighterList = jest.fn();
+const mockTierListQuery = jest.fn();
+const mockTierListCreate = jest.fn();
+const mockTierListList = jest.fn();
+const mockTierListGet = jest.fn();
+const mockTierSlotList = jest.fn();
+const mockTierSlotCreate = jest.fn();
 
 // Mock the m-tier-list module for dynamic import
 jest.mock('../../src/models/m-tier-list', () => ({
@@ -60,42 +55,26 @@ jest.mock('../../src/models/m-tier-list', () => ({
 
 // Mock the aws-amplify/data module
 jest.mock('aws-amplify/data', () => {
-  const mockFns = {
-    mockRivalryGet: jest.fn(),
-    mockRivalryUpdate: jest.fn(),
-    mockRivalryList: jest.fn(),
-    mockFighterList: jest.fn(),
-    mockTierListQuery: jest.fn(),
-    mockTierListCreate: jest.fn(),
-    mockTierListList: jest.fn(),
-    mockTierListGet: jest.fn(),
-    mockTierSlotList: jest.fn(),
-    mockTierSlotCreate: jest.fn(),
-  };
-
-  // Store references globally for use in tests
-  global.mockAcceptRivalryFns = mockFns;
-
   return {
     generateClient: jest.fn(() => ({
       models: {
         Rivalry: {
-          get: mockFns.mockRivalryGet,
-          update: mockFns.mockRivalryUpdate,
-          list: mockFns.mockRivalryList,
+          get: mockRivalryGet,
+          update: mockRivalryUpdate,
+          list: mockRivalryList,
         },
         Fighter: {
-          list: mockFns.mockFighterList,
+          list: mockFighterList,
         },
         TierList: {
-          tierListsByUserIdAndUpdatedAt: mockFns.mockTierListQuery,
-          create: mockFns.mockTierListCreate,
-          list: mockFns.mockTierListList,
-          get: mockFns.mockTierListGet,
+          tierListsByUserIdAndUpdatedAt: mockTierListQuery,
+          create: mockTierListCreate,
+          list: mockTierListList,
+          get: mockTierListGet,
         },
         TierSlot: {
-          list: mockFns.mockTierSlotList,
-          create: mockFns.mockTierSlotCreate,
+          list: mockTierSlotList,
+          create: mockTierSlotCreate,
         },
       },
     })),
@@ -106,16 +85,6 @@ import { useAcceptRivalryMutation } from '../../src/controllers/c-rivalry';
 
 describe('useAcceptRivalryMutation', () => {
   let queryClient: QueryClient;
-  let mockRivalryGet: jest.Mock;
-  let mockRivalryUpdate: jest.Mock;
-  let mockRivalryList: jest.Mock;
-  let mockFighterList: jest.Mock;
-  let _mockTierListQuery: jest.Mock;
-  let mockTierListCreate: jest.Mock;
-  let mockTierListList: jest.Mock;
-  let mockTierListGet: jest.Mock;
-  let _mockTierSlotList: jest.Mock;
-  let mockTierSlotCreate: jest.Mock;
 
   beforeEach(() => {
     queryClient = new QueryClient({
@@ -131,19 +100,6 @@ describe('useAcceptRivalryMutation', () => {
         },
       },
     });
-
-    // Get references to the mocked functions
-    const globalMocks = global.mockAcceptRivalryFns;
-    mockRivalryGet = globalMocks.mockRivalryGet;
-    mockRivalryUpdate = globalMocks.mockRivalryUpdate;
-    mockRivalryList = globalMocks.mockRivalryList;
-    mockFighterList = globalMocks.mockFighterList;
-    _mockTierListQuery = globalMocks.mockTierListQuery;
-    mockTierListCreate = globalMocks.mockTierListCreate;
-    mockTierListList = globalMocks.mockTierListList;
-    mockTierListGet = globalMocks.mockTierListGet;
-    _mockTierSlotList = globalMocks.mockTierSlotList;
-    mockTierSlotCreate = globalMocks.mockTierSlotCreate;
 
     jest.clearAllMocks();
   });

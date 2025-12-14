@@ -3,44 +3,30 @@ import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { renderHook, waitFor } from '@testing-library/react-native';
 import React from 'react';
 
-interface MockFunctions {
-  mockContestDelete: jest.Mock;
-  mockContestUpdate: jest.Mock;
-  mockTierListUpdate: jest.Mock;
-  mockTierSlotUpdate: jest.Mock;
-  mockRivalryUpdate: jest.Mock;
-}
-
-declare const global: typeof globalThis & { mockFns: MockFunctions };
+// Define mocks in outer scope with 'mock' prefix (allowed by Jest)
+const mockContestDelete = jest.fn();
+const mockContestUpdate = jest.fn();
+const mockTierListUpdate = jest.fn();
+const mockTierSlotUpdate = jest.fn();
+const mockRivalryUpdate = jest.fn();
 
 // Mock the aws-amplify/data module
 jest.mock('aws-amplify/data', () => {
-  const mockFns = {
-    mockContestDelete: jest.fn(),
-    mockContestUpdate: jest.fn(),
-    mockTierListUpdate: jest.fn(),
-    mockTierSlotUpdate: jest.fn(),
-    mockRivalryUpdate: jest.fn(),
-  };
-
-  // Store references globally for use in tests
-  global.mockFns = mockFns;
-
   return {
     generateClient: jest.fn(() => ({
       models: {
         Contest: {
-          delete: mockFns.mockContestDelete,
-          update: mockFns.mockContestUpdate,
+          delete: mockContestDelete,
+          update: mockContestUpdate,
         },
         TierList: {
-          update: mockFns.mockTierListUpdate,
+          update: mockTierListUpdate,
         },
         TierSlot: {
-          update: mockFns.mockTierSlotUpdate,
+          update: mockTierSlotUpdate,
         },
         Rivalry: {
-          update: mockFns.mockRivalryUpdate,
+          update: mockRivalryUpdate,
         },
       },
     })),
@@ -59,11 +45,6 @@ type Contest = Schema['Contest']['type'];
 
 describe('useDeleteMostRecentContestMutation', () => {
   let queryClient: QueryClient;
-  let mockContestDelete: jest.Mock;
-  let mockContestUpdate: jest.Mock;
-  let mockTierListUpdate: jest.Mock;
-  let mockTierSlotUpdate: jest.Mock;
-  let mockRivalryUpdate: jest.Mock;
 
   beforeEach(() => {
     queryClient = new QueryClient({
@@ -72,14 +53,6 @@ describe('useDeleteMostRecentContestMutation', () => {
         mutations: { retry: false },
       },
     });
-
-    // Get references to the mocked functions
-    const globalMocks = global.mockFns;
-    mockContestDelete = globalMocks.mockContestDelete;
-    mockContestUpdate = globalMocks.mockContestUpdate;
-    mockTierListUpdate = globalMocks.mockTierListUpdate;
-    mockTierSlotUpdate = globalMocks.mockTierSlotUpdate;
-    mockRivalryUpdate = globalMocks.mockRivalryUpdate;
 
     jest.clearAllMocks();
 

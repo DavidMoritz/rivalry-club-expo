@@ -159,8 +159,8 @@ describe('Create Rivalry Integration Test', () => {
     // Select user from results
     fireEvent.press(userItem);
 
-    // Wait for and click the "Initiate Rivalry" button
-    const createButton = await screen.findByText('Initiate Rivalry');
+    // Wait for and click the "Send Rivalry Request" button
+    const createButton = await screen.findByText('Send Rivalry Request');
 
     // Setup mutation to call onSuccess callback
     mockCreateRivalryMutate.mockImplementation(params => {
@@ -218,7 +218,7 @@ describe('Create Rivalry Integration Test', () => {
     fireEvent.press(userItem);
 
     // Attempt to create rivalry
-    const createButton = await screen.findByText('Initiate Rivalry');
+    const createButton = await screen.findByText('Send Rivalry Request');
     fireEvent.press(createButton);
 
     // Verify error message is displayed

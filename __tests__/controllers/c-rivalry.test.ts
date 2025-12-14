@@ -2,59 +2,38 @@ import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { renderHook, waitFor } from '@testing-library/react-native';
 import React from 'react';
 
-interface MockFunctions {
-  mockRivalryGet: jest.Mock;
-  mockRivalryUpdate: jest.Mock;
-  mockContestCreate: jest.Mock;
-  mockContestUpdate: jest.Mock;
-  mockContestsByRivalryIdAndCreatedAt: jest.Mock;
-  mockTierListUpdate: jest.Mock;
-  mockTierSlotUpdate: jest.Mock;
-  mockUserGet: jest.Mock;
-}
-
-declare const global: typeof globalThis & {
-  mockFns: MockFunctions;
-};
+// Define mocks in outer scope with 'mock' prefix (allowed by Jest)
+const mockRivalryGet = jest.fn();
+const mockRivalryUpdate = jest.fn();
+const mockContestCreate = jest.fn();
+const mockContestUpdate = jest.fn();
+const mockContestsByRivalryIdAndCreatedAt = jest.fn();
+const mockTierListUpdate = jest.fn();
+const mockTierSlotUpdate = jest.fn();
+const mockUserGet = jest.fn();
 
 // Mock the aws-amplify/data module
 jest.mock('aws-amplify/data', () => {
-  // Get mocks from the outer scope
-  const mockFns = {
-    mockRivalryGet: jest.fn(),
-    mockRivalryUpdate: jest.fn(),
-    mockContestCreate: jest.fn(),
-    mockContestUpdate: jest.fn(),
-    mockContestsByRivalryIdAndCreatedAt: jest.fn(),
-    mockTierListUpdate: jest.fn(),
-    mockTierSlotUpdate: jest.fn(),
-    mockUserGet: jest.fn(),
-  };
-
-  // Store references globally for use in tests
-  global.mockFns = mockFns;
-
   return {
     generateClient: jest.fn(() => ({
       models: {
         Rivalry: {
-          get: mockFns.mockRivalryGet,
-          update: mockFns.mockRivalryUpdate,
+          get: mockRivalryGet,
+          update: mockRivalryUpdate,
         },
         Contest: {
-          create: mockFns.mockContestCreate,
-          update: mockFns.mockContestUpdate,
-          contestsByRivalryIdAndCreatedAt:
-            mockFns.mockContestsByRivalryIdAndCreatedAt,
+          create: mockContestCreate,
+          update: mockContestUpdate,
+          contestsByRivalryIdAndCreatedAt: mockContestsByRivalryIdAndCreatedAt,
         },
         TierList: {
-          update: mockFns.mockTierListUpdate,
+          update: mockTierListUpdate,
         },
         TierSlot: {
-          update: mockFns.mockTierSlotUpdate,
+          update: mockTierSlotUpdate,
         },
         User: {
-          get: mockFns.mockUserGet,
+          get: mockUserGet,
         },
       },
     })),
@@ -73,14 +52,6 @@ import type { TestRivalry } from '../test-helpers';
 
 describe('c-rivalry Controller', () => {
   let queryClient: QueryClient;
-  let mockRivalryGet: jest.Mock;
-  let mockRivalryUpdate: jest.Mock;
-  let mockContestCreate: jest.Mock;
-  let mockContestUpdate: jest.Mock;
-  let mockContestsByRivalryIdAndCreatedAt: jest.Mock;
-  let _mockTierListUpdate: jest.Mock;
-  let _mockTierSlotUpdate: jest.Mock;
-  let mockUserGet: jest.Mock;
 
   let mockRivalry: ReturnType<typeof getMRivalry>;
 
@@ -91,18 +62,6 @@ describe('c-rivalry Controller', () => {
         mutations: { retry: false },
       },
     });
-
-    // Get references to the mocked functions
-    const globalMocks = global.mockFns;
-    mockRivalryGet = globalMocks.mockRivalryGet;
-    mockRivalryUpdate = globalMocks.mockRivalryUpdate;
-    mockContestCreate = globalMocks.mockContestCreate;
-    mockContestUpdate = globalMocks.mockContestUpdate;
-    mockContestsByRivalryIdAndCreatedAt =
-      globalMocks.mockContestsByRivalryIdAndCreatedAt;
-    _mockTierListUpdate = globalMocks.mockTierListUpdate;
-    _mockTierSlotUpdate = globalMocks.mockTierSlotUpdate;
-    mockUserGet = globalMocks.mockUserGet;
 
     // Recreate mockRivalry for each test
     mockRivalry = getMRivalry({

@@ -12,61 +12,40 @@ const LARGE_FIGHTER_COUNT = 82; // SSBU has 82 fighters
 const SMALL_FIGHTER_COUNT = 5;
 const MEDIUM_FIGHTER_COUNT = 25;
 
-interface MockBatchingFunctions {
-  mockRivalryCreate: jest.Mock;
-  mockRivalryGet: jest.Mock;
-  mockRivalryUpdate: jest.Mock;
-  mockRivalryList: jest.Mock;
-  mockFighterList: jest.Mock;
-  mockTierListCreate: jest.Mock;
-  mockTierListQuery: jest.Mock;
-  mockTierListList: jest.Mock;
-  mockTierSlotCreate: jest.Mock;
-  mockTierSlotList: jest.Mock;
-}
-
-declare const global: typeof globalThis & {
-  mockBatchingFns: MockBatchingFunctions;
-};
+// Define mocks in outer scope with 'mock' prefix (allowed by Jest)
+const mockRivalryCreate = jest.fn();
+const mockRivalryGet = jest.fn();
+const mockRivalryUpdate = jest.fn();
+const mockRivalryList = jest.fn();
+const mockFighterList = jest.fn();
+const mockTierListCreate = jest.fn();
+const mockTierListQuery = jest.fn();
+const mockTierListList = jest.fn();
+const mockTierSlotCreate = jest.fn();
+const mockTierSlotList = jest.fn();
 
 // Mock the aws-amplify/data module
 jest.mock('aws-amplify/data', () => {
-  const mockFns = {
-    mockRivalryCreate: jest.fn(),
-    mockRivalryGet: jest.fn(),
-    mockRivalryUpdate: jest.fn(),
-    mockRivalryList: jest.fn(),
-    mockFighterList: jest.fn(),
-    mockTierListCreate: jest.fn(),
-    mockTierListQuery: jest.fn(),
-    mockTierListList: jest.fn(),
-    mockTierSlotCreate: jest.fn(),
-    mockTierSlotList: jest.fn(),
-  };
-
-  // Store references globally for use in tests
-  global.mockBatchingFns = mockFns;
-
   return {
     generateClient: jest.fn(() => ({
       models: {
         Rivalry: {
-          create: mockFns.mockRivalryCreate,
-          get: mockFns.mockRivalryGet,
-          update: mockFns.mockRivalryUpdate,
-          list: mockFns.mockRivalryList || jest.fn(),
+          create: mockRivalryCreate,
+          get: mockRivalryGet,
+          update: mockRivalryUpdate,
+          list: mockRivalryList,
         },
         Fighter: {
-          list: mockFns.mockFighterList,
+          list: mockFighterList,
         },
         TierList: {
-          create: mockFns.mockTierListCreate,
-          tierListsByUserIdAndUpdatedAt: mockFns.mockTierListQuery,
-          list: mockFns.mockTierListList || jest.fn(),
+          create: mockTierListCreate,
+          tierListsByUserIdAndUpdatedAt: mockTierListQuery,
+          list: mockTierListList,
         },
         TierSlot: {
-          create: mockFns.mockTierSlotCreate,
-          list: mockFns.mockTierSlotList,
+          create: mockTierSlotCreate,
+          list: mockTierSlotList,
         },
       },
     })),
@@ -80,13 +59,6 @@ import {
 
 describe('Batched Tier Slot Creation', () => {
   let queryClient: QueryClient;
-  let mockRivalryCreate: jest.Mock;
-  let mockRivalryGet: jest.Mock;
-  let mockRivalryUpdate: jest.Mock;
-  let mockFighterList: jest.Mock;
-  let mockTierListCreate: jest.Mock;
-  let mockTierListQuery: jest.Mock;
-  let mockTierSlotCreate: jest.Mock;
 
   beforeEach(() => {
     queryClient = new QueryClient({
@@ -102,16 +74,6 @@ describe('Batched Tier Slot Creation', () => {
         },
       },
     });
-
-    // Get references to the mocked functions
-    const globalMocks = global.mockBatchingFns;
-    mockRivalryCreate = globalMocks.mockRivalryCreate;
-    mockRivalryGet = globalMocks.mockRivalryGet;
-    mockRivalryUpdate = globalMocks.mockRivalryUpdate;
-    mockFighterList = globalMocks.mockFighterList;
-    mockTierListCreate = globalMocks.mockTierListCreate;
-    mockTierListQuery = globalMocks.mockTierListQuery;
-    mockTierSlotCreate = globalMocks.mockTierSlotCreate;
 
     jest.clearAllMocks();
   });
@@ -153,11 +115,10 @@ describe('Batched Tier Slot Creation', () => {
       });
 
       // Mock Rivalry.list for template search (should return empty for this test)
-      const mockRivalryList = jest.fn().mockResolvedValue({
+      mockRivalryList.mockResolvedValue({
         data: [],
         errors: null,
       });
-      global.mockBatchingFns.mockRivalryList = mockRivalryList;
 
       mockTierListCreate.mockResolvedValue({
         data: { id: 'tier-list-1' },
@@ -310,11 +271,10 @@ describe('Batched Tier Slot Creation', () => {
       });
 
       // Mock Rivalry.list for template search (should return empty for this test)
-      const mockRivalryList = jest.fn().mockResolvedValue({
+      mockRivalryList.mockResolvedValue({
         data: [],
         errors: null,
       });
-      global.mockBatchingFns.mockRivalryList = mockRivalryList;
 
       mockTierListQuery.mockResolvedValue({
         data: [],
@@ -387,11 +347,10 @@ describe('Batched Tier Slot Creation', () => {
       });
 
       // Mock Rivalry.list for template search (should return empty for this test)
-      const mockRivalryList = jest.fn().mockResolvedValue({
+      mockRivalryList.mockResolvedValue({
         data: [],
         errors: null,
       });
-      global.mockBatchingFns.mockRivalryList = mockRivalryList;
 
       mockTierListCreate.mockResolvedValue({
         data: { id: 'tier-list-1' },

@@ -312,25 +312,25 @@ export function TierListEditDisplay({
 
     // Now treat as moving from unknown tier (clicking on a positioned fighter)
     // Try 'down' direction first (shift fighters down to make room)
-    let success = moveSlot(
-      -1,
+    let success = moveSlot({
+      fromIndex: -1,
       toIndex,
-      true,
-      'down',
-      updatedPositioned,
-      updatedUnknown
-    );
+      isFromUnknown: true,
+      shiftDirection: 'down',
+      customPositionedSlots: updatedPositioned,
+      customUnknownSlots: updatedUnknown,
+    });
 
     // If that failed (no room going down), try 'up' direction
     if (!success) {
-      success = moveSlot(
-        -1,
+      success = moveSlot({
+        fromIndex: -1,
         toIndex,
-        true,
-        'up',
-        updatedPositioned,
-        updatedUnknown
-      );
+        isFromUnknown: true,
+        shiftDirection: 'up',
+        customPositionedSlots: updatedPositioned,
+        customUnknownSlots: updatedUnknown,
+      });
     }
 
     // If both directions failed and we had a positioned fighter, restore it
@@ -393,14 +393,14 @@ export function TierListEditDisplay({
 
     // Move the fighter to the start of the tier
     // Shift existing characters DOWN (higher positions) to make room
-    const success = moveSlot(
-      -1,
-      targetPosition,
-      true,
-      'down',
-      updatedPositioned,
-      updatedUnknown
-    );
+    const success = moveSlot({
+      fromIndex: -1,
+      toIndex: targetPosition,
+      isFromUnknown: true,
+      shiftDirection: 'down',
+      customPositionedSlots: updatedPositioned,
+      customUnknownSlots: updatedUnknown,
+    });
 
     // If move failed and we had a positioned fighter, restore it
     if (!success && originalPosition !== null) {
@@ -459,14 +459,14 @@ export function TierListEditDisplay({
 
     // Move the fighter to the end of the tier
     // Shift existing characters UP (lower positions) to make room
-    const success = moveSlot(
-      -1,
-      targetPosition,
-      true,
-      'up',
-      updatedPositioned,
-      updatedUnknown
-    );
+    const success = moveSlot({
+      fromIndex: -1,
+      toIndex: targetPosition,
+      isFromUnknown: true,
+      shiftDirection: 'up',
+      customPositionedSlots: updatedPositioned,
+      customUnknownSlots: updatedUnknown,
+    });
 
     // If move failed and we had a positioned fighter, restore it
     if (!success && originalPosition !== null) {

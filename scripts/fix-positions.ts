@@ -2,9 +2,9 @@
  * This file is a one-time use to fix the missing slots for the 2 mii fighters
  */
 
-import { generateClient } from 'aws-amplify/data';
 import { Amplify } from 'aws-amplify';
-import outputs from '../amplify_outputs.json';
+import { generateClient } from 'aws-amplify/data';
+import outputs from '../amplify_outputs.json' with { type: 'json' };
 
 Amplify.configure(outputs);
 const client = generateClient();
@@ -14,8 +14,8 @@ async function fixInvalidPositions() {
   console.log('Note: This will paginate through ALL records...\n');
 
   // Get ALL tier slots with position 86 (handle pagination)
-  let invalidSlots: any[] = [];
-  let nextToken: string | null | undefined = undefined;
+  const invalidSlots: any[] = [];
+  let nextToken: string | null | undefined;
   let pageCount = 0;
 
   do {
@@ -25,10 +25,10 @@ async function fixInvalidPositions() {
     const {
       data,
       errors,
-      nextToken: token
+      nextToken: token,
     } = await client.models.TierSlot.list({
       filter: { position: { eq: 86 } },
-      nextToken: nextToken as any
+      nextToken: nextToken as any,
     });
 
     if (errors) {
@@ -40,7 +40,7 @@ async function fixInvalidPositions() {
       invalidSlots.push(...data);
       console.log(`  Found ${data.length} slots on this page`);
     } else {
-      console.log(`  No slots on this page`);
+      console.log('  No slots on this page');
     }
 
     nextToken = token;
@@ -58,7 +58,9 @@ async function fixInvalidPositions() {
   invalidSlots.forEach((slot, idx) => {
     if (idx < 5) {
       // Show first 5
-      console.log(`  - ID: ${slot.id}, Fighter: ${slot.fighterId}, TierList: ${slot.tierListId}`);
+      console.log(
+        `  - ID: ${slot.id}, Fighter: ${slot.fighterId}, TierList: ${slot.tierListId}`
+      );
     }
   });
   if (invalidSlots.length > 5) {
@@ -76,38 +78,42 @@ async function fixInvalidPositions() {
 
     const { data, errors } = await client.models.TierSlot.update({
       id: slot.id,
-      position: null
+      position: null,
     });
 
     if (errors && errors.length > 0) {
-      console.error(`  ❌ Failed:`, errors);
+      console.error('  ❌ Failed:', errors);
       failCount++;
     } else if (data) {
       console.log(`  ✅ Success - new position: ${data.position}`);
       successCount++;
     } else {
-      console.warn(`  ⚠️  No data returned`);
+      console.warn('  ⚠️  No data returned');
       failCount++;
     }
   }
 
-  console.log(`\nUpdate summary: ${successCount} succeeded, ${failCount} failed`);
+  console.log(
+    `\nUpdate summary: ${successCount} succeeded, ${failCount} failed`
+  );
 
   if (failCount > 0) {
     console.error('\n❌ Some updates failed - see errors above');
   } else {
-    console.log(`\n✅ Successfully updated ${successCount} tier slots to position = null!`);
+    console.log(
+      `\n✅ Successfully updated ${successCount} tier slots to position = null!`
+    );
   }
 
   // Verify the fix
   console.log('\nVerifying...');
   let verifyCount = 0;
-  let verifyNextToken: string | null | undefined = undefined;
+  let verifyNextToken: string | null | undefined;
 
   do {
     const { data, nextToken } = await client.models.TierSlot.list({
       filter: { position: { eq: 86 } },
-      nextToken: verifyNextToken as any
+      nextToken: verifyNextToken as any,
     });
 
     if (data && data.length > 0) {
@@ -118,7 +124,9 @@ async function fixInvalidPositions() {
   } while (verifyNextToken);
 
   if (verifyCount > 0) {
-    console.warn(`⚠️  Warning: Still found ${verifyCount} slots with position = 86`);
+    console.warn(
+      `⚠️  Warning: Still found ${verifyCount} slots with position = 86`
+    );
   } else {
     console.log('✅ Verification passed: No more slots with position = 86');
   }
@@ -129,7 +137,7 @@ fixInvalidPositions()
     console.log('\nDone!');
     process.exit(0);
   })
-  .catch((err) => {
+  .catch(err => {
     console.error('\n❌ Script failed:', err);
     process.exit(1);
   });

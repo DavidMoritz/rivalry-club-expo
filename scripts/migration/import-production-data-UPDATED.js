@@ -8,7 +8,10 @@
  */
 
 const { DynamoDBClient } = require('@aws-sdk/client-dynamodb');
-const { DynamoDBDocumentClient, BatchWriteCommand } = require('@aws-sdk/lib-dynamodb');
+const {
+  DynamoDBDocumentClient,
+  BatchWriteCommand,
+} = require('@aws-sdk/lib-dynamodb');
 const fs = require('fs');
 const path = require('path');
 
@@ -25,7 +28,9 @@ const docClient = DynamoDBDocumentClient.from(dynamoClient);
 function loadTableMappings() {
   const mappingFile = path.join(BACKUP_DIR, 'table-mapping.json');
   if (!fs.existsSync(mappingFile)) {
-    throw new Error('table-mapping.json not found. Run get-production-tables.js first.');
+    throw new Error(
+      'table-mapping.json not found. Run get-production-tables.js first.'
+    );
   }
   return JSON.parse(fs.readFileSync(mappingFile, 'utf8'));
 }
@@ -52,7 +57,8 @@ function loadAwsSubMappings() {
  * Find the most recent backup file for a model
  */
 function findBackupFile(modelName) {
-  const files = fs.readdirSync(BACKUP_DIR)
+  const files = fs
+    .readdirSync(BACKUP_DIR)
     .filter(f => f.startsWith(`${modelName}-`) && f.endsWith('.json'))
     .sort()
     .reverse();
@@ -69,7 +75,9 @@ function findBackupFile(modelName) {
  */
 function transformUserItems(items, awsSubMapping) {
   if (!awsSubMapping) {
-    console.warn('  ⚠️  No awsSub mapping available - importing without transformation');
+    console.warn(
+      '  ⚠️  No awsSub mapping available - importing without transformation'
+    );
     return items;
   }
 
@@ -84,18 +92,23 @@ function transformUserItems(items, awsSubMapping) {
       updated++;
       return {
         ...item,
-        awsSub: mappingEntry.newSub // Replace with new Cognito sub
+        awsSub: mappingEntry.newSub, // Replace with new Cognito sub
       };
-    } else {
-      notFound++;
-      console.warn(`  ⚠️  No mapping found for awsSub: ${oldSub} (email: ${item.email})`);
-      return item; // Keep original (might cause auth issues!)
     }
+    notFound++;
+    console.warn(
+      `  ⚠️  No mapping found for awsSub: ${oldSub} (email: ${item.email})`
+    );
+    return item; // Keep original (might cause auth issues!)
   });
 
-  console.log(`  🔄 Transformed ${updated} User records with new awsSub values`);
+  console.log(
+    `  🔄 Transformed ${updated} User records with new awsSub values`
+  );
   if (notFound > 0) {
-    console.warn(`  ⚠️  ${notFound} User records kept old awsSub (no mapping found)`);
+    console.warn(
+      `  ⚠️  ${notFound} User records kept old awsSub (no mapping found)`
+    );
   }
 
   return transformedItems;
@@ -106,13 +119,13 @@ function transformUserItems(items, awsSubMapping) {
  */
 async function importBatch(tableName, items) {
   const putRequests = items.map(item => ({
-    PutRequest: { Item: item }
+    PutRequest: { Item: item },
   }));
 
   const command = new BatchWriteCommand({
     RequestItems: {
-      [tableName]: putRequests
-    }
+      [tableName]: putRequests,
+    },
   });
 
   return await docClient.send(command);
@@ -132,7 +145,9 @@ async function importModel(modelName, tableName, awsSubMapping) {
 
   // CRITICAL: Transform User table items to use new awsSub values
   if (modelName === 'User') {
-    console.log(`  🔑 Transforming User records with new Cognito awsSub values...`);
+    console.log(
+      '  🔑 Transforming User records with new Cognito awsSub values...'
+    );
     items = transformUserItems(items, awsSubMapping);
   }
 
@@ -147,16 +162,20 @@ async function importModel(modelName, tableName, awsSubMapping) {
     try {
       await importBatch(tableName, batch);
       imported += batch.length;
-      console.log(`  ✅ Batch ${batchNum}: Imported ${batch.length} items (${imported}/${items.length})`);
+      console.log(
+        `  ✅ Batch ${batchNum}: Imported ${batch.length} items (${imported}/${items.length})`
+      );
 
       // Small delay to avoid throttling
       await new Promise(resolve => setTimeout(resolve, 100));
-
     } catch (error) {
       console.error(`  ❌ Error in batch ${batchNum}:`, error.message);
 
       // Log the problematic batch for debugging
-      console.error('  Problematic items:', JSON.stringify(batch.slice(0, 2), null, 2));
+      console.error(
+        '  Problematic items:',
+        JSON.stringify(batch.slice(0, 2), null, 2)
+      );
       throw error;
     }
   }
@@ -185,7 +204,9 @@ async function main() {
     if (!awsSubMapping) {
       console.log('\n⚠️  WARNING: Proceeding without awsSub mapping!');
       console.log('   This may cause authentication issues for users.');
-      console.log('   Press Ctrl+C to cancel, or wait 5 seconds to continue...\n');
+      console.log(
+        '   Press Ctrl+C to cancel, or wait 5 seconds to continue...\n'
+      );
       await new Promise(resolve => setTimeout(resolve, 5000));
     }
 
@@ -193,13 +214,13 @@ async function main() {
     // CRITICAL: User table must be imported early (after Game/Fighter, before Rivalry)
     const results = {};
     const modelOrder = [
-      'Game',      // No dependencies
-      'Fighter',   // Depends on Game
-      'User',      // No dependencies (but awsSub must be updated!)
-      'Rivalry',   // Depends on User and Game
-      'TierList',  // Depends on Rivalry and User
-      'TierSlot',  // Depends on TierList and Fighter
-      'Contest'    // Depends on Rivalry and TierSlots
+      'Game', // No dependencies
+      'Fighter', // Depends on Game
+      'User', // No dependencies (but awsSub must be updated!)
+      'Rivalry', // Depends on User and Game
+      'TierList', // Depends on Rivalry and User
+      'TierSlot', // Depends on TierList and Fighter
+      'Contest', // Depends on Rivalry and TierSlots
     ];
 
     for (const modelName of modelOrder) {
@@ -231,9 +252,10 @@ async function main() {
     if (!awsSubMapping) {
       console.log('\n⚠️  WARNING: awsSub values were NOT updated!');
       console.log('   Users may not be able to authenticate.');
-      console.log('   Fix: Run create-awssub-mapping.js and re-import User table');
+      console.log(
+        '   Fix: Run create-awssub-mapping.js and re-import User table'
+      );
     }
-
   } catch (error) {
     console.error('\n❌ Import failed:', error);
     console.error('\nStack trace:', error.stack);

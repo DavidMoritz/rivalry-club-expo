@@ -110,6 +110,38 @@ const headerStyle = { fontSize: 18, marginBottom: 8 };
 {['A', 'B'].map(signifier => { /* ... */ })}
 ```
 
+## Linting Specialist Agent
+
+**Location**: `.claude/agents/linting-specialist.md`
+
+**Use for**: Formatting code, fixing lint issues, and configuring linter rules.
+
+**How to use**:
+
+```bash
+# Format and fix a specific file:
+"Use the linting-specialist agent to fix src/components/MyComponent.tsx"
+
+# Configure a new rule:
+"Use the linting-specialist agent to help me configure the noConsole rule"
+
+# Check for new rules to enable:
+"Use the linting-specialist agent to review our linter config for improvements"
+```
+
+**What it does**:
+- Runs linter commands to auto-fix issues
+- Identifies code that violates linting rules
+- Asks questions when encountering configuration gaps
+- Updates `biome.jsonc` with your preferences (marked with `// ~Meritas`)
+- Keeps the configuration organized and well-documented
+
+**Best for**:
+- Formatting code to match project standards
+- Fixing linter issues
+- Configuring new linting rules
+- Discovering useful rules that aren't enabled yet
+
 ## Other Custom Commands
 
 ### initiate-rivalry.md

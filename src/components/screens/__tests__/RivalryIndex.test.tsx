@@ -1,5 +1,4 @@
 import { fireEvent, render, waitFor } from '@testing-library/react-native';
-import React from 'react';
 
 import { RivalryIndex } from '../RivalryIndex';
 
@@ -11,18 +10,19 @@ const mockUseFocusEffect = jest.fn();
 const mockSetRivalries = jest.fn();
 
 jest.mock('../../../hooks/useAuthUser', () => ({
-  useAuthUser: () => mockUseAuthUser()
+  useAuthUser: () => mockUseAuthUser(),
 }));
 
 jest.mock('../../../hooks/useUserRivalries', () => ({
-  useUserRivalries: (userId: string | undefined) => mockUseUserRivalries(userId)
+  useUserRivalries: (userId: string | undefined) =>
+    mockUseUserRivalries(userId),
 }));
 
 jest.mock('expo-router', () => ({
   useRouter: () => ({
-    push: mockRouterPush
+    push: mockRouterPush,
   }),
-  useFocusEffect: (callback: () => void) => mockUseFocusEffect(callback)
+  useFocusEffect: (callback: () => void) => mockUseFocusEffect(callback),
 }));
 
 jest.mock('../../../providers/all-rivalries', () => ({
@@ -30,17 +30,17 @@ jest.mock('../../../providers/all-rivalries', () => ({
     rivalries: [],
     pendingRivalries: {
       awaitingAcceptance: [],
-      initiated: []
+      initiated: [],
     },
-    acceptedRivalries: []
+    acceptedRivalries: [],
   }),
   useAllRivalriesUpdate: () => ({
     setRivalries: mockSetRivalries,
     addRivalry: jest.fn(),
     updateRivalry: jest.fn(),
     removeRivalry: jest.fn(),
-    setUserId: jest.fn()
-  })
+    setUserId: jest.fn(),
+  }),
 }));
 
 describe('RivalryIndex', () => {
@@ -54,32 +54,34 @@ describe('RivalryIndex', () => {
       mockUseAuthUser.mockReturnValue({
         user: null,
         isLoading: true,
-        error: null
+        error: null,
       });
       mockUseUserRivalries.mockReturnValue({
         rivalries: [],
         allRivalries: [],
         isLoading: false,
         error: null,
-        refetch: jest.fn()
+        refetch: jest.fn(),
       });
 
       const { getByText } = render(<RivalryIndex />);
 
-      expect(getByText('Loading user data...')).toBeTruthy();
+      // Component shows unified loading message for all loading states
+      expect(getByText('Loading rivalries...')).toBeTruthy();
     });
 
     it('shows loading state when rivalries are loading', () => {
       mockUseAuthUser.mockReturnValue({
         user: { id: 'user1', email: 'test@test.com', firstName: 'Test' },
         isLoading: false,
-        error: null
+        error: null,
       });
       mockUseUserRivalries.mockReturnValue({
         rivalries: [],
+        allRivalries: [],
         isLoading: true,
         error: null,
-        refetch: jest.fn()
+        refetch: jest.fn(),
       });
 
       const { getByText } = render(<RivalryIndex />);
@@ -93,14 +95,14 @@ describe('RivalryIndex', () => {
       mockUseAuthUser.mockReturnValue({
         user: null,
         isLoading: false,
-        error: new Error('Failed to fetch user')
+        error: new Error('Failed to fetch user'),
       });
       mockUseUserRivalries.mockReturnValue({
         rivalries: [],
         allRivalries: [],
         isLoading: false,
         error: null,
-        refetch: jest.fn()
+        refetch: jest.fn(),
       });
 
       const { getByText } = render(<RivalryIndex />);
@@ -113,13 +115,14 @@ describe('RivalryIndex', () => {
       mockUseAuthUser.mockReturnValue({
         user: { id: 'user1', email: 'test@test.com', firstName: 'Test' },
         isLoading: false,
-        error: null
+        error: null,
       });
       mockUseUserRivalries.mockReturnValue({
         rivalries: [],
+        allRivalries: [],
         isLoading: false,
         error: new Error('Failed to fetch rivalries'),
-        refetch: jest.fn()
+        refetch: jest.fn(),
       });
 
       const { getByText } = render(<RivalryIndex />);
@@ -134,14 +137,14 @@ describe('RivalryIndex', () => {
       mockUseAuthUser.mockReturnValue({
         user: { id: 'user1', email: 'test@test.com', firstName: 'Tess' },
         isLoading: false,
-        error: null
+        error: null,
       });
       mockUseUserRivalries.mockReturnValue({
         rivalries: [],
         allRivalries: [],
         isLoading: false,
         error: null,
-        refetch: jest.fn()
+        refetch: jest.fn(),
       });
 
       const { getByText } = render(<RivalryIndex />);
@@ -153,14 +156,14 @@ describe('RivalryIndex', () => {
       mockUseAuthUser.mockReturnValue({
         user: { id: 'user1', email: 'test@test.com' },
         isLoading: false,
-        error: null
+        error: null,
       });
       mockUseUserRivalries.mockReturnValue({
         rivalries: [],
         allRivalries: [],
         isLoading: false,
         error: null,
-        refetch: jest.fn()
+        refetch: jest.fn(),
       });
 
       const { getByText } = render(<RivalryIndex />);
@@ -174,14 +177,14 @@ describe('RivalryIndex', () => {
       mockUseAuthUser.mockReturnValue({
         user: { id: 'user1', email: 'test@test.com', firstName: 'Test' },
         isLoading: false,
-        error: null
+        error: null,
       });
       mockUseUserRivalries.mockReturnValue({
         rivalries: [],
         allRivalries: [],
         isLoading: false,
         error: null,
-        refetch: jest.fn()
+        refetch: jest.fn(),
       });
 
       const { getByTestId, getByText } = render(<RivalryIndex />);
@@ -194,14 +197,14 @@ describe('RivalryIndex', () => {
       mockUseAuthUser.mockReturnValue({
         user: { id: 'user1', email: 'test@test.com', firstName: 'Test' },
         isLoading: false,
-        error: null
+        error: null,
       });
       mockUseUserRivalries.mockReturnValue({
         rivalries: [],
         allRivalries: [],
         isLoading: false,
         error: null,
-        refetch: jest.fn()
+        refetch: jest.fn(),
       });
 
       const { getByTestId } = render(<RivalryIndex />);
@@ -213,8 +216,8 @@ describe('RivalryIndex', () => {
         pathname: '/rivalry/create',
         params: {
           gameId: '73ed69cf-2775-43d6-bece-aed10da3e25a',
-          autoSearchNpc: 'true'
-        }
+          autoSearchNpc: 'true',
+        },
       });
     });
   });
@@ -224,14 +227,14 @@ describe('RivalryIndex', () => {
       mockUseAuthUser.mockReturnValue({
         user: { id: 'user1', email: 'test@test.com', firstName: 'Test' },
         isLoading: false,
-        error: null
+        error: null,
       });
       mockUseUserRivalries.mockReturnValue({
         rivalries: [],
         allRivalries: [],
         isLoading: false,
         error: null,
-        refetch: jest.fn()
+        refetch: jest.fn(),
       });
 
       const { getByText } = render(<RivalryIndex />);
@@ -243,7 +246,7 @@ describe('RivalryIndex', () => {
       mockUseAuthUser.mockReturnValue({
         user: { id: 'user1', email: 'test@test.com', firstName: 'Test' },
         isLoading: false,
-        error: null
+        error: null,
       });
       const rivalriesData = [
         {
@@ -254,7 +257,7 @@ describe('RivalryIndex', () => {
           userAName: 'Alice',
           userBName: 'Bob',
           contestCount: 5,
-          updatedAt: new Date().toISOString()
+          updatedAt: new Date().toISOString(),
         },
         {
           id: 'rivalry2',
@@ -264,15 +267,15 @@ describe('RivalryIndex', () => {
           userAName: 'Alice',
           userBName: 'Charlie',
           contestCount: 3,
-          updatedAt: new Date().toISOString()
-        }
+          updatedAt: new Date().toISOString(),
+        },
       ];
       mockUseUserRivalries.mockReturnValue({
         rivalries: rivalriesData,
         allRivalries: rivalriesData,
         isLoading: false,
         error: null,
-        refetch: jest.fn()
+        refetch: jest.fn(),
       });
 
       const { getByText } = render(<RivalryIndex />);
@@ -285,7 +288,7 @@ describe('RivalryIndex', () => {
       mockUseAuthUser.mockReturnValue({
         user: { id: 'user1', email: 'test@test.com', firstName: 'Test' },
         isLoading: false,
-        error: null
+        error: null,
       });
       const rivalryData = [
         {
@@ -296,15 +299,15 @@ describe('RivalryIndex', () => {
           userAName: 'Alice',
           userBName: 'Bob',
           contestCount: 5,
-          updatedAt: new Date().toISOString()
-        }
+          updatedAt: new Date().toISOString(),
+        },
       ];
       mockUseUserRivalries.mockReturnValue({
         rivalries: rivalryData,
         allRivalries: rivalryData,
         isLoading: false,
         error: null,
-        refetch: jest.fn()
+        refetch: jest.fn(),
       });
 
       const { getByText } = render(<RivalryIndex />);
@@ -318,8 +321,8 @@ describe('RivalryIndex', () => {
           params: {
             userAName: 'Alice',
             userBName: 'Bob',
-            userId: 'user1'
-          }
+            userId: 'user1',
+          },
         });
       });
     });
@@ -332,14 +335,14 @@ describe('RivalryIndex', () => {
       mockUseAuthUser.mockReturnValue({
         user: { id: userId, email: 'test@test.com', firstName: 'Test' },
         isLoading: false,
-        error: null
+        error: null,
       });
       mockUseUserRivalries.mockReturnValue({
         rivalries: [],
         allRivalries: [],
         isLoading: false,
         error: null,
-        refetch: jest.fn()
+        refetch: jest.fn(),
       });
 
       render(<RivalryIndex />);
@@ -351,14 +354,14 @@ describe('RivalryIndex', () => {
       mockUseAuthUser.mockReturnValue({
         user: null,
         isLoading: true,
-        error: null
+        error: null,
       });
       mockUseUserRivalries.mockReturnValue({
         rivalries: [],
         allRivalries: [],
         isLoading: false,
         error: null,
-        refetch: jest.fn()
+        refetch: jest.fn(),
       });
 
       render(<RivalryIndex />);

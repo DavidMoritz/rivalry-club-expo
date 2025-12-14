@@ -1,5 +1,4 @@
 import { StatusBar } from 'expo-status-bar';
-import React from 'react';
 
 import { HamburgerMenu } from '../src/components/common/HamburgerMenu';
 import { Profile } from '../src/components/screens/Profile';

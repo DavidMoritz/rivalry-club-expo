@@ -1,11 +1,11 @@
-import React from 'react';
+import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { render, waitFor } from '@testing-library/react-native';
 import { useLocalSearchParams } from 'expo-router';
-import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
-
-import TiersRoute from '../tiers';
-import { RivalryProvider } from '../../../../src/providers/rivalry';
+import type { ReactNode } from 'react';
+import type { Rivalry } from '../../../../src/API';
 import { getMRivalry } from '../../../../src/models/m-rivalry';
+import { RivalryProvider } from '../../../../src/providers/rivalry';
+import TiersRoute from '../tiers';
 
 // Mock expo-router
 jest.mock('expo-router', () => ({
@@ -18,7 +18,7 @@ jest.mock('expo-router', () => ({
     canGoBack: jest.fn(() => true),
   })),
   Stack: {
-    Screen: ({ children }: any) => children,
+    Screen: ({ children }: { children: ReactNode }) => children,
   },
 }));
 
@@ -62,7 +62,7 @@ const mockRivalry = getMRivalry({
     userAId: 'user-1',
     userBId: 'user-2',
     gameId: 'game-1',
-  } as any,
+  } as Rivalry,
 });
 
 describe('TiersRoute', () => {
@@ -118,7 +118,11 @@ describe('TiersRoute', () => {
 
     render(
       <QueryClientProvider client={queryClient}>
-        <RivalryProvider rivalry={mockRivalry} userAName="Alice" userBName="Bob">
+        <RivalryProvider
+          rivalry={mockRivalry}
+          userAName="Alice"
+          userBName="Bob"
+        >
           <TiersRoute />
         </RivalryProvider>
       </QueryClientProvider>

@@ -1,10 +1,17 @@
-import React, { createContext, ReactNode, useContext, useState, useEffect } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { generateClient } from 'aws-amplify/data';
+import {
+  createContext,
+  type ReactNode,
+  useContext,
+  useEffect,
+  useState,
+} from 'react';
 import type { Schema } from '../../amplify/data/resource';
+import { getMGame, type MGame } from '../models/m-game';
 
-import { MGame } from '../models/m-game';
-import { getMGame } from '../models/m-game';
+// Type alias for Game from Schema
+type Game = Schema['Game']['type'];
 
 // Lazy client initialization
 let client: ReturnType<typeof generateClient<Schema>> | null = null;
@@ -18,6 +25,7 @@ function getClient() {
 
 // Hardcoded game ID
 const GAME_ID = '73ed69cf-2775-43d6-bece-aed10da3e25a';
+const PERCENTAGE_MULTIPLIER = 100;
 
 interface GameContextValue {
   game: MGame | null;
@@ -26,7 +34,8 @@ interface GameContextValue {
 
 const GameContext = createContext<GameContextValue>({
   game: null,
-  setGame: () => {}
+  // biome-ignore lint/suspicious/noEmptyBlockStatements: Default no-op function for context
+  setGame: () => {},
 });
 
 export const useGame = () => {
@@ -41,7 +50,7 @@ export const useUpdateGame = () => {
 
 export const GameProvider = ({
   children,
-  game: initialGame
+  game: initialGame,
 }: {
   children: ReactNode;
   game: MGame | null;
@@ -55,10 +64,16 @@ export const GameProvider = ({
       const { data: fighters, errors } = await getClient().models.Fighter.list({
         filter: {
           gameId: {
-            eq: GAME_ID
-          }
+            eq: GAME_ID,
+          },
         },
-        selectionSet: ['id', 'name', 'gamePosition', 'winCount', 'contestCount']
+        selectionSet: [
+          'id',
+          'name',
+          'gamePosition',
+          'winCount',
+          'contestCount',
+        ],
       });
 
       if (errors) {
@@ -67,13 +82,13 @@ export const GameProvider = ({
       }
 
       // Calculate win percentages and rank fighters
-      const fightersWithRanks = fighters.map((fighter) => {
+      const fightersWithRanks = fighters.map(fighter => {
         const winRate =
           fighter.contestCount &&
           fighter.contestCount > 0 &&
           fighter.winCount !== null &&
           fighter.winCount !== undefined
-            ? (fighter.winCount / fighter.contestCount) * 100
+            ? (fighter.winCount / fighter.contestCount) * PERCENTAGE_MULTIPLIER
             : 0;
         return { ...fighter, winRate };
       });
@@ -83,25 +98,29 @@ export const GameProvider = ({
 
       const rankedFighters = fightersWithRanks.map((fighter, index) => ({
         ...fighter,
-        rank: index + 1
+        rank: index + 1,
       }));
 
       return {
         id: GAME_ID,
         name: 'Super Smash Bros. Ultimate',
-        fighters: { items: rankedFighters }
+        fighters: { items: rankedFighters },
       };
     },
-    enabled: !game // Only fetch if game is not already loaded
+    enabled: !game, // Only fetch if game is not already loaded
   });
 
   // Update state when game data is fetched
   useEffect(() => {
     if (fetchedGame && !game) {
-      const mGame = getMGame(fetchedGame as any);
+      const mGame = getMGame(fetchedGame as unknown as Game);
       setGame(mGame);
     }
   }, [fetchedGame, game]);
 
-  return <GameContext.Provider value={{ game, setGame }}>{children}</GameContext.Provider>;
+  return (
+    <GameContext.Provider value={{ game, setGame }}>
+      {children}
+    </GameContext.Provider>
+  );
 };

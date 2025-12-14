@@ -1,21 +1,18 @@
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { Amplify } from 'aws-amplify';
-import Constants from 'expo-constants';
 import { Slot } from 'expo-router';
-import React, { useEffect, useState } from 'react';
-import { View, Text, ActivityIndicator } from 'react-native';
+import { useEffect, useState } from 'react';
+import { ActivityIndicator, Text, View } from 'react-native';
 import 'react-native-get-random-values';
 import 'react-native-url-polyfill/auto';
 
 import outputs from '../amplify-config';
 import { AllRivalriesProvider } from '../src/providers/all-rivalries';
 import { GameProvider } from '../src/providers/game';
-import { preloadAssets } from '../src/utils/preloadAssets';
 import { colors } from '../src/utils/colors';
+import { preloadAssets } from '../src/utils/preload-assets';
 
 const queryClient = new QueryClient();
-
-const isExpoGo = Constants.appOwnership === 'expo';
 
 // Configure Amplify immediately at module load time, BEFORE any React components render
 // This prevents TurboModule crashes when components try to use AWS Amplify auth
@@ -25,7 +22,7 @@ const isExpoGo = Constants.appOwnership === 'expo';
 let amplifyConfigured = false;
 
 export default function RootLayout() {
-  const [assetsLoaded, setAssetsLoaded] = useState(false);
+  const [_assetsLoaded, setAssetsLoaded] = useState(false);
   const [loadingError, setLoadingError] = useState<string | null>(null);
   const [isReady, setIsReady] = useState(false);
 
@@ -43,7 +40,9 @@ export default function RootLayout() {
         setIsReady(true);
       } catch (error) {
         console.error('[RootLayout] Initialization error:', error);
-        setLoadingError(error instanceof Error ? error.message : 'Unknown error');
+        setLoadingError(
+          error instanceof Error ? error.message : 'Unknown error'
+        );
         // Still show the app even if initialization fails
         setAssetsLoaded(true);
         setIsReady(true);
@@ -61,17 +60,22 @@ export default function RootLayout() {
           flex: 1,
           backgroundColor: colors.black,
           alignItems: 'center',
-          justifyContent: 'center'
+          justifyContent: 'center',
         }}
       >
-        <ActivityIndicator size="large" color={colors.white} />
-        <Text style={{ color: colors.white, marginTop: 16, fontSize: 16 }}>Initializing...</Text>
+        <ActivityIndicator color={colors.white} size="large" />
+        <Text style={{ color: colors.white, marginTop: 16, fontSize: 16 }}>
+          Initializing...
+        </Text>
       </View>
     );
   }
 
   if (loadingError) {
-    console.warn('[RootLayout] Assets failed to preload, but continuing anyway:', loadingError);
+    console.warn(
+      '[RootLayout] Assets failed to preload, but continuing anyway:',
+      loadingError
+    );
   }
 
   // Don't pass userId here - let RivalryIndex handle it with the correct user.id

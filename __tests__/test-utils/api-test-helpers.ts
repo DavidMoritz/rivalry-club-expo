@@ -21,10 +21,10 @@ export const TEST_TIMEOUTS = {
   MUTATION: 5000,
 
   /** Integration tests (full workflows, multi-step operations) */
-  INTEGRATION: 10000,
+  INTEGRATION: 10_000,
 
   /** Element rendering and UI updates */
-  ELEMENT_RENDER: 3000
+  ELEMENT_RENDER: 3000,
 } as const;
 
 /**
@@ -36,7 +36,7 @@ export const DEFAULT_WAIT_FOR_OPTIONS = {
     console.error('waitFor timed out:', error);
 
     return error;
-  }
+  },
 } as const;
 
 /**
@@ -51,8 +51,15 @@ export const DEFAULT_WAIT_FOR_OPTIONS = {
  * await waitForQuerySuccess(result);
  * expect(result.current.data).toBeDefined();
  */
-export async function waitForQuerySuccess<T>(
-  result: { current: { isSuccess: boolean; isError: boolean; error?: Error; status?: string } },
+export async function waitForQuerySuccess(
+  result: {
+    current: {
+      isSuccess: boolean;
+      isError: boolean;
+      error?: Error;
+      status?: string;
+    };
+  },
   options?: { timeout?: number }
 ) {
   await waitFor(
@@ -72,8 +79,10 @@ export async function waitForQuerySuccess<T>(
         console.error('  IsError:', result.current.isError);
         console.error('  Error:', result.current.error);
 
-        return new Error(`Query did not succeed. Status: ${result.current.status}`);
-      }
+        return new Error(
+          `Query did not succeed. Status: ${result.current.status}`
+        );
+      },
     }
   );
 }
@@ -90,7 +99,7 @@ export async function waitForQuerySuccess<T>(
  * result.current.mutate(data);
  * await waitForMutationSuccess(result);
  */
-export async function waitForMutationSuccess<T>(
+export async function waitForMutationSuccess(
   result: { current: { isSuccess: boolean; isError: boolean; error?: Error } },
   options?: { timeout?: number }
 ) {
@@ -118,14 +127,13 @@ export async function waitForMutationSuccess<T>(
  * await waitForError(result);
  * expect(result.current.error).toBeDefined();
  */
-export async function waitForError<T>(
+export async function waitForError(
   result: { current: { isError: boolean; error?: Error } },
   options?: { timeout?: number }
 ) {
-  await waitFor(
-    () => expect(result.current.isError).toBe(true),
-    { timeout: options?.timeout || TEST_TIMEOUTS.QUERY }
-  );
+  await waitFor(() => expect(result.current.isError).toBe(true), {
+    timeout: options?.timeout || TEST_TIMEOUTS.QUERY,
+  });
 }
 
 /**
@@ -140,7 +148,7 @@ export async function waitForError<T>(
  */
 export async function waitForMockCall(
   mockFn: jest.Mock,
-  expectedArgs?: any,
+  expectedArgs?: unknown,
   options?: { timeout?: number; times?: number }
 ) {
   await waitFor(
@@ -171,7 +179,7 @@ export function createGraphQLResponse<T>(
 ) {
   return {
     data,
-    errors: errors || null
+    errors: errors || null,
   };
 }
 
@@ -188,7 +196,7 @@ export function createGraphQLListResponse<T>(
   return {
     data: items,
     errors: null,
-    nextToken: nextToken || null
+    nextToken: nextToken || null,
   };
 }
 
@@ -203,7 +211,10 @@ export function createGraphQLListResponse<T>(
  *   tierLists: createMockAsyncGenerator([tierList1, tierList2])
  * };
  */
-export async function* createMockAsyncGenerator<T>(items: T[]) {
+// biome-ignore lint/suspicious/useAwait: Async generator needed for mocking Amplify Gen 2 LazyLoader fields that return AsyncGenerator
+export async function* createMockAsyncGenerator<T>(
+  items: T[]
+): AsyncGenerator<T> {
   for (const item of items) {
     yield item;
   }
@@ -212,8 +223,16 @@ export async function* createMockAsyncGenerator<T>(items: T[]) {
 /**
  * Type guard to check if a value is a GraphQL error response
  */
-export function isGraphQLError(response: any): response is { errors: Array<{ message: string }> } {
-  return response && Array.isArray(response.errors) && response.errors.length > 0;
+export function isGraphQLError(
+  response: unknown
+): response is { errors: Array<{ message: string }> } {
+  return (
+    response !== null &&
+    typeof response === 'object' &&
+    'errors' in response &&
+    Array.isArray((response as { errors: unknown }).errors) &&
+    (response as { errors: unknown[] }).errors.length > 0
+  );
 }
 
 /**
@@ -222,11 +241,13 @@ export function isGraphQLError(response: any): response is { errors: Array<{ mes
  */
 export function expectGraphQLMutationCall(
   mockMutation: jest.Mock,
-  expectedInput: any,
+  expectedInput: Record<string, unknown>,
   options?: { times?: number }
 ) {
   const times = options?.times || 1;
+  // biome-ignore lint/suspicious/noMisplacedAssertion: This is a test helper designed to be called from within test functions
   expect(mockMutation).toHaveBeenCalledTimes(times);
+  // biome-ignore lint/suspicious/noMisplacedAssertion: This is a test helper designed to be called from within test functions
   expect(mockMutation).toHaveBeenCalledWith(
     expect.objectContaining(expectedInput)
   );
@@ -238,28 +259,34 @@ export function expectGraphQLMutationCall(
  */
 export function expectGraphQLQueryCall(
   mockQuery: jest.Mock,
-  expectedParams?: {
-    filter?: any;
+  expectedParams: {
+    filter?: Record<string, unknown>;
     limit?: number;
     selectionSet?: string[];
-  },
+  } | null = null,
   options?: { times?: number }
 ) {
   const times = options?.times || 1;
+  // biome-ignore lint/suspicious/noMisplacedAssertion: This is a test helper designed to be called from within test functions
   expect(mockQuery).toHaveBeenCalledTimes(times);
 
   if (expectedParams) {
-    const callArgs = mockQuery.mock.calls[mockQuery.mock.calls.length - 1];
+    const callArgs = mockQuery.mock.calls.at(-1);
 
     if (expectedParams.filter) {
-      expect(callArgs[0]?.filter || callArgs[0]).toMatchObject(expectedParams.filter);
+      // biome-ignore lint/suspicious/noMisplacedAssertion: This is a test helper designed to be called from within test functions
+      expect(callArgs[0]?.filter || callArgs[0]).toMatchObject(
+        expectedParams.filter
+      );
     }
 
     if (expectedParams.selectionSet) {
+      // biome-ignore lint/suspicious/noMisplacedAssertion: This is a test helper designed to be called from within test functions
       expect(callArgs[1]?.selectionSet).toEqual(expectedParams.selectionSet);
     }
 
     if (expectedParams.limit !== undefined) {
+      // biome-ignore lint/suspicious/noMisplacedAssertion: This is a test helper designed to be called from within test functions
       expect(callArgs[0]?.limit || callArgs.limit).toBe(expectedParams.limit);
     }
   }
@@ -281,19 +308,19 @@ export function createTestQueryWrapper() {
       queries: {
         retry: false,
         cacheTime: 0,
-        staleTime: 0
+        staleTime: 0,
       },
       mutations: {
-        retry: false
-      }
+        retry: false,
+      },
     },
     logger: {
       log: console.log,
       warn: console.warn,
       error: () => {
         // Suppress error logs in tests unless needed
-      }
-    }
+      },
+    },
   });
 
   const wrapper = ({ children }: { children: React.ReactNode }) =>
@@ -312,7 +339,9 @@ export function createTestQueryWrapper() {
  *   console.log(tierList);
  * }
  */
-export function createMockAsyncGeneratorFromArray<T>(items: T[]): AsyncGenerator<T> {
+export function createMockAsyncGeneratorFromArray<T>(
+  items: T[]
+): AsyncGenerator<T> {
   return createMockAsyncGenerator(items);
 }
 
@@ -324,11 +353,13 @@ export function createMockAsyncGeneratorFromArray<T>(items: T[]): AsyncGenerator
  * await waitForMultipleQueries([result1, result2, result3]);
  */
 export async function waitForMultipleQueries(
-  results: Array<{ current: { isSuccess: boolean; isError: boolean; error?: Error } }>,
+  results: Array<{
+    current: { isSuccess: boolean; isError: boolean; error?: Error };
+  }>,
   options?: { timeout?: number }
 ) {
   await Promise.all(
-    results.map((result) => waitForQuerySuccess(result, options))
+    results.map(result => waitForQuerySuccess(result, options))
   );
 }
 
@@ -340,14 +371,18 @@ export async function waitForMultipleQueries(
  * const mockClient = createMockGraphQLClient();
  * resetMockGraphQLClient(mockClient);
  */
-export function resetMockGraphQLClient(mockClient: any) {
-  Object.values(mockClient.models).forEach((model: any) => {
-    Object.values(model).forEach((method: any) => {
+interface MockGraphQLClient {
+  models: Record<string, Record<string, { mockReset?: () => void }>>;
+}
+
+export function resetMockGraphQLClient(mockClient: MockGraphQLClient) {
+  for (const model of Object.values(mockClient.models)) {
+    for (const method of Object.values(model)) {
       if (typeof method.mockReset === 'function') {
         method.mockReset();
       }
-    });
-  });
+    }
+  }
 }
 
 /**
@@ -361,5 +396,7 @@ export function resetMockGraphQLClient(mockClient: any) {
  * errorSpy.mockRestore();
  */
 export function spyOnConsole(method: 'log' | 'warn' | 'error' | 'info') {
-  return jest.spyOn(console, method).mockImplementation(() => {});
+  return jest.spyOn(console, method).mockImplementation(() => {
+    // Intentionally empty - suppresses console output during tests
+  });
 }

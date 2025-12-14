@@ -1,5 +1,3 @@
-import React from 'react';
-
 import { RivalryIndex } from './RivalryIndex';
 
 interface Game {
@@ -11,6 +9,6 @@ interface AccessProps {
   selectedGame: Game | null;
 }
 
-export function Access({ selectedGame }: AccessProps) {
+export function Access({ selectedGame: _selectedGame }: AccessProps) {
   return <RivalryIndex />;
 }

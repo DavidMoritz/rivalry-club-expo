@@ -1,8 +1,29 @@
-import React from 'react';
-import { render, fireEvent } from '@testing-library/react-native';
-
-import { CharacterDisplay } from '../CharacterDisplay';
+import { render } from '@testing-library/react-native';
+import type { Schema } from '../../../../amplify/data/resource';
 import { getMTierSlot } from '../../../models/m-tier-slot';
+import { CharacterDisplay } from '../CharacterDisplay';
+
+type TierSlot = Schema['TierSlot']['type'];
+
+/** Creates a mock TierSlot for testing purposes */
+const createMockTierSlot = (
+  overrides: Partial<TierSlot> & {
+    id: string;
+    fighterId: string;
+    tierListId: string;
+  }
+): TierSlot =>
+  ({
+    createdAt: new Date().toISOString(),
+    updatedAt: new Date().toISOString(),
+    position: null,
+    contestCount: null,
+    winCount: null,
+    deletedAt: null,
+    tierList: async () => ({ data: null }),
+    fighter: async () => ({ data: null }),
+    ...overrides,
+  }) as TierSlot;
 
 const mockFighter = {
   id: 'fighter-1',
@@ -23,20 +44,22 @@ describe('CharacterDisplay with TierSlot', () => {
   });
 
   it('should accept tierSlot prop with position and stats', () => {
-    const mockTierSlot = getMTierSlot({
-      id: 'slot-1',
-      fighterId: 'fighter-1',
-      tierListId: 'tierlist-1',
-      position: 10,
-      contestCount: 15,
-      winCount: 12,
-    } as any);
+    const mockTierSlot = getMTierSlot(
+      createMockTierSlot({
+        id: 'slot-1',
+        fighterId: 'fighter-1',
+        tierListId: 'tierlist-1',
+        position: 10,
+        contestCount: 15,
+        winCount: 12,
+      })
+    );
 
     const { root } = render(
       <CharacterDisplay
         fighter={mockFighter}
-        tierSlot={mockTierSlot}
         hideName={true}
+        tierSlot={mockTierSlot}
       />
     );
 
@@ -44,20 +67,22 @@ describe('CharacterDisplay with TierSlot', () => {
   });
 
   it('should render with tierSlot that has null position (unknown tier)', () => {
-    const mockTierSlot = getMTierSlot({
-      id: 'slot-1',
-      fighterId: 'fighter-1',
-      tierListId: 'tierlist-1',
-      position: null,
-      contestCount: 5,
-      winCount: 3,
-    } as any);
+    const mockTierSlot = getMTierSlot(
+      createMockTierSlot({
+        id: 'slot-1',
+        fighterId: 'fighter-1',
+        tierListId: 'tierlist-1',
+        position: null,
+        contestCount: 5,
+        winCount: 3,
+      })
+    );
 
     const { root } = render(
       <CharacterDisplay
         fighter={mockFighter}
-        tierSlot={mockTierSlot}
         hideName={true}
+        tierSlot={mockTierSlot}
       />
     );
 
@@ -65,20 +90,22 @@ describe('CharacterDisplay with TierSlot', () => {
   });
 
   it('should render with tierSlot that has zero stats', () => {
-    const mockTierSlot = getMTierSlot({
-      id: 'slot-1',
-      fighterId: 'fighter-1',
-      tierListId: 'tierlist-1',
-      position: 0,
-      contestCount: 0,
-      winCount: 0,
-    } as any);
+    const mockTierSlot = getMTierSlot(
+      createMockTierSlot({
+        id: 'slot-1',
+        fighterId: 'fighter-1',
+        tierListId: 'tierlist-1',
+        position: 0,
+        contestCount: 0,
+        winCount: 0,
+      })
+    );
 
     const { root } = render(
       <CharacterDisplay
         fighter={mockFighter}
-        tierSlot={mockTierSlot}
         hideName={true}
+        tierSlot={mockTierSlot}
       />
     );
 
@@ -112,20 +139,22 @@ describe('CharacterDisplay with TierSlot', () => {
       rank: 3,
     };
 
-    const mockTierSlot = getMTierSlot({
-      id: 'slot-1',
-      fighterId: 'fighter-1',
-      tierListId: 'tierlist-1',
-      position: 5,
-      contestCount: 20,
-      winCount: 15,
-    } as any);
+    const mockTierSlot = getMTierSlot(
+      createMockTierSlot({
+        id: 'slot-1',
+        fighterId: 'fighter-1',
+        tierListId: 'tierlist-1',
+        position: 5,
+        contestCount: 20,
+        winCount: 15,
+      })
+    );
 
     const { root } = render(
       <CharacterDisplay
         fighter={fighterWithStats}
-        tierSlot={mockTierSlot}
         hideName={true}
+        tierSlot={mockTierSlot}
       />
     );
 
@@ -133,20 +162,22 @@ describe('CharacterDisplay with TierSlot', () => {
   });
 
   it('should display stats when long-pressed (modal interaction)', () => {
-    const mockTierSlot = getMTierSlot({
-      id: 'slot-1',
-      fighterId: 'fighter-1',
-      tierListId: 'tierlist-1',
-      position: 10,
-      contestCount: 15,
-      winCount: 12,
-    } as any);
+    const mockTierSlot = getMTierSlot(
+      createMockTierSlot({
+        id: 'slot-1',
+        fighterId: 'fighter-1',
+        tierListId: 'tierlist-1',
+        position: 10,
+        contestCount: 15,
+        winCount: 12,
+      })
+    );
 
-    const { getByTestId, queryByText } = render(
+    const { queryByText } = render(
       <CharacterDisplay
         fighter={mockFighter}
-        tierSlot={mockTierSlot}
         hideName={true}
+        tierSlot={mockTierSlot}
       />
     );
 

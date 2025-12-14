@@ -1,12 +1,11 @@
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { Hub } from 'aws-amplify/utils';
 import { StatusBar } from 'expo-status-bar';
-import React, { useEffect, useState } from 'react';
+import { useEffect, useState } from 'react';
 import 'react-native-get-random-values';
 import 'react-native-url-polyfill/auto';
 
 import { Access } from './src/components/screens/Access';
-import { Auth } from './src/components/screens/Auth';
 import Home from './src/components/screens/Home';
 import { getCurrentUser } from './src/lib/amplify-auth';
 import { AllRivalriesProvider } from './src/providers/all-rivalries';
@@ -34,29 +33,31 @@ export default function App() {
   return (
     <QueryClientProvider client={queryClient}>
       <GameProvider game={null}>
-        {!entering ? (
+        {entering ? (
+          <AuthenticatedApp selectedGame={selectedGame} />
+        ) : (
           <>
             <Home onEnterClick={handleEnterClick} />
             <StatusBar style="light" />
           </>
-        ) : (
-          <AuthenticatedApp selectedGame={selectedGame} />
         )}
       </GameProvider>
     </QueryClientProvider>
   );
 }
 
-function AuthenticatedApp({ selectedGame }: { selectedGame: Game | null}) {
+function AuthenticatedApp({ selectedGame }: { selectedGame: Game | null }) {
   const [userId, setUserId] = useState<string | undefined>(undefined);
 
-  console.log('[App] AuthenticatedApp rendering - NO AUTH SCREEN, going straight to Access');
+  console.log(
+    '[App] AuthenticatedApp rendering - NO AUTH SCREEN, going straight to Access'
+  );
 
   // Listen for auth state changes from Cognito (optional - users start as anonymous)
   useEffect(() => {
     // Check initial session
     getCurrentUser()
-      .then((user) => {
+      .then(user => {
         setUserId(user.userId);
       })
       .catch(() => {
@@ -67,10 +68,12 @@ function AuthenticatedApp({ selectedGame }: { selectedGame: Game | null}) {
     const hubListener = Hub.listen('auth', ({ payload }) => {
       switch (payload.event) {
         case 'signedIn':
-          getCurrentUser().then((user) => setUserId(user.userId));
+          getCurrentUser().then(user => setUserId(user.userId));
           break;
         case 'signedOut':
           setUserId(undefined);
+          break;
+        default:
           break;
       }
     });

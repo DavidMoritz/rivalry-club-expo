@@ -1,5 +1,5 @@
 import { render } from '@testing-library/react-native';
-import React, { useContext } from 'react';
+import { useContext } from 'react';
 import { Animated, Text, View } from 'react-native';
 
 import {
@@ -28,12 +28,10 @@ describe('SyncedScrollViewContext', () => {
       const { getByTestId } = render(
         <SyncedScrollViewContext.Provider value={syncedScrollViewState}>
           <TestComponent />
-        </SyncedScrollViewContext.Provider>,
+        </SyncedScrollViewContext.Provider>
       );
 
-      expect(getByTestId('has-active-scroll-view').props.children).toBe(
-        'true',
-      );
+      expect(getByTestId('has-active-scroll-view').props.children).toBe('true');
       expect(getByTestId('has-offset-percent').props.children).toBe('true');
     });
 
@@ -64,7 +62,7 @@ describe('SyncedScrollViewContext', () => {
             <TestComponent1 />
             <TestComponent2 />
           </View>
-        </SyncedScrollViewContext.Provider>,
+        </SyncedScrollViewContext.Provider>
       );
 
       expect(getByTestId('component1').props.children).toBe('same');
@@ -76,25 +74,34 @@ describe('SyncedScrollViewContext', () => {
     it('should have activeScrollView as an Animated.Value', () => {
       expect(syncedScrollViewState.activeScrollView).toBeDefined();
       expect(syncedScrollViewState.activeScrollView).toBeInstanceOf(
-        Animated.Value,
+        Animated.Value
       );
     });
 
     it('should have offsetPercent as an Animated.Value', () => {
       expect(syncedScrollViewState.offsetPercent).toBeDefined();
       expect(syncedScrollViewState.offsetPercent).toBeInstanceOf(
-        Animated.Value,
+        Animated.Value
       );
     });
 
     it('should initialize activeScrollView with value 0', () => {
       // Access the internal _value property to check initial value
-      expect((syncedScrollViewState.activeScrollView as any)._value).toBe(0);
+      expect(
+        (
+          syncedScrollViewState.activeScrollView as unknown as {
+            _value: number;
+          }
+        )._value
+      ).toBe(0);
     });
 
     it('should initialize offsetPercent with value 0', () => {
       // Access the internal _value property to check initial value
-      expect((syncedScrollViewState.offsetPercent as any)._value).toBe(0);
+      expect(
+        (syncedScrollViewState.offsetPercent as unknown as { _value: number })
+          ._value
+      ).toBe(0);
     });
 
     it('should allow activeScrollView to be updated', () => {
@@ -102,9 +109,13 @@ describe('SyncedScrollViewContext', () => {
 
       syncedScrollViewState.activeScrollView.setValue(testValue);
 
-      expect((syncedScrollViewState.activeScrollView as any)._value).toBe(
-        testValue,
-      );
+      expect(
+        (
+          syncedScrollViewState.activeScrollView as unknown as {
+            _value: number;
+          }
+        )._value
+      ).toBe(testValue);
 
       // Reset to 0 for other tests
       syncedScrollViewState.activeScrollView.setValue(0);
@@ -115,9 +126,10 @@ describe('SyncedScrollViewContext', () => {
 
       syncedScrollViewState.offsetPercent.setValue(testValue);
 
-      expect((syncedScrollViewState.offsetPercent as any)._value).toBe(
-        testValue,
-      );
+      expect(
+        (syncedScrollViewState.offsetPercent as unknown as { _value: number })
+          ._value
+      ).toBe(testValue);
 
       // Reset to 0 for other tests
       syncedScrollViewState.offsetPercent.setValue(0);
@@ -139,7 +151,7 @@ describe('SyncedScrollViewContext', () => {
       const { getByTestId, rerender } = render(
         <SyncedScrollViewContext.Provider value={syncedScrollViewState}>
           <TestComponent />
-        </SyncedScrollViewContext.Provider>,
+        </SyncedScrollViewContext.Provider>
       );
 
       expect(getByTestId('state-reference').props.children).toBe('persistent');
@@ -148,7 +160,7 @@ describe('SyncedScrollViewContext', () => {
       rerender(
         <SyncedScrollViewContext.Provider value={syncedScrollViewState}>
           <TestComponent />
-        </SyncedScrollViewContext.Provider>,
+        </SyncedScrollViewContext.Provider>
       );
 
       expect(getByTestId('state-reference').props.children).toBe('persistent');

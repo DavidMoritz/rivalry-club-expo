@@ -13,7 +13,7 @@
 const {
   CognitoIdentityProviderClient,
   ListUsersCommand,
-  AdminSetUserPasswordCommand
+  AdminSetUserPasswordCommand,
 } = require('@aws-sdk/client-cognito-identity-provider');
 
 // Configuration
@@ -38,7 +38,7 @@ async function listAllUsers() {
     const command = new ListUsersCommand({
       UserPoolId: USER_POOL_ID,
       Limit: 60,
-      ...(paginationToken && { PaginationToken: paginationToken })
+      ...(paginationToken && { PaginationToken: paginationToken }),
     });
 
     const response = await client.send(command);
@@ -62,7 +62,7 @@ async function updateUserPassword(username) {
     UserPoolId: USER_POOL_ID,
     Username: username,
     Password: NEW_PASSWORD,
-    Permanent: PERMANENT
+    Permanent: PERMANENT,
   });
 
   try {
@@ -70,7 +70,10 @@ async function updateUserPassword(username) {
     console.log(`✓ Updated password for: ${username}`);
     return { success: true, username };
   } catch (error) {
-    console.error(`✗ Failed to update password for ${username}:`, error.message);
+    console.error(
+      `✗ Failed to update password for ${username}:`,
+      error.message
+    );
     return { success: false, username, error: error.message };
   }
 }
@@ -100,14 +103,19 @@ async function main() {
     // Display users to be updated
     console.log('Users to be updated:');
     users.forEach((user, index) => {
-      const email = user.Attributes?.find(attr => attr.Name === 'email')?.Value || 'N/A';
+      const email =
+        user.Attributes?.find(attr => attr.Name === 'email')?.Value || 'N/A';
       console.log(`  ${index + 1}. ${user.Username} (${email})`);
     });
     console.log('');
 
     // Confirm before proceeding
-    console.log('⚠️  WARNING: This will update passwords for ALL users listed above!');
-    console.log('Press Ctrl+C to cancel, or the script will continue in 3 seconds...\n');
+    console.log(
+      '⚠️  WARNING: This will update passwords for ALL users listed above!'
+    );
+    console.log(
+      'Press Ctrl+C to cancel, or the script will continue in 3 seconds...\n'
+    );
 
     await new Promise(resolve => setTimeout(resolve, 3000));
 
@@ -136,7 +144,6 @@ async function main() {
         .forEach(r => console.log(`  - ${r.username}: ${r.error}`));
       console.log('');
     }
-
   } catch (error) {
     console.error('\n❌ Error executing script:', error);
     process.exit(1);

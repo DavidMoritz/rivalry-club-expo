@@ -1,6 +1,13 @@
-import React, { createContext, ReactNode, useCallback, useContext, useMemo, useState } from 'react';
+import {
+  createContext,
+  type ReactNode,
+  useCallback,
+  useContext,
+  useMemo,
+  useState,
+} from 'react';
 
-import { MRivalry } from '../models/m-rivalry';
+import type { MRivalry } from '../models/m-rivalry';
 
 interface RivalryWithUsers extends MRivalry {
   userAName?: string;
@@ -19,7 +26,10 @@ interface AllRivalriesContextValue {
 interface AllRivalriesUpdateContextValue {
   setRivalries: (rivalries: RivalryWithUsers[], userId?: string) => void;
   addRivalry: (rivalry: RivalryWithUsers) => void;
-  updateRivalry: (rivalryId: string, updates: Partial<RivalryWithUsers>) => void;
+  updateRivalry: (
+    rivalryId: string,
+    updates: Partial<RivalryWithUsers>
+  ) => void;
   removeRivalry: (rivalryId: string) => void;
   setUserId: (userId: string) => void;
 }
@@ -28,38 +38,56 @@ const AllRivalriesContext = createContext<AllRivalriesContextValue>({
   rivalries: [],
   pendingRivalries: {
     awaitingAcceptance: [],
-    initiated: []
+    initiated: [],
   },
-  acceptedRivalries: []
+  acceptedRivalries: [],
 });
 
-const AllRivalriesUpdateContext = createContext<AllRivalriesUpdateContextValue>({
-  setRivalries: () => undefined,
-  addRivalry: () => undefined,
-  updateRivalry: () => undefined,
-  removeRivalry: () => undefined,
-  setUserId: () => undefined
-});
+const AllRivalriesUpdateContext = createContext<AllRivalriesUpdateContextValue>(
+  {
+    setRivalries: () => {
+      // noop - default context placeholder
+    },
+    addRivalry: () => {
+      // noop - default context placeholder
+    },
+    updateRivalry: () => {
+      // noop - default context placeholder
+    },
+    removeRivalry: () => {
+      // noop - default context placeholder
+    },
+    setUserId: () => {
+      // noop - default context placeholder
+    },
+  }
+);
 
 export const useAllRivalries = () => useContext(AllRivalriesContext);
-export const useAllRivalriesUpdate = () => useContext(AllRivalriesUpdateContext);
+export const useAllRivalriesUpdate = () =>
+  useContext(AllRivalriesUpdateContext);
 
 export const AllRivalriesProvider = ({
   children,
-  userId
+  userId,
 }: {
   children: ReactNode;
   userId?: string;
 }) => {
   const [rivalries, setRivalriesState] = useState<RivalryWithUsers[]>([]);
-  const [currentUserId, setCurrentUserId] = useState<string | undefined>(userId);
+  const [currentUserId, setCurrentUserId] = useState<string | undefined>(
+    userId
+  );
 
-  const setRivalries = useCallback((newRivalries: RivalryWithUsers[], newUserId?: string) => {
-    setRivalriesState(newRivalries);
-    if (newUserId) {
-      setCurrentUserId(newUserId);
-    }
-  }, []);
+  const setRivalries = useCallback(
+    (newRivalries: RivalryWithUsers[], newUserId?: string) => {
+      setRivalriesState(newRivalries);
+      if (newUserId) {
+        setCurrentUserId(newUserId);
+      }
+    },
+    []
+  );
 
   const setUserId = useCallback((newUserId: string) => {
     setCurrentUserId(newUserId);
@@ -71,18 +99,21 @@ export const AllRivalriesProvider = ({
       const exists = prev.some(r => r.id === rivalry.id);
       if (exists) {
         // Update existing rivalry
-        return prev.map(r => r.id === rivalry.id ? rivalry : r);
+        return prev.map(r => (r.id === rivalry.id ? rivalry : r));
       }
       // Add new rivalry
       return [...prev, rivalry];
     });
   }, []);
 
-  const updateRivalry = useCallback((rivalryId: string, updates: Partial<RivalryWithUsers>) => {
-    setRivalriesState(prev =>
-      prev.map(r => r.id === rivalryId ? { ...r, ...updates } : r)
-    );
-  }, []);
+  const updateRivalry = useCallback(
+    (rivalryId: string, updates: Partial<RivalryWithUsers>) => {
+      setRivalriesState(prev =>
+        prev.map(r => (r.id === rivalryId ? { ...r, ...updates } : r))
+      );
+    },
+    []
+  );
 
   const removeRivalry = useCallback((rivalryId: string) => {
     setRivalriesState(prev => prev.filter(r => r.id !== rivalryId));
@@ -93,7 +124,7 @@ export const AllRivalriesProvider = ({
     if (!currentUserId) {
       return {
         pendingRivalries: { awaitingAcceptance: [], initiated: [] },
-        acceptedRivalries: []
+        acceptedRivalries: [],
       };
     }
 
@@ -103,9 +134,9 @@ export const AllRivalriesProvider = ({
     return {
       pendingRivalries: {
         awaitingAcceptance: pending.filter(r => r.userBId === currentUserId),
-        initiated: pending.filter(r => r.userAId === currentUserId)
+        initiated: pending.filter(r => r.userAId === currentUserId),
       },
-      acceptedRivalries: accepted
+      acceptedRivalries: accepted,
     };
   }, [rivalries, currentUserId]);
 
@@ -113,7 +144,7 @@ export const AllRivalriesProvider = ({
     () => ({
       rivalries,
       pendingRivalries,
-      acceptedRivalries
+      acceptedRivalries,
     }),
     [rivalries, pendingRivalries, acceptedRivalries]
   );
@@ -124,7 +155,7 @@ export const AllRivalriesProvider = ({
       addRivalry,
       updateRivalry,
       removeRivalry,
-      setUserId
+      setUserId,
     }),
     [setRivalries, addRivalry, updateRivalry, removeRivalry, setUserId]
   );

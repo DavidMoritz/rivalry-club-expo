@@ -1,23 +1,22 @@
-import { useLocalSearchParams, Stack } from 'expo-router';
-import { StatusBar } from 'expo-status-bar';
-import React, { useState, useCallback } from 'react';
-import { Text, View, ActivityIndicator } from 'react-native';
-import { SafeAreaView } from 'react-native-safe-area-context';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { generateClient } from 'aws-amplify/data';
+import { Stack, useLocalSearchParams } from 'expo-router';
+import { StatusBar } from 'expo-status-bar';
+import { useCallback, useState } from 'react';
+import { ActivityIndicator, Text, View } from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
 import type { Schema } from '../../../amplify/data/resource';
-
-import { darkStyles, styles } from '../../../src/utils/styles';
 import { HamburgerMenu } from '../../../src/components/common/HamburgerMenu';
 import { ContestHistoryTable } from '../../../src/components/screens/parts/ContestHistoryTable';
-import { getMContest, MContest } from '../../../src/models/m-contest';
-import { MGame } from '../../../src/models/m-game';
-import { getMRivalry, MRivalry } from '../../../src/models/m-rivalry';
-import { getMUser } from '../../../src/models/m-user';
-import { RivalryProvider } from '../../../src/providers/rivalry';
-import { useGame } from '../../../src/providers/game';
 import { useDeleteMostRecentContestMutation } from '../../../src/controllers/c-rivalry';
+import { getMContest, type MContest } from '../../../src/models/m-contest';
+import type { MGame } from '../../../src/models/m-game';
+import { getMRivalry, type MRivalry } from '../../../src/models/m-rivalry';
+import { getMUser } from '../../../src/models/m-user';
+import { useGame } from '../../../src/providers/game';
+import { RivalryProvider } from '../../../src/providers/rivalry';
 import { colors } from '../../../src/utils/colors';
+import { darkStyles, styles } from '../../../src/utils/styles';
 
 // Lazy client initialization to avoid crashes when Amplify isn't configured
 let client: ReturnType<typeof generateClient<Schema>> | null = null;
@@ -28,6 +27,78 @@ function getClient() {
   }
 
   return client;
+}
+
+// Helper function to process tier lists and their slots
+async function processTierLists(
+  tierLists: Awaited<
+    ReturnType<typeof getClient>['models']['Rivalry']['get']
+  >['data'] extends { tierLists?: infer T }
+    ? T
+    : never
+) {
+  const tierListsArray: Schema['TierList']['type'][] = [];
+  if (tierLists) {
+    for await (const tierListData of tierLists) {
+      const tierSlotsArray: Schema['TierSlot']['type'][] = [];
+      if (tierListData.tierSlots) {
+        for await (const tierSlot of tierListData.tierSlots) {
+          tierSlotsArray.push(tierSlot);
+        }
+      }
+      tierListsArray.push({
+        ...tierListData,
+        tierSlots: { items: tierSlotsArray },
+      } as Schema['TierList']['type']);
+    }
+  }
+  return tierListsArray;
+}
+
+// Helper function to populate rivalry users from context or API
+async function populateRivalryUsers(
+  mRivalry: MRivalry,
+  rivalryData: { userAId: string; userBId: string },
+  userAName: string | undefined,
+  userBName: string | undefined
+) {
+  if (userAName && userBName) {
+    // Split full names into first and last names
+    const [firstNameA, ...lastNamePartsA] = userAName.split(' ');
+    const [firstNameB, ...lastNamePartsB] = userBName.split(' ');
+
+    mRivalry.userA = getMUser({
+      user: {
+        id: rivalryData.userAId,
+        firstName: firstNameA,
+        lastName: lastNamePartsA.join(' '),
+      } as Schema['User']['type'],
+    });
+    mRivalry.userB = getMUser({
+      user: {
+        id: rivalryData.userBId,
+        firstName: firstNameB,
+        lastName: lastNamePartsB.join(' '),
+      } as Schema['User']['type'],
+    });
+  } else {
+    // Load user data separately if not in context
+    const [userAResult, userBResult] = await Promise.all([
+      getClient().models.User.get({ id: rivalryData.userAId }),
+      getClient().models.User.get({ id: rivalryData.userBId }),
+    ]);
+
+    if (userAResult.data) {
+      mRivalry.userA = getMUser({
+        user: userAResult.data as Schema['User']['type'],
+      });
+    }
+    if (userBResult.data) {
+      mRivalry.userB = getMUser({
+        user: userBResult.data as Schema['User']['type'],
+      });
+    }
+  }
 }
 
 export default function HistoryRoute() {
@@ -47,9 +118,13 @@ export default function HistoryRoute() {
     rivalry,
     onSuccess: () => {
       // Invalidate queries to refetch contests after undo
-      queryClient.invalidateQueries({ queryKey: ['rivalryContests', rivalryId] });
-      queryClient.invalidateQueries({ queryKey: ['rivalryWithInfo', rivalryId] });
-    }
+      queryClient.invalidateQueries({
+        queryKey: ['rivalryContests', rivalryId],
+      });
+      queryClient.invalidateQueries({
+        queryKey: ['rivalryWithInfo', rivalryId],
+      });
+    },
   });
 
   // Get game from global GameProvider (includes fighter stats)
@@ -58,30 +133,31 @@ export default function HistoryRoute() {
   const {
     data: _rivalryData,
     isLoading: isLoadingRivalry,
-    error: rivalryError
+    error: rivalryError,
   } = useQuery({
     enabled: !!rivalryId,
     queryKey: ['rivalryWithInfo', rivalryId],
     structuralSharing: false,
     queryFn: async () => {
-      const { data: rivalryData, errors } = await getClient().models.Rivalry.get(
-        { id: rivalryId },
-        {
-          selectionSet: [
-            'id',
-            'userAId',
-            'userBId',
-            'gameId',
-            'contestCount',
-            'currentContestId',
-            'createdAt',
-            'updatedAt',
-            'deletedAt',
-            'tierLists.*',
-            'tierLists.tierSlots.*'
-          ]
-        }
-      );
+      const { data: rivalryData, errors } =
+        await getClient().models.Rivalry.get(
+          { id: rivalryId },
+          {
+            selectionSet: [
+              'id',
+              'userAId',
+              'userBId',
+              'gameId',
+              'contestCount',
+              'currentContestId',
+              'createdAt',
+              'updatedAt',
+              'deletedAt',
+              'tierLists.*',
+              'tierLists.tierSlots.*',
+            ],
+          }
+        );
 
       if (errors) {
         console.error('[HistoryRoute] GraphQL errors loading rivalry:', errors);
@@ -92,90 +168,45 @@ export default function HistoryRoute() {
         throw new Error('Rivalry not found');
       }
 
-      const tierListsArray: any[] = [];
-      if (rivalryData.tierLists) {
-        for await (const tierListData of rivalryData.tierLists) {
-          const tierSlotsArray: any[] = [];
-          if (tierListData.tierSlots) {
-            for await (const tierSlot of tierListData.tierSlots) {
-              tierSlotsArray.push(tierSlot);
-            }
-          }
-          tierListsArray.push({ ...tierListData, tierSlots: { items: tierSlotsArray } });
-        }
-      }
+      const tierListsArray = await processTierLists(rivalryData.tierLists);
       const tierLists = { items: tierListsArray };
 
-      const mRivalry = getMRivalry({ rivalry: rivalryData as any });
-      mRivalry.setMTierLists(tierLists as any);
+      const mRivalry = getMRivalry({
+        rivalry: rivalryData as Schema['Rivalry']['type'],
+      });
+      mRivalry.setMTierLists(
+        tierLists as Parameters<typeof mRivalry.setMTierLists>[0]
+      );
 
       // Use user names from context if available, otherwise fetch
-      if (userAName && userBName) {
-        // Split full names into first and last names
-        const [firstNameA, ...lastNamePartsA] = userAName.split(' ');
-        const [firstNameB, ...lastNamePartsB] = userBName.split(' ');
-
-        mRivalry.userA = getMUser({
-          user: {
-            id: rivalryData.userAId,
-            firstName: firstNameA,
-            lastName: lastNamePartsA.join(' ')
-          } as any
-        });
-        mRivalry.userB = getMUser({
-          user: {
-            id: rivalryData.userBId,
-            firstName: firstNameB,
-            lastName: lastNamePartsB.join(' ')
-          } as any
-        });
-      } else {
-        // Load user data separately if not in context
-        const [userAResult, userBResult] = await Promise.all([
-          getClient().models.User.get({ id: rivalryData.userAId }),
-          getClient().models.User.get({ id: rivalryData.userBId })
-        ]);
-
-        if (userAResult.data) {
-          mRivalry.userA = getMUser({ user: userAResult.data as any });
-        }
-        if (userBResult.data) {
-          mRivalry.userB = getMUser({ user: userBResult.data as any });
-        }
-      }
+      await populateRivalryUsers(mRivalry, rivalryData, userAName, userBName);
 
       setRivalry(mRivalry);
 
       return mRivalry;
-    }
+    },
   });
 
-  const { isLoading: isLoadingContests, error } = useQuery({
+  const { isLoading: isLoadingContests, error: contestError } = useQuery({
     enabled: !!rivalryId && !!rivalry && !!game,
     queryKey: ['rivalryContests', rivalryId],
     structuralSharing: false,
     queryFn: async () => {
       // Use the GSI query for efficient sorting by createdAt
-      const {
-        data: contestData,
-        errors
-      }: {
-        data: any[];
-        errors?: any[];
-      } = await getClient().models.Contest.contestsByRivalryIdAndCreatedAt({
-        rivalryId: rivalryId,
-        sortDirection: 'DESC',
-        limit: 100
-      });
+      const { data: contestData, errors } =
+        await getClient().models.Contest.contestsByRivalryIdAndCreatedAt({
+          rivalryId,
+          sortDirection: 'DESC',
+          limit: 100,
+        });
 
       if (errors) {
         console.error('[HistoryRoute] GraphQL errors:', errors);
-        throw new Error(errors[0]?.message || 'Failed to fetch contests');
+        throw new Error(errors.at(0)?.message || 'Failed to fetch contests');
       }
 
-      const newNextToken = null;
-      const mContests = contestData.map((c) => {
-        const mContest = getMContest(c as any);
+      const mContests = contestData.map(c => {
+        const mContest = getMContest(c as Schema['Contest']['type']);
         if (rivalry) {
           mContest.setRivalryAndSlots(rivalry);
         }
@@ -190,10 +221,10 @@ export default function HistoryRoute() {
       }
 
       setContests(mContests);
-      setNextToken(newNextToken || null);
+      setNextToken(null);
 
       return mContests;
-    }
+    },
   });
 
   const isLoading = isLoadingRivalry || isLoadingContests;
@@ -211,11 +242,11 @@ export default function HistoryRoute() {
       const {
         data: contestData,
         errors,
-        nextToken: newNextToken
+        nextToken: newNextToken,
       } = await getClient().models.Contest.list({
         filter: { rivalryId: { eq: rivalryId } },
         limit: 100,
-        nextToken
+        nextToken,
       });
 
       if (errors) {
@@ -224,8 +255,8 @@ export default function HistoryRoute() {
         return;
       }
 
-      const mContests = contestData.map((c) => {
-        const mContest = getMContest(c as any);
+      const mContests = contestData.map(c => {
+        const mContest = getMContest(c as Schema['Contest']['type']);
         mContest.setRivalryAndSlots(rivalry);
 
         return mContest;
@@ -239,7 +270,7 @@ export default function HistoryRoute() {
         return dateB - dateA; // Descending order
       });
 
-      setContests((prev) => {
+      setContests(prev => {
         // Combine and re-sort to maintain order
         const combined = [...prev, ...mContests];
         combined.sort((a, b) => {
@@ -252,8 +283,8 @@ export default function HistoryRoute() {
         return combined;
       });
       setNextToken(newNextToken || null);
-    } catch (error) {
-      console.error('[HistoryRoute] loadMore error:', error);
+    } catch (loadMoreError) {
+      console.error('[HistoryRoute] loadMore error:', loadMoreError);
     } finally {
       setIsLoadingMore(false);
     }
@@ -265,9 +296,11 @@ export default function HistoryRoute() {
         <Stack.Screen options={{ title: 'Contest History' }} />
         <SafeAreaView style={[styles.container, darkStyles.container]}>
           <View style={centeredContainerStyle}>
-            <ActivityIndicator size="large" color={colors.white} />
+            <ActivityIndicator color={colors.white} size="large" />
             <Text style={loadingTextStyle}>
-              {isLoadingRivalry ? 'Loading rivalry data...' : 'Loading contests...'}
+              {isLoadingRivalry
+                ? 'Loading rivalry data...'
+                : 'Loading contests...'}
             </Text>
           </View>
         </SafeAreaView>
@@ -276,7 +309,7 @@ export default function HistoryRoute() {
     );
   }
 
-  if (error || rivalryError) {
+  if (contestError || rivalryError) {
     return (
       <>
         <Stack.Screen options={{ title: 'Contest History' }} />
@@ -284,8 +317,10 @@ export default function HistoryRoute() {
           <View style={errorContainerStyle}>
             <Text style={errorTitleStyle}>Error loading data</Text>
             <Text style={errorMessageStyle}>
-              {(error instanceof Error ? error.message : null) ||
-                (rivalryError instanceof Error ? rivalryError.message : 'Unknown error')}
+              {(contestError instanceof Error ? contestError.message : null) ||
+                (rivalryError instanceof Error
+                  ? rivalryError.message
+                  : 'Unknown error')}
             </Text>
           </View>
         </SafeAreaView>
@@ -319,19 +354,19 @@ export default function HistoryRoute() {
         userId={userId}
       >
         <SafeAreaView
-          style={[styles.container, darkStyles.container]}
           edges={['left', 'right', 'bottom']}
+          style={[styles.container, darkStyles.container]}
         >
           <View style={historyContainerStyle}>
             <ContestHistoryTable
               contests={contests}
-              game={game as MGame}
-              rivalry={rivalry}
               deleteMostRecentContestMutation={deleteMostRecentContestMutation}
-              loadMore={loadMore}
-              isLoadingMore={isLoadingMore}
+              game={game as MGame}
               hideUndoButton={hideUndoButton}
+              isLoadingMore={isLoadingMore}
+              loadMore={loadMore}
               onUndoClick={handleUndoClick}
+              rivalry={rivalry}
             />
           </View>
         </SafeAreaView>
@@ -346,33 +381,33 @@ const center = 'center' as const;
 const centeredContainerStyle = {
   flex: 1,
   alignItems: center,
-  justifyContent: center
+  justifyContent: center,
 };
 
 const loadingTextStyle = {
   ...styles.text,
-  marginTop: 16
+  marginTop: 16,
 };
 
 const errorContainerStyle = {
   flex: 1,
   alignItems: center,
   justifyContent: center,
-  paddingHorizontal: 16
+  paddingHorizontal: 16,
 };
 
 const errorTitleStyle = {
   ...styles.text,
   fontSize: 18,
   color: colors.red450,
-  marginBottom: 8
+  marginBottom: 8,
 };
 
 const errorMessageStyle = {
   ...styles.text,
-  color: colors.gray400
+  color: colors.gray400,
 };
 
 const historyContainerStyle = {
-  paddingTop: 72
+  paddingTop: 72,
 };

@@ -1,5 +1,5 @@
-import { User } from '../../src/API';
-import { getMUser, MUser } from '../../src/models/m-user';
+import type { User } from '../../src/API';
+import { getMUser } from '../../src/models/m-user';
 
 describe('MUser Model', () => {
   const mockUser: User = {

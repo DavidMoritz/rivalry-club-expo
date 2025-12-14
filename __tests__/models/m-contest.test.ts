@@ -1,9 +1,10 @@
+import { jest } from '@jest/globals';
 import type { Schema } from '../../amplify/data/resource';
 import { getMContest } from '../../src/models/m-contest';
 import { getMRivalry } from '../../src/models/m-rivalry';
 import { getMTierList } from '../../src/models/m-tier-list';
 import { getMUser } from '../../src/models/m-user';
-import { TestContest, TestTierList } from '../test-helpers';
+import type { TestContest, TestTierList } from '../test-helpers';
 
 type Contest = Schema['Contest']['type'];
 type User = Schema['User']['type'];
@@ -20,7 +21,11 @@ describe('MContest Model', () => {
     updatedAt: '2024-01-01',
   };
 
-  const createMockUser = (id: string, firstName: string, lastName: string): User => ({
+  const createMockUser = (
+    id: string,
+    firstName: string,
+    lastName: string
+  ): User => ({
     id,
     email: `${firstName.toLowerCase()}@test.com`,
     firstName,
@@ -84,8 +89,12 @@ describe('MContest Model', () => {
         },
       });
 
-      mockRivalry.userA = getMUser({ user: createMockUser('user-a', 'Alice', 'Anderson') });
-      mockRivalry.userB = getMUser({ user: createMockUser('user-b', 'Bob', 'Brown') });
+      mockRivalry.userA = getMUser({
+        user: createMockUser('user-a', 'Alice', 'Anderson'),
+      });
+      mockRivalry.userB = getMUser({
+        user: createMockUser('user-b', 'Bob', 'Brown'),
+      });
 
       contest.rivalry = mockRivalry;
 
@@ -110,8 +119,12 @@ describe('MContest Model', () => {
         },
       });
 
-      mockRivalry.userA = getMUser({ user: createMockUser('user-a', 'Alice', 'Anderson') });
-      mockRivalry.userB = getMUser({ user: createMockUser('user-b', 'Bob', 'Brown') });
+      mockRivalry.userA = getMUser({
+        user: createMockUser('user-a', 'Alice', 'Anderson'),
+      });
+      mockRivalry.userB = getMUser({
+        user: createMockUser('user-b', 'Bob', 'Brown'),
+      });
 
       contest.rivalry = mockRivalry;
 
@@ -178,7 +191,10 @@ describe('MContest Model', () => {
   });
 
   describe('setRivalryAndSlots', () => {
-    const createMockTierList = (userId: string, slotId: string): TestTierList => ({
+    const createMockTierList = (
+      userId: string,
+      slotId: string
+    ): TestTierList => ({
       id: `tier-list-${userId}`,
       rivalryId: 'rivalry-123',
       userId,
@@ -216,8 +232,12 @@ describe('MContest Model', () => {
         },
       });
 
-      mockRivalry.tierListA = getMTierList(createMockTierList('user-a', 'slot-a-123'));
-      mockRivalry.tierListB = getMTierList(createMockTierList('user-b', 'slot-b-123'));
+      mockRivalry.tierListA = getMTierList(
+        createMockTierList('user-a', 'slot-a-123')
+      );
+      mockRivalry.tierListB = getMTierList(
+        createMockTierList('user-b', 'slot-b-123')
+      );
 
       contest.setRivalryAndSlots(mockRivalry);
 
@@ -245,8 +265,12 @@ describe('MContest Model', () => {
         },
       });
 
-      mockRivalry.tierListA = getMTierList(createMockTierList('user-a', 'slot-a-123'));
-      mockRivalry.tierListB = getMTierList(createMockTierList('user-b', 'slot-b-123'));
+      mockRivalry.tierListA = getMTierList(
+        createMockTierList('user-a', 'slot-a-123')
+      );
+      mockRivalry.tierListB = getMTierList(
+        createMockTierList('user-b', 'slot-b-123')
+      );
 
       const consoleWarnSpy = jest.spyOn(console, 'warn').mockImplementation();
 

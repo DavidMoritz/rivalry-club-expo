@@ -4,8 +4,8 @@ module.exports = {
   },
   useSharedValue: jest.fn(() => ({ value: 0 })),
   useAnimatedStyle: jest.fn(() => ({})),
-  withSpring: jest.fn((value) => value),
-  withTiming: jest.fn((value) => value),
+  withSpring: jest.fn(value => value),
+  withTiming: jest.fn(value => value),
   Easing: {
     bezier: jest.fn(),
     ease: jest.fn(),

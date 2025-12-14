@@ -16,15 +16,25 @@ const path = require('path');
 
 // Parse command line arguments
 const args = process.argv.slice(2);
-const DRY_RUN = !args.includes('--apply') && !args.includes('--sandbox') && !args.includes('--production');
+const DRY_RUN = !(
+  args.includes('--apply') ||
+  args.includes('--sandbox') ||
+  args.includes('--production')
+);
 const SANDBOX_ONLY = args.includes('--sandbox');
 const PRODUCTION_ONLY = args.includes('--production');
 const BOTH_ENVS = args.includes('--apply');
 
 // Configuration
 const GAME_QUERY_PATH = path.join(__dirname, '../assets/cache/game-query.json');
-const PROD_CONFIG_PATH = path.join(__dirname, '../amplify_outputs.production.json');
-const SANDBOX_CONFIG_PATH = path.join(__dirname, '../data-backup/amplify_outputs.sandbox.backup.json');
+const PROD_CONFIG_PATH = path.join(
+  __dirname,
+  '../amplify_outputs.production.json'
+);
+const SANDBOX_CONFIG_PATH = path.join(
+  __dirname,
+  '../data-backup/amplify_outputs.sandbox.backup.json'
+);
 
 // GraphQL mutation to update a fighter
 const UPDATE_FIGHTER_MUTATION = `
@@ -72,7 +82,7 @@ async function updateFighter(url, apiKey, fighterId, gamePosition) {
       updateFighter: {
         id: fighterId,
         name: 'DRY RUN',
-        gamePosition: gamePosition,
+        gamePosition,
       },
     };
   }
@@ -80,7 +90,7 @@ async function updateFighter(url, apiKey, fighterId, gamePosition) {
   const variables = {
     input: {
       id: fighterId,
-      gamePosition: gamePosition,
+      gamePosition,
     },
   };
 
@@ -91,7 +101,9 @@ async function updateFighter(url, apiKey, fighterId, gamePosition) {
  * Update all fighters in an environment
  */
 async function updateEnvironment(envName, url, apiKey, fighters) {
-  console.log(`\n=== ${DRY_RUN ? 'Preview' : 'Updating'} ${envName} environment ===`);
+  console.log(
+    `\n=== ${DRY_RUN ? 'Preview' : 'Updating'} ${envName} environment ===`
+  );
   console.log(`API URL: ${url}`);
   console.log(`Total fighters to update: ${fighters.length}`);
   if (DRY_RUN) {
@@ -110,10 +122,14 @@ async function updateEnvironment(envName, url, apiKey, fighters) {
       await updateFighter(url, apiKey, fighter.id, fighter.gamePosition);
       successCount++;
       const prefix = DRY_RUN ? '○' : '✓';
-      console.log(`${prefix} [${i + 1}/${fighters.length}] ${DRY_RUN ? 'Would update' : 'Updated'} ${fighter.name} (ID: ${fighter.id}) → gamePosition: ${fighter.gamePosition}`);
+      console.log(
+        `${prefix} [${i + 1}/${fighters.length}] ${DRY_RUN ? 'Would update' : 'Updated'} ${fighter.name} (ID: ${fighter.id}) → gamePosition: ${fighter.gamePosition}`
+      );
     } catch (error) {
       errorCount++;
-      console.error(`✗ [${i + 1}/${fighters.length}] Failed to update ${fighter.name} (ID: ${fighter.id}): ${error.message}`);
+      console.error(
+        `✗ [${i + 1}/${fighters.length}] Failed to update ${fighter.name} (ID: ${fighter.id}): ${error.message}`
+      );
     }
 
     // Add a small delay to avoid rate limiting (skip in dry-run mode)
@@ -136,7 +152,9 @@ async function main() {
   console.log('===================================');
   if (DRY_RUN) {
     console.log('MODE: DRY RUN (preview only)');
-    console.log('To apply changes, run: node scripts/update-fighter-positions.js --apply\n');
+    console.log(
+      'To apply changes, run: node scripts/update-fighter-positions.js --apply\n'
+    );
   } else if (SANDBOX_ONLY) {
     console.log('MODE: APPLY to SANDBOX only\n');
   } else if (PRODUCTION_ONLY) {
@@ -174,7 +192,9 @@ async function main() {
   }
 
   if (SANDBOX_ONLY || BOTH_ENVS || DRY_RUN) {
-    const sandboxConfig = JSON.parse(fs.readFileSync(SANDBOX_CONFIG_PATH, 'utf8'));
+    const sandboxConfig = JSON.parse(
+      fs.readFileSync(SANDBOX_CONFIG_PATH, 'utf8')
+    );
     await updateEnvironment(
       'Sandbox',
       sandboxConfig.data.url,
@@ -185,14 +205,16 @@ async function main() {
 
   if (DRY_RUN) {
     console.log('\n✅ Dry run completed! No changes were made.');
-    console.log('To apply these changes, run: node scripts/update-fighter-positions.js --apply');
+    console.log(
+      'To apply these changes, run: node scripts/update-fighter-positions.js --apply'
+    );
   } else {
     console.log('\n✅ All updates completed!');
   }
 }
 
 // Run the script
-main().catch((error) => {
+main().catch(error => {
   console.error('Fatal error:', error);
   process.exit(1);
 });

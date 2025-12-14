@@ -19,38 +19,41 @@ export function RivalryView({ navigation }: RivalryViewProps) {
   const { user } = useAuthUser();
   const displayCount = Math.max((rivalry?.contestCount ?? 1) - 1, 0);
   const displayContest = displayCount === 1 ? 'Contest' : 'Contests';
-  const [isCurrentlyHidden, setIsCurrentlyHidden] = React.useState<boolean>(false);
+  const [isCurrentlyHidden, setIsCurrentlyHidden] =
+    React.useState<boolean>(false);
 
   const hideRivalryMutation = useHideRivalryMutation({
     onSuccess: () => {
       // Only navigate back to /rivalries when hiding (not when unhiding)
-      if (!isCurrentlyHidden) {
-        router.push('/rivalries');
-      } else {
+      if (isCurrentlyHidden) {
         // If unhiding, just update the local state
         setIsCurrentlyHidden(false);
+      } else {
+        router.push('/rivalries');
       }
-    }
+    },
   });
 
   //add useEffect to update isCurrentlyHidden when rivalry changes
   React.useEffect(() => {
-    if (!rivalry || !user?.id) return;
+    if (!(rivalry && user?.id)) return;
 
     const isUserA = rivalry?.userAId === user?.id;
-    const updatedHiddenState = isUserA ? rivalry?.hiddenByA : rivalry?.hiddenByB;
+    const updatedHiddenState = isUserA
+      ? rivalry?.hiddenByA
+      : rivalry?.hiddenByB;
 
     setIsCurrentlyHidden(updatedHiddenState ?? false);
   }, [rivalry, user?.id]);
 
   const handleToggleHideRivalry = () => {
-    if (!rivalry?.id || !user?.id) return;
+    if (!(rivalry?.id && user?.id)) return;
 
     hideRivalryMutation.mutate({
       rivalryId: rivalry.id,
       userId: user.id,
       isUserA: rivalry.userAId === user.id,
-      hidden: !isCurrentlyHidden
+      hidden: !isCurrentlyHidden,
     });
   };
 
@@ -60,20 +63,20 @@ export function RivalryView({ navigation }: RivalryViewProps) {
         onPress={() => {
           navigation.navigate('RivalryTiersView');
         }}
-        text="View Tier Lists"
         style={primaryButtonStyle}
+        text="View Tier Lists"
       />
       <Button
         onPress={() => {
           navigation.navigate('ContestHistory');
         }}
-        text={`View ${displayCount} ${displayContest}`}
         style={primaryButtonStyle}
+        text={`View ${displayCount} ${displayContest}`}
       />
       <Button
         onPress={handleToggleHideRivalry}
-        text={isCurrentlyHidden ? 'Unhide Rivalry' : 'Hide Rivalry'}
         style={isCurrentlyHidden ? unhideButtonStyle : linkButtonStyle}
+        text={isCurrentlyHidden ? 'Unhide Rivalry' : 'Hide Rivalry'}
         textStyle={isCurrentlyHidden ? {} : linkTextStyle}
       />
     </>
@@ -84,12 +87,12 @@ const primaryButtonStyle = {
   height: 48,
   paddingHorizontal: 0,
   paddingVertical: 0,
-  width: 256
+  width: 256,
 };
 
 const unhideButtonStyle = {
   ...primaryButtonStyle,
-  backgroundColor: colors.red500
+  backgroundColor: colors.red500,
 };
 
 const linkButtonStyle = {
@@ -98,12 +101,12 @@ const linkButtonStyle = {
   height: 'auto' as const,
   width: 'auto' as const,
   paddingHorizontal: 4,
-  paddingVertical: 4
+  paddingVertical: 4,
 };
 
 const linkTextStyle = {
   color: colors.slate400,
   fontSize: 14,
   fontWeight: 'normal' as const,
-  textDecorationLine: 'underline' as const
+  textDecorationLine: 'underline' as const,
 };

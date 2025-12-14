@@ -1,14 +1,14 @@
 // Mock the modules BEFORE importing
 jest.mock('expo-asset', () => ({
   Asset: {
-    loadAsync: jest.fn().mockResolvedValue(undefined)
-  }
+    loadAsync: jest.fn().mockResolvedValue(undefined),
+  },
 }));
 
 jest.mock('react-native', () => ({
   Image: {
-    prefetch: jest.fn().mockResolvedValue(true)
-  }
+    prefetch: jest.fn().mockResolvedValue(true),
+  },
 }));
 
 // Mock the fighter images
@@ -18,22 +18,31 @@ jest.mock('../../assets/images/games/ssbu', () => ({
     link: 2,
     samus: 3,
     pikachu: 4,
-    kirby: 5
-  }
+    kirby: 5,
+  },
 }));
 
 import { Asset } from 'expo-asset';
 import { Image } from 'react-native';
 
-import { preloadFighterImages, preloadAssets } from '../../src/utils/preloadAssets';
+import {
+  preloadAssets,
+  preloadFighterImages,
+} from '../../src/utils/preload-assets';
 
 describe('preloadAssets', () => {
   beforeEach(() => {
     jest.clearAllMocks();
     // Reset console methods
-    jest.spyOn(console, 'log').mockImplementation(() => {});
-    jest.spyOn(console, 'warn').mockImplementation(() => {});
-    jest.spyOn(console, 'error').mockImplementation(() => {});
+    jest.spyOn(console, 'log').mockImplementation(() => {
+      // no-op
+    });
+    jest.spyOn(console, 'warn').mockImplementation(() => {
+      // no-op
+    });
+    jest.spyOn(console, 'error').mockImplementation(() => {
+      // no-op
+    });
   });
 
   afterEach(() => {
@@ -67,7 +76,8 @@ describe('preloadAssets', () => {
     });
 
     it('should handle individual image loading failures gracefully', async () => {
-      const mockLoadAsync = jest.fn()
+      const mockLoadAsync = jest
+        .fn()
         .mockResolvedValueOnce(undefined) // mario - success
         .mockRejectedValueOnce(new Error('Network error')) // link - fail
         .mockResolvedValueOnce(undefined) // samus - success

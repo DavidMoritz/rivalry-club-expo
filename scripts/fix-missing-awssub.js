@@ -1,7 +1,11 @@
 #!/usr/bin/env node
 
 const { DynamoDBClient } = require('@aws-sdk/client-dynamodb');
-const { DynamoDBDocumentClient, ScanCommand, UpdateCommand } = require('@aws-sdk/lib-dynamodb');
+const {
+  DynamoDBDocumentClient,
+  ScanCommand,
+  UpdateCommand,
+} = require('@aws-sdk/lib-dynamodb');
 
 const client = new DynamoDBClient({ region: 'us-east-1' });
 const docClient = DynamoDBDocumentClient.from(client, {
@@ -51,7 +55,9 @@ async function fixMissingAwsSub() {
     console.log(`Users without awsSub: ${usersWithoutAwsSub.length}`);
 
     for (const user of usersWithoutAwsSub) {
-      console.log(`\nUpdating user ${user.id.substring(0, 8)} (${user.email})...`);
+      console.log(
+        `\nUpdating user ${user.id.substring(0, 8)} (${user.email})...`
+      );
 
       // Set awsSub to a placeholder value (we'll use their user ID)
       const updateCmd = new UpdateCommand({
@@ -59,8 +65,8 @@ async function fixMissingAwsSub() {
         Key: { id: user.id },
         UpdateExpression: 'SET awsSub = :awsSub',
         ExpressionAttributeValues: {
-          ':awsSub': `placeholder-${user.id}`
-        }
+          ':awsSub': `placeholder-${user.id}`,
+        },
       });
 
       await docClient.send(updateCmd);

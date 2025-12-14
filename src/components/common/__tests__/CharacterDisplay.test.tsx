@@ -1,6 +1,7 @@
-import React from 'react';
 import { render } from '@testing-library/react-native';
 
+import type { MFighter } from '../../../models/m-fighter';
+import type { MTierSlot } from '../../../models/m-tier-slot';
 import { CharacterDisplay } from '../CharacterDisplay';
 
 const mockFighter = {
@@ -37,7 +38,11 @@ describe('CharacterDisplay', () => {
   it('renders with custom height prop', () => {
     const customHeight = 50;
     const { root } = render(
-      <CharacterDisplay fighter={mockFighter} hideName={true} height={customHeight} />
+      <CharacterDisplay
+        fighter={mockFighter}
+        height={customHeight}
+        hideName={true}
+      />
     );
 
     expect(root).toBeTruthy();
@@ -45,8 +50,12 @@ describe('CharacterDisplay', () => {
 
   it('applies custom height and width when height prop is provided', () => {
     const customHeight = 25;
-    const { getByTestId } = render(
-      <CharacterDisplay fighter={mockFighter} hideName={true} height={customHeight} />
+    render(
+      <CharacterDisplay
+        fighter={mockFighter}
+        height={customHeight}
+        hideName={true}
+      />
     );
 
     // The component should render with the custom height
@@ -55,7 +64,11 @@ describe('CharacterDisplay', () => {
 
   it('renders with className prop', () => {
     const { root } = render(
-      <CharacterDisplay fighter={mockFighter} hideName={true} className="custom-class" />
+      <CharacterDisplay
+        className="custom-class"
+        fighter={mockFighter}
+        hideName={true}
+      />
     );
 
     expect(root).toBeTruthy();
@@ -63,7 +76,7 @@ describe('CharacterDisplay', () => {
 
   it('returns null when fighter is null', () => {
     const { toJSON } = render(
-      <CharacterDisplay fighter={null as any} hideName={true} />
+      <CharacterDisplay fighter={null as unknown as MFighter} hideName={true} />
     );
 
     expect(toJSON()).toBeNull();
@@ -71,7 +84,10 @@ describe('CharacterDisplay', () => {
 
   it('returns null when fighter is undefined', () => {
     const { toJSON } = render(
-      <CharacterDisplay fighter={undefined as any} hideName={true} />
+      <CharacterDisplay
+        fighter={undefined as unknown as MFighter}
+        hideName={true}
+      />
     );
 
     expect(toJSON()).toBeNull();
@@ -79,7 +95,7 @@ describe('CharacterDisplay', () => {
 
   it('renders with both height prop and hideName', () => {
     const { queryByText, root } = render(
-      <CharacterDisplay fighter={mockFighter} hideName={true} height={30} />
+      <CharacterDisplay fighter={mockFighter} height={30} hideName={true} />
     );
 
     expect(queryByText('Mario')).toBeNull();
@@ -88,7 +104,7 @@ describe('CharacterDisplay', () => {
 
   it('maintains aspect ratio with custom height', () => {
     const { root } = render(
-      <CharacterDisplay fighter={mockFighter} hideName={true} height={100} />
+      <CharacterDisplay fighter={mockFighter} height={100} hideName={true} />
     );
 
     // The image should maintain 1:1 aspect ratio
@@ -96,7 +112,7 @@ describe('CharacterDisplay', () => {
   });
 
   it('accepts optional tierSlot prop', () => {
-    const mockTierSlot = {
+    const mockTierSlot: Partial<MTierSlot> = {
       id: 'slot-1',
       fighterId: 'fighter-1',
       position: 5,
@@ -107,8 +123,8 @@ describe('CharacterDisplay', () => {
     const { root } = render(
       <CharacterDisplay
         fighter={mockFighter}
-        tierSlot={mockTierSlot as any}
         hideName={true}
+        tierSlot={mockTierSlot as MTierSlot}
       />
     );
 

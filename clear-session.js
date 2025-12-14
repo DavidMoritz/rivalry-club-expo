@@ -3,7 +3,9 @@ const { execSync } = require('child_process');
 console.log('Clearing iOS Simulator app data...');
 
 // Get all booted simulators
-const simulators = execSync('xcrun simctl list devices booted --json', { encoding: 'utf8' });
+const simulators = execSync('xcrun simctl list devices booted --json', {
+  encoding: 'utf8',
+});
 const devices = JSON.parse(simulators).devices;
 
 let cleared = false;
@@ -16,7 +18,9 @@ for (const runtime in devices) {
 
       try {
         // Delete the app from simulator
-        execSync(`xcrun simctl uninstall ${device.udid} host.exp.Exponent`, { stdio: 'inherit' });
+        execSync(`xcrun simctl uninstall ${device.udid} host.exp.Exponent`, {
+          stdio: 'inherit',
+        });
         console.log('✓ Uninstalled Expo Go');
         cleared = true;
       } catch (err) {

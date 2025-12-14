@@ -1,7 +1,9 @@
-import { DynamoDBClient } from '@aws-sdk/client-dynamodb';
-import { ExecuteStatementCommand } from '@aws-sdk/client-dynamodb';
+import {
+  DynamoDBClient,
+  ExecuteStatementCommand,
+} from '@aws-sdk/client-dynamodb';
 import { Amplify } from 'aws-amplify';
-import outputs from '../amplify_outputs.json';
+import outputs from '../amplify_outputs.json' with { type: 'json' };
 
 // Configure Amplify
 Amplify.configure(outputs);
@@ -29,13 +31,15 @@ async function getTierListIdsByContestCount() {
 
   try {
     const rivalryCommand = new ExecuteStatementCommand({
-      Statement: rivalryQuery
+      Statement: rivalryQuery,
     });
 
     const rivalryResponse = await dynamoClient.send(rivalryCommand);
     const rivalries = rivalryResponse.Items || [];
 
-    console.log(`Found ${rivalries.length} rivalries with contestCount > 300\n`);
+    console.log(
+      `Found ${rivalries.length} rivalries with contestCount > 300\n`
+    );
 
     if (rivalries.length === 0) {
       console.log('No rivalries found matching criteria.');
@@ -43,7 +47,7 @@ async function getTierListIdsByContestCount() {
     }
 
     // Extract rivalry IDs
-    const rivalryIds = rivalries.map((item) => item.id.S);
+    const rivalryIds = rivalries.map(item => item.id.S);
     console.log('Rivalry IDs:', rivalryIds);
     console.log('\nFetching tier lists for these rivalries...\n');
 
@@ -59,13 +63,13 @@ async function getTierListIdsByContestCount() {
       `;
 
       const tierListCommand = new ExecuteStatementCommand({
-        Statement: tierListQuery
+        Statement: tierListQuery,
       });
 
       const tierListResponse = await dynamoClient.send(tierListCommand);
       const tierLists = tierListResponse.Items || [];
 
-      tierLists.forEach((item) => {
+      tierLists.forEach(item => {
         const tierListId = item.id.S;
         if (tierListId) {
           allTierListIds.push(tierListId);
@@ -78,7 +82,7 @@ async function getTierListIdsByContestCount() {
     console.log(`Total TierList IDs found: ${allTierListIds.length}`);
     console.log('='.repeat(80));
     console.log('\nTierList IDs:');
-    allTierListIds.forEach((id) => console.log(`  - ${id}`));
+    allTierListIds.forEach(id => console.log(`  - ${id}`));
 
     return allTierListIds;
   } catch (error) {
@@ -87,7 +91,7 @@ async function getTierListIdsByContestCount() {
   }
 }
 
-getTierListIdsByContestCount().catch((error) => {
+getTierListIdsByContestCount().catch(error => {
   console.error('Fatal error:', error);
   process.exit(1);
 });

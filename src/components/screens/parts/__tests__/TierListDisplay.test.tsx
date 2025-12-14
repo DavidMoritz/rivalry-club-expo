@@ -1,14 +1,20 @@
-import React from 'react';
-import { render, waitFor } from '@testing-library/react-native';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
-
-import { TierListDisplay } from '../TierListDisplay';
+import { render, waitFor } from '@testing-library/react-native';
+import type { Schema } from '../../../../../amplify/data/resource';
+import { getMGame } from '../../../../models/m-game';
+import { getMRivalry } from '../../../../models/m-rivalry';
+import { getMTierList } from '../../../../models/m-tier-list';
 import { GameProvider } from '../../../../providers/game';
 import { RivalryProvider } from '../../../../providers/rivalry';
-import { SyncedScrollViewContext, syncedScrollViewState } from '../../../../providers/scroll-view';
-import { getMGame } from '../../../../models/m-game';
-import { getMTierList } from '../../../../models/m-tier-list';
-import { getMRivalry } from '../../../../models/m-rivalry';
+import {
+  SyncedScrollViewContext,
+  syncedScrollViewState,
+} from '../../../../providers/scroll-view';
+import { TierListDisplay } from '../TierListDisplay';
+
+type Game = Schema['Game']['type'];
+type Rivalry = Schema['Rivalry']['type'];
+type TierList = Schema['TierList']['type'];
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -24,9 +30,9 @@ const mockGame = getMGame({
     items: [
       { id: 'fighter-1', name: 'Mario', gameId: 'game-1' },
       { id: 'fighter-2', name: 'Link', gameId: 'game-1' },
-    ]
-  }
-} as any);
+    ],
+  },
+} as unknown as Game);
 
 const createMockTierList = () => {
   const tierSlots = Array.from({ length: 12 }, (_, i) => ({
@@ -42,9 +48,9 @@ const createMockTierList = () => {
     rivalryId: 'rivalry-1',
     standing: 0,
     tierSlots: {
-      items: tierSlots
-    }
-  } as any);
+      items: tierSlots,
+    },
+  } as unknown as TierList);
 };
 
 const mockRivalry = getMRivalry({
@@ -53,7 +59,7 @@ const mockRivalry = getMRivalry({
     userAId: 'user-1',
     userBId: 'user-2',
     gameId: 'game-1',
-  } as any
+  } as unknown as Rivalry,
 });
 
 describe('TierListDisplay', () => {
@@ -65,7 +71,11 @@ describe('TierListDisplay', () => {
         <RivalryProvider rivalry={mockRivalry}>
           <GameProvider game={mockGame}>
             <SyncedScrollViewContext.Provider value={syncedScrollViewState}>
-              <TierListDisplay tierList={mockTierList} tierListSignifier="A" unlinked={false} />
+              <TierListDisplay
+                tierList={mockTierList}
+                tierListSignifier="A"
+                unlinked={false}
+              />
             </SyncedScrollViewContext.Provider>
           </GameProvider>
         </RivalryProvider>
@@ -88,7 +98,11 @@ describe('TierListDisplay', () => {
         <RivalryProvider rivalry={mockRivalry}>
           <GameProvider game={mockGame}>
             <SyncedScrollViewContext.Provider value={syncedScrollViewState}>
-              <TierListDisplay tierList={mockTierList} tierListSignifier="B" unlinked={true} />
+              <TierListDisplay
+                tierList={mockTierList}
+                tierListSignifier="B"
+                unlinked={true}
+              />
             </SyncedScrollViewContext.Provider>
           </GameProvider>
         </RivalryProvider>
@@ -107,16 +121,20 @@ describe('TierListDisplay', () => {
       rivalryId: 'rivalry-1',
       standing: 0,
       tierSlots: {
-        items: []
-      }
-    } as any);
+        items: [],
+      },
+    } as unknown as TierList);
 
     const { root } = render(
       <QueryClientProvider client={queryClient}>
         <RivalryProvider rivalry={mockRivalry}>
           <GameProvider game={mockGame}>
             <SyncedScrollViewContext.Provider value={syncedScrollViewState}>
-              <TierListDisplay tierList={emptyTierList} tierListSignifier="A" unlinked={false} />
+              <TierListDisplay
+                tierList={emptyTierList}
+                tierListSignifier="A"
+                unlinked={false}
+              />
             </SyncedScrollViewContext.Provider>
           </GameProvider>
         </RivalryProvider>
@@ -128,9 +146,24 @@ describe('TierListDisplay', () => {
 
   it('sorts tier slots by position', async () => {
     const unsortedSlots = [
-      { id: 'slot-2', fighterId: 'fighter-2', position: 2, tierListId: 'tierlist-1' },
-      { id: 'slot-0', fighterId: 'fighter-1', position: 0, tierListId: 'tierlist-1' },
-      { id: 'slot-1', fighterId: 'fighter-2', position: 1, tierListId: 'tierlist-1' },
+      {
+        id: 'slot-2',
+        fighterId: 'fighter-2',
+        position: 2,
+        tierListId: 'tierlist-1',
+      },
+      {
+        id: 'slot-0',
+        fighterId: 'fighter-1',
+        position: 0,
+        tierListId: 'tierlist-1',
+      },
+      {
+        id: 'slot-1',
+        fighterId: 'fighter-2',
+        position: 1,
+        tierListId: 'tierlist-1',
+      },
     ];
 
     const unsortedTierList = getMTierList({
@@ -139,16 +172,20 @@ describe('TierListDisplay', () => {
       rivalryId: 'rivalry-1',
       standing: 0,
       tierSlots: {
-        items: unsortedSlots
-      }
-    } as any);
+        items: unsortedSlots,
+      },
+    } as unknown as TierList);
 
     const { getByText } = render(
       <QueryClientProvider client={queryClient}>
         <RivalryProvider rivalry={mockRivalry}>
           <GameProvider game={mockGame}>
             <SyncedScrollViewContext.Provider value={syncedScrollViewState}>
-              <TierListDisplay tierList={unsortedTierList} tierListSignifier="A" unlinked={false} />
+              <TierListDisplay
+                tierList={unsortedTierList}
+                tierListSignifier="A"
+                unlinked={false}
+              />
             </SyncedScrollViewContext.Provider>
           </GameProvider>
         </RivalryProvider>

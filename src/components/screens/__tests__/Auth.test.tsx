@@ -1,5 +1,4 @@
 import { fireEvent, render, waitFor } from '@testing-library/react-native';
-import React from 'react';
 
 import { Auth } from '../Auth';
 
@@ -10,10 +9,10 @@ const mockGetCurrentUser = jest.fn();
 const mockConfirmSignUp = jest.fn();
 
 jest.mock('../../../lib/amplify-auth', () => ({
-  signIn: (...args: any[]) => mockSignIn(...args),
-  signUp: (...args: any[]) => mockSignUp(...args),
+  signIn: (...args: unknown[]) => mockSignIn(...args),
+  signUp: (...args: unknown[]) => mockSignUp(...args),
   getCurrentUser: () => mockGetCurrentUser(),
-  confirmSignUp: (...args: any[]) => mockConfirmSignUp(...args),
+  confirmSignUp: (...args: unknown[]) => mockConfirmSignUp(...args),
   isExpoGo: false,
 }));
 
@@ -39,7 +38,9 @@ describe('Auth Component', () => {
     });
 
     it('does not show confirm password field in sign in mode', () => {
-      const { queryByPlaceholderText } = render(<Auth onAuthSuccess={mockOnAuthSuccess} />);
+      const { queryByPlaceholderText } = render(
+        <Auth onAuthSuccess={mockOnAuthSuccess} />
+      );
 
       expect(queryByPlaceholderText('Confirm your password')).toBeNull();
     });
@@ -139,7 +140,7 @@ describe('Auth Component', () => {
       // Mock sign in throwing an error (AWS Cognito style)
       mockSignIn.mockRejectedValue({
         name: 'NotAuthorizedException',
-        message: 'Incorrect username or password.'
+        message: 'Incorrect username or password.',
       });
 
       const { getByPlaceholderText, getAllByText, getByText } = render(
@@ -196,10 +197,7 @@ describe('Auth Component', () => {
       fireEvent.press(signInButton);
 
       await waitFor(() => {
-        expect(mockSignIn).toHaveBeenCalledWith(
-          'test@test.com',
-          'password123'
-        );
+        expect(mockSignIn).toHaveBeenCalledWith('test@test.com', 'password123');
       });
     });
   });
@@ -210,8 +208,8 @@ describe('Auth Component', () => {
       mockSignUp.mockResolvedValue({
         isSignUpComplete: true,
         nextStep: {
-          signUpStep: 'DONE'
-        }
+          signUpStep: 'DONE',
+        },
       });
 
       const { getByPlaceholderText, getByText, getAllByText } = render(
@@ -223,7 +221,9 @@ describe('Auth Component', () => {
 
       const emailInput = getByPlaceholderText('Enter your email');
       const passwordInput = getByPlaceholderText('Enter your password');
-      const confirmPasswordInput = getByPlaceholderText('Confirm your password');
+      const confirmPasswordInput = getByPlaceholderText(
+        'Confirm your password'
+      );
       const signUpButton = getAllByText('Sign Up')[1];
 
       fireEvent.changeText(emailInput, 'newuser@test.com');
@@ -253,7 +253,9 @@ describe('Auth Component', () => {
 
       const emailInput = getByPlaceholderText('Enter your email');
       const passwordInput = getByPlaceholderText('Enter your password');
-      const confirmPasswordInput = getByPlaceholderText('Confirm your password');
+      const confirmPasswordInput = getByPlaceholderText(
+        'Confirm your password'
+      );
       const signUpButton = getAllByText('Sign Up')[1];
 
       fireEvent.changeText(emailInput, 'newuser@test.com');
@@ -273,7 +275,7 @@ describe('Auth Component', () => {
       // Mock sign up throwing an error (AWS Cognito style)
       mockSignUp.mockRejectedValue({
         name: 'UsernameExistsException',
-        message: 'An account with this email already exists'
+        message: 'An account with this email already exists',
       });
 
       const { getByPlaceholderText, getByText, getAllByText } = render(
@@ -285,7 +287,9 @@ describe('Auth Component', () => {
 
       const emailInput = getByPlaceholderText('Enter your email');
       const passwordInput = getByPlaceholderText('Enter your password');
-      const confirmPasswordInput = getByPlaceholderText('Confirm your password');
+      const confirmPasswordInput = getByPlaceholderText(
+        'Confirm your password'
+      );
       const signUpButton = getAllByText('Sign Up')[1];
 
       fireEvent.changeText(emailInput, 'existing@test.com');
@@ -294,7 +298,9 @@ describe('Auth Component', () => {
       fireEvent.press(signUpButton);
 
       await waitFor(() => {
-        expect(getByText('An account with this email already exists')).toBeTruthy();
+        expect(
+          getByText('An account with this email already exists')
+        ).toBeTruthy();
       });
 
       expect(mockOnAuthSuccess).not.toHaveBeenCalled();
@@ -305,8 +311,12 @@ describe('Auth Component', () => {
     it('shows loading text when signing in', async () => {
       mockSignIn.mockImplementation(
         () =>
-          new Promise((resolve) =>
-            setTimeout(() => resolve({ isSignedIn: true, nextStep: { signInStep: 'DONE' } }), 100)
+          new Promise(resolve =>
+            setTimeout(
+              () =>
+                resolve({ isSignedIn: true, nextStep: { signInStep: 'DONE' } }),
+              100
+            )
           )
       );
 
@@ -332,8 +342,12 @@ describe('Auth Component', () => {
     it('disables button during sign in', async () => {
       mockSignIn.mockImplementation(
         () =>
-          new Promise((resolve) =>
-            setTimeout(() => resolve({ isSignedIn: true, nextStep: { signInStep: 'DONE' } }), 100)
+          new Promise(resolve =>
+            setTimeout(
+              () =>
+                resolve({ isSignedIn: true, nextStep: { signInStep: 'DONE' } }),
+              100
+            )
           )
       );
 
@@ -360,12 +374,11 @@ describe('Auth Component', () => {
     it('clears error when switching between sign in and sign up', async () => {
       mockSignIn.mockRejectedValue({
         name: 'NotAuthorizedException',
-        message: 'Incorrect username or password.'
+        message: 'Incorrect username or password.',
       });
 
-      const { getByPlaceholderText, getByText, getAllByText, queryByText } = render(
-        <Auth onAuthSuccess={mockOnAuthSuccess} />
-      );
+      const { getByPlaceholderText, getByText, getAllByText, queryByText } =
+        render(<Auth onAuthSuccess={mockOnAuthSuccess} />);
 
       // Trigger error
       const emailInput = getByPlaceholderText('Enter your email');

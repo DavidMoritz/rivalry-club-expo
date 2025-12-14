@@ -1,33 +1,41 @@
 import { fireEvent, render, waitFor } from '@testing-library/react-native';
-import React from 'react';
-
+import type { MFighter } from '../../../../models/m-fighter';
+import type { MGame } from '../../../../models/m-game';
+import type { MTierList } from '../../../../models/m-tier-list';
 import { TierListEditDisplay } from '../TierListEditDisplay';
-import { MTierList } from '../../../../models/m-tier-list';
-import { MGame } from '../../../../models/m-game';
 
 // Mock dependencies
 jest.mock('../../../../providers/game', () => ({
-  useGame: jest.fn()
+  useGame: jest.fn(),
 }));
 
 jest.mock('../../../../utils', () => ({
-  fighterByIdFromGame: jest.fn((game, fighterId) => ({
+  fighterByIdFromGame: jest.fn((_game, fighterId) => ({
     id: fighterId,
     name: `Fighter ${fighterId}`,
-    gameId: 'test-game'
-  }))
+    gameId: 'test-game',
+  })),
 }));
 
 jest.mock('../../../common/CharacterDisplay', () => ({
-  CharacterDisplay: ({ fighter, onPress }: any) => {
+  CharacterDisplay: ({
+    fighter,
+    onPress,
+  }: {
+    fighter: MFighter;
+    onPress?: () => void;
+  }) => {
     const { Text, TouchableOpacity } = require('react-native');
 
     return (
-      <TouchableOpacity onPress={onPress} testID={`character-${fighter.id}-wrapper`}>
+      <TouchableOpacity
+        onPress={onPress}
+        testID={`character-${fighter.id}-wrapper`}
+      >
         <Text testID={`character-${fighter.id}`}>{fighter.name}</Text>
       </TouchableOpacity>
     );
-  }
+  },
 }));
 
 const { useGame } = require('../../../../providers/game');
@@ -44,7 +52,7 @@ describe('TierListEditDisplay', () => {
       contestCount: 0,
       winCount: 0,
       createdAt: new Date().toISOString(),
-      updatedAt: new Date().toISOString()
+      updatedAt: new Date().toISOString(),
     }));
 
     return {
@@ -52,11 +60,11 @@ describe('TierListEditDisplay', () => {
       rivalryId: 'test-rivalry',
       userId: 'test-user',
       standing: 0,
-      slots: slots,
+      slots,
       tierSlots: { items: slots },
       createdAt: new Date().toISOString(),
-      updatedAt: new Date().toISOString()
-    } as any;
+      updatedAt: new Date().toISOString(),
+    } as MTierList;
   };
 
   beforeEach(() => {
@@ -64,13 +72,15 @@ describe('TierListEditDisplay', () => {
     useGame.mockReturnValue({
       id: 'test-game',
       name: 'Test Game',
-      fighters: { items: [] }
+      fighters: { items: [] },
     } as MGame);
   });
 
   it('renders all tier rows', () => {
     const tierList = createMockTierList();
-    const { getByText } = render(<TierListEditDisplay tierList={tierList} onChange={mockOnChange} />);
+    const { getByText } = render(
+      <TierListEditDisplay onChange={mockOnChange} tierList={tierList} />
+    );
 
     // Check that all 7 tier labels are present (S, A, B, C, D, E, F)
     expect(getByText('S')).toBeTruthy();
@@ -84,7 +94,9 @@ describe('TierListEditDisplay', () => {
 
   it('renders all characters', () => {
     const tierList = createMockTierList();
-    const { getByTestId } = render(<TierListEditDisplay tierList={tierList} onChange={mockOnChange} />);
+    const { getByTestId } = render(
+      <TierListEditDisplay onChange={mockOnChange} tierList={tierList} />
+    );
 
     // Check a few characters are rendered
     expect(getByTestId('character-fighter-0')).toBeTruthy();
@@ -94,7 +106,9 @@ describe('TierListEditDisplay', () => {
 
   it('moves a character when destination is clicked', async () => {
     const tierList = createMockTierList();
-    const { getByTestId } = render(<TierListEditDisplay tierList={tierList} onChange={mockOnChange} />);
+    const { getByTestId } = render(
+      <TierListEditDisplay onChange={mockOnChange} tierList={tierList} />
+    );
 
     // Select first character
     const character1Wrapper = getByTestId('character-fighter-0-wrapper');
@@ -111,7 +125,9 @@ describe('TierListEditDisplay', () => {
 
   it('deselects the slot when clicking the same slot again', () => {
     const tierList = createMockTierList();
-    const { getByTestId } = render(<TierListEditDisplay tierList={tierList} onChange={mockOnChange} />);
+    const { getByTestId } = render(
+      <TierListEditDisplay onChange={mockOnChange} tierList={tierList} />
+    );
 
     // Get the character wrapper (TouchableOpacity with onPress handler)
     const characterWrapper = getByTestId('character-fighter-0-wrapper');

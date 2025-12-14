@@ -55,6 +55,7 @@
     "@aws-sdk/client-cognito-identity-provider": "^3.943.0",
     "@aws-sdk/client-dynamodb": "^3.943.0",
     "@aws-sdk/lib-dynamodb": "^3.943.0",
+    "@biomejs/biome": "^2.3.8",
     "@react-native-community/cli": "^20.0.2",
     "@testing-library/jest-native": "^5.4.3",
     "@testing-library/react-native": "^13.3.3",

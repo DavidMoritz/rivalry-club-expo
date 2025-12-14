@@ -1,19 +1,21 @@
-import React, { ReactNode, useEffect, useState } from 'react';
+import { type ReactNode, useEffect, useState } from 'react';
 import { View } from 'react-native';
 
-import { MTierList, TIERS, TierWithSlots } from '../../../models/m-tier-list';
-import { MTierSlot } from '../../../models/m-tier-slot';
+import {
+  type MTierList,
+  TIERS,
+  type TierWithSlots,
+} from '../../../models/m-tier-list';
+import type { MTierSlot } from '../../../models/m-tier-slot';
+import { colors } from '../../../utils/colors';
 import { SyncedScrollView } from './SyncedScrollView';
 import TierListRow from './TierListRow';
-import { colors } from '../../../utils/colors';
 
 export function TierListDisplay({
   tierList,
-  tierListSignifier,
-  unlinked = false
+  unlinked = false,
 }: {
   tierList: MTierList;
-  tierListSignifier: 'A' | 'B';
   unlinked: boolean;
 }): ReactNode {
   const [tierSlotsSorted, setTierSlotsSorted] = useState<TierWithSlots[]>([]);
@@ -26,10 +28,10 @@ export function TierListDisplay({
 
     // UNKNOWN TIER: Separate positioned and unknown fighters
     const positionedSlots = allSlots.filter(
-      (slot) => slot.position !== null && slot.position !== undefined
+      slot => slot.position !== null && slot.position !== undefined
     );
-    const unknownSlots = allSlots.filter(
-      (slot) => slot.position === null || slot.position === undefined
+    const filteredUnknownSlots = allSlots.filter(
+      slot => slot.position === null || slot.position === undefined
     );
 
     // Sort only positioned fighters
@@ -39,42 +41,48 @@ export function TierListDisplay({
 
     // Map tiers to their slots based on position ranges
     const tiersWithSlots = TIERS.map((tier, tierIndex) => {
-      const startIdx = TIERS.slice(0, tierIndex).reduce((sum, t) => sum + t.fightersCount, 0);
+      const startIdx = TIERS.slice(0, tierIndex).reduce(
+        (sum, t) => sum + t.fightersCount,
+        0
+      );
       const endIdx = startIdx + tier.fightersCount;
 
       // Find slots within this tier's position range
       const tierSlots = positionedSorted.filter(
-        (slot) => slot.position != null && slot.position >= startIdx && slot.position < endIdx
+        slot =>
+          slot.position != null &&
+          slot.position >= startIdx &&
+          slot.position < endIdx
       );
 
       return {
         ...tier,
-        slots: tierSlots
+        slots: tierSlots,
       };
     });
 
     setTierSlotsSorted(tiersWithSlots);
-    setUnknownSlots(unknownSlots);
+    setUnknownSlots(filteredUnknownSlots);
   }, [tierList]);
 
   return (
     <View style={{ flex: 1, marginVertical: 8 }}>
       <SyncedScrollView id={Math.random()} unlinked={unlinked}>
-        {tierSlotsSorted.map((sortedTier: TierWithSlots, index: number) => (
+        {tierSlotsSorted.map((sortedTier: TierWithSlots) => (
           <TierListRow
+            active={false}
+            color={sortedTier.color}
             key={`${sortedTier.label}-${tierList.id}`}
             label={sortedTier.label}
-            color={sortedTier.color}
-            active={false}
             slots={sortedTier.slots}
           />
         ))}
         {unknownSlots.length > 0 && (
           <TierListRow
+            active={false}
+            color={colors.tierU}
             key={`UNKNOWN-${tierList.id}`}
             label="U"
-            color={colors.tierU}
-            active={false}
             slots={unknownSlots}
           />
         )}

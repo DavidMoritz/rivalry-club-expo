@@ -1,7 +1,8 @@
-import { useLocalSearchParams, useRouter, Stack } from 'expo-router';
+import { Stack, useLocalSearchParams, useRouter } from 'expo-router';
 import { StatusBar } from 'expo-status-bar';
-import React, { useMemo } from 'react';
+import { useMemo } from 'react';
 
+import type { Schema } from '../../amplify/data/resource';
 import { HamburgerMenu } from '../../src/components/common/HamburgerMenu';
 import { ConnectedRivalryView } from '../../src/components/screens/ConnectedRivalryView';
 import { getMRivalry } from '../../src/models/m-rivalry';
@@ -24,7 +25,9 @@ export default function RivalryDetailRoute() {
       return null;
     }
 
-    const rivalry = getMRivalry({ rivalry: { id: rivalryId } as any });
+    const rivalry = getMRivalry({
+      rivalry: { id: rivalryId } as unknown as Schema['Rivalry']['type'],
+    });
 
     return rivalry;
   }, [rivalryId]);
@@ -37,19 +40,19 @@ export default function RivalryDetailRoute() {
       if (screen === 'RivalryTiersView') {
         router.push({
           pathname: `/rivalry/${rivalryId}/tiers`,
-          params: { userId, userAName, userBName }
+          params: { userId, userAName, userBName },
         });
       } else if (screen === 'ContestHistory') {
         router.push({
           pathname: `/rivalry/${rivalryId}/history`,
-          params: { userId, userAName, userBName }
+          params: { userId, userAName, userBName },
         });
       }
     },
     setOptions: (_options: { title?: string; headerTitle?: string }) => {
       // In Expo Router, we can use Stack.Screen to set options
       // For now, we'll handle this with Stack.Screen below
-    }
+    },
   };
 
   return (

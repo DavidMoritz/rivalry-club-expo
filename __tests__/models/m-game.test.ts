@@ -1,7 +1,6 @@
 import type { Schema } from '../../amplify/data/resource';
 import {
   getMGame,
-  MGame,
   PROVISIONAL_THRESHOLD,
   STEPS_PER_STOCK,
   STOCK,

@@ -1,11 +1,20 @@
 import { render, screen, waitFor } from '@testing-library/react-native';
-import React from 'react';
-
-import { ContestRow } from '../ContestRow';
-import { getMContest, MContest } from '../../../models/m-contest';
-import { getMGame, MGame } from '../../../models/m-game';
-import { getMRivalry, MRivalry } from '../../../models/m-rivalry';
+import type { Schema } from '../../../../amplify/data/resource';
+import { getMContest, type MContest } from '../../../models/m-contest';
+import { getMGame, type MGame } from '../../../models/m-game';
+import { getMRivalry, type MRivalry } from '../../../models/m-rivalry';
 import { getMTierList } from '../../../models/m-tier-list';
+import { ContestRow } from '../ContestRow';
+
+type Game = Schema['Game']['type'];
+type TierList = Schema['TierList']['type'];
+type Rivalry = Schema['Rivalry']['type'];
+type Contest = Schema['Contest']['type'];
+
+// Regex patterns at top level for performance (useTopLevelRegex rule)
+const DATE_PATTERN_JAN_15 = /01\/15/;
+const DATE_PATTERN_MAR_20 = /03\/20/;
+const DATE_PATTERN_MAR_20_WITH_YEAR = /03\/20\/20/;
 
 describe('ContestRow', () => {
   const mockGame: MGame = getMGame({
@@ -25,7 +34,7 @@ describe('ContestRow', () => {
         },
       ],
     },
-  } as any);
+  } as unknown as Game);
 
   const mockTierListA = getMTierList({
     id: 'tierlist-1',
@@ -41,7 +50,7 @@ describe('ContestRow', () => {
         },
       ],
     },
-  } as any);
+  } as unknown as TierList);
 
   const mockTierListB = getMTierList({
     id: 'tierlist-2',
@@ -57,7 +66,7 @@ describe('ContestRow', () => {
         },
       ],
     },
-  } as any);
+  } as unknown as TierList);
 
   const mockRivalry: MRivalry = getMRivalry({
     rivalry: {
@@ -66,7 +75,7 @@ describe('ContestRow', () => {
       userBId: 'user-2',
       gameId: 'game-1',
       contestCount: 1,
-    } as any,
+    } as unknown as Rivalry,
   });
 
   mockRivalry.tierListA = mockTierListA;
@@ -81,11 +90,13 @@ describe('ContestRow', () => {
       result: 3,
       createdAt: '2024-01-15T10:00:00Z',
       updatedAt: '2024-01-15T10:00:00Z',
-    } as any);
+    } as unknown as Contest);
 
     contest.setRivalryAndSlots(mockRivalry);
 
-    render(<ContestRow contest={contest} game={mockGame} rivalry={mockRivalry} />);
+    render(
+      <ContestRow contest={contest} game={mockGame} rivalry={mockRivalry} />
+    );
 
     // Wait for the component to render with data from useEffect
     await waitFor(() => {
@@ -94,7 +105,7 @@ describe('ContestRow', () => {
 
     // Check that the date is displayed (format: MM/DD or MM/DD/YYYY)
     await waitFor(() => {
-      expect(screen.queryByText(/01\/15/)).toBeTruthy();
+      expect(screen.queryByText(DATE_PATTERN_JAN_15)).toBeTruthy();
     });
   });
 
@@ -107,11 +118,13 @@ describe('ContestRow', () => {
       result: -2,
       createdAt: '2024-01-15T10:00:00Z',
       updatedAt: '2024-01-15T10:00:00Z',
-    } as any);
+    } as unknown as Contest);
 
     contest.setRivalryAndSlots(mockRivalry);
 
-    render(<ContestRow contest={contest} game={mockGame} rivalry={mockRivalry} />);
+    render(
+      <ContestRow contest={contest} game={mockGame} rivalry={mockRivalry} />
+    );
 
     // Check that the score is displayed correctly for negative result
     await waitFor(() => {
@@ -128,7 +141,7 @@ describe('ContestRow', () => {
       result: null,
       createdAt: '2024-01-15T10:00:00Z',
       updatedAt: '2024-01-15T10:00:00Z',
-    } as any);
+    } as unknown as Contest);
 
     contest.setRivalryAndSlots(mockRivalry);
 
@@ -149,7 +162,7 @@ describe('ContestRow', () => {
       result: 3,
       createdAt: '2024-01-15T10:00:00Z',
       updatedAt: '2024-01-15T10:00:00Z',
-    } as any);
+    } as unknown as Contest);
 
     contest.setRivalryAndSlots(mockRivalry);
 
@@ -171,15 +184,17 @@ describe('ContestRow', () => {
       result: 1,
       createdAt: `${currentYear}-03-20T10:00:00Z`,
       updatedAt: `${currentYear}-03-20T10:00:00Z`,
-    } as any);
+    } as unknown as Contest);
 
     contest.setRivalryAndSlots(mockRivalry);
 
-    render(<ContestRow contest={contest} game={mockGame} rivalry={mockRivalry} />);
+    render(
+      <ContestRow contest={contest} game={mockGame} rivalry={mockRivalry} />
+    );
 
     // Date should not include year if it's the current year
     await waitFor(() => {
-      expect(screen.queryByText(/03\/20/)).toBeTruthy();
+      expect(screen.queryByText(DATE_PATTERN_MAR_20)).toBeTruthy();
     });
   });
 
@@ -192,15 +207,17 @@ describe('ContestRow', () => {
       result: 1,
       createdAt: '2020-03-20T10:00:00Z',
       updatedAt: '2020-03-20T10:00:00Z',
-    } as any);
+    } as unknown as Contest);
 
     contest.setRivalryAndSlots(mockRivalry);
 
-    render(<ContestRow contest={contest} game={mockGame} rivalry={mockRivalry} />);
+    render(
+      <ContestRow contest={contest} game={mockGame} rivalry={mockRivalry} />
+    );
 
     // Date should include year if it's not the current year
     await waitFor(() => {
-      expect(screen.queryByText(/03\/20\/20/)).toBeTruthy();
+      expect(screen.queryByText(DATE_PATTERN_MAR_20_WITH_YEAR)).toBeTruthy();
     });
   });
 });

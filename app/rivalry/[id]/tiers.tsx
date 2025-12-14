@@ -1,20 +1,35 @@
-import { Stack, useLocalSearchParams, useRouter } from 'expo-router';
-import { StatusBar } from 'expo-status-bar';
-import React, { useMemo, useState } from 'react';
-import { SafeAreaView, Text, View } from 'react-native';
 import { useQuery } from '@tanstack/react-query';
 import { generateClient } from 'aws-amplify/data';
+import { Stack, useLocalSearchParams, useRouter } from 'expo-router';
+import { StatusBar } from 'expo-status-bar';
+import { useState } from 'react';
+import { SafeAreaView, Text, View } from 'react-native';
 import type { Schema } from '../../../amplify/data/resource';
 
 import { Button } from '../../../src/components/common/Button';
 import { HamburgerMenu } from '../../../src/components/common/HamburgerMenu';
 import { TierListsDisplay } from '../../../src/components/screens/parts/TierListsDisplay';
-import { getMRivalry, MRivalry } from '../../../src/models/m-rivalry';
+import { getMRivalry, type MRivalry } from '../../../src/models/m-rivalry';
 import { getMUser } from '../../../src/models/m-user';
+
+// Type definitions for tier list data structures
+type TierSlotData = Schema['TierSlot']['type'];
+type TierListData = {
+  id: string;
+  tierSlots?: AsyncIterable<TierSlotData>;
+  [key: string]: unknown;
+};
+type TierListWithItems = {
+  items: Array<TierListData & { tierSlots: { items: TierSlotData[] } }>;
+};
+
 import { RivalryProvider } from '../../../src/providers/rivalry';
-import { SyncedScrollViewContext, syncedScrollViewState } from '../../../src/providers/scroll-view';
-import { darkStyles, styles } from '../../../src/utils/styles';
+import {
+  SyncedScrollViewContext,
+  syncedScrollViewState,
+} from '../../../src/providers/scroll-view';
 import { colors } from '../../../src/utils/colors';
+import { darkStyles, styles } from '../../../src/utils/styles';
 
 // Lazy client initialization to avoid crashes when Amplify isn't configured
 let client: ReturnType<typeof generateClient<Schema>> | null = null;
@@ -25,6 +40,61 @@ function getClient() {
   }
 
   return client;
+}
+
+// Helper function to process tier slots from async iterable
+async function processTierSlots(
+  tierSlots: AsyncIterable<TierSlotData> | undefined
+): Promise<TierSlotData[]> {
+  const tierSlotsArray: TierSlotData[] = [];
+  if (tierSlots) {
+    for await (const tierSlot of tierSlots) {
+      tierSlotsArray.push(tierSlot);
+    }
+  }
+  return tierSlotsArray;
+}
+
+// Helper function to process tier lists from async iterable
+async function processTierLists(
+  tierLists: AsyncIterable<TierListData> | undefined
+): Promise<TierListWithItems> {
+  const tierListsArray: Array<
+    TierListData & { tierSlots: { items: TierSlotData[] } }
+  > = [];
+  if (tierLists) {
+    for await (const tierListData of tierLists) {
+      const tierSlotsArray = await processTierSlots(tierListData.tierSlots);
+      tierListsArray.push({
+        ...tierListData,
+        tierSlots: { items: tierSlotsArray },
+      });
+    }
+  }
+  return { items: tierListsArray };
+}
+
+// Helper function to load user data for a rivalry
+async function loadUserData(
+  mRivalry: MRivalry,
+  userAId: string,
+  userBId: string
+): Promise<void> {
+  const [userAResult, userBResult] = await Promise.all([
+    getClient().models.User.get({ id: userAId }),
+    getClient().models.User.get({ id: userBId }),
+  ]);
+
+  if (userAResult.data) {
+    mRivalry.userA = getMUser({
+      user: userAResult.data as Schema['User']['type'],
+    });
+  }
+  if (userBResult.data) {
+    mRivalry.userB = getMUser({
+      user: userBResult.data as Schema['User']['type'],
+    });
+  }
 }
 
 export default function TiersRoute() {
@@ -43,24 +113,25 @@ export default function TiersRoute() {
     queryKey: ['rivalryTiers', rivalryId],
     structuralSharing: false,
     queryFn: async () => {
-      const { data: rivalryData, errors } = await getClient().models.Rivalry.get(
-        { id: rivalryId },
-        {
-          selectionSet: [
-            'id',
-            'userAId',
-            'userBId',
-            'gameId',
-            'contestCount',
-            'currentContestId',
-            'createdAt',
-            'updatedAt',
-            'deletedAt',
-            'tierLists.*',
-            'tierLists.tierSlots.*'
-          ]
-        }
-      );
+      const { data: rivalryData, errors } =
+        await getClient().models.Rivalry.get(
+          { id: rivalryId },
+          {
+            selectionSet: [
+              'id',
+              'userAId',
+              'userBId',
+              'gameId',
+              'contestCount',
+              'currentContestId',
+              'createdAt',
+              'updatedAt',
+              'deletedAt',
+              'tierLists.*',
+              'tierLists.tierSlots.*',
+            ],
+          }
+        );
 
       if (errors) {
         console.error('[TiersRoute] GraphQL errors loading rivalry:', errors);
@@ -71,41 +142,24 @@ export default function TiersRoute() {
         throw new Error('Rivalry not found');
       }
 
-      const tierListsArray: any[] = [];
-      if (rivalryData.tierLists) {
-        for await (const tierListData of rivalryData.tierLists) {
-          const tierSlotsArray: any[] = [];
-          if (tierListData.tierSlots) {
-            for await (const tierSlot of tierListData.tierSlots) {
-              tierSlotsArray.push(tierSlot);
-            }
-          }
-          tierListsArray.push({ ...tierListData, tierSlots: { items: tierSlotsArray } });
-        }
-      }
-      const tierLists = { items: tierListsArray };
+      const tierLists = await processTierLists(
+        rivalryData.tierLists as AsyncIterable<TierListData> | undefined
+      );
 
-      const mRivalry = getMRivalry({ rivalry: rivalryData as any });
-      mRivalry.setMTierLists(tierLists as any);
+      const mRivalry = getMRivalry({
+        rivalry: rivalryData as Schema['Rivalry']['type'],
+      });
+      mRivalry.setMTierLists(
+        tierLists as Parameters<MRivalry['setMTierLists']>[0]
+      );
 
-      // Use user names from context if available, otherwise fetch
-      // Load user data separately if not in context
-      const [userAResult, userBResult] = await Promise.all([
-        getClient().models.User.get({ id: rivalryData.userAId }),
-        getClient().models.User.get({ id: rivalryData.userBId })
-      ]);
-
-      if (userAResult.data) {
-        mRivalry.userA = getMUser({ user: userAResult.data as any });
-      }
-      if (userBResult.data) {
-        mRivalry.userB = getMUser({ user: userBResult.data as any });
-      }
+      // Load user data separately
+      await loadUserData(mRivalry, rivalryData.userAId, rivalryData.userBId);
 
       setRivalry(mRivalry);
 
       return mRivalry;
-    }
+    },
   });
 
   return (
@@ -135,24 +189,26 @@ export default function TiersRoute() {
               </View>
             )}
 
-            {!isLoading && !isError && !rivalry && (
+            {!(isLoading || isError || rivalry) && (
               <View style={centeredContainerStyle}>
                 <Text style={loadingTextStyle}>Waiting for tier lists...</Text>
-                <Text style={debugTextStyle}>Check console logs for details</Text>
+                <Text style={debugTextStyle}>
+                  Check console logs for details
+                </Text>
               </View>
             )}
 
-            {!isLoading && !isError && rivalry && (
+            {!(isLoading || isError) && rivalry && (
               <>
                 <View style={editButtonContainerStyle}>
                   <Button
-                    style={editButtonStyle}
                     onPress={() => {
                       router.push({
                         pathname: `/rivalry/${rivalryId}/tierListEdit`,
-                        params: { userId, userAName, userBName }
+                        params: { userId, userAName, userBName },
                       });
                     }}
+                    style={editButtonStyle}
                     text="Edit Tier List"
                   />
                 </View>
@@ -161,8 +217,8 @@ export default function TiersRoute() {
 
                 <Button
                   onPress={() => setUnLinked(!unlinked)}
-                  text={unlinked ? 'Unlinked' : 'Linked'}
                   style={linkButtonStyle}
+                  text={unlinked ? 'Unlinked' : 'Linked'}
                 />
               </>
             )}
@@ -180,20 +236,20 @@ const bold = 'bold' as const;
 const centeredContainerStyle = {
   flex: 1,
   alignItems: center,
-  justifyContent: center
+  justifyContent: center,
 };
 
 const loadingTextStyle = {
   ...styles.text,
   ...darkStyles.text,
-  fontSize: 18
+  fontSize: 18,
 };
 
 const errorContainerStyle = {
   flex: 1,
   alignItems: center,
   justifyContent: center,
-  paddingHorizontal: 16
+  paddingHorizontal: 16,
 };
 
 const errorTitleStyle = {
@@ -202,7 +258,7 @@ const errorTitleStyle = {
   fontSize: 18,
   fontWeight: bold,
   color: colors.red600,
-  marginBottom: 16
+  marginBottom: 16,
 };
 
 const debugTextStyle = {
@@ -210,22 +266,22 @@ const debugTextStyle = {
   ...darkStyles.text,
   fontSize: 12,
   marginTop: 8,
-  color: colors.gray400
+  color: colors.gray400,
 };
 
 const editButtonContainerStyle = {
   width: '100%' as const,
   alignItems: center,
   marginStart: 16,
-  zIndex: 10
+  zIndex: 10,
 };
 
 const editButtonStyle = {
   width: '40%' as const,
   paddingVertical: 4,
-  paddingHorizontal: 0
+  paddingHorizontal: 0,
 };
 
 const linkButtonStyle = {
-  paddingVertical: 0
+  paddingVertical: 0,
 };

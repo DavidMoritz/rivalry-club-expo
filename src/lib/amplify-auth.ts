@@ -1,16 +1,16 @@
-import Constants from 'expo-constants';
 import {
-  signIn as authSignIn,
-  signUp as authSignUp,
-  signOut as authSignOut,
-  getCurrentUser as authGetCurrentUser,
-  updatePassword as authUpdatePassword,
-  confirmSignUp as authConfirmSignUp,
-  resetPassword as authResetPassword,
   confirmResetPassword as authConfirmResetPassword,
+  confirmSignUp as authConfirmSignUp,
+  getCurrentUser as authGetCurrentUser,
+  resetPassword as authResetPassword,
+  signIn as authSignIn,
+  signOut as authSignOut,
+  signUp as authSignUp,
+  updatePassword as authUpdatePassword,
   type SignInInput,
   type SignUpInput,
 } from 'aws-amplify/auth';
+import Constants from 'expo-constants';
 
 /**
  * Check if running in Expo Go (development mode without native modules)
@@ -41,7 +41,7 @@ function getDevUsers(): DevUser[] {
     try {
       // eslint-disable-next-line @typescript-eslint/no-var-requires
       devUsersConfig = require('./dev/dev-users.json') as DevUsersConfig;
-    } catch (err) {
+    } catch (_err) {
       console.warn('[Auth] dev-users.json not found, using defaults');
       devUsersConfig = {
         users: [
@@ -65,7 +65,7 @@ function getDevUsers(): DevUser[] {
 export function findDevUserByEmail(email: string): DevUser | undefined {
   const users = getDevUsers();
 
-  return users.find((u) => u.email.toLowerCase() === email.toLowerCase());
+  return users.find(u => u.email.toLowerCase() === email.toLowerCase());
 }
 
 /**
@@ -74,12 +74,14 @@ export function findDevUserByEmail(email: string): DevUser | undefined {
 export function getDefaultDevUser(): DevUser {
   const users = getDevUsers();
 
-  return users[0] || {
-    email: 'dev@expo.go',
-    awsSub: 'expo-go-dev-user',
-    firstName: 'Dev',
-    lastName: 'User',
-  };
+  return (
+    users[0] || {
+      email: 'dev@expo.go',
+      awsSub: 'expo-go-dev-user',
+      firstName: 'Dev',
+      lastName: 'User',
+    }
+  );
 }
 
 /**
@@ -99,14 +101,14 @@ export async function signUp(email: string, password: string) {
     },
   };
 
-  return authSignUp(signUpInput);
+  return await authSignUp(signUpInput);
 }
 
 /**
  * Confirm sign up with verification code
  */
 export async function confirmSignUp(email: string, code: string) {
-  return authConfirmSignUp({
+  return await authConfirmSignUp({
     username: email,
     confirmationCode: code,
   });
@@ -131,14 +133,14 @@ export async function signIn(email: string, password: string) {
     password,
   };
 
-  return authSignIn(signInInput);
+  return await authSignIn(signInInput);
 }
 
 /**
  * Sign out the current user
  */
 export async function signOut() {
-  return authSignOut();
+  return await authSignOut();
 }
 
 /**
@@ -167,14 +169,14 @@ export async function getCurrentUser() {
     };
   }
 
-  return authGetCurrentUser();
+  return await authGetCurrentUser();
 }
 
 /**
  * Update the current user's password
  */
 export async function updatePassword(oldPassword: string, newPassword: string) {
-  return authUpdatePassword({
+  return await authUpdatePassword({
     oldPassword,
     newPassword,
   });
@@ -184,7 +186,7 @@ export async function updatePassword(oldPassword: string, newPassword: string) {
  * Request a password reset for a user
  */
 export async function resetPassword(email: string) {
-  return authResetPassword({
+  return await authResetPassword({
     username: email,
   });
 }
@@ -192,8 +194,12 @@ export async function resetPassword(email: string) {
 /**
  * Confirm password reset with code
  */
-export async function confirmResetPassword(email: string, code: string, newPassword: string) {
-  return authConfirmResetPassword({
+export async function confirmResetPassword(
+  email: string,
+  code: string,
+  newPassword: string
+) {
+  return await authConfirmResetPassword({
     username: email,
     confirmationCode: code,
     newPassword,

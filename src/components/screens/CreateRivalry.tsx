@@ -1,20 +1,108 @@
 import { useLocalSearchParams, useRouter } from 'expo-router';
-import React, { useEffect, useState } from 'react';
-import { ActivityIndicator, FlatList, Text, TextInput, TouchableOpacity, View } from 'react-native';
+import { useEffect, useState } from 'react';
+import {
+  ActivityIndicator,
+  FlatList,
+  Text,
+  TextInput,
+  TouchableOpacity,
+  View,
+} from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-
+import type { Rivalry } from '../../API';
 import {
   useAcceptRivalryMutation,
+  useCreateNpcRivalryMutation,
   useCreateRivalryMutation,
-  useCreateNpcRivalryMutation
 } from '../../controllers/c-rivalry';
 import { useUserSearchQuery } from '../../controllers/c-user';
 import { useAuthUser } from '../../hooks/useAuthUser';
-import { MUser } from '../../models/m-user';
+import type { MUser } from '../../models/m-user';
+import {
+  useAllRivalries,
+  useAllRivalriesUpdate,
+} from '../../providers/all-rivalries';
 import { useGame } from '../../providers/game';
-import { useAllRivalries, useAllRivalriesUpdate } from '../../providers/all-rivalries';
 import { colors } from '../../utils/colors';
 import { darkStyles, styles } from '../../utils/styles';
+
+// User role constant for NPC users
+const NPC_ROLE = 13;
+
+interface RivalryWithNames extends Rivalry {
+  userAName?: string;
+  userBName?: string;
+}
+
+interface SelectedUserPanelProps {
+  creatingRivalry: boolean;
+  onCreateOrAccept: () => void;
+  rivalries: RivalryWithNames[];
+  selectedUser: MUser;
+  userId?: string;
+}
+
+function SelectedUserPanel({
+  creatingRivalry,
+  onCreateOrAccept,
+  rivalries,
+  selectedUser,
+  userId,
+}: SelectedUserPanelProps) {
+  // Check if this is an acceptance scenario
+  const pendingRivalry = rivalries.find(
+    r => r.userAId === selectedUser.id && r.userBId === userId && !r.accepted
+  );
+  const isAccepting = Boolean(pendingRivalry);
+  const isNpc = selectedUser.role === NPC_ROLE;
+
+  const getButtonText = () => {
+    if (isAccepting) return 'Accept Rivalry';
+    if (isNpc) return 'Start NPC Rivalry';
+    return 'Send Rivalry Request';
+  };
+  const buttonText = getButtonText();
+
+  return (
+    <View
+      style={{
+        paddingHorizontal: 16,
+        paddingVertical: 16,
+        borderTopWidth: 1,
+        borderTopColor: colors.gray750,
+        backgroundColor: colors.slate900,
+      }}
+    >
+      <Text style={[styles.text, { marginBottom: 8 }]}>
+        Selected: {selectedUser.firstName} {selectedUser.lastName}
+      </Text>
+      <TouchableOpacity
+        disabled={creatingRivalry}
+        onPress={onCreateOrAccept}
+        style={{
+          backgroundColor: colors.purple600,
+          paddingVertical: 14,
+          borderRadius: 8,
+          alignItems: 'center',
+          opacity: creatingRivalry ? DISABLED_OPACITY : 1,
+        }}
+      >
+        {creatingRivalry ? (
+          <ActivityIndicator color={colors.white} size="small" />
+        ) : (
+          <Text
+            style={[styles.text, { fontWeight: 'bold', color: colors.white }]}
+          >
+            {buttonText}
+          </Text>
+        )}
+      </TouchableOpacity>
+    </View>
+  );
+}
+
+// Opacity for disabled items
+const DISABLED_OPACITY = 0.5;
 
 export function CreateRivalry() {
   const router = useRouter();
@@ -28,7 +116,8 @@ export function CreateRivalry() {
 
   // Try to get game from context first, then from params
   const gameId = gameFromContext?.id || (params.gameId as string);
-  const gameName = gameFromContext?.name || (params.gameName as string) || 'this game';
+  const gameName =
+    gameFromContext?.name || (params.gameName as string) || 'this game';
 
   // Auto-search for NPC if this is a first-time user
   useEffect(() => {
@@ -37,34 +126,37 @@ export function CreateRivalry() {
     }
   }, [params.autoSearchNpc]);
 
-  const { data: searchResults = [], isLoading: isSearching } = useUserSearchQuery({
-    searchText,
-    currentUserId: user?.id
-  });
+  const { data: searchResults = [], isLoading: isSearching } =
+    useUserSearchQuery({
+      searchText,
+      currentUserId: user?.id,
+    });
 
   const { rivalries } = useAllRivalries();
   const { addRivalry, updateRivalry } = useAllRivalriesUpdate();
 
   const { mutate: createRivalry } = useCreateRivalryMutation({
-    onSuccess: (newRivalry) => {
+    onSuccess: newRivalry => {
       // Add the newly created rivalry to the provider with user names
       if (newRivalry && selectedUser && user) {
         addRivalry({
-          ...(newRivalry as any),
-          userAName: `${user.firstName || ''} ${user.lastName || ''}`.trim() || user.email,
+          ...(newRivalry as Rivalry),
+          userAName:
+            `${user.firstName || ''} ${user.lastName || ''}`.trim() ||
+            user.email,
           userBName:
             `${selectedUser.firstName || ''} ${selectedUser.lastName || ''}`.trim() ||
-            selectedUser.email
+            selectedUser.email,
         });
       }
       setCreatingRivalry(false);
       router.back();
     },
-    onError: (err) => {
+    onError: err => {
       console.error('[CreateRivalry] Error creating rivalry:', err);
       setError(err.message || 'Failed to create rivalry');
       setCreatingRivalry(false);
-    }
+    },
   });
 
   const { mutate: acceptRivalry } = useAcceptRivalryMutation({
@@ -72,7 +164,10 @@ export function CreateRivalry() {
       // Update the rivalry to accepted in the provider
       if (selectedUser && user) {
         const rivalryToAccept = rivalries.find(
-          (r) => r.userAId === selectedUser.id && r.userBId === user.id && !r.accepted
+          r =>
+            r.userAId === selectedUser.id &&
+            r.userBId === user.id &&
+            !r.accepted
         );
         if (rivalryToAccept) {
           updateRivalry(rivalryToAccept.id, { accepted: true });
@@ -81,85 +176,102 @@ export function CreateRivalry() {
       setCreatingRivalry(false);
       router.back();
     },
-    onError: (err) => {
+    onError: err => {
       console.error('[CreateRivalry] Error accepting rivalry:', err);
       setError(err.message || 'Failed to accept rivalry');
       setCreatingRivalry(false);
-    }
+    },
   });
 
   const { mutate: createNpcRivalry } = useCreateNpcRivalryMutation({
-    onSuccess: (newRivalry) => {
+    onSuccess: newRivalry => {
       // Add the newly created NPC rivalry to the provider with user names
       if (newRivalry && selectedUser && user) {
         addRivalry({
-          ...(newRivalry as any),
-          userAName: `${user.firstName || ''} ${user.lastName || ''}`.trim() || user.email,
+          ...(newRivalry as Rivalry),
+          userAName:
+            `${user.firstName || ''} ${user.lastName || ''}`.trim() ||
+            user.email,
           userBName:
             `${selectedUser.firstName || ''} ${selectedUser.lastName || ''}`.trim() ||
-            selectedUser.email
+            selectedUser.email,
         });
       }
       setCreatingRivalry(false);
       // Navigate to the rivalry detail screen
       router.push(`/rivalry/${newRivalry.id}`);
     },
-    onError: (err) => {
+    onError: err => {
       console.error('[CreateRivalry] Error creating NPC rivalry:', err);
       setError(err.message || 'Failed to create NPC rivalry');
       setCreatingRivalry(false);
-    }
+    },
   });
 
+  const buildValidationError = (): string | null => {
+    if (selectedUser && user && gameId) return null;
+
+    let errorMsg = 'Missing required information: ';
+    if (!selectedUser) errorMsg += 'No user selected. ';
+    if (!user) errorMsg += 'You are not logged in. ';
+    if (!gameId) {
+      errorMsg += 'No game selected. Please go back and select a game first. ';
+    }
+    return errorMsg;
+  };
+
   const handleCreateOrAcceptRivalry = () => {
-    if (!selectedUser || !user || !gameId) {
+    const validationError = buildValidationError();
+    if (validationError) {
       console.warn('[CreateRivalry] Missing required data:', {
         selectedUser: selectedUser?.id,
         user: user?.id,
-        gameId
+        gameId,
       });
-
-      let errorMsg = 'Missing required information: ';
-      if (!selectedUser) errorMsg += 'No user selected. ';
-      if (!user) errorMsg += 'You are not logged in. ';
-      if (!gameId) errorMsg += 'No game selected. Please go back and select a game first. ';
-
-      setError(errorMsg);
-
+      setError(validationError);
       return;
     }
+
+    // After validation, we know these are defined
+    if (!(user && selectedUser)) return;
+
+    const currentUser = user;
+    const opponent = selectedUser;
 
     setError(null);
     setCreatingRivalry(true);
 
     // Check if this is accepting an existing rivalry request
     const pendingRivalry = rivalries.find(
-      (r) => r.userAId === selectedUser.id && r.userBId === user.id && !r.accepted
+      r =>
+        r.userAId === opponent.id && r.userBId === currentUser.id && !r.accepted
     );
 
     if (pendingRivalry) {
       // Accept the existing rivalry
       acceptRivalry(pendingRivalry.id);
-    } else if (selectedUser.role === 13) {
+    } else if (opponent.role === NPC_ROLE) {
       // Create an NPC rivalry (auto-accepted with tier lists for both users)
       createNpcRivalry({
-        userAId: user.id,
-        userBId: selectedUser.id,
-        gameId
+        userAId: currentUser.id,
+        userBId: opponent.id,
+        gameId,
       });
     } else {
       // Create a regular rivalry
       createRivalry({
-        userAId: user.id,
-        userBId: selectedUser.id,
-        gameId
+        userAId: currentUser.id,
+        userBId: opponent.id,
+        gameId,
       });
     }
   };
 
   const renderUserItem = ({ item }: { item: MUser }) => {
     // Find if there's an existing rivalry with this user
-    const existingRivalry = rivalries.find((r) => r.userAId === item.id || r.userBId === item.id);
+    const existingRivalry = rivalries.find(
+      r => r.userAId === item.id || r.userBId === item.id
+    );
 
     // Determine badge to show (mutually exclusive, in priority order)
     let badge: { text: string; color: string } | null = null;
@@ -185,7 +297,7 @@ export function CreateRivalry() {
       // Priority 3: Logged-in user already initiated a rivalry with this person
       badge = { text: 'Rivalry Initiated', color: colors.slate500 };
       isDisabled = true; // Can't initiate another rivalry until they accept
-    } else if (item.role === 13) {
+    } else if (item.role === NPC_ROLE) {
       // Priority 4: NPC user
       badge = { text: 'NPC', color: colors.purple600 };
       isDisabled = false;
@@ -193,19 +305,24 @@ export function CreateRivalry() {
 
     return (
       <TouchableOpacity
-        onPress={() => !isDisabled && setSelectedUser(item)}
         disabled={isDisabled}
+        onPress={() => !isDisabled && setSelectedUser(item)}
         style={{
           paddingVertical: 16,
           paddingHorizontal: 16,
           borderBottomWidth: 1,
           borderBottomColor: colors.gray750,
-          backgroundColor: selectedUser?.id === item.id ? colors.gray700 : colors.none,
-          opacity: isDisabled ? 0.5 : 1
+          backgroundColor:
+            selectedUser?.id === item.id ? colors.gray700 : colors.none,
+          opacity: isDisabled ? DISABLED_OPACITY : 1,
         }}
       >
         <View
-          style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' }}
+          style={{
+            flexDirection: 'row',
+            alignItems: 'center',
+            justifyContent: 'space-between',
+          }}
         >
           <Text style={[styles.text, { fontSize: 16, fontWeight: 'bold' }]}>
             {item.firstName} {item.lastName}
@@ -216,10 +333,12 @@ export function CreateRivalry() {
                 paddingHorizontal: 8,
                 paddingVertical: 4,
                 borderRadius: 4,
-                backgroundColor: `${badge.color}20`
+                backgroundColor: `${badge.color}20`,
               }}
             >
-              <Text style={[styles.text, { fontSize: 12, color: badge.color }]}>{badge.text}</Text>
+              <Text style={[styles.text, { fontSize: 12, color: badge.color }]}>
+                {badge.text}
+              </Text>
             </View>
           )}
         </View>
@@ -228,14 +347,17 @@ export function CreateRivalry() {
   };
 
   return (
-    <SafeAreaView style={[styles.container, darkStyles.container]} edges={['top', 'bottom']}>
+    <SafeAreaView
+      edges={['top', 'bottom']}
+      style={[styles.container, darkStyles.container]}
+    >
       <View style={{ flex: 1 }}>
         <View
           style={{
             paddingHorizontal: 16,
             paddingVertical: 16,
             borderBottomWidth: 1,
-            borderBottomColor: colors.gray750
+            borderBottomColor: colors.gray750,
           }}
         >
           <Text style={[styles.text, { fontSize: 24, fontWeight: 'bold' }]}>
@@ -248,7 +370,6 @@ export function CreateRivalry() {
 
         <View style={{ paddingHorizontal: 16, paddingVertical: 16 }}>
           <TextInput
-            value={searchText}
             onChangeText={setSearchText}
             placeholder="Type 'npc' or search by name/email..."
             placeholderTextColor={colors.gray500}
@@ -260,8 +381,9 @@ export function CreateRivalry() {
               borderRadius: 8,
               fontSize: 16,
               borderWidth: 1,
-              borderColor: colors.slate600
+              borderColor: colors.slate600,
             }}
+            value={searchText}
           />
         </View>
 
@@ -275,86 +397,44 @@ export function CreateRivalry() {
 
         {isSearching && searchText.length >= 2 && (
           <View style={{ paddingVertical: 32, alignItems: 'center' }}>
-            <ActivityIndicator size="large" color={colors.purple900} />
+            <ActivityIndicator color={colors.purple900} size="large" />
           </View>
         )}
 
-        {!isSearching && searchText.length >= 2 && searchResults.length === 0 && (
-          <View style={{ paddingVertical: 32, paddingHorizontal: 16, alignItems: 'center' }}>
-            <Text style={[styles.text, { color: colors.gray400 }]}>
-              No users found matching "{searchText}"
-            </Text>
-          </View>
-        )}
+        {!isSearching &&
+          searchText.length >= 2 &&
+          searchResults.length === 0 && (
+            <View
+              style={{
+                paddingVertical: 32,
+                paddingHorizontal: 16,
+                alignItems: 'center',
+              }}
+            >
+              <Text style={[styles.text, { color: colors.gray400 }]}>
+                No users found matching "{searchText}"
+              </Text>
+            </View>
+          )}
 
         {searchResults.length > 0 && (
           <FlatList
             data={searchResults}
-            keyExtractor={(item) => item.id}
+            keyExtractor={item => item.id}
             renderItem={renderUserItem}
             style={{ flex: 1 }}
           />
         )}
 
-        {selectedUser &&
-          (() => {
-            // Determine if this is accepting an existing rivalry
-            const pendingRivalry = rivalries.find(
-              (r) => r.userAId === selectedUser.id && r.userBId === user?.id && !r.accepted
-            );
-            const isAccepting = !!pendingRivalry;
-            const isNpc = selectedUser.role === 13;
-
-            return (
-              <View
-                style={{
-                  padding: 16,
-                  borderTopWidth: 1,
-                  borderTopColor: colors.gray750,
-                  backgroundColor: colors.slate950
-                }}
-              >
-                <Text
-                  style={[styles.text, { fontSize: 14, color: colors.gray400, marginBottom: 8 }]}
-                >
-                  {isAccepting
-                    ? `Accept rivalry from ${selectedUser.firstName} ${selectedUser.lastName}`
-                    : isNpc
-                      ? `Starting rivalry with NPC ${selectedUser.firstName} ${selectedUser.lastName}`
-                      : `Challenging ${selectedUser.firstName} ${selectedUser.lastName}`}
-                </Text>
-                <TouchableOpacity
-                  onPress={handleCreateOrAcceptRivalry}
-                  disabled={creatingRivalry}
-                  style={{
-                    backgroundColor: creatingRivalry
-                      ? colors.slate600
-                      : isAccepting
-                        ? colors.amber400
-                        : isNpc
-                          ? colors.purple600
-                          : colors.purple900,
-                    paddingHorizontal: 24,
-                    paddingVertical: 12,
-                    borderRadius: 8,
-                    alignItems: 'center'
-                  }}
-                >
-                  {creatingRivalry ? (
-                    <ActivityIndicator color="white" />
-                  ) : (
-                    <Text style={[styles.text, { fontSize: 16, fontWeight: 'bold' }]}>
-                      {isAccepting
-                        ? 'Accept Rivalry'
-                        : isNpc
-                          ? 'Start NPC Rivalry'
-                          : 'Initiate Rivalry'}
-                    </Text>
-                  )}
-                </TouchableOpacity>
-              </View>
-            );
-          })()}
+        {selectedUser && (
+          <SelectedUserPanel
+            creatingRivalry={creatingRivalry}
+            onCreateOrAccept={handleCreateOrAcceptRivalry}
+            rivalries={rivalries}
+            selectedUser={selectedUser}
+            userId={user?.id}
+          />
+        )}
       </View>
     </SafeAreaView>
   );

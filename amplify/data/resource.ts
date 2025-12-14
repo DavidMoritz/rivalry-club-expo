@@ -1,4 +1,4 @@
-import { type ClientSchema, a, defineData } from '@aws-amplify/backend';
+import { a, type ClientSchema, defineData } from '@aws-amplify/backend';
 
 /**
  * Rivalry Club Data Schema
@@ -11,9 +11,9 @@ const schema = a.schema({
       name: a.string().required(),
       fighters: a.hasMany('Fighter', 'gameId'),
       rivalries: a.hasMany('Rivalry', 'gameId'),
-      deletedAt: a.datetime()
+      deletedAt: a.datetime(),
     })
-    .authorization((allow) => [allow.publicApiKey()]),
+    .authorization(allow => [allow.publicApiKey()]),
 
   // Fighter type - represents a character in a game
   Fighter: a
@@ -25,9 +25,9 @@ const schema = a.schema({
       contestCount: a.integer(),
       winCount: a.integer(),
       tierBreakdown: a.string(),
-      tierSlots: a.hasMany('TierSlot', 'fighterId')
+      tierSlots: a.hasMany('TierSlot', 'fighterId'),
     })
-    .authorization((allow) => [allow.publicApiKey()]),
+    .authorization(allow => [allow.publicApiKey()]),
 
   // User type - represents an app user
   User: a
@@ -37,9 +37,9 @@ const schema = a.schema({
       lastName: a.string(),
       role: a.integer().required(),
       awsSub: a.string().required(),
-      deletedAt: a.datetime()
+      deletedAt: a.datetime(),
     })
-    .authorization((allow) => [allow.publicApiKey()]),
+    .authorization(allow => [allow.publicApiKey()]),
 
   // Rivalry type - represents a competition between two users
   Rivalry: a
@@ -55,9 +55,9 @@ const schema = a.schema({
       hiddenByB: a.boolean(),
       contests: a.hasMany('Contest', 'rivalryId'),
       tierLists: a.hasMany('TierList', 'rivalryId'),
-      deletedAt: a.datetime()
+      deletedAt: a.datetime(),
     })
-    .authorization((allow) => [allow.publicApiKey()]),
+    .authorization(allow => [allow.publicApiKey()]),
 
   // Contest type - represents a single match between two tier lists
   Contest: a
@@ -69,12 +69,14 @@ const schema = a.schema({
       result: a.integer(),
       bias: a.integer(),
       createdAt: a.datetime(),
-      deletedAt: a.datetime()
+      deletedAt: a.datetime(),
     })
-    .secondaryIndexes((index) => [
-      index('rivalryId').sortKeys(['createdAt']).queryField('contestsByRivalryIdAndCreatedAt')
+    .secondaryIndexes(index => [
+      index('rivalryId')
+        .sortKeys(['createdAt'])
+        .queryField('contestsByRivalryIdAndCreatedAt'),
     ])
-    .authorization((allow) => [allow.publicApiKey()]),
+    .authorization(allow => [allow.publicApiKey()]),
 
   // TierList type - represents a user's ranking of fighters
   TierList: a
@@ -86,12 +88,14 @@ const schema = a.schema({
       tierSlots: a.hasMany('TierSlot', 'tierListId'),
       createdAt: a.datetime(),
       updatedAt: a.datetime(),
-      deletedAt: a.datetime()
+      deletedAt: a.datetime(),
     })
-    .secondaryIndexes((index) => [
-      index('userId').sortKeys(['updatedAt']).queryField('tierListsByUserIdAndUpdatedAt')
+    .secondaryIndexes(index => [
+      index('userId')
+        .sortKeys(['updatedAt'])
+        .queryField('tierListsByUserIdAndUpdatedAt'),
     ])
-    .authorization((allow) => [allow.publicApiKey()]),
+    .authorization(allow => [allow.publicApiKey()]),
 
   // TierSlot type - represents a fighter's position in a tier list
   TierSlot: a
@@ -103,41 +107,41 @@ const schema = a.schema({
       position: a.integer(),
       contestCount: a.integer(),
       winCount: a.integer(),
-      deletedAt: a.datetime()
+      deletedAt: a.datetime(),
     })
-    .authorization((allow) => [allow.publicApiKey()]),
+    .authorization(allow => [allow.publicApiKey()]),
 
   // Custom mutation for atomic increment of TierSlot stats
   incrementTierSlotStats: a
     .mutation()
     .arguments({
       tierSlotId: a.id().required(),
-      won: a.boolean().required()
+      won: a.boolean().required(),
     })
     .returns(a.ref('TierSlot'))
     .handler(
       a.handler.custom({
         dataSource: a.ref('TierSlot'),
-        entry: './increment-tierslot-stats.js'
+        entry: './increment-tierslot-stats.js',
       })
     )
-    .authorization((allow) => [allow.publicApiKey()]),
+    .authorization(allow => [allow.publicApiKey()]),
 
   // Custom mutation for atomic increment of Fighter stats
   incrementFighterStats: a
     .mutation()
     .arguments({
       fighterId: a.id().required(),
-      won: a.boolean().required()
+      won: a.boolean().required(),
     })
     .returns(a.ref('Fighter'))
     .handler(
       a.handler.custom({
         dataSource: a.ref('Fighter'),
-        entry: './increment-fighter-stats.js'
+        entry: './increment-fighter-stats.js',
       })
     )
-    .authorization((allow) => [allow.publicApiKey()])
+    .authorization(allow => [allow.publicApiKey()]),
 });
 
 export type Schema = ClientSchema<typeof schema>;
@@ -147,7 +151,7 @@ export const data = defineData({
   authorizationModes: {
     defaultAuthorizationMode: 'apiKey',
     apiKeyAuthorizationMode: {
-      expiresInDays: 30
-    }
-  }
+      expiresInDays: 30,
+    },
+  },
 });

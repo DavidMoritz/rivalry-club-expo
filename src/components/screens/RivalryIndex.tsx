@@ -1,13 +1,13 @@
-import { useRouter, useFocusEffect } from 'expo-router';
-import React, { useEffect, useCallback, useState, useMemo } from 'react';
+import { useFocusEffect, useRouter } from 'expo-router';
+import { useCallback, useEffect, useMemo, useState } from 'react';
 import { Text, TouchableOpacity, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
 import { useAuthUser } from '../../hooks/useAuthUser';
 import { useUserRivalries } from '../../hooks/useUserRivalries';
 import { useAllRivalriesUpdate } from '../../providers/all-rivalries';
-import { darkStyles, styles } from '../../utils/styles';
 import { colors } from '../../utils/colors';
+import { darkStyles, styles } from '../../utils/styles';
 import { RivalriesTable } from './parts/RivalriesTable';
 
 interface Rivalry {
@@ -30,7 +30,7 @@ export function RivalryIndex() {
     allRivalries,
     isLoading: rivalriesLoading,
     error: rivalriesError,
-    refetch
+    refetch,
   } = useUserRivalries(user?.id);
   const { setRivalries } = useAllRivalriesUpdate();
   const [showHiddenRivalries, setShowHiddenRivalries] = useState(false);
@@ -47,15 +47,23 @@ export function RivalryIndex() {
 
   // Populate the AllRivalriesProvider when rivalries are loaded
   useEffect(() => {
-    if (allRivalries && user?.id) {
-      setRivalries(allRivalries as any, user.id);
+    // Mark as initialized once rivalries query completes (even if empty)
+    if (!rivalriesLoading && user?.id) {
+      if (allRivalries.length > 0) {
+        // Type assertion needed: hook returns simplified RivalryWithUsers,
+        // provider expects MRivalry-based type (structurally compatible for this use)
+        setRivalries(
+          allRivalries as Parameters<typeof setRivalries>[0],
+          user.id
+        );
+      }
       setProviderInitialized(true);
     }
-  }, [allRivalries, user?.id, setRivalries]);
+  }, [allRivalries, rivalriesLoading, user?.id, setRivalries]);
 
   // Check if there are any hidden rivalries
   const hasHiddenRivalries = useMemo(() => {
-    return rivalries.some((rivalry) => {
+    return rivalries.some(rivalry => {
       const isUserA = rivalry.userAId === user?.id;
       return isUserA ? rivalry.hiddenByA : rivalry.hiddenByB;
     });
@@ -68,15 +76,16 @@ export function RivalryIndex() {
       params: {
         userAName: rivalry.userAName,
         userBName: rivalry.userBName,
-        userId: user?.id
-      }
+        userId: user?.id,
+      },
     });
   }
 
   function handleCreateRivalry() {
     // Get gameId from the first rivalry, or use the default game
     // TODO: In the future, let users select from multiple games
-    const gameId = rivalries[0]?.gameId || '73ed69cf-2775-43d6-bece-aed10da3e25a';
+    const gameId =
+      rivalries[0]?.gameId || '73ed69cf-2775-43d6-bece-aed10da3e25a';
 
     // Check if user has no rivalries (accepted or pending)
     const hasNoRivalries = allRivalries.length === 0;
@@ -86,13 +95,15 @@ export function RivalryIndex() {
       pathname: '/rivalry/create',
       params: {
         gameId,
-        autoSearchNpc: hasNoRivalries ? 'true' : undefined
-      }
+        autoSearchNpc: hasNoRivalries ? 'true' : undefined,
+      },
     });
   }
 
-  const isLoading = userLoading || rivalriesLoading || !providerInitialized;
   const error = userError || rivalriesError;
+  // Check for errors before provider initialization to avoid stuck loading state
+  const isLoading =
+    userLoading || rivalriesLoading || !(providerInitialized || error);
 
   if (isLoading) {
     return (
@@ -116,7 +127,10 @@ export function RivalryIndex() {
   }
 
   return (
-    <SafeAreaView style={[styles.container, darkStyles.container]} edges={['top', 'bottom']}>
+    <SafeAreaView
+      edges={['top', 'bottom']}
+      style={[styles.container, darkStyles.container]}
+    >
       <View style={headerContainerStyle}>
         <Text style={welcomeTextStyle}>
           Welcome{user?.firstName ? `, ${user.firstName}` : ''}!
@@ -124,9 +138,9 @@ export function RivalryIndex() {
         <Text style={subtitleTextStyle}>Select a rivalry to continue</Text>
 
         <TouchableOpacity
-          testID="create-rivalry-button"
           onPress={handleCreateRivalry}
           style={createButtonStyle}
+          testID="create-rivalry-button"
         >
           <Text style={createButtonTextStyle}>Create New Rivalry</Text>
         </TouchableOpacity>
@@ -138,9 +152,9 @@ export function RivalryIndex() {
         </View>
       )}
       <RivalriesTable
-        rivalries={rivalries as Rivalry[]}
         currentUserId={user?.id}
         onSelectRivalry={handleSelectRivalry}
+        rivalries={rivalries as Rivalry[]}
         showHidden={showHiddenRivalries}
       />
 
@@ -166,19 +180,19 @@ const bold = 'bold' as const;
 const centeredContainerStyle = {
   flex: 1,
   alignItems: center,
-  justifyContent: center
+  justifyContent: center,
 };
 
 const loadingTextStyle = {
   ...styles.text,
-  fontSize: 18
+  fontSize: 18,
 };
 
 const errorContainerStyle = {
   flex: 1,
   alignItems: center,
   justifyContent: center,
-  paddingHorizontal: 16
+  paddingHorizontal: 16,
 };
 
 const errorTitleStyle = {
@@ -186,26 +200,26 @@ const errorTitleStyle = {
   fontSize: 18,
   fontWeight: bold,
   color: colors.red600,
-  marginBottom: 16
+  marginBottom: 16,
 };
 
 const headerContainerStyle = {
   paddingHorizontal: 16,
   paddingVertical: 16,
   borderBottomWidth: 1,
-  borderBottomColor: colors.gray750
+  borderBottomColor: colors.gray750,
 };
 
 const welcomeTextStyle = {
   ...styles.text,
   fontSize: 24,
-  fontWeight: bold
+  fontWeight: bold,
 };
 
 const subtitleTextStyle = {
   ...styles.text,
   marginTop: 4,
-  color: colors.gray400
+  color: colors.gray400,
 };
 
 const createButtonStyle = {
@@ -214,30 +228,30 @@ const createButtonStyle = {
   paddingVertical: 12,
   borderRadius: 8,
   marginTop: 16,
-  alignItems: center
+  alignItems: center,
 };
 
 const createButtonTextStyle = {
   ...styles.text,
   fontSize: 16,
-  fontWeight: bold
+  fontWeight: bold,
 };
 
 const hiddenHeaderStyle = {
   paddingHorizontal: 16,
-  paddingTop: 8
+  paddingTop: 8,
 };
 
 const hiddenHeaderTextStyle = {
   ...styles.text,
   fontSize: 18,
   fontWeight: bold,
-  color: colors.gray400
+  color: colors.gray400,
 };
 
 const toggleContainerStyle = {
   paddingHorizontal: 16,
-  paddingBottom: 16
+  paddingBottom: 16,
 };
 
 const toggleButtonStyle = {
@@ -245,11 +259,11 @@ const toggleButtonStyle = {
   paddingHorizontal: 24,
   paddingVertical: 12,
   borderRadius: 8,
-  alignItems: center
+  alignItems: center,
 };
 
 const toggleButtonTextStyle = {
   ...styles.text,
   fontSize: 16,
-  fontWeight: bold
+  fontWeight: bold,
 };

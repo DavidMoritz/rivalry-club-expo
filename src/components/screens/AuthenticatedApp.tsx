@@ -1,5 +1,3 @@
-import React from 'react';
-
 import { RivalryIndex } from './RivalryIndex';
 
 interface Game {
@@ -11,6 +9,6 @@ interface AuthenticatedAppProps {
   selectedGame: Game | null;
 }
 
-export function AuthenticatedApp({ selectedGame }: AuthenticatedAppProps) {
+export function AuthenticatedApp(_props: AuthenticatedAppProps) {
   return <RivalryIndex />;
 }

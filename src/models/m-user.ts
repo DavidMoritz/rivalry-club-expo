@@ -53,7 +53,8 @@ export function getMUser({ user }: GetMUserProps): MUser {
       let charsNeeded = 1;
       while (
         charsNeeded <= Math.max(lastName.length, compLastName.length) &&
-        lastName.substring(0, charsNeeded) === compLastName.substring(0, charsNeeded)
+        lastName.substring(0, charsNeeded) ===
+          compLastName.substring(0, charsNeeded)
       ) {
         charsNeeded++;
       }

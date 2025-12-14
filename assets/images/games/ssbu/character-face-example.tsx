@@ -1,8 +1,8 @@
-import React from 'react';
-import { View, Image, StyleSheet, ViewStyle } from 'react-native';
-import { fighterImages } from './index';
-import { getCharacterZoomStyle } from './useCharacterZoom';
+import type React from 'react';
+import { Image, StyleSheet, View, type ViewStyle } from 'react-native';
 import { colors } from '../../../../src/utils/colors';
+import { fighterImages } from './index';
+import { getCharacterZoomStyle } from './use-character-zoom';
 
 interface CharacterFaceProps {
   characterKey: string;
@@ -33,7 +33,7 @@ export const CharacterFace: React.FC<CharacterFaceProps> = ({
   width,
   height,
   style,
-  zoomMultiplier = 1.0
+  zoomMultiplier = 1.0,
 }) => {
   const imageSource = fighterImages[characterKey];
 
@@ -58,12 +58,16 @@ export const CharacterFace: React.FC<CharacterFaceProps> = ({
         styles.container,
         {
           width: displayWidth,
-          height: displayHeight
+          height: displayHeight,
         },
-        style
+        style,
       ]}
     >
-      <Image source={imageSource} style={[styles.image, zoomStyle]} resizeMode="cover" />
+      <Image
+        resizeMode="cover"
+        source={imageSource}
+        style={[styles.image, zoomStyle]}
+      />
     </View>
   );
 };
@@ -74,11 +78,11 @@ const styles = StyleSheet.create({
     borderRadius: 8,
     backgroundColor: colors.black,
     borderWidth: 1,
-    borderColor: colors.gray500
+    borderColor: colors.gray500,
   },
   image: {
-    position: 'absolute'
-  }
+    position: 'absolute',
+  },
 });
 
 /**
@@ -94,13 +98,18 @@ export const CharacterFaceGrid: React.FC = () => {
     'kirby',
     'fox',
     'pikachu',
-    'donkey_kong'
+    'donkey_kong',
   ];
 
   return (
     <View style={gridStyles.container}>
-      {characters.map((char) => (
-        <CharacterFace key={char} characterKey={char} size={120} style={gridStyles.face} />
+      {characters.map(char => (
+        <CharacterFace
+          characterKey={char}
+          key={char}
+          size={120}
+          style={gridStyles.face}
+        />
       ))}
     </View>
   );
@@ -111,9 +120,9 @@ const gridStyles = StyleSheet.create({
     flexDirection: 'row',
     flexWrap: 'wrap',
     padding: 16,
-    gap: 16
+    gap: 16,
   },
   face: {
-    margin: 8
-  }
+    margin: 8,
+  },
 });

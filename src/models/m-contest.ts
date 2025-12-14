@@ -1,8 +1,8 @@
 import type { Schema } from '../../amplify/data/resource';
-import { MRivalry } from './m-rivalry';
-import { MTierList } from './m-tier-list';
-import { MTierSlot } from './m-tier-slot';
-import { MUser } from './m-user';
+import type { MRivalry } from './m-rivalry';
+import type { MTierList } from './m-tier-list';
+import type { MTierSlot } from './m-tier-slot';
+import type { MUser } from './m-user';
 
 // Extract Gen 2 type
 type Contest = Schema['Contest']['type'];
@@ -42,27 +42,26 @@ export function getMContest(contest: Contest): MContest {
     // public
     baseContest: contest,
 
-    // setters
+    // accessors (getter/setter pairs)
+    get rivalry() {
+      return this._mRivalry;
+    },
     set rivalry(rivalry: MRivalry | undefined) {
       this._mRivalry = rivalry;
     },
 
-    set tierSlotA(tierSlot: MTierSlot | undefined) {
-      this._mTierSlotA = tierSlot;
-    },
-    set tierSlotB(tierSlot: MTierSlot | undefined) {
-      this._mTierSlotB = tierSlot;
-    },
-
-    // getters
-    get rivalry() {
-      return this._mRivalry;
-    },
     get tierSlotA() {
       return this._mTierSlotA;
     },
+    set tierSlotA(tierSlot: MTierSlot | undefined) {
+      this._mTierSlotA = tierSlot;
+    },
+
     get tierSlotB() {
       return this._mTierSlotB;
+    },
+    set tierSlotB(tierSlot: MTierSlot | undefined) {
+      this._mTierSlotB = tierSlot;
     },
 
     // methods
@@ -160,7 +159,7 @@ export function getMContest(contest: Contest): MContest {
         user: this.rivalry?.userA,
         fighterId: this.tierSlotA?.fighterId,
         tierList: this.rivalry?.tierListA,
-        tierSlot: this.tierSlotA
+        tierSlot: this.tierSlotA,
       };
     },
     getDetailsB() {
@@ -168,7 +167,7 @@ export function getMContest(contest: Contest): MContest {
         user: this.rivalry?.userB,
         fighterId: this.tierSlotB?.fighterId,
         tierList: this.rivalry?.tierListB,
-        tierSlot: this.tierSlotB
+        tierSlot: this.tierSlotB,
       };
     },
     getLoser() {
@@ -186,15 +185,18 @@ export function getMContest(contest: Contest): MContest {
       this.rivalry = rivalry;
 
       this.tierSlotA = rivalry.tierListA?.slots.find(
-        (thisTierSlot) => thisTierSlot?.id === this.tierSlotAId
+        thisTierSlot => thisTierSlot?.id === this.tierSlotAId
       );
       this.tierSlotB = rivalry.tierListB?.slots.find(
-        (thisTierSlot) => thisTierSlot?.id === this.tierSlotBId
+        thisTierSlot => thisTierSlot?.id === this.tierSlotBId
       );
 
-      if (!this.tierSlotA || !this.tierSlotB) {
-        console.warn('[MContest] Failed to find tier slots for contest:', this.id);
+      if (!(this.tierSlotA && this.tierSlotB)) {
+        console.warn(
+          '[MContest] Failed to find tier slots for contest:',
+          this.id
+        );
       }
-    }
+    },
   };
 }

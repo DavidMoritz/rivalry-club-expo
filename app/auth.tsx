@@ -1,7 +1,7 @@
+import { generateClient } from 'aws-amplify/data';
 import { useRouter } from 'expo-router';
 import { StatusBar } from 'expo-status-bar';
-import React, { useEffect, useState } from 'react';
-import { generateClient } from 'aws-amplify/data';
+import { useCallback, useEffect, useState } from 'react';
 import type { Schema } from '../amplify/data/resource';
 
 import { Auth } from '../src/components/screens/Auth';
@@ -20,66 +20,69 @@ function getClient() {
 
 export default function AuthRoute() {
   const router = useRouter();
-  const [authenticated, setAuthenticated] = useState(false);
+  const [, setAuthenticated] = useState(false);
 
   // Check if user has completed their profile and route accordingly
-  const checkUserProfileAndNavigate = async (cognitoUserId: string) => {
-    try {
-      // In Expo Go, skip profile check and go directly to rivalries
-      if (isExpoGo) {
-        router.replace('/rivalries');
-
-        return;
-      }
-
-      // Query for user by Cognito user ID
-      const listResult = await getClient().models.User.list({
-        filter: {
-          awsSub: {
-            eq: cognitoUserId
-          }
-        }
-      });
-
-      const users = listResult.data;
-
-      if (users && users.length > 0) {
-        const user = users[0];
-
-        // If user doesn't have a first name, redirect to profile
-        if (!user.firstName || user.firstName.trim() === '') {
-          router.replace('/profile');
-        } else {
+  const checkUserProfileAndNavigate = useCallback(
+    async (cognitoUserId: string) => {
+      try {
+        // In Expo Go, skip profile check and go directly to rivalries
+        if (isExpoGo) {
           router.replace('/rivalries');
+
+          return;
         }
-      } else {
-        // New user, needs to complete profile
-        router.replace('/profile');
+
+        // Query for user by Cognito user ID
+        const listResult = await getClient().models.User.list({
+          filter: {
+            awsSub: {
+              eq: cognitoUserId,
+            },
+          },
+        });
+
+        const users = listResult.data;
+
+        if (users && users.length > 0) {
+          const user = users[0];
+
+          // If user doesn't have a first name, redirect to profile
+          if (!user.firstName || user.firstName.trim() === '') {
+            router.replace('/profile');
+          } else {
+            router.replace('/rivalries');
+          }
+        } else {
+          // New user, needs to complete profile
+          router.replace('/profile');
+        }
+      } catch (error) {
+        console.error('[AuthRoute] Error checking user profile:', error);
+        // Default to rivalries on error to avoid blocking user
+        router.replace('/rivalries');
       }
-    } catch (error) {
-      console.error('[AuthRoute] Error checking user profile:', error);
-      // Default to rivalries on error to avoid blocking user
-      router.replace('/rivalries');
-    }
-  };
+    },
+    [router]
+  );
 
   // Check auth status on mount
-  useEffect(() => {
-    checkAuthStatus();
-  }, []);
-
-  async function checkAuthStatus() {
+  const checkAuthStatus = useCallback(async () => {
     try {
       const user = await getCurrentUser();
       if (user?.userId) {
         setAuthenticated(true);
         await checkUserProfileAndNavigate(user.userId);
       }
-    } catch (err) {
+    } catch {
       // User not authenticated, stay on auth screen
       setAuthenticated(false);
     }
-  }
+  }, [checkUserProfileAndNavigate]);
+
+  useEffect(() => {
+    checkAuthStatus();
+  }, [checkAuthStatus]);
 
   return (
     <>

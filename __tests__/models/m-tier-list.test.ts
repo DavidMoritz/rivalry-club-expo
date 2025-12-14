@@ -6,16 +6,19 @@ type TierSlot = Schema['TierSlot']['type'];
 
 describe('MTierList Model', () => {
   const createMockTierSlots = (count: number): TierSlot[] => {
-    return new Array(count).fill(null).map((_, i) => ({
-      id: `slot-${i}`,
-      tierListId: 'tier-list-123',
-      fighterId: `fighter-${i}`,
-      position: i,
-      contestCount: 0,
-      winCount: 0,
-      createdAt: '2024-01-01',
-      updatedAt: '2024-01-01',
-    } as TierSlot));
+    return new Array(count).fill(null).map(
+      (_, i) =>
+        ({
+          id: `slot-${i}`,
+          tierListId: 'tier-list-123',
+          fighterId: `fighter-${i}`,
+          position: i,
+          contestCount: 0,
+          winCount: 0,
+          createdAt: '2024-01-01',
+          updatedAt: '2024-01-01',
+        }) as TierSlot
+    );
   };
 
   const mockTierList = {
@@ -28,7 +31,7 @@ describe('MTierList Model', () => {
     tierSlots: {
       items: createMockTierSlots(21), // 3 slots per tier * 7 tiers
     },
-  } as any as TierList;
+  } as unknown as TierList;
 
   describe('getMTierList', () => {
     it('should create an MTierList from a TierList object', () => {
@@ -156,8 +159,10 @@ describe('MTierList Model', () => {
     });
 
     it('should return false if standing is not a number', () => {
-      const tierListWithoutStanding = { ...mockTierList };
-      delete (tierListWithoutStanding as any).standing;
+      const tierListWithoutStanding = {
+        ...mockTierList,
+        standing: undefined,
+      } as unknown as TierList;
       const mTierList = getMTierList(tierListWithoutStanding);
 
       const result = mTierList.moveDownATier();
@@ -187,8 +192,10 @@ describe('MTierList Model', () => {
     });
 
     it('should return false if standing is not a number', () => {
-      const tierListWithoutStanding = { ...mockTierList };
-      delete (tierListWithoutStanding as any).standing;
+      const tierListWithoutStanding = {
+        ...mockTierList,
+        standing: undefined,
+      } as unknown as TierList;
       const mTierList = getMTierList(tierListWithoutStanding);
 
       const result = mTierList.moveUpATier();

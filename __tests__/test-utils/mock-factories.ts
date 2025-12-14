@@ -11,7 +11,9 @@ import { createMockAsyncGenerator } from './api-test-helpers';
 /**
  * Creates a mock User object with sensible defaults
  */
-export function createMockUser(overrides?: Partial<Schema['User']['type']>): Schema['User']['type'] {
+export function createMockUser(
+  overrides?: Partial<Schema['User']['type']>
+): Schema['User']['type'] {
   const now = new Date().toISOString();
 
   return {
@@ -25,14 +27,16 @@ export function createMockUser(overrides?: Partial<Schema['User']['type']>): Sch
     createdAt: now,
     updatedAt: now,
     deletedAt: null,
-    ...overrides
+    ...overrides,
   } as Schema['User']['type'];
 }
 
 /**
  * Creates a mock Game object with sensible defaults
  */
-export function createMockGame(overrides?: Partial<Schema['Game']['type']>): any {
+export function createMockGame(
+  overrides?: Partial<Schema['Game']['type']>
+): Schema['Game']['type'] {
   const now = new Date().toISOString();
 
   return {
@@ -44,14 +48,16 @@ export function createMockGame(overrides?: Partial<Schema['Game']['type']>): any
     deletedAt: null,
     fighters: createMockAsyncGenerator([]),
     rivalries: createMockAsyncGenerator([]),
-    ...overrides
+    ...overrides,
   };
 }
 
 /**
  * Creates a mock Fighter object with sensible defaults
  */
-export function createMockFighter(overrides?: Partial<Schema['Fighter']['type']>): any {
+export function createMockFighter(
+  overrides?: Partial<Schema['Fighter']['type']>
+): Schema['Fighter']['type'] {
   const now = new Date().toISOString();
 
   return {
@@ -67,14 +73,16 @@ export function createMockFighter(overrides?: Partial<Schema['Fighter']['type']>
     updatedAt: now,
     game: undefined,
     tierSlots: createMockAsyncGenerator([]),
-    ...overrides
+    ...overrides,
   };
 }
 
 /**
  * Creates a mock Rivalry object with sensible defaults
  */
-export function createMockRivalry(overrides?: Partial<Schema['Rivalry']['type']>): any {
+export function createMockRivalry(
+  overrides?: Partial<Schema['Rivalry']['type']>
+): Schema['Rivalry']['type'] {
   const now = new Date().toISOString();
 
   return {
@@ -94,14 +102,16 @@ export function createMockRivalry(overrides?: Partial<Schema['Rivalry']['type']>
     game: undefined,
     contests: createMockAsyncGenerator([]),
     tierLists: createMockAsyncGenerator([]),
-    ...overrides
+    ...overrides,
   };
 }
 
 /**
  * Creates a mock Contest object with sensible defaults
  */
-export function createMockContest(overrides?: Partial<Schema['Contest']['type']>): any {
+export function createMockContest(
+  overrides?: Partial<Schema['Contest']['type']>
+): Schema['Contest']['type'] {
   const now = new Date().toISOString();
 
   return {
@@ -116,14 +126,16 @@ export function createMockContest(overrides?: Partial<Schema['Contest']['type']>
     updatedAt: now,
     deletedAt: null,
     rivalry: undefined,
-    ...overrides
+    ...overrides,
   };
 }
 
 /**
  * Creates a mock TierList object with sensible defaults
  */
-export function createMockTierList(overrides?: Partial<Schema['TierList']['type']>): any {
+export function createMockTierList(
+  overrides?: Partial<Schema['TierList']['type']>
+): Schema['TierList']['type'] {
   const now = new Date().toISOString();
 
   return {
@@ -137,14 +149,16 @@ export function createMockTierList(overrides?: Partial<Schema['TierList']['type'
     deletedAt: null,
     rivalry: undefined,
     tierSlots: createMockAsyncGenerator([]),
-    ...overrides
+    ...overrides,
   };
 }
 
 /**
  * Creates a mock TierSlot object with sensible defaults
  */
-export function createMockTierSlot(overrides?: Partial<Schema['TierSlot']['type']>): any {
+export function createMockTierSlot(
+  overrides?: Partial<Schema['TierSlot']['type']>
+): Schema['TierSlot']['type'] {
   const now = new Date().toISOString();
 
   return {
@@ -160,7 +174,7 @@ export function createMockTierSlot(overrides?: Partial<Schema['TierSlot']['type'
     deletedAt: null,
     tierList: undefined,
     fighter: undefined,
-    ...overrides
+    ...overrides,
   };
 }
 
@@ -182,20 +196,20 @@ export function createMockRivalryWithData(options?: {
   const gameId = options?.gameId || 'game-test-id';
   const fighters = options?.fighters || [
     { id: 'fighter-1', name: 'Mario' },
-    { id: 'fighter-2', name: 'Luigi' }
+    { id: 'fighter-2', name: 'Luigi' },
   ];
 
   // Create tier lists
   const tierListA = createMockTierList({
     id: 'tier-list-a',
     rivalryId,
-    userId: userAId
+    userId: userAId,
   });
 
   const tierListB = createMockTierList({
     id: 'tier-list-b',
     rivalryId,
-    userId: userBId
+    userId: userBId,
   });
 
   // Create tier slots for both tier lists
@@ -204,7 +218,7 @@ export function createMockRivalryWithData(options?: {
       id: `tier-slot-a-${index}`,
       tierListId: tierListA.id,
       fighterId: fighter.id,
-      position: index
+      position: index,
     })
   );
 
@@ -213,7 +227,7 @@ export function createMockRivalryWithData(options?: {
       id: `tier-slot-b-${index}`,
       tierListId: tierListB.id,
       fighterId: fighter.id,
-      position: index
+      position: index,
     })
   );
 
@@ -230,7 +244,7 @@ export function createMockRivalryWithData(options?: {
           tierSlotAId: tierSlotsA[0].id,
           tierSlotBId: tierSlotsB[0].id,
           result: i === 0 ? 0 : 2, // First is current (unresolved)
-          bias: i === 0 ? 0 : 1
+          bias: i === 0 ? 0 : 1,
         })
       )
     : [];
@@ -244,7 +258,7 @@ export function createMockRivalryWithData(options?: {
     contestCount: options?.contestCount || 0,
     currentContestId: contests[0]?.id || null,
     contests: createMockAsyncGenerator(contests),
-    tierLists: createMockAsyncGenerator([tierListA, tierListB])
+    tierLists: createMockAsyncGenerator([tierListA, tierListB]),
   });
 
   return {
@@ -254,7 +268,7 @@ export function createMockRivalryWithData(options?: {
     tierSlotsA,
     tierSlotsB,
     contests,
-    fighters
+    fighters,
   };
 }
 
@@ -270,28 +284,28 @@ export function createMockGraphQLClient() {
         list: jest.fn(),
         create: jest.fn(),
         update: jest.fn(),
-        delete: jest.fn()
+        delete: jest.fn(),
       },
       Game: {
         get: jest.fn(),
         list: jest.fn(),
         create: jest.fn(),
         update: jest.fn(),
-        delete: jest.fn()
+        delete: jest.fn(),
       },
       Fighter: {
         get: jest.fn(),
         list: jest.fn(),
         create: jest.fn(),
         update: jest.fn(),
-        delete: jest.fn()
+        delete: jest.fn(),
       },
       Rivalry: {
         get: jest.fn(),
         list: jest.fn(),
         create: jest.fn(),
         update: jest.fn(),
-        delete: jest.fn()
+        delete: jest.fn(),
       },
       Contest: {
         get: jest.fn(),
@@ -299,7 +313,7 @@ export function createMockGraphQLClient() {
         create: jest.fn(),
         update: jest.fn(),
         delete: jest.fn(),
-        contestsByRivalryIdAndCreatedAt: jest.fn()
+        contestsByRivalryIdAndCreatedAt: jest.fn(),
       },
       TierList: {
         get: jest.fn(),
@@ -307,16 +321,16 @@ export function createMockGraphQLClient() {
         create: jest.fn(),
         update: jest.fn(),
         delete: jest.fn(),
-        tierListsByUserIdAndUpdatedAt: jest.fn()
+        tierListsByUserIdAndUpdatedAt: jest.fn(),
       },
       TierSlot: {
         get: jest.fn(),
         list: jest.fn(),
         create: jest.fn(),
         update: jest.fn(),
-        delete: jest.fn()
-      }
-    }
+        delete: jest.fn(),
+      },
+    },
   };
 }
 
@@ -330,11 +344,11 @@ export function createMockTierListWithSlots(options?: {
   userId?: string;
   standing?: number;
   fighters?: Array<{ id: string; name: string; position?: number }>;
-}): any {
+}): Schema['TierList']['type'] {
   const tierListId = options?.tierListId || 'tier-list-test-id';
   const fighters = options?.fighters || [
     { id: 'fighter-1', name: 'Fighter 1', position: 0 },
-    { id: 'fighter-2', name: 'Fighter 2', position: 1 }
+    { id: 'fighter-2', name: 'Fighter 2', position: 1 },
   ];
 
   const tierSlots = fighters.map((fighter, index) =>
@@ -344,7 +358,7 @@ export function createMockTierListWithSlots(options?: {
       fighterId: fighter.id,
       position: fighter.position !== undefined ? fighter.position : index,
       contestCount: 0,
-      winCount: 0
+      winCount: 0,
     })
   );
 
@@ -355,8 +369,8 @@ export function createMockTierListWithSlots(options?: {
     standing: options?.standing !== undefined ? options.standing : 0,
     tierSlots: {
       __typename: 'ModelTierSlotConnection',
-      items: tierSlots
-    }
+      items: tierSlots,
+    },
   });
 }
 
@@ -368,11 +382,11 @@ export function createMockConnection<T>(
   items: T[],
   typename: string,
   nextToken?: string | null
-): any {
+): { __typename: string; items: T[]; nextToken: string | null } {
   return {
     __typename: `Model${typename}Connection`,
     items,
-    nextToken: nextToken || null
+    nextToken: nextToken || null,
   };
 }
 
@@ -382,16 +396,16 @@ export function createMockConnection<T>(
 export const createMockAPIResponse = {
   success: <T>(data: T) => ({
     body: JSON.stringify(data),
-    statusCode: '200'
+    statusCode: '200',
   }),
 
   error: (message: string, statusCode = '500') => ({
     body: JSON.stringify({ error: message }),
-    statusCode
+    statusCode,
   }),
 
   updateFighter: (success = true) => ({
     body: success ? 'Fighter updated successfully' : 'Failed to update fighter',
-    statusCode: success ? '200' : '500'
-  })
+    statusCode: success ? '200' : '500',
+  }),
 };

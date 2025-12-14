@@ -1,5 +1,5 @@
-import React, { useContext, useEffect, useRef, useState } from 'react';
-import { Animated, ScrollView, ScrollViewProps } from 'react-native';
+import { useContext, useEffect, useRef, useState } from 'react';
+import { Animated, type ScrollView, type ScrollViewProps } from 'react-native';
 
 import { SyncedScrollViewContext } from '../../../providers/scroll-view';
 
@@ -9,6 +9,15 @@ import { SyncedScrollViewContext } from '../../../providers/scroll-view';
  * ----------------------------------------------------------------------------
  */
 
+/**
+ * Internal type for accessing Animated.Value's private _value property.
+ * React Native's Animated.Value stores the current value internally but
+ * doesn't expose it in public TypeScript types.
+ */
+interface AnimatedValueInternal extends Animated.Value {
+  _value: number;
+}
+
 interface SyncedScrollViewProps extends Omit<ScrollViewProps, 'id'> {
   id: number;
   unlinked?: boolean;
@@ -17,7 +26,7 @@ interface SyncedScrollViewProps extends Omit<ScrollViewProps, 'id'> {
 export const SyncedScrollView = (props: SyncedScrollViewProps) => {
   const { id, unlinked, ...rest } = props;
   const { activeScrollView, offsetPercent } = useContext(
-    SyncedScrollViewContext,
+    SyncedScrollViewContext
   );
 
   // Get relevant ScrollView Dimensions --------------------------------------------------
@@ -58,7 +67,10 @@ export const SyncedScrollView = (props: SyncedScrollViewProps) => {
   offsetPercent?.addListener(({ value }) => {
     // Only respond to changes of the offsetPercent if this scrollView is NOT the activeScrollView
     // --> The active ScrollView responding to its own changes would cause an infinite loop
-    if (id !== (activeScrollView as any)._value && scrollableLength > 0) {
+    if (
+      id !== (activeScrollView as AnimatedValueInternal)._value &&
+      scrollableLength > 0
+    ) {
       // Depending on the orientation we scroll in, we need to use different properties
       scrollViewRef.current?.scrollTo({
         [props.horizontal ? 'x' : 'y']: value * scrollableLength,
@@ -80,13 +92,16 @@ export const SyncedScrollView = (props: SyncedScrollViewProps) => {
         },
       },
     ],
-    { useNativeDriver: true },
+    { useNativeDriver: true }
   );
 
   offset.addListener(({ value }) => {
     // Only change the offsetPercent if the scrollView IS the activeScrollView
     // --> The inactive ScrollViews changing the offsetPercent would cause an infinite loop
-    if (id === (activeScrollView as any)._value && scrollableLength > 0) {
+    if (
+      id === (activeScrollView as AnimatedValueInternal)._value &&
+      scrollableLength > 0
+    ) {
       offsetPercent.setValue(value / scrollableLength);
     }
   });
@@ -101,12 +116,12 @@ export const SyncedScrollView = (props: SyncedScrollViewProps) => {
   return (
     <Animated.ScrollView
       {...rest}
-      ref={scrollViewRef}
-      onScroll={handleScroll}
-      scrollEventThrottle={16}
-      onTouchStart={handleTouchStart}
-      onLayout={handleLayout}
       onContentSizeChange={handleContentSizeChange}
+      onLayout={handleLayout}
+      onScroll={handleScroll}
+      onTouchStart={handleTouchStart}
+      ref={scrollViewRef}
+      scrollEventThrottle={16}
     />
   );
 };

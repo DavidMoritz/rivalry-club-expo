@@ -1,27 +1,30 @@
-import { render, fireEvent } from '@testing-library/react-native';
+import { fireEvent, render } from '@testing-library/react-native';
 import React from 'react';
-import { Text, Button } from 'react-native';
-
+import { Button, Text } from 'react-native';
+import type { Schema } from '../../amplify/data/resource';
+import { getMRivalry } from '../../src/models/m-rivalry';
 import {
   RivalryProvider,
   useRivalry,
   useRivalryContext,
   useUpdateRivalry,
 } from '../../src/providers/rivalry';
-import { getMRivalry } from '../../src/models/m-rivalry';
+
+type Rivalry = Schema['Rivalry']['type'];
 
 describe('RivalryProvider', () => {
-  const mockRivalry = getMRivalry({
-    rivalry: {
-      id: 'rivalry-123',
-      userAId: 'user-a',
-      userBId: 'user-b',
-      gameId: 'game-123',
-      contestCount: 10,
-      createdAt: '2024-01-01',
-      updatedAt: '2024-01-01',
-    } as any,
-  });
+  const mockRivalryData: Rivalry = {
+    __typename: 'Rivalry',
+    id: 'rivalry-123',
+    userAId: 'user-a',
+    userBId: 'user-b',
+    gameId: 'game-123',
+    contestCount: 10,
+    currentContestId: null,
+    createdAt: '2024-01-01',
+    updatedAt: '2024-01-01',
+  };
+  const mockRivalry = getMRivalry({ rivalry: mockRivalryData });
 
   it('should provide rivalry context to children', () => {
     const TestComponent = () => {
@@ -33,7 +36,7 @@ describe('RivalryProvider', () => {
     const { getByTestId } = render(
       <RivalryProvider rivalry={mockRivalry}>
         <TestComponent />
-      </RivalryProvider>,
+      </RivalryProvider>
     );
 
     expect(getByTestId('rivalry-id').props.children).toBe('rivalry-123');
@@ -51,24 +54,25 @@ describe('RivalryProvider', () => {
     const { getByTestId } = render(
       <RivalryProvider rivalry={null}>
         <TestComponent />
-      </RivalryProvider>,
+      </RivalryProvider>
     );
 
     expect(getByTestId('rivalry-id').props.children).toBe('No rivalry');
   });
 
   it('should allow updating rivalry', () => {
-    const newRivalry = getMRivalry({
-      rivalry: {
-        id: 'rivalry-456',
-        userAId: 'user-c',
-        userBId: 'user-d',
-        gameId: 'game-456',
-        contestCount: 5,
-        createdAt: '2024-01-02',
-        updatedAt: '2024-01-02',
-      } as any,
-    });
+    const newRivalryData: Rivalry = {
+      __typename: 'Rivalry',
+      id: 'rivalry-456',
+      userAId: 'user-c',
+      userBId: 'user-d',
+      gameId: 'game-456',
+      contestCount: 5,
+      currentContestId: null,
+      createdAt: '2024-01-02',
+      updatedAt: '2024-01-02',
+    };
+    const newRivalry = getMRivalry({ rivalry: newRivalryData });
 
     const TestComponent = () => {
       const rivalry = useRivalry();
@@ -78,9 +82,9 @@ describe('RivalryProvider', () => {
         <>
           <Text testID="rivalry-id">{rivalry?.id || 'No rivalry'}</Text>
           <Button
+            onPress={() => updateRivalry(newRivalry)}
             testID="update-button"
             title="Update"
-            onPress={() => updateRivalry(newRivalry)}
           />
         </>
       );
@@ -89,7 +93,7 @@ describe('RivalryProvider', () => {
     const { getByTestId } = render(
       <RivalryProvider rivalry={mockRivalry}>
         <TestComponent />
-      </RivalryProvider>,
+      </RivalryProvider>
     );
 
     expect(getByTestId('rivalry-id').props.children).toBe('rivalry-123');
@@ -108,9 +112,9 @@ describe('RivalryProvider', () => {
         <>
           <Text testID="rivalry-id">{rivalry?.id || 'No rivalry'}</Text>
           <Button
+            onPress={() => updateRivalry(null)}
             testID="clear-button"
             title="Clear"
-            onPress={() => updateRivalry(null)}
           />
         </>
       );
@@ -119,7 +123,7 @@ describe('RivalryProvider', () => {
     const { getByTestId } = render(
       <RivalryProvider rivalry={mockRivalry}>
         <TestComponent />
-      </RivalryProvider>,
+      </RivalryProvider>
     );
 
     expect(getByTestId('rivalry-id').props.children).toBe('rivalry-123');
@@ -139,9 +143,9 @@ describe('RivalryProvider', () => {
           <Text testID="rivalry-id">{rivalry?.id}</Text>
           <Text testID="render-count">{renderCount}</Text>
           <Button
+            onPress={() => setRenderCount(renderCount + 1)}
             testID="rerender-button"
             title="Rerender"
-            onPress={() => setRenderCount(renderCount + 1)}
           />
         </>
       );
@@ -150,7 +154,7 @@ describe('RivalryProvider', () => {
     const { getByTestId } = render(
       <RivalryProvider rivalry={mockRivalry}>
         <TestComponent />
-      </RivalryProvider>,
+      </RivalryProvider>
     );
 
     expect(getByTestId('rivalry-id').props.children).toBe('rivalry-123');
@@ -172,7 +176,7 @@ describe('RivalryProvider', () => {
       const { getByTestId } = render(
         <RivalryProvider rivalry={mockRivalry} userId="user-a">
           <TestComponent />
-        </RivalryProvider>,
+        </RivalryProvider>
       );
 
       expect(getByTestId('user-id').props.children).toBe('user-a');
@@ -193,7 +197,7 @@ describe('RivalryProvider', () => {
       const { getByTestId } = render(
         <RivalryProvider rivalry={mockRivalry} userId="user-a">
           <TestComponent />
-        </RivalryProvider>,
+        </RivalryProvider>
       );
 
       expect(getByTestId('is-user-a').props.children).toBe('true');
@@ -215,7 +219,7 @@ describe('RivalryProvider', () => {
       const { getByTestId } = render(
         <RivalryProvider rivalry={mockRivalry} userId="user-b">
           <TestComponent />
-        </RivalryProvider>,
+        </RivalryProvider>
       );
 
       expect(getByTestId('is-user-a').props.children).toBe('false');
@@ -237,7 +241,7 @@ describe('RivalryProvider', () => {
       const { getByTestId } = render(
         <RivalryProvider rivalry={mockRivalry} userId="user-c">
           <TestComponent />
-        </RivalryProvider>,
+        </RivalryProvider>
       );
 
       expect(getByTestId('is-user-a').props.children).toBe('false');
@@ -260,7 +264,7 @@ describe('RivalryProvider', () => {
       const { getByTestId } = render(
         <RivalryProvider rivalry={mockRivalry}>
           <TestComponent />
-        </RivalryProvider>,
+        </RivalryProvider>
       );
 
       expect(getByTestId('user-id').props.children).toBe('No user');
@@ -284,7 +288,7 @@ describe('RivalryProvider', () => {
       const { getByTestId } = render(
         <RivalryProvider rivalry={null} userId="user-a">
           <TestComponent />
-        </RivalryProvider>,
+        </RivalryProvider>
       );
 
       expect(getByTestId('user-id').props.children).toBe('user-a');
@@ -293,17 +297,18 @@ describe('RivalryProvider', () => {
     });
 
     it('should update isUserA/isUserB when rivalry changes', () => {
-      const newRivalry = getMRivalry({
-        rivalry: {
-          id: 'rivalry-456',
-          userAId: 'user-c',
-          userBId: 'user-d',
-          gameId: 'game-456',
-          contestCount: 5,
-          createdAt: '2024-01-02',
-          updatedAt: '2024-01-02',
-        } as any,
-      });
+      const newRivalryData: Rivalry = {
+        __typename: 'Rivalry',
+        id: 'rivalry-456',
+        userAId: 'user-c',
+        userBId: 'user-d',
+        gameId: 'game-456',
+        contestCount: 5,
+        currentContestId: null,
+        createdAt: '2024-01-02',
+        updatedAt: '2024-01-02',
+      };
+      const newRivalry = getMRivalry({ rivalry: newRivalryData });
 
       const TestComponent = () => {
         const { isUserA, isUserB } = useRivalryContext();
@@ -314,9 +319,9 @@ describe('RivalryProvider', () => {
             <Text testID="is-user-a">{isUserA.toString()}</Text>
             <Text testID="is-user-b">{isUserB.toString()}</Text>
             <Button
+              onPress={() => updateRivalry(newRivalry)}
               testID="update-button"
               title="Update"
-              onPress={() => updateRivalry(newRivalry)}
             />
           </>
         );
@@ -325,7 +330,7 @@ describe('RivalryProvider', () => {
       const { getByTestId } = render(
         <RivalryProvider rivalry={mockRivalry} userId="user-c">
           <TestComponent />
-        </RivalryProvider>,
+        </RivalryProvider>
       );
 
       // Initially user-c is not in the rivalry
@@ -341,15 +346,18 @@ describe('RivalryProvider', () => {
 
     it('should update isUserA/isUserB when same rivalry object is mutated and re-set', () => {
       // Create a rivalry without userIds (simulating initial load with just ID)
-      const initialRivalry = getMRivalry({
-        rivalry: {
-          id: 'rivalry-123',
-          gameId: 'game-123',
-          contestCount: 0,
-          createdAt: '2024-01-01',
-          updatedAt: '2024-01-01',
-        } as any,
-      });
+      const initialRivalryData: Rivalry = {
+        __typename: 'Rivalry',
+        id: 'rivalry-123',
+        userAId: undefined,
+        userBId: undefined,
+        gameId: 'game-123',
+        contestCount: 0,
+        currentContestId: null,
+        createdAt: '2024-01-01',
+        updatedAt: '2024-01-01',
+      };
+      const initialRivalry = getMRivalry({ rivalry: initialRivalryData });
 
       const TestComponent = () => {
         const rivalry = useRivalry();
@@ -363,8 +371,6 @@ describe('RivalryProvider', () => {
             <Text testID="is-user-a">{isUserA.toString()}</Text>
             <Text testID="is-user-b">{isUserB.toString()}</Text>
             <Button
-              testID="update-button"
-              title="Update"
               onPress={() => {
                 // Simulate what happens in the real app: same object reference
                 // but with properties populated
@@ -372,6 +378,8 @@ describe('RivalryProvider', () => {
                 initialRivalry.userBId = 'user-b';
                 updateRivalry(initialRivalry);
               }}
+              testID="update-button"
+              title="Update"
             />
           </>
         );
@@ -380,7 +388,7 @@ describe('RivalryProvider', () => {
       const { getByTestId } = render(
         <RivalryProvider rivalry={initialRivalry} userId="user-b">
           <TestComponent />
-        </RivalryProvider>,
+        </RivalryProvider>
       );
 
       // Initially userIds are not set
@@ -400,17 +408,18 @@ describe('RivalryProvider', () => {
     });
 
     it('should handle multiple updates to the same rivalry object', () => {
-      const rivalry = getMRivalry({
-        rivalry: {
-          id: 'rivalry-123',
-          userAId: 'user-a',
-          userBId: 'user-b',
-          gameId: 'game-123',
-          contestCount: 0,
-          createdAt: '2024-01-01',
-          updatedAt: '2024-01-01',
-        } as any,
-      });
+      const rivalryData: Rivalry = {
+        __typename: 'Rivalry',
+        id: 'rivalry-123',
+        userAId: 'user-a',
+        userBId: 'user-b',
+        gameId: 'game-123',
+        contestCount: 0,
+        currentContestId: null,
+        createdAt: '2024-01-01',
+        updatedAt: '2024-01-01',
+      };
+      const rivalry = getMRivalry({ rivalry: rivalryData });
 
       const TestComponent = () => {
         const { isUserA, isUserB } = useRivalryContext();
@@ -421,8 +430,6 @@ describe('RivalryProvider', () => {
             <Text testID="is-user-a">{isUserA.toString()}</Text>
             <Text testID="is-user-b">{isUserB.toString()}</Text>
             <Button
-              testID="swap-button"
-              title="Swap"
               onPress={() => {
                 // Swap the user IDs in the same object
                 const temp = rivalry.userAId;
@@ -430,6 +437,8 @@ describe('RivalryProvider', () => {
                 rivalry.userBId = temp;
                 updateRivalry(rivalry);
               }}
+              testID="swap-button"
+              title="Swap"
             />
           </>
         );
@@ -438,7 +447,7 @@ describe('RivalryProvider', () => {
       const { getByTestId } = render(
         <RivalryProvider rivalry={rivalry} userId="user-a">
           <TestComponent />
-        </RivalryProvider>,
+        </RivalryProvider>
       );
 
       // Initially user-a is UserA
@@ -473,7 +482,7 @@ describe('RivalryProvider', () => {
           userBName="Bob"
         >
           <TestComponent />
-        </RivalryProvider>,
+        </RivalryProvider>
       );
 
       expect(getByTestId('user-a-name').props.children).toBe('Alice');
@@ -495,7 +504,7 @@ describe('RivalryProvider', () => {
       const { getByTestId } = render(
         <RivalryProvider rivalry={mockRivalry}>
           <TestComponent />
-        </RivalryProvider>,
+        </RivalryProvider>
       );
 
       expect(getByTestId('user-a-name').props.children).toBe('No name A');
@@ -512,20 +521,22 @@ describe('RivalryProvider', () => {
             <Text testID="user-a-name">{userAName || 'No name A'}</Text>
             <Text testID="user-b-name">{userBName || 'No name B'}</Text>
             <Button
+              onPress={() => updateRivalry(mockRivalry, 'Charlie', 'Diana')}
               testID="update-button"
               title="Update Names"
-              onPress={() =>
-                updateRivalry(mockRivalry, 'Charlie', 'Diana')
-              }
             />
           </>
         );
       };
 
       const { getByTestId } = render(
-        <RivalryProvider rivalry={mockRivalry} userAName="Alice" userBName="Bob">
+        <RivalryProvider
+          rivalry={mockRivalry}
+          userAName="Alice"
+          userBName="Bob"
+        >
           <TestComponent />
-        </RivalryProvider>,
+        </RivalryProvider>
       );
 
       expect(getByTestId('user-a-name').props.children).toBe('Alice');
@@ -547,18 +558,22 @@ describe('RivalryProvider', () => {
             <Text testID="user-a-name">{userAName || 'No name A'}</Text>
             <Text testID="user-b-name">{userBName || 'No name B'}</Text>
             <Button
+              onPress={() => updateRivalry(mockRivalry, 'Eve', undefined)}
               testID="update-button"
               title="Update A"
-              onPress={() => updateRivalry(mockRivalry, 'Eve', undefined)}
             />
           </>
         );
       };
 
       const { getByTestId } = render(
-        <RivalryProvider rivalry={mockRivalry} userAName="Alice" userBName="Bob">
+        <RivalryProvider
+          rivalry={mockRivalry}
+          userAName="Alice"
+          userBName="Bob"
+        >
           <TestComponent />
-        </RivalryProvider>,
+        </RivalryProvider>
       );
 
       expect(getByTestId('user-a-name').props.children).toBe('Alice');
@@ -580,18 +595,22 @@ describe('RivalryProvider', () => {
             <Text testID="user-a-name">{userAName || 'No name A'}</Text>
             <Text testID="user-b-name">{userBName || 'No name B'}</Text>
             <Button
+              onPress={() => updateRivalry(mockRivalry, undefined, 'Frank')}
               testID="update-button"
               title="Update B"
-              onPress={() => updateRivalry(mockRivalry, undefined, 'Frank')}
             />
           </>
         );
       };
 
       const { getByTestId } = render(
-        <RivalryProvider rivalry={mockRivalry} userAName="Alice" userBName="Bob">
+        <RivalryProvider
+          rivalry={mockRivalry}
+          userAName="Alice"
+          userBName="Bob"
+        >
           <TestComponent />
-        </RivalryProvider>,
+        </RivalryProvider>
       );
 
       expect(getByTestId('user-a-name').props.children).toBe('Alice');

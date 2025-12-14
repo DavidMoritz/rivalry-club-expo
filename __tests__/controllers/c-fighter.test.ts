@@ -1,11 +1,15 @@
-import { renderHook, waitFor } from '@testing-library/react-native';
+import { jest } from '@jest/globals';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
+import { renderHook, waitFor } from '@testing-library/react-native';
 import React from 'react';
-
+import { updateFighterStats } from '../../src/axios/mutations';
 import { useUpdateFighterViaApiMutation } from '../../src/controllers/c-fighter';
-import * as mutations from '../../src/axios/mutations';
 
 jest.mock('../../src/axios/mutations');
+
+const mockUpdateFighterStats = updateFighterStats as jest.MockedFunction<
+  typeof updateFighterStats
+>;
 
 describe('c-fighter Controller', () => {
   let queryClient: QueryClient;
@@ -31,14 +35,11 @@ describe('c-fighter Controller', () => {
     it('should call updateFighterStats mutation', async () => {
       const mockResponse = { body: 'Success', statusCode: '200' };
 
-      (mutations.updateFighterStats as jest.Mock).mockResolvedValue(
-        mockResponse,
-      );
+      mockUpdateFighterStats.mockResolvedValue(mockResponse);
 
-      const { result } = renderHook(
-        () => useUpdateFighterViaApiMutation(),
-        { wrapper },
-      );
+      const { result } = renderHook(() => useUpdateFighterViaApiMutation(), {
+        wrapper,
+      });
 
       result.current.mutate({
         fighterId: 'fighter-123',
@@ -48,10 +49,10 @@ describe('c-fighter Controller', () => {
 
       await waitFor(() => expect(result.current.isSuccess).toBe(true));
 
-      expect(mutations.updateFighterStats).toHaveBeenCalledTimes(1);
+      expect(mockUpdateFighterStats).toHaveBeenCalledTimes(1);
 
       // React Query passes the mutation variables as the first argument
-      const callArgs = (mutations.updateFighterStats as jest.Mock).mock.calls[0];
+      const callArgs = mockUpdateFighterStats.mock.calls[0];
 
       expect(callArgs[0]).toEqual({
         fighterId: 'fighter-123',
@@ -64,13 +65,11 @@ describe('c-fighter Controller', () => {
       const mockResponse = { body: 'Success', statusCode: '200' };
       const onSuccess = jest.fn();
 
-      (mutations.updateFighterStats as jest.Mock).mockResolvedValue(
-        mockResponse,
-      );
+      mockUpdateFighterStats.mockResolvedValue(mockResponse);
 
       const { result } = renderHook(
         () => useUpdateFighterViaApiMutation({ onSuccess }),
-        { wrapper },
+        { wrapper }
       );
 
       result.current.mutate({
@@ -87,12 +86,11 @@ describe('c-fighter Controller', () => {
     it('should handle errors correctly', async () => {
       const mockError = new Error('Network error');
 
-      (mutations.updateFighterStats as jest.Mock).mockRejectedValue(mockError);
+      mockUpdateFighterStats.mockRejectedValue(mockError);
 
-      const { result } = renderHook(
-        () => useUpdateFighterViaApiMutation(),
-        { wrapper },
-      );
+      const { result } = renderHook(() => useUpdateFighterViaApiMutation(), {
+        wrapper,
+      });
 
       result.current.mutate({
         fighterId: 'fighter-123',
@@ -109,14 +107,11 @@ describe('c-fighter Controller', () => {
     it('should pass correct mutation variables to updateFighterStats', async () => {
       const mockResponse = { body: 'Success', statusCode: '200' };
 
-      (mutations.updateFighterStats as jest.Mock).mockResolvedValue(
-        mockResponse,
-      );
+      mockUpdateFighterStats.mockResolvedValue(mockResponse);
 
-      const { result } = renderHook(
-        () => useUpdateFighterViaApiMutation(),
-        { wrapper },
-      );
+      const { result } = renderHook(() => useUpdateFighterViaApiMutation(), {
+        wrapper,
+      });
 
       const mutationVariables = {
         fighterId: 'fighter-456',
@@ -128,10 +123,10 @@ describe('c-fighter Controller', () => {
 
       await waitFor(() => expect(result.current.isSuccess).toBe(true));
 
-      expect(mutations.updateFighterStats).toHaveBeenCalledTimes(1);
+      expect(mockUpdateFighterStats).toHaveBeenCalledTimes(1);
 
       // React Query passes the mutation variables as the first argument
-      const callArgs = (mutations.updateFighterStats as jest.Mock).mock.calls[0];
+      const callArgs = mockUpdateFighterStats.mock.calls[0];
 
       expect(callArgs[0]).toEqual(mutationVariables);
     });

@@ -13,28 +13,29 @@ describe('Delete Contest Integration Tests', () => {
   const createTierListWithStanding = (
     userId: string,
     standing: number
-  ): TierList => ({
-    id: `tier-list-${userId}`,
-    rivalryId: 'rivalry-123',
-    userId,
-    standing,
-    createdAt: new Date('2024-01-01').toISOString(),
-    updatedAt: new Date('2024-01-01').toISOString(),
-    tierSlots: {
-      items: [
-        {
-          id: `slot-${userId}`,
-          tierListId: `tier-list-${userId}`,
-          fighterId: `fighter-${userId}`,
-          position: 0,
-          winCount: 0,
-          contestCount: 0,
-          createdAt: new Date('2024-01-01').toISOString(),
-          updatedAt: new Date('2024-01-01').toISOString()
-        } as TierSlot
-      ]
-    }
-  } as TierList);
+  ): TierList =>
+    ({
+      id: `tier-list-${userId}`,
+      rivalryId: 'rivalry-123',
+      userId,
+      standing,
+      createdAt: new Date('2024-01-01').toISOString(),
+      updatedAt: new Date('2024-01-01').toISOString(),
+      tierSlots: {
+        items: [
+          {
+            id: `slot-${userId}`,
+            tierListId: `tier-list-${userId}`,
+            fighterId: `fighter-${userId}`,
+            position: 0,
+            winCount: 0,
+            contestCount: 0,
+            createdAt: new Date('2024-01-01').toISOString(),
+            updatedAt: new Date('2024-01-01').toISOString(),
+          } as TierSlot,
+        ],
+      },
+    }) as TierList;
 
   describe('1-stock win scenarios', () => {
     it('should correctly revert 1-stock win with bias=1 (loser moved up)', () => {
@@ -49,7 +50,7 @@ describe('Delete Contest Integration Tests', () => {
         contestCount: 5,
         currentContestId: 'contest-123',
         createdAt: new Date('2024-01-01').toISOString(),
-        updatedAt: new Date('2024-01-01').toISOString()
+        updatedAt: new Date('2024-01-01').toISOString(),
       } as Rivalry;
 
       const mRivalry = getMRivalry({ rivalry: mockRivalry });
@@ -68,7 +69,7 @@ describe('Delete Contest Integration Tests', () => {
         result: 1,
         bias: 0,
         createdAt: new Date('2024-01-01').toISOString(),
-        updatedAt: new Date('2024-01-01').toISOString()
+        updatedAt: new Date('2024-01-01').toISOString(),
       } as Contest;
 
       const mContest = getMContest(contest);
@@ -102,7 +103,7 @@ describe('Delete Contest Integration Tests', () => {
         contestCount: 5,
         currentContestId: 'contest-123',
         createdAt: new Date('2024-01-01').toISOString(),
-        updatedAt: new Date('2024-01-01').toISOString()
+        updatedAt: new Date('2024-01-01').toISOString(),
       } as Rivalry;
 
       const mRivalry = getMRivalry({ rivalry: mockRivalry });
@@ -121,7 +122,7 @@ describe('Delete Contest Integration Tests', () => {
         result: 1,
         bias: 0,
         createdAt: new Date('2024-01-01').toISOString(),
-        updatedAt: new Date('2024-01-01').toISOString()
+        updatedAt: new Date('2024-01-01').toISOString(),
       } as Contest;
 
       const mContest = getMContest(contest);
@@ -157,7 +158,7 @@ describe('Delete Contest Integration Tests', () => {
         contestCount: 5,
         currentContestId: 'contest-123',
         createdAt: new Date('2024-01-01').toISOString(),
-        updatedAt: new Date('2024-01-01').toISOString()
+        updatedAt: new Date('2024-01-01').toISOString(),
       } as Rivalry;
 
       const mRivalry = getMRivalry({ rivalry: mockRivalry });
@@ -176,7 +177,7 @@ describe('Delete Contest Integration Tests', () => {
         result: 2,
         bias: 0,
         createdAt: new Date('2024-01-01').toISOString(),
-        updatedAt: new Date('2024-01-01').toISOString()
+        updatedAt: new Date('2024-01-01').toISOString(),
       } as Contest;
 
       const mContest = getMContest(contest);
@@ -209,7 +210,7 @@ describe('Delete Contest Integration Tests', () => {
         contestCount: 5,
         currentContestId: 'contest-123',
         createdAt: new Date('2024-01-01').toISOString(),
-        updatedAt: new Date('2024-01-01').toISOString()
+        updatedAt: new Date('2024-01-01').toISOString(),
       } as Rivalry;
 
       const mRivalry = getMRivalry({ rivalry: mockRivalry });
@@ -228,7 +229,7 @@ describe('Delete Contest Integration Tests', () => {
         result: 2,
         bias: 0,
         createdAt: new Date('2024-01-01').toISOString(),
-        updatedAt: new Date('2024-01-01').toISOString()
+        updatedAt: new Date('2024-01-01').toISOString(),
       } as Contest;
 
       const mContest = getMContest(contest);
@@ -263,7 +264,7 @@ describe('Delete Contest Integration Tests', () => {
         contestCount: 5,
         currentContestId: 'contest-123',
         createdAt: new Date('2024-01-01').toISOString(),
-        updatedAt: new Date('2024-01-01').toISOString()
+        updatedAt: new Date('2024-01-01').toISOString(),
       } as Rivalry;
 
       const mRivalry = getMRivalry({ rivalry: mockRivalry });
@@ -282,7 +283,7 @@ describe('Delete Contest Integration Tests', () => {
         result: 3,
         bias: 0,
         createdAt: new Date('2024-01-01').toISOString(),
-        updatedAt: new Date('2024-01-01').toISOString()
+        updatedAt: new Date('2024-01-01').toISOString(),
       } as Contest;
 
       const mContest = getMContest(contest);
@@ -319,7 +320,7 @@ describe('Delete Contest Integration Tests', () => {
         contestCount: 5,
         currentContestId: 'contest-123',
         createdAt: new Date('2024-01-01').toISOString(),
-        updatedAt: new Date('2024-01-01').toISOString()
+        updatedAt: new Date('2024-01-01').toISOString(),
       } as Rivalry;
 
       const mRivalry = getMRivalry({ rivalry: mockRivalry });
@@ -338,7 +339,7 @@ describe('Delete Contest Integration Tests', () => {
         result: 3,
         bias: 0,
         createdAt: new Date('2024-01-01').toISOString(),
-        updatedAt: new Date('2024-01-01').toISOString()
+        updatedAt: new Date('2024-01-01').toISOString(),
       } as Contest;
 
       const mContest = getMContest(contest);
@@ -379,7 +380,7 @@ describe('Delete Contest Integration Tests', () => {
         contestCount: 5,
         currentContestId: 'contest-1',
         createdAt: new Date('2024-01-01').toISOString(),
-        updatedAt: new Date('2024-01-01').toISOString()
+        updatedAt: new Date('2024-01-01').toISOString(),
       } as Contest;
 
       const mRivalry = getMRivalry({ rivalry: mockRivalry });
@@ -399,7 +400,7 @@ describe('Delete Contest Integration Tests', () => {
         result: 2,
         bias: 0,
         createdAt: new Date('2024-01-01').toISOString(),
-        updatedAt: new Date('2024-01-01').toISOString()
+        updatedAt: new Date('2024-01-01').toISOString(),
       } as Contest;
 
       const mContest1 = getMContest(contest1);
@@ -423,7 +424,7 @@ describe('Delete Contest Integration Tests', () => {
         result: -2, // B wins by 2 stocks
         bias: 0,
         createdAt: '2024-01-02',
-        updatedAt: '2024-01-02'
+        updatedAt: '2024-01-02',
       };
 
       const mContest2 = getMContest(contest2);

@@ -1,10 +1,22 @@
 import { generateClient } from 'aws-amplify/data';
-import React, { useState } from 'react';
-import { ActivityIndicator, Modal, Text, TextInput, TouchableOpacity, View } from 'react-native';
+import { useState } from 'react';
+import {
+  ActivityIndicator,
+  Modal,
+  Text,
+  TextInput,
+  TouchableOpacity,
+  View,
+} from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
 import type { Schema } from '../../../amplify/data/resource';
-import { signUp, confirmSignUp, signIn, getCurrentUser } from '../../lib/amplify-auth';
+import {
+  confirmSignUp,
+  getCurrentUser,
+  signIn,
+  signUp,
+} from '../../lib/amplify-auth';
 import { colors } from '../../utils/colors';
 import { darkStyles, styles } from '../../utils/styles';
 
@@ -19,7 +31,7 @@ export function CreateAccountModal({
   visible,
   currentUserId,
   onClose,
-  onSuccess
+  onSuccess,
 }: CreateAccountModalProps) {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
@@ -49,17 +61,18 @@ export function CreateAccountModal({
         // Auto sign-in successful, link the account
         await linkAccountToCognito();
       }
-    } catch (err: any) {
+    } catch (err: unknown) {
       console.error('[CreateAccountModal] Sign up error:', err);
 
-      if (err.name === 'UsernameExistsException') {
+      const caughtError = err as Error & { name?: string };
+      if (caughtError.name === 'UsernameExistsException') {
         setError('An account with this email already exists');
-      } else if (err.name === 'InvalidPasswordException') {
+      } else if (caughtError.name === 'InvalidPasswordException') {
         setError(
           'Password must be at least 8 characters with uppercase, lowercase, numbers, and symbols'
         );
       } else {
-        setError(err?.message || 'Sign up failed. Please try again.');
+        setError(caughtError?.message || 'Sign up failed. Please try again.');
       }
     } finally {
       setLoading(false);
@@ -76,15 +89,18 @@ export function CreateAccountModal({
       // After successful verification, sign in and link account
       await signIn(email.trim(), password.trim());
       await linkAccountToCognito();
-    } catch (err: any) {
+    } catch (err: unknown) {
       console.error('[CreateAccountModal] Verification error:', err);
 
-      if (err.name === 'CodeMismatchException') {
+      const caughtError = err as Error & { name?: string };
+      if (caughtError.name === 'CodeMismatchException') {
         setError('Invalid verification code');
-      } else if (err.name === 'ExpiredCodeException') {
+      } else if (caughtError.name === 'ExpiredCodeException') {
         setError('Verification code has expired. Please try again.');
       } else {
-        setError(err?.message || 'Verification failed. Please try again.');
+        setError(
+          caughtError?.message || 'Verification failed. Please try again.'
+        );
       }
       setLoading(false);
     }
@@ -103,22 +119,32 @@ export function CreateAccountModal({
         id: currentUserId,
         awsSub: cognitoAwsSub,
         email: email.trim(),
-        role: 1 // Regular user role
+        role: 1, // Regular user role
       });
 
       // Success!
       onSuccess();
-    } catch (err: any) {
+    } catch (err: unknown) {
       console.error('[CreateAccountModal] Link error:', err);
-      setError(err?.message || 'Failed to link account. Please try again.');
+      const caughtError = err as Error;
+      setError(
+        caughtError?.message || 'Failed to link account. Please try again.'
+      );
     } finally {
       setLoading(false);
     }
   }
 
   return (
-    <Modal visible={visible} animationType="slide" presentationStyle="pageSheet">
-      <SafeAreaView style={[styles.container, darkStyles.container]} edges={['top', 'bottom']}>
+    <Modal
+      animationType="slide"
+      presentationStyle="pageSheet"
+      visible={visible}
+    >
+      <SafeAreaView
+        edges={['top', 'bottom']}
+        style={[styles.container, darkStyles.container]}
+      >
         <View style={{ flex: 1, paddingHorizontal: 24 }}>
           <View
             style={{
@@ -127,14 +153,18 @@ export function CreateAccountModal({
               alignItems: 'center',
               paddingVertical: 16,
               borderBottomWidth: 1,
-              borderBottomColor: colors.gray750
+              borderBottomColor: colors.gray750,
             }}
           >
             <Text style={[styles.text, { fontSize: 24, fontWeight: 'bold' }]}>
               {needsVerification ? 'Verify Email' : 'Create New Account'}
             </Text>
             <TouchableOpacity onPress={onClose}>
-              <Text style={[styles.text, { fontSize: 16, color: colors.slate500 }]}>Cancel</Text>
+              <Text
+                style={[styles.text, { fontSize: 16, color: colors.slate500 }]}
+              >
+                Cancel
+              </Text>
             </TouchableOpacity>
           </View>
 
@@ -144,17 +174,31 @@ export function CreateAccountModal({
                 <Text
                   style={[
                     styles.text,
-                    { marginBottom: 24, textAlign: 'center', color: colors.gray300 }
+                    {
+                      marginBottom: 24,
+                      textAlign: 'center',
+                      color: colors.gray300,
+                    },
                   ]}
                 >
                   Please enter the verification code we sent to your email
                 </Text>
 
                 <View style={{ marginBottom: 20 }}>
-                  <Text style={[styles.text, { marginBottom: 8, fontSize: 16, fontWeight: '500' }]}>
+                  <Text
+                    style={[
+                      styles.text,
+                      { marginBottom: 8, fontSize: 16, fontWeight: '500' },
+                    ]}
+                  >
                     Verification Code
                   </Text>
                   <TextInput
+                    autoCapitalize="none"
+                    keyboardType="number-pad"
+                    onChangeText={setVerificationCode}
+                    placeholder="Enter verification code"
+                    placeholderTextColor={colors.gray200}
                     style={[
                       styles.text,
                       {
@@ -165,15 +209,10 @@ export function CreateAccountModal({
                         paddingVertical: 14,
                         backgroundColor: colors.gray800,
                         borderWidth: 2,
-                        borderColor: colors.gray600
-                      }
+                        borderColor: colors.gray600,
+                      },
                     ]}
-                    placeholder="Enter verification code"
-                    placeholderTextColor={colors.gray200}
                     value={verificationCode}
-                    onChangeText={setVerificationCode}
-                    keyboardType="number-pad"
-                    autoCapitalize="none"
                   />
                 </View>
 
@@ -181,7 +220,11 @@ export function CreateAccountModal({
                   <Text
                     style={[
                       styles.text,
-                      { marginBottom: 16, textAlign: 'center', color: colors.red400 }
+                      {
+                        marginBottom: 16,
+                        textAlign: 'center',
+                        color: colors.red400,
+                      },
                     ]}
                   >
                     {error}
@@ -189,6 +232,8 @@ export function CreateAccountModal({
                 )}
 
                 <TouchableOpacity
+                  disabled={loading || !verificationCode}
+                  onPress={handleVerifyCode}
                   style={{
                     backgroundColor: colors.purple900,
                     paddingHorizontal: 32,
@@ -198,15 +243,19 @@ export function CreateAccountModal({
                     borderColor: colors.slate300,
                     width: '100%',
                     alignItems: 'center',
-                    marginTop: 8
+                    marginTop: 8,
                   }}
-                  onPress={handleVerifyCode}
-                  disabled={loading || !verificationCode}
                 >
                   {loading ? (
                     <ActivityIndicator color="white" />
                   ) : (
-                    <Text style={{ color: colors.white, fontSize: 18, fontWeight: 'bold' }}>
+                    <Text
+                      style={{
+                        color: colors.white,
+                        fontSize: 18,
+                        fontWeight: 'bold',
+                      }}
+                    >
                       Verify
                     </Text>
                   )}
@@ -220,7 +269,9 @@ export function CreateAccountModal({
                   }}
                   style={{ marginTop: 16, alignItems: 'center' }}
                 >
-                  <Text style={{ color: colors.cyan400, fontSize: 16 }}>Back</Text>
+                  <Text style={{ color: colors.cyan400, fontSize: 16 }}>
+                    Back
+                  </Text>
                 </TouchableOpacity>
               </>
             ) : (
@@ -228,17 +279,32 @@ export function CreateAccountModal({
                 <Text
                   style={[
                     styles.text,
-                    { marginBottom: 24, textAlign: 'center', color: colors.gray300 }
+                    {
+                      marginBottom: 24,
+                      textAlign: 'center',
+                      color: colors.gray300,
+                    },
                   ]}
                 >
                   Create an account to back up your data and sync across devices
                 </Text>
 
                 <View style={{ marginBottom: 20 }}>
-                  <Text style={[styles.text, { marginBottom: 8, fontSize: 16, fontWeight: '500' }]}>
+                  <Text
+                    style={[
+                      styles.text,
+                      { marginBottom: 8, fontSize: 16, fontWeight: '500' },
+                    ]}
+                  >
                     Email
                   </Text>
                   <TextInput
+                    autoCapitalize="none"
+                    autoCorrect={false}
+                    keyboardType="email-address"
+                    onChangeText={setEmail}
+                    placeholder="Enter your email"
+                    placeholderTextColor={colors.gray200}
                     style={[
                       styles.text,
                       {
@@ -249,24 +315,28 @@ export function CreateAccountModal({
                         paddingVertical: 14,
                         backgroundColor: colors.gray800,
                         borderWidth: 2,
-                        borderColor: colors.gray600
-                      }
+                        borderColor: colors.gray600,
+                      },
                     ]}
-                    placeholder="Enter your email"
-                    placeholderTextColor={colors.gray200}
                     value={email}
-                    onChangeText={setEmail}
-                    keyboardType="email-address"
-                    autoCapitalize="none"
-                    autoCorrect={false}
                   />
                 </View>
 
                 <View style={{ marginBottom: 20 }}>
-                  <Text style={[styles.text, { marginBottom: 8, fontSize: 16, fontWeight: '500' }]}>
+                  <Text
+                    style={[
+                      styles.text,
+                      { marginBottom: 8, fontSize: 16, fontWeight: '500' },
+                    ]}
+                  >
                     Password
                   </Text>
                   <TextInput
+                    autoCapitalize="none"
+                    onChangeText={setPassword}
+                    placeholder="Enter your password"
+                    placeholderTextColor={colors.gray200}
+                    secureTextEntry
                     style={[
                       styles.text,
                       {
@@ -277,23 +347,28 @@ export function CreateAccountModal({
                         paddingVertical: 14,
                         backgroundColor: colors.gray800,
                         borderWidth: 2,
-                        borderColor: colors.gray600
-                      }
+                        borderColor: colors.gray600,
+                      },
                     ]}
-                    placeholder="Enter your password"
-                    placeholderTextColor={colors.gray200}
                     value={password}
-                    onChangeText={setPassword}
-                    secureTextEntry
-                    autoCapitalize="none"
                   />
                 </View>
 
                 <View style={{ marginBottom: 20 }}>
-                  <Text style={[styles.text, { marginBottom: 8, fontSize: 16, fontWeight: '500' }]}>
+                  <Text
+                    style={[
+                      styles.text,
+                      { marginBottom: 8, fontSize: 16, fontWeight: '500' },
+                    ]}
+                  >
                     Confirm Password
                   </Text>
                   <TextInput
+                    autoCapitalize="none"
+                    onChangeText={setConfirmPassword}
+                    placeholder="Confirm your password"
+                    placeholderTextColor={colors.gray200}
+                    secureTextEntry
                     style={[
                       styles.text,
                       {
@@ -304,15 +379,10 @@ export function CreateAccountModal({
                         paddingVertical: 14,
                         backgroundColor: colors.gray800,
                         borderWidth: 2,
-                        borderColor: colors.gray600
-                      }
+                        borderColor: colors.gray600,
+                      },
                     ]}
-                    placeholder="Confirm your password"
-                    placeholderTextColor={colors.gray200}
                     value={confirmPassword}
-                    onChangeText={setConfirmPassword}
-                    secureTextEntry
-                    autoCapitalize="none"
                   />
                 </View>
 
@@ -320,7 +390,11 @@ export function CreateAccountModal({
                   <Text
                     style={[
                       styles.text,
-                      { marginBottom: 16, textAlign: 'center', color: colors.red400 }
+                      {
+                        marginBottom: 16,
+                        textAlign: 'center',
+                        color: colors.red400,
+                      },
                     ]}
                   >
                     {error}
@@ -328,6 +402,8 @@ export function CreateAccountModal({
                 )}
 
                 <TouchableOpacity
+                  disabled={loading || !email || !password || !confirmPassword}
+                  onPress={handleSignUp}
                   style={{
                     backgroundColor: colors.purple900,
                     paddingHorizontal: 32,
@@ -337,15 +413,19 @@ export function CreateAccountModal({
                     borderColor: colors.slate300,
                     width: '100%',
                     alignItems: 'center',
-                    marginTop: 8
+                    marginTop: 8,
                   }}
-                  onPress={handleSignUp}
-                  disabled={loading || !email || !password || !confirmPassword}
                 >
                   {loading ? (
                     <ActivityIndicator color="white" />
                   ) : (
-                    <Text style={{ color: colors.white, fontSize: 18, fontWeight: 'bold' }}>
+                    <Text
+                      style={{
+                        color: colors.white,
+                        fontSize: 18,
+                        fontWeight: 'bold',
+                      }}
+                    >
                       Create Account
                     </Text>
                   )}

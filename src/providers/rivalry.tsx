@@ -1,6 +1,12 @@
-import React, { createContext, ReactNode, useContext, useMemo, useState } from 'react';
+import {
+  createContext,
+  type ReactNode,
+  useContext,
+  useMemo,
+  useState,
+} from 'react';
 
-import { MRivalry } from '../models/m-rivalry';
+import type { MRivalry } from '../models/m-rivalry';
 
 interface RivalryContextValue {
   rivalry: MRivalry | null;
@@ -17,12 +23,14 @@ const RivalryContext = createContext<RivalryContextValue>({
   userBName: undefined,
   userId: undefined,
   isUserA: false,
-  isUserB: false
+  isUserB: false,
 });
 
 const RivalryUpdateContext = createContext<
   (newRivalry: MRivalry | null, userAName?: string, userBName?: string) => void
->(() => undefined);
+>(() => {
+  // Default no-op function; will be replaced by provider
+});
 
 export const useRivalry = () => {
   const context = useContext(RivalryContext);
@@ -38,7 +46,7 @@ export const RivalryProvider = ({
   rivalry,
   userAName: initialUserAName,
   userBName: initialUserBName,
-  userId
+  userId,
 }: {
   children: ReactNode;
   rivalry: MRivalry | null;
@@ -46,9 +54,15 @@ export const RivalryProvider = ({
   userBName?: string;
   userId?: string;
 }) => {
-  const [currentRivalry, setCurrentRivalry] = useState<MRivalry | null>(rivalry || null);
-  const [userAName, setUserAName] = useState<string | undefined>(initialUserAName);
-  const [userBName, setUserBName] = useState<string | undefined>(initialUserBName);
+  const [currentRivalry, setCurrentRivalry] = useState<MRivalry | null>(
+    rivalry || null
+  );
+  const [userAName, setUserAName] = useState<string | undefined>(
+    initialUserAName
+  );
+  const [userBName, setUserBName] = useState<string | undefined>(
+    initialUserBName
+  );
   const currentUserId = userId;
 
   // Force re-evaluation by extracting the IDs we need to compare
@@ -94,7 +108,7 @@ export const RivalryProvider = ({
       userBName,
       userId: currentUserId,
       isUserA,
-      isUserB
+      isUserB,
     }),
     [currentRivalry, userAName, userBName, currentUserId, isUserA, isUserB]
   );

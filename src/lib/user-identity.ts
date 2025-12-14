@@ -1,9 +1,13 @@
-import * as SecureStore from 'expo-secure-store';
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import { deleteItemAsync, getItemAsync, setItemAsync } from 'expo-secure-store';
 
 const UUID_KEYCHAIN_KEY = 'rivalryClubUserUuid';
 const UUID_STORAGE_KEY = 'userUuid';
 const FIRST_NAME_STORAGE_KEY = 'userFirstName';
+
+// UUID generation constants
+const HEX_BASE = 16;
+const DISPLAY_NAME_ID_LENGTH = 5;
 
 // Singleton lock to prevent race conditions when multiple components call getOrCreateUserUuid simultaneously
 let uuidPromise: Promise<string> | null = null;
@@ -12,10 +16,12 @@ let uuidPromise: Promise<string> | null = null;
  * Generates a UUID v4
  */
 export function generateUuid(): string {
-  return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, (c) => {
-    const r = (Math.random() * 16) | 0;
+  return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, c => {
+    // biome-ignore lint/suspicious/noBitwiseOperators: Bitwise OR is intentional for UUID generation (floor to integer)
+    const r = (Math.random() * HEX_BASE) | 0;
+    // biome-ignore lint/suspicious/noBitwiseOperators: Bitwise AND/OR are intentional for UUID v4 variant bits
     const v = c === 'x' ? r : (r & 0x3) | 0x8;
-    return v.toString(16);
+    return v.toString(HEX_BASE);
   });
 }
 
@@ -23,7 +29,7 @@ export function generateUuid(): string {
  * Generates a display name from UUID (e.g., "Player_abc12")
  */
 export function generateDisplayName(uuid: string): string {
-  const shortId = uuid.replace(/-/g, '').substring(0, 5);
+  const shortId = uuid.replace(/-/g, '').substring(0, DISPLAY_NAME_ID_LENGTH);
   return `Player_${shortId}`;
 }
 
@@ -37,7 +43,7 @@ export function generateDisplayName(uuid: string): string {
  * 3. If not found, generate new UUID
  * 4. Store in both Keychain and AsyncStorage
  */
-export async function getOrCreateUserUuid(): Promise<string> {
+export function getOrCreateUserUuid(): Promise<string> {
   // If a UUID operation is already in progress, wait for it
   if (uuidPromise) {
     return uuidPromise;
@@ -54,7 +60,7 @@ export async function getOrCreateUserUuid(): Promise<string> {
       }
 
       // Try Keychain (persists across reinstalls)
-      uuid = await SecureStore.getItemAsync(UUID_KEYCHAIN_KEY);
+      uuid = await getItemAsync(UUID_KEYCHAIN_KEY);
 
       if (uuid) {
         // Restore to AsyncStorage for faster future access
@@ -67,13 +73,16 @@ export async function getOrCreateUserUuid(): Promise<string> {
 
       // Store in both locations
       await Promise.all([
-        SecureStore.setItemAsync(UUID_KEYCHAIN_KEY, uuid),
-        AsyncStorage.setItem(UUID_STORAGE_KEY, uuid)
+        setItemAsync(UUID_KEYCHAIN_KEY, uuid),
+        AsyncStorage.setItem(UUID_STORAGE_KEY, uuid),
       ]);
 
       return uuid;
     } catch (error) {
-      console.error('[user-identity] ❌ Error getting/creating user UUID:', error);
+      console.error(
+        '[user-identity] ❌ Error getting/creating user UUID:',
+        error
+      );
       throw error;
     } finally {
       // Clear the lock after operation completes
@@ -90,8 +99,8 @@ export async function getOrCreateUserUuid(): Promise<string> {
 export async function updateStoredUuid(newUuid: string): Promise<void> {
   try {
     await Promise.all([
-      SecureStore.setItemAsync(UUID_KEYCHAIN_KEY, newUuid),
-      AsyncStorage.setItem(UUID_STORAGE_KEY, newUuid)
+      setItemAsync(UUID_KEYCHAIN_KEY, newUuid),
+      AsyncStorage.setItem(UUID_STORAGE_KEY, newUuid),
     ]);
   } catch (error) {
     console.error('Error updating stored UUID:', error);
@@ -112,7 +121,7 @@ export async function getStoredUuid(): Promise<string | null> {
     }
 
     // Try Keychain
-    uuid = await SecureStore.getItemAsync(UUID_KEYCHAIN_KEY);
+    uuid = await getItemAsync(UUID_KEYCHAIN_KEY);
 
     if (uuid) {
       // Restore to AsyncStorage
@@ -136,9 +145,9 @@ export async function clearStoredUuid(): Promise<void> {
     uuidPromise = null;
 
     await Promise.all([
-      SecureStore.deleteItemAsync(UUID_KEYCHAIN_KEY),
+      deleteItemAsync(UUID_KEYCHAIN_KEY),
       AsyncStorage.removeItem(UUID_STORAGE_KEY),
-      AsyncStorage.removeItem(FIRST_NAME_STORAGE_KEY) // Also clear firstName
+      AsyncStorage.removeItem(FIRST_NAME_STORAGE_KEY), // Also clear firstName
     ]);
   } catch (error) {
     console.error('[user-identity] ❌ Error clearing stored UUID:', error);
@@ -158,7 +167,10 @@ export async function storeFirstName(firstName: string): Promise<void> {
     }
 
     await AsyncStorage.setItem(FIRST_NAME_STORAGE_KEY, firstName.trim());
-    console.log('[user-identity] ✅ Stored firstName locally:', firstName.trim());
+    console.log(
+      '[user-identity] ✅ Stored firstName locally:',
+      firstName.trim()
+    );
   } catch (error) {
     console.error('[user-identity] ❌ Error storing firstName:', error);
     // Don't throw - this is not critical

@@ -346,7 +346,7 @@ export function CreateRivalry() {
           <Text style={[styles.text, { fontSize: 24, fontWeight: 'bold' }]}>
             Create New Rivalry
           </Text>
-          <Text style={[styles.text, { marginTop: 4, color: colors.gray400 }]}>
+          <Text style={[styles.text, { marginTop: 14, color: colors.gray400 }]}>
             Search for a user to challenge in {gameName}
           </Text>
         </View>

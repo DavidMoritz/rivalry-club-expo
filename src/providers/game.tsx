@@ -1,12 +1,6 @@
 import { useQuery } from '@tanstack/react-query';
 import { generateClient } from 'aws-amplify/data';
-import {
-  createContext,
-  type ReactNode,
-  useContext,
-  useEffect,
-  useState,
-} from 'react';
+import { createContext, type ReactNode, useContext, useEffect, useState } from 'react';
 import type { Schema } from '../../amplify/data/resource';
 import { getMGame, type MGame } from '../models/m-game';
 
@@ -35,7 +29,7 @@ interface GameContextValue {
 const GameContext = createContext<GameContextValue>({
   game: null,
   // biome-ignore lint/suspicious/noEmptyBlockStatements: Default no-op function for context
-  setGame: () => {},
+  setGame: () => {}
 });
 
 export const useGame = () => {
@@ -50,7 +44,7 @@ export const useUpdateGame = () => {
 
 export const GameProvider = ({
   children,
-  game: initialGame,
+  game: initialGame
 }: {
   children: ReactNode;
   game: MGame | null;
@@ -64,16 +58,10 @@ export const GameProvider = ({
       const { data: fighters, errors } = await getClient().models.Fighter.list({
         filter: {
           gameId: {
-            eq: GAME_ID,
-          },
+            eq: GAME_ID
+          }
         },
-        selectionSet: [
-          'id',
-          'name',
-          'gamePosition',
-          'winCount',
-          'contestCount',
-        ],
+        selectionSet: ['id', 'name', 'gamePosition', 'winCount', 'contestCount']
       });
 
       if (errors) {
@@ -82,7 +70,7 @@ export const GameProvider = ({
       }
 
       // Calculate win percentages and rank fighters
-      const fightersWithRanks = fighters.map(fighter => {
+      const fightersWithRanks = fighters.map((fighter) => {
         const winRate =
           fighter.contestCount &&
           fighter.contestCount > 0 &&
@@ -98,16 +86,16 @@ export const GameProvider = ({
 
       const rankedFighters = fightersWithRanks.map((fighter, index) => ({
         ...fighter,
-        rank: index + 1,
+        rank: index + 1
       }));
 
       return {
         id: GAME_ID,
-        name: 'Super Smash Bros. Ultimate',
-        fighters: { items: rankedFighters },
+        name: 'Super Smash Ultimate',
+        fighters: { items: rankedFighters }
       };
     },
-    enabled: !game, // Only fetch if game is not already loaded
+    enabled: !game // Only fetch if game is not already loaded
   });
 
   // Update state when game data is fetched
@@ -118,9 +106,5 @@ export const GameProvider = ({
     }
   }, [fetchedGame, game]);
 
-  return (
-    <GameContext.Provider value={{ game, setGame }}>
-      {children}
-    </GameContext.Provider>
-  );
+  return <GameContext.Provider value={{ game, setGame }}>{children}</GameContext.Provider>;
 };

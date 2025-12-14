@@ -1,0 +1,382 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>How to Play - Rivalry Club</title>
+    <meta
+      name="description"
+      content="Learn how to play Rivalry Club - Challenge your rival with customized, auto-balancing tier lists for fighting games."
+    />
+    <!-- Favicons -->
+    <link rel="apple-touch-icon" sizes="180x180" href="/assets/images/apple-touch-icon.png" />
+    <link rel="icon" type="image/png" sizes="32x32" href="/assets/images/favicon-32x32.png" />
+    <link rel="icon" type="image/png" sizes="16x16" href="/assets/images/favicon-16x16.png" />
+    <link rel="manifest" href="/site.webmanifest" />
+    <style>
+      * {
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
+      }
+
+      body {
+        font-family:
+          -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+        background: linear-gradient(135deg, #111 0%, #1e293b 100%);
+        color: white;
+        line-height: 1.6;
+        min-height: 100vh;
+      }
+
+      .container {
+        max-width: 900px;
+        margin: 0 auto;
+        padding: 40px 20px;
+      }
+
+      header {
+        text-align: center;
+        margin-bottom: 60px;
+        padding: 40px 0;
+      }
+
+      .logo {
+        width: 250px;
+        height: 250px;
+        margin-bottom: 20px;
+        border-radius: 30px;
+      }
+
+      h1 {
+        font-size: 4rem;
+        font-weight: bold;
+        color: aqua;
+        text-shadow:
+          2px 2px 0 black,
+          4px 4px 8px rgba(0, 0, 0, 0.5);
+        margin-top: 20px;
+        margin-bottom: 10px;
+        letter-spacing: 2px;
+      }
+
+      .subtitle {
+        font-size: 1.5rem;
+        color: #cbd5e1;
+        margin-bottom: 30px;
+      }
+
+      .home-button {
+        display: inline-block;
+        background: linear-gradient(135deg, #8b5cf6 0%, #3b82f6 100%);
+        color: white;
+        padding: 10px 30px;
+        border-radius: 25px;
+        font-weight: bold;
+        text-decoration: none;
+        transition: all 0.3s ease;
+        margin-top: 10px;
+      }
+
+      .home-button:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 6px 20px rgba(139, 92, 246, 0.6);
+      }
+
+      .intro-section {
+        background: rgba(31, 41, 55, 0.4);
+        border-radius: 15px;
+        padding: 30px;
+        margin-bottom: 30px;
+        border: 2px solid rgba(139, 92, 246, 0.3);
+      }
+
+      .intro-section h2 {
+        color: aqua;
+        font-size: 1.8rem;
+        margin-bottom: 15px;
+      }
+
+      .intro-section p {
+        color: #cbd5e1;
+        font-size: 1.1rem;
+        line-height: 1.6;
+      }
+
+      .section {
+        background: rgba(31, 41, 55, 0.4);
+        border-radius: 15px;
+        padding: 30px;
+        margin-bottom: 25px;
+        border: 2px solid rgba(59, 130, 246, 0.2);
+        transition: all 0.3s ease;
+      }
+
+      .section:hover {
+        border-color: rgba(34, 211, 238, 0.4);
+      }
+
+      .section h2 {
+        color: #22d3ee;
+        font-size: 1.5rem;
+        margin-bottom: 15px;
+        font-weight: bold;
+      }
+
+      .section p {
+        color: #cbd5e1;
+        font-size: 1rem;
+        line-height: 1.5;
+        margin-bottom: 12px;
+      }
+
+      .section p:last-child {
+        margin-bottom: 0;
+      }
+
+      .bullet-list {
+        color: #cbd5e1;
+        font-size: 1rem;
+        line-height: 1.8;
+        margin-left: 20px;
+        margin-bottom: 12px;
+      }
+
+      .pro-tip {
+        color: #c084fc;
+        font-style: italic;
+        margin-top: 10px;
+      }
+
+      .rule-item {
+        margin-bottom: 10px;
+      }
+
+      .rule-item strong {
+        color: #22d3ee;
+      }
+
+      .closing-section {
+        background: rgba(31, 41, 55, 0.4);
+        border-radius: 15px;
+        padding: 40px;
+        margin-top: 40px;
+        margin-bottom: 40px;
+        border: 2px solid rgba(139, 92, 246, 0.3);
+        text-align: center;
+      }
+
+      .closing-section h2 {
+        color: aqua;
+        font-size: 2rem;
+        margin-bottom: 15px;
+      }
+
+      .closing-section p {
+        color: #cbd5e1;
+        font-size: 1.2rem;
+        line-height: 1.6;
+        margin-bottom: 25px;
+      }
+
+      footer {
+        text-align: center;
+        padding: 40px 20px;
+        border-top: 2px solid rgba(139, 92, 246, 0.3);
+        margin-top: 60px;
+      }
+
+      footer a {
+        color: #22d3ee;
+        text-decoration: none;
+        font-weight: 500;
+        transition: color 0.3s ease;
+      }
+
+      footer a:hover {
+        color: aqua;
+      }
+
+      footer p {
+        color: #94a3b8;
+        margin: 10px 0;
+      }
+
+      @media (max-width: 768px) {
+        h1 {
+          font-size: 2rem;
+        }
+
+        .subtitle {
+          font-size: 1.2rem;
+        }
+
+        .intro-section h2,
+        .closing-section h2 {
+          font-size: 1.5rem;
+        }
+
+        .section h2 {
+          font-size: 1.3rem;
+        }
+
+        .intro-section p,
+        .closing-section p {
+          font-size: 1rem;
+        }
+
+        .section,
+        .intro-section,
+        .closing-section {
+          padding: 20px;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <div class="container">
+      <header>
+        <img src="/assets/images/logo.png" alt="Rivalry Club Logo" class="logo" />
+        <p class="subtitle">How to Play</p>
+        <h1>RIVALRY CLUB</h1>
+      </header>
+
+      <div class="intro-section">
+        <h2>Welcome to Rivalry Club!</h2>
+        <p>
+          Challenge your rival with customized, auto-balancing tier lists! Learn this exciting new
+          way to play your favorite fighting game.
+        </p>
+      </div>
+
+      <div class="section">
+        <h2>1. Create an Account</h2>
+        <p>
+          First, you and your rival must create accounts. Tap "Sign Up" on the authentication screen
+          to get started.
+        </p>
+      </div>
+
+      <div class="section">
+        <h2>2. Start a Rivalry</h2>
+        <p>After creating your accounts:</p>
+        <div class="bullet-list">
+          • Tap "Create New Rivalry"<br />
+          • Search for and select your opponent<br />
+          • Choose your game (currently Super Smash Ultimate)<br />
+          • Your tier lists start empty, but you can edit immediately
+        </div>
+        <p class="pro-tip">
+          Pro Tip: Type "npc" in the search to instantly find test opponents and try out Rivalry
+          Club solo!
+        </p>
+      </div>
+
+      <div class="section">
+        <h2>3. Edit Your Tier List</h2>
+        <p>
+          Most tiers (S, A, B, C, D, E) contain 12 characters, while F Tier contains 14 characters.
+          Rank characters from your best in S Tier down to your worst in F Tier.
+        </p>
+        <p>To edit your tier list:</p>
+        <div class="bullet-list">
+          • Tap "View Tier Lists" on your rivalry page<br />
+          • Tap "Edit Tier List"<br />
+          • Tap a character icon, then tap the spot where you want it to go<br />
+          • Tap "Save List" when finished
+        </div>
+      </div>
+
+      <div class="section">
+        <h2>4. Play Contests</h2>
+        <p>Boot up Super Smash Ultimate with these settings:</p>
+        <div class="bullet-list">
+          • 3 Stock matches<br />
+          • Damage Handicap ON<br />
+          • Any other rules you prefer
+        </div>
+        <p>In the app:</p>
+        <div class="bullet-list">
+          • Tap "Create new contest"<br />
+          • You'll each be assigned an unplaced character or a random character from your current
+          tier<br />
+          • Apply the handicap shown (if any)<br />
+          • Play the match!<br />
+          • Return to the app and select the winner and stock difference
+        </div>
+      </div>
+
+      <div class="section">
+        <h2>5. How Tiers Change</h2>
+        <p>After each contest, players move between tiers based on the stock difference:</p>
+        <div class="rule-item">
+          <strong>1 Stock Victory:</strong> Either the winner moves down one tier OR the loser moves
+          up one tier (randomly chosen)
+        </div>
+        <div class="rule-item">
+          <strong>2 Stock Victory:</strong> Winner moves down one tier AND loser moves up one tier
+        </div>
+        <div class="rule-item">
+          <strong>3 Stock Victory:</strong> Both players move one tier, plus an additional tier move
+          for either winner or loser (randomly chosen)
+        </div>
+      </div>
+
+      <div class="section">
+        <h2>6. Character Movement Within Tiers</h2>
+        <p>
+          As contests are resolved, characters automatically move up or down within your tier list
+          based on their performance. Winning characters rise in rank, while losing characters fall.
+        </p>
+      </div>
+
+      <div class="section">
+        <h2>7. Prestige = Bragging Rights</h2>
+        <p>
+          If a player moves below F Tier, he gains a Prestige level (shown as +1, +2, etc.). Each
+          prestige level adds a 20% damage handicap against him.
+        </p>
+        <p>
+          For example: If a player has +2 prestige over his rival, it means he'll have an
+          approximately equal chance of winning or losing when playing with a 40% damage handicap.
+          These are the bragging rights inherent in prestige!
+        </p>
+        <p>
+          If his rival thinks he is better, he will have to prove it by winning more to force the
+          prestige down and remove the handicap. The handicap applies until the player is forced
+          back up to his regular tier list.
+        </p>
+      </div>
+
+      <div class="section">
+        <h2>8. Tips & Features</h2>
+        <div class="rule-item">
+          <strong>Shuffle Characters:</strong> If you get a character you've banned or don't want to
+          play, tap "Shuffle" to get a new random character from your current tier, or unknown tier,
+          without counting as a contest.
+        </div>
+        <div class="rule-item">
+          <strong>Contest History:</strong> View all past contests and see how your rivalry has
+          evolved. You can also undo the most recent contest if needed.
+        </div>
+      </div>
+
+      <div class="closing-section">
+        <h2>Ready to Play?</h2>
+        <p>
+          Now that you know the rules, create your first rivalry and experience Super Smash Ultimate
+          in a whole new way!
+        </p>
+        <a href="/index.html" class="home-button">← Home</a>
+      </div>
+
+      <footer>
+        <p>
+          <a href="/PRIVACY_POLICY.html">Privacy Policy</a>
+        </p>
+        <p>Contact: <a href="mailto:jeremy@jeremymoritz.com">jeremy@jeremymoritz.com</a></p>
+        <p>&copy; 2025 Rivalry Club. All rights reserved.</p>
+      </footer>
+    </div>
+  </body>
+</html>

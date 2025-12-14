@@ -1,7 +1,8 @@
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { render, waitFor } from '@testing-library/react-native';
 import { useLocalSearchParams } from 'expo-router';
-import React from 'react';
+import type { ReactNode } from 'react';
+import type { Rivalry } from '../../../../src/API';
 import { getMRivalry } from '../../../../src/models/m-rivalry';
 import { RivalryProvider } from '../../../../src/providers/rivalry';
 import TiersRoute from '../tiers';
@@ -17,7 +18,7 @@ jest.mock('expo-router', () => ({
     canGoBack: jest.fn(() => true),
   })),
   Stack: {
-    Screen: ({ children }: any) => children,
+    Screen: ({ children }: { children: ReactNode }) => children,
   },
 }));
 
@@ -61,7 +62,7 @@ const mockRivalry = getMRivalry({
     userAId: 'user-1',
     userBId: 'user-2',
     gameId: 'game-1',
-  } as any,
+  } as Rivalry,
 });
 
 describe('TiersRoute', () => {

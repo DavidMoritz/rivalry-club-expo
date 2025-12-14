@@ -1,3 +1,4 @@
+import { jest } from '@jest/globals';
 import type { Schema } from '../../amplify/data/resource';
 import { getMContest } from '../../src/models/m-contest';
 import { getMRivalry } from '../../src/models/m-rivalry';

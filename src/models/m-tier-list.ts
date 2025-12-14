@@ -1,6 +1,7 @@
 import { sample, sortBy } from 'lodash';
 import type { Schema } from '../../amplify/data/resource';
 import { colors } from '../utils/colors';
+import type { MContest } from './m-contest';
 import { STEPS_PER_STOCK } from './m-game';
 import type { MRivalry } from './m-rivalry';
 import {
@@ -21,41 +22,83 @@ type TierSlotPositionsPojo = Record<
 export interface MTierList extends Omit<TierList, 'rivalry'> {
   _mTierSlots: MTierSlot[];
   _mRivalry?: MRivalry;
+  adjustFullyPositionedTierList: (
+    currentPosition: number,
+    steps: number,
+    trackStats: boolean
+  ) => void;
+  adjustSparsePositionedTierList: (
+    currentPosition: number,
+    steps: number,
+    trackStats: boolean
+  ) => void;
   adjustTierSlotPositionBySteps: (
     tierSlotPosition: number,
     steps?: number,
     trackStats?: boolean
   ) => void;
   baseTierList: TierList;
-  getCurrentTier(): number;
   eligibleTierSlots(): MTierSlot[];
-  getPositionsPojo(): TierSlotPositionsPojo;
+  findFirstEmptyPositionUp(targetPosition: number, excludeId: string): number;
+  getAvoidSlotIds(
+    benchedRounds: number,
+    isA: boolean,
+    currentContestSlotId: string | undefined
+  ): string[];
   getChangedTierSlots(): Array<{
     id: string;
     position: number;
     contestCount: number;
     winCount: number;
   }>;
+  getPositionAdjustment(
+    slotPosition: number,
+    oldPosition: number,
+    newPosition: number,
+    isMovingUp: boolean
+  ): number;
+  getCurrentTier(): number;
+  getPositionsPojo(): TierSlotPositionsPojo;
   getPrestige(): number;
+  getResolvedContestsForSampling(): MContest[];
   moveDownATier(): boolean;
   moveUpATier(): boolean;
   positionFighterAtBottom(tierSlot: MTierSlot): void;
   positionUnknownFighter(tierSlot: MTierSlot, newPosition: number): void;
   prestigeDisplay: string;
+  resortSlotsByPosition(): void;
   rivalry?: MRivalry;
   sampleEligibleSlot(): MTierSlot;
+  sampleFromEligibleSlots(eligibleSlots: MTierSlot[]): MTierSlot;
+  sampleUnknownFighterIfNeeded(
+    eligibleSlots: MTierSlot[]
+  ): MTierSlot | undefined;
+  shiftFightersBetweenPositions(
+    excludeId: string,
+    oldPosition: number,
+    newPosition: number,
+    steps: number
+  ): void;
+  shiftFightersUp(
+    firstEmpty: number,
+    targetPosition: number,
+    excludeId: string
+  ): void;
   slots: MTierSlot[];
   slotsPerTier: number;
   title: string;
+  updateSlotStats(slot: MTierSlot, steps: number, trackStats: boolean): void;
+  validatePosition(slotId: string, position: number | null | undefined): void;
 }
 
 // TODO: Make this dynamic based on the game's fighter count
 // For now, hard-coded to 86 (SSBU)
 export const FIGHTER_COUNT = 86;
+export const TIER_COUNT = 7;
 
 // Calculate fighters per tier: evenly distributed, with F tier getting the remainder
-const baseFightersPerTier = Math.floor(FIGHTER_COUNT / 7);
-const remainderFighters = FIGHTER_COUNT % 7;
+const baseFightersPerTier = Math.floor(FIGHTER_COUNT / TIER_COUNT);
+const remainderFighters = FIGHTER_COUNT % TIER_COUNT;
 
 export const TIERS = [
   {
@@ -106,10 +149,15 @@ export type Tier = (typeof TIERS)[number];
 
 export type TierWithSlots = Tier & { slots: MTierSlot[] };
 
+// Type for the tierSlots structure from the API (has items array)
+interface TierSlotsContainer {
+  items?: TierSlot[];
+}
+
 export function getMTierList(tierList: TierList): MTierList {
   // constructors
-  const tierSlots = tierList.tierSlots as any;
-  const _mTierSlots = ((tierSlots?.items || []) as TierSlot[]).map(
+  const tierSlotsContainer = tierList.tierSlots as TierSlotsContainer | null;
+  const _mTierSlots = ((tierSlotsContainer?.items || []) as TierSlot[]).map(
     (ts: TierSlot) => getMTierSlot(ts)
   );
 
@@ -123,15 +171,7 @@ export function getMTierList(tierList: TierList): MTierList {
     // public
     baseTierList: tierList,
 
-    // setters
-    set rivalry(rivalry: MRivalry | undefined) {
-      this._mRivalry = rivalry;
-    },
-    set slots(tierSlots: MTierSlot[]) {
-      this._mTierSlots = tierSlots;
-    },
-
-    // getters
+    // getters and setters (grouped together)
     getCurrentTier() {
       return (this.standing ?? this.baseTierList.standing ?? 0) % TIERS.length;
     },
@@ -141,16 +181,26 @@ export function getMTierList(tierList: TierList): MTierList {
     },
     get prestigeDisplay() {
       const prestige = this.getPrestige();
-      const prestigeValue =
-        prestige > 1 ? `+${prestige}` : prestige === 1 ? '+' : '';
+      let prestigeValue = '';
+      if (prestige > 1) {
+        prestigeValue = `+${prestige}`;
+      } else if (prestige === 1) {
+        prestigeValue = '+';
+      }
 
       return `(${this.title}${prestigeValue})`;
     },
     get rivalry() {
       return this._mRivalry;
     },
+    set rivalry(rivalry: MRivalry | undefined) {
+      this._mRivalry = rivalry;
+    },
     get slots() {
       return this._mTierSlots;
+    },
+    set slots(newTierSlots: MTierSlot[]) {
+      this._mTierSlots = newTierSlots;
     },
     get slotsPerTier() {
       const tierNum = this.getCurrentTier();
@@ -165,6 +215,141 @@ export function getMTierList(tierList: TierList): MTierList {
 
     // methods
     /**
+     * Helper: Update contest/win counts on a tier slot
+     */
+    updateSlotStats(slot: MTierSlot, steps: number, trackStats: boolean) {
+      if (!trackStats) return;
+      slot.contestCount = (slot.contestCount || 0) + 1;
+      if (steps < 0) {
+        // fighter won, increment winCount
+        slot.winCount = (slot.winCount || 0) + 1;
+      }
+    },
+
+    /**
+     * Helper: Validate that a position is within valid bounds
+     */
+    validatePosition(slotId: string, position: number | null | undefined) {
+      if (position != null && position < 0) {
+        console.error(
+          `INVALID POSITION: TierSlot ${slotId} has negative position: ${position}`
+        );
+      } else if (position != null && position >= FIGHTER_COUNT) {
+        console.error(
+          `INVALID POSITION: TierSlot ${slotId} has position ${position} >= FIGHTER_COUNT (${FIGHTER_COUNT})`
+        );
+      }
+    },
+
+    /**
+     * Helper: Adjust position when all fighters are positioned (efficient reindexing)
+     */
+    adjustFullyPositionedTierList(
+      currentPosition: number,
+      steps: number,
+      trackStats: boolean
+    ) {
+      const sortedTierSlots = sortBy(this.slots, 'position');
+      const tierSlotIndex = sortedTierSlots.findIndex(
+        slot => slot.position === currentPosition
+      );
+
+      if (tierSlotIndex === -1) {
+        console.warn(
+          `[adjustTierSlotPositionBySteps] No slot found at position ${currentPosition}`
+        );
+        return;
+      }
+
+      const tierSlotToMove = sortedTierSlots.splice(tierSlotIndex, 1)[0];
+      this.updateSlotStats(tierSlotToMove, steps, trackStats);
+      sortedTierSlots.splice(tierSlotIndex + steps, 0, tierSlotToMove);
+      this.slots = sortedTierSlots.map(normalizeTierSlotPositionToIndex);
+      this.validatePosition(tierSlotToMove.id, tierSlotToMove.position);
+    },
+
+    /**
+     * Helper: Adjust position with sparse positions (collision-aware shifting)
+     */
+    adjustSparsePositionedTierList(
+      currentPosition: number,
+      steps: number,
+      trackStats: boolean
+    ) {
+      const tierSlotToMove = this.slots.find(
+        slot => slot.position === currentPosition
+      );
+
+      if (!tierSlotToMove) {
+        console.warn(
+          `No tier slot found at position ${currentPosition} in adjustTierSlotPositionBySteps`
+        );
+        return;
+      }
+
+      const oldPosition = currentPosition;
+      const newPosition = Math.max(
+        0,
+        Math.min(currentPosition + steps, FIGHTER_COUNT - 1)
+      );
+
+      this.updateSlotStats(tierSlotToMove, steps, trackStats);
+      this.shiftFightersBetweenPositions(
+        tierSlotToMove.id,
+        oldPosition,
+        newPosition,
+        steps
+      );
+      tierSlotToMove.position = newPosition;
+
+      this.validatePosition(tierSlotToMove.id, newPosition);
+      this.resortSlotsByPosition();
+    },
+
+    /**
+     * Helper: Check if slot is in the shift range and return position adjustment
+     * Returns 1 for shift down, -1 for shift up, 0 for no change
+     */
+    getPositionAdjustment(
+      slotPosition: number,
+      oldPosition: number,
+      newPosition: number,
+      isMovingUp: boolean
+    ): number {
+      if (isMovingUp) {
+        // Moving UP: shift fighters in [newPosition, oldPosition) down by 1
+        const inRange =
+          slotPosition >= newPosition && slotPosition < oldPosition;
+        return inRange ? 1 : 0;
+      }
+      // Moving DOWN: shift fighters in (oldPosition, newPosition] up by 1
+      const inRange = slotPosition > oldPosition && slotPosition <= newPosition;
+      return inRange ? -1 : 0;
+    },
+
+    /**
+     * Helper: Shift fighters between old and new positions
+     */
+    shiftFightersBetweenPositions(
+      excludeId: string,
+      oldPosition: number,
+      newPosition: number,
+      steps: number
+    ) {
+      const isMovingUp = steps < 0;
+      for (const slot of this.slots) {
+        if (slot.id === excludeId || slot.position == null) continue;
+        const adjustment = this.getPositionAdjustment(
+          slot.position,
+          oldPosition,
+          newPosition,
+          isMovingUp
+        );
+        slot.position += adjustment;
+      }
+    },
+
+    /**
      * Adjusts a fighter's position based on contest results.
      *
      * @param currentPosition - The current POSITION value of the fighter (0-85)
@@ -173,7 +358,7 @@ export function getMTierList(tierList: TierList): MTierList {
      *
      * IMPORTANT: Positions are sparse (e.g., 0, 1, 12, 48, 72, 85). When moving a fighter:
      * - Calculate new position: currentPosition + steps
-     * - Only shift fighters between old and new position by ±1
+     * - Only shift fighters between old and new position by +/-1
      * - Preserve all other position values (don't reindex!)
      */
     adjustTierSlotPositionBySteps(
@@ -181,130 +366,12 @@ export function getMTierList(tierList: TierList): MTierList {
       steps = STEPS_PER_STOCK * -1,
       trackStats = true
     ) {
-      // Check if ALL slots have positions (fully positioned tier list)
       const allPositioned = this.slots.every(slot => slot.position != null);
 
       if (allPositioned) {
-        // OPTIMIZATION: If all fighters are positioned, use efficient reindexing
-        const sortedTierSlots = sortBy(this.slots, 'position');
-
-        // Find the fighter by their current position
-        const tierSlotIndex = sortedTierSlots.findIndex(
-          slot => slot.position === currentPosition
-        );
-        if (tierSlotIndex === -1) {
-          console.warn(
-            `[adjustTierSlotPositionBySteps] No slot found at position ${currentPosition}`
-          );
-          return;
-        }
-
-        // Remove the element from its current index
-        const tierSlotToMove = sortedTierSlots.splice(tierSlotIndex, 1)[0];
-
-        // Update counts (only if tracking stats)
-        if (trackStats) {
-          tierSlotToMove.contestCount = (tierSlotToMove.contestCount || 0) + 1;
-
-          if (steps < 0) {
-            // fighter won, increment winCount
-            tierSlotToMove.winCount = (tierSlotToMove.winCount || 0) + 1;
-          }
-        }
-
-        // Insert the element at the new index (can be outside the array bounds)
-        sortedTierSlots.splice(tierSlotIndex + steps, 0, tierSlotToMove);
-
-        // Safe to normalize all positions when all fighters are positioned
-        this.slots = sortedTierSlots.map(normalizeTierSlotPositionToIndex);
-
-        const finalPosition = tierSlotToMove.position;
-
-        // Validate position
-        if (finalPosition != null && finalPosition < 0) {
-          console.error(
-            `❌ INVALID POSITION: TierSlot ${tierSlotToMove.id} has negative position: ${finalPosition}`
-          );
-        } else if (finalPosition != null && finalPosition >= FIGHTER_COUNT) {
-          console.error(
-            `❌ INVALID POSITION: TierSlot ${tierSlotToMove.id} has position ${finalPosition} >= FIGHTER_COUNT (${FIGHTER_COUNT})`
-          );
-        }
+        this.adjustFullyPositionedTierList(currentPosition, steps, trackStats);
       } else {
-        // SPARSE POSITIONS: Use collision-aware shifting logic
-        // Find the fighter to move by their current POSITION
-        const tierSlotToMove = this.slots.find(
-          slot => slot.position === currentPosition
-        );
-        if (!tierSlotToMove) {
-          console.warn(
-            `⚠️  No tier slot found at position ${currentPosition} in adjustTierSlotPositionBySteps`
-          );
-          return;
-        }
-
-        const oldPosition = currentPosition;
-        const newPosition = Math.max(
-          0,
-          Math.min(currentPosition + steps, FIGHTER_COUNT - 1)
-        );
-
-        // Update counts (only if tracking stats)
-        if (trackStats) {
-          tierSlotToMove.contestCount = (tierSlotToMove.contestCount || 0) + 1;
-
-          if (steps < 0) {
-            // fighter won, increment winCount
-            tierSlotToMove.winCount = (tierSlotToMove.winCount || 0) + 1;
-          }
-        }
-
-        // Only shift fighters between old and new positions
-        if (steps < 0) {
-          // Moving UP (to lower position): shift fighters in range [newPosition, oldPosition) down by 1
-          this.slots.forEach(slot => {
-            if (
-              slot.id !== tierSlotToMove.id &&
-              slot.position != null &&
-              slot.position >= newPosition &&
-              slot.position < oldPosition
-            ) {
-              slot.position += 1;
-            }
-          });
-        } else {
-          // Moving DOWN (to higher position): shift fighters in range (oldPosition, newPosition] up by 1
-          this.slots.forEach(slot => {
-            if (
-              slot.id !== tierSlotToMove.id &&
-              slot.position != null &&
-              slot.position > oldPosition &&
-              slot.position <= newPosition
-            ) {
-              slot.position -= 1;
-            }
-          });
-        }
-
-        // Update the moved fighter's position
-        tierSlotToMove.position = newPosition;
-
-        // Validate position
-        if (newPosition < 0) {
-          console.error(
-            `❌ INVALID POSITION: TierSlot ${tierSlotToMove.id} has negative position: ${newPosition}`
-          );
-        } else if (newPosition >= FIGHTER_COUNT) {
-          console.error(
-            `❌ INVALID POSITION: TierSlot ${tierSlotToMove.id} has position ${newPosition} >= FIGHTER_COUNT (${FIGHTER_COUNT})`
-          );
-        }
-
-        // Re-sort slots by position (nulls at end)
-        this.slots = sortBy(this.slots, [
-          slot =>
-            slot.position === null ? Number.POSITIVE_INFINITY : slot.position,
-        ]);
+        this.adjustSparsePositionedTierList(currentPosition, steps, trackStats);
       }
     },
     eligibleTierSlots() {
@@ -320,7 +387,7 @@ export function getMTierList(tierList: TierList): MTierList {
       const maxSlotPosition: number = minSlotPosition + this.slotsPerTier;
 
       return this.slots.filter((slot: MTierSlot) => {
-        if (slot.position == null) return; // Filters out null and undefined, keeps 0
+        if (slot.position == null) return false; // Filters out null and undefined, keeps 0
 
         return (
           slot.position >= minSlotPosition && slot.position < maxSlotPosition
@@ -333,18 +400,16 @@ export function getMTierList(tierList: TierList): MTierList {
       );
     },
     getPositionsPojo() {
-      return this.slots.reduce(
-        (pojo, slot, idx) => ({
-          ...pojo,
-          [`tierSlot${idx}`]: {
-            contestCount: slot.contestCount || 0,
-            id: slot.id,
-            position: slot.position,
-            winCount: slot.winCount || 0,
-          },
-        }),
-        {}
-      );
+      const pojo: TierSlotPositionsPojo = {};
+      for (const [idx, slot] of this.slots.entries()) {
+        pojo[`tierSlot${idx}`] = {
+          contestCount: slot.contestCount || 0,
+          id: slot.id,
+          position: slot.position ?? 0,
+          winCount: slot.winCount || 0,
+        };
+      }
+      return pojo;
     },
     getChangedTierSlots() {
       // Returns only tier slots that have changed from their base values
@@ -355,9 +420,11 @@ export function getMTierList(tierList: TierList): MTierList {
         winCount: number;
       }> = [];
 
-      this.slots.forEach(slot => {
-        const tierSlots = this.baseTierList.tierSlots as any;
-        const baseTierSlot = tierSlots?.items?.find(
+      const baseTierSlotsContainer = this.baseTierList
+        .tierSlots as TierSlotsContainer | null;
+
+      for (const slot of this.slots) {
+        const baseTierSlot = baseTierSlotsContainer?.items?.find(
           (ts: TierSlot) => ts?.id === slot.id
         );
 
@@ -375,7 +442,7 @@ export function getMTierList(tierList: TierList): MTierList {
             winCount: slot.winCount || 0,
           });
         }
-      });
+      }
 
       return changed;
     },
@@ -404,94 +471,176 @@ export function getMTierList(tierList: TierList): MTierList {
       // Recent fighters are benched several rounds before rejoining rotation.
       const eligibleSlots = this.eligibleTierSlots();
 
-      // NEW: Check if current tier is full (12 positioned fighters)
-      const BASE_PER_TIER = Math.floor(FIGHTER_COUNT / 7); // 12
+      // Check for unknown fighters that need positioning
+      const unknownResult = this.sampleUnknownFighterIfNeeded(eligibleSlots);
+      if (unknownResult) return unknownResult;
+
+      // Continue with normal sampling logic if tier is full or no unknown fighters
+      return this.sampleFromEligibleSlots(eligibleSlots);
+    },
+
+    /**
+     * Helper: Sample unknown fighter if current tier is not full
+     */
+    sampleUnknownFighterIfNeeded(
+      eligibleSlots: MTierSlot[]
+    ): MTierSlot | undefined {
       const positionedInCurrentTier = eligibleSlots.filter(
         slot => slot.position !== null && slot.position !== undefined
       ).length;
 
-      // NEW: If tier not full, prioritize unknown fighters
-      if (positionedInCurrentTier < BASE_PER_TIER) {
-        const unknownFighters = this.slots.filter(
-          slot => slot.position === null || slot.position === undefined
-        );
+      // If tier is full, no need to prioritize unknown fighters
+      if (positionedInCurrentTier >= baseFightersPerTier) return;
 
-        if (unknownFighters.length > 0) {
-          // Avoid current contest fighter if possible
-          const isA = this.rivalry?.tierListA === this;
-          const currentContestSlotId = isA
-            ? this.rivalry.currentContest?.tierSlotAId
-            : this.rivalry.currentContest?.tierSlotBId;
+      const unknownFighters = this.slots.filter(
+        slot => slot.position === null || slot.position === undefined
+      );
 
-          const availableUnknown = currentContestSlotId
-            ? unknownFighters.filter(slot => slot.id !== currentContestSlotId)
-            : unknownFighters;
+      if (unknownFighters.length === 0) return;
 
-          return sample(
-            availableUnknown.length > 0 ? availableUnknown : unknownFighters
-          ) as MTierSlot;
-        }
-      }
-
-      // EXISTING: Continue with normal sampling logic if tier is full or no unknown fighters
-      let benchedRounds = 30;
-      const reduceBenchedRoundsPerAttempt = 5;
+      // Avoid current contest fighter if possible
       const isA = this.rivalry?.tierListA === this;
-      let selectSlots;
-
-      // Always avoid the current contest's fighter
       const currentContestSlotId = isA
-        ? this.rivalry.currentContest?.tierSlotAId
-        : this.rivalry.currentContest?.tierSlotBId;
+        ? this.rivalry?.currentContest?.tierSlotAId
+        : this.rivalry?.currentContest?.tierSlotBId;
 
-      // Recalculate avoidSlotIds based on current benchedRounds value
-      // Only look at resolved contests (those with a result AND not the current contest)
-      const currentContestId = this.rivalry.currentContest?.id;
-      const allResolvedContests = this.rivalry.mContests
-        .filter(
-          c =>
-            c.id !== currentContestId &&
-            c.result !== null &&
-            c.result !== undefined
-        )
-        .sort((a, b) => (b.createdAt || '').localeCompare(a.createdAt || '')); // newest first
+      const availableUnknown = currentContestSlotId
+        ? unknownFighters.filter(slot => slot.id !== currentContestSlotId)
+        : unknownFighters;
 
-      // Keep trying with fewer and fewer benched rounds
+      return sample(
+        availableUnknown.length > 0 ? availableUnknown : unknownFighters
+      ) as MTierSlot;
+    },
+
+    /**
+     * Helper: Get resolved contests for sampling (filtered and sorted newest first)
+     */
+    getResolvedContestsForSampling() {
+      const currentContestId = this.rivalry?.currentContest?.id;
+      return (
+        this.rivalry?.mContests
+          .filter(
+            c =>
+              c.id !== currentContestId &&
+              c.result !== null &&
+              c.result !== undefined
+          )
+          .sort((a, b) =>
+            (b.createdAt || '').localeCompare(a.createdAt || '')
+          ) || []
+      );
+    },
+
+    /**
+     * Helper: Get slot IDs to avoid based on benched rounds
+     */
+    getAvoidSlotIds(
+      benchedRounds: number,
+      isA: boolean,
+      currentContestSlotId: string | undefined
+    ): string[] {
+      const resolvedContests = this.getResolvedContestsForSampling();
+      const contestsToCheck = resolvedContests.slice(0, benchedRounds);
+      const avoidSlotIds: string[] = contestsToCheck.map(c =>
+        isA ? c.tierSlotAId : c.tierSlotBId
+      );
+
+      if (currentContestSlotId) {
+        avoidSlotIds.push(currentContestSlotId);
+      }
+      return avoidSlotIds;
+    },
+
+    /**
+     * Helper: Sample from eligible slots avoiding recently used fighters
+     */
+    sampleFromEligibleSlots(eligibleSlots: MTierSlot[]): MTierSlot {
+      const INITIAL_BENCHED_ROUNDS = 30;
+      const REDUCE_BENCHED_ROUNDS_PER_ATTEMPT = 5;
+
+      const isA = this.rivalry?.tierListA === this;
+      const currentContestSlotId = isA
+        ? this.rivalry?.currentContest?.tierSlotAId
+        : this.rivalry?.currentContest?.tierSlotBId;
+
+      // Try to find slots with progressively fewer benched rounds
+      let benchedRounds = INITIAL_BENCHED_ROUNDS;
       while (benchedRounds > 0) {
-        const resolvedContests = allResolvedContests;
-
-        const contestsToCheck = resolvedContests.slice(0, benchedRounds);
-        const avoidSlotIds: string[] = contestsToCheck.map(c =>
-          isA ? c.tierSlotAId : c.tierSlotBId
+        const avoidSlotIds = this.getAvoidSlotIds(
+          benchedRounds,
+          isA,
+          currentContestSlotId
+        );
+        const selectSlots = eligibleSlots.filter(
+          ts => !avoidSlotIds.includes(ts.id)
         );
 
-        // Add current contest fighter to avoid list
-        if (currentContestSlotId) {
-          avoidSlotIds.push(currentContestSlotId);
+        if (selectSlots.length > 0) {
+          return sample(selectSlots) as MTierSlot;
         }
-
-        selectSlots = eligibleSlots.filter(ts => !avoidSlotIds.includes(ts.id));
-
-        if (selectSlots.length > 0) break;
-
-        benchedRounds -= reduceBenchedRoundsPerAttempt;
+        benchedRounds -= REDUCE_BENCHED_ROUNDS_PER_ATTEMPT;
       }
 
-      // If still no slots available, just avoid the current contest fighter
-      if (!selectSlots || selectSlots.length === 0) {
-        if (currentContestSlotId) {
-          selectSlots = eligibleSlots.filter(
-            ts => ts.id !== currentContestSlotId
-          );
-        }
-        // If still none (shouldn't happen), use all eligible
-        if (!selectSlots || selectSlots.length === 0) {
-          selectSlots = eligibleSlots;
+      // Fallback: try avoiding just the current contest fighter
+      if (currentContestSlotId) {
+        const filtered = eligibleSlots.filter(
+          ts => ts.id !== currentContestSlotId
+        );
+        if (filtered.length > 0) {
+          return sample(filtered) as MTierSlot;
         }
       }
 
-      return sample(selectSlots) as MTierSlot;
+      // Last resort: use all eligible
+      return sample(eligibleSlots) as MTierSlot;
     },
+    /**
+     * Helper: Find first empty position searching UP from targetPosition toward 0
+     */
+    findFirstEmptyPositionUp(
+      targetPosition: number,
+      excludeId: string
+    ): number {
+      let firstEmpty = targetPosition - 1;
+      while (firstEmpty >= 0) {
+        const isOccupied = this.slots.some(
+          slot => slot.id !== excludeId && slot.position === firstEmpty
+        );
+        if (!isOccupied) break;
+        firstEmpty--;
+      }
+      return firstEmpty;
+    },
+
+    /**
+     * Helper: Shift fighters UP (position - 1) from firstEmpty+1 to targetPosition
+     */
+    shiftFightersUp(
+      firstEmpty: number,
+      targetPosition: number,
+      excludeId: string
+    ) {
+      for (let pos = firstEmpty + 1; pos <= targetPosition; pos++) {
+        const slotAtPos = this.slots.find(
+          slot => slot.id !== excludeId && slot.position === pos
+        );
+        if (slotAtPos) {
+          slotAtPos.position = pos - 1;
+        }
+      }
+    },
+
+    /**
+     * Helper: Re-sort slots by position (nulls at end)
+     */
+    resortSlotsByPosition() {
+      this.slots = sortBy(this.slots, [
+        slot =>
+          slot.position === null ? Number.POSITIVE_INFINITY : slot.position,
+      ]);
+    },
+
     positionUnknownFighter(tierSlot: MTierSlot, newPosition: number) {
       // Clamp position to valid range (0-85, 0-based)
       const clampedPosition = Math.max(
@@ -515,48 +664,21 @@ export function getMTierList(tierList: TierList): MTierList {
       );
 
       if (occupiedSlot) {
-        // Find first empty position searching UP from target (clampedPosition → 0)
-        let firstEmpty = clampedPosition - 1;
-        while (firstEmpty >= 0) {
-          const isOccupied = this.slots.some(
-            slot => slot.id !== tierSlot.id && slot.position === firstEmpty
-          );
-          if (!isOccupied) break;
-          firstEmpty--;
-        }
-
-        // Track affected fighters
-        const affectedFighters: string[] = [];
-
-        // Shift ONLY consecutive occupied positions UP (from firstEmpty+1 to clampedPosition)
-        // Moving each fighter one position UP (position - 1)
-        for (let pos = firstEmpty + 1; pos <= clampedPosition; pos++) {
-          const slotAtPos = this.slots.find(
-            slot => slot.id !== tierSlot.id && slot.position === pos
-          );
-          if (slotAtPos) {
-            affectedFighters.push(
-              `${slotAtPos.fighterId} (${pos} → ${pos - 1})`
-            );
-            slotAtPos.position = pos - 1;
-          }
-        }
-
-        // Place the new fighter at target position
-        tierSlot.position = clampedPosition;
-      } else {
-        // Position is free - just place the fighter there
-        tierSlot.position = clampedPosition;
+        const firstEmpty = this.findFirstEmptyPositionUp(
+          clampedPosition,
+          tierSlot.id
+        );
+        this.shiftFightersUp(firstEmpty, clampedPosition, tierSlot.id);
       }
 
+      // Place the fighter at target position
+      tierSlot.position = clampedPosition;
+
       // Re-sort slots by position (nulls at end)
-      this.slots = sortBy(this.slots, [
-        slot =>
-          slot.position === null ? Number.POSITIVE_INFINITY : slot.position,
-      ]);
+      this.resortSlotsByPosition();
     },
     positionFighterAtBottom(tierSlot: MTierSlot) {
-      // Position fighter at 85 (bottom) and shift existing fighters UP (85 → 84, 84 → 83, etc.)
+      // Position fighter at 85 (bottom) and shift existing fighters UP
       const bottomPosition = FIGHTER_COUNT - 1; // 85 (0-based)
 
       // Find the tier slot in our list
@@ -575,47 +697,18 @@ export function getMTierList(tierList: TierList): MTierList {
       );
 
       if (occupiedSlot) {
-        // Position is occupied - need to shift fighters UP (towards position 0)
-
-        // Find first empty position searching UP from bottom (85 → 0)
-        let firstEmpty = bottomPosition - 1;
-        while (firstEmpty >= 0) {
-          const isOccupied = this.slots.some(
-            slot => slot.id !== tierSlot.id && slot.position === firstEmpty
-          );
-          if (!isOccupied) break;
-          firstEmpty--;
-        }
-
-        // Track affected fighters
-        const affectedFighters: string[] = [];
-
-        // Shift ONLY consecutive occupied positions UP (from firstEmpty+1 to bottomPosition)
-        // Moving each fighter one position UP (position - 1)
-        for (let pos = firstEmpty + 1; pos <= bottomPosition; pos++) {
-          const slotAtPos = this.slots.find(
-            slot => slot.id !== tierSlot.id && slot.position === pos
-          );
-          if (slotAtPos) {
-            affectedFighters.push(
-              `${slotAtPos.fighterId} (${pos} → ${pos - 1})`
-            );
-            slotAtPos.position = pos - 1;
-          }
-        }
-
-        // Place the new fighter at bottom position
-        tierSlot.position = bottomPosition;
-      } else {
-        // Position is free - just place the fighter there
-        tierSlot.position = bottomPosition;
+        const firstEmpty = this.findFirstEmptyPositionUp(
+          bottomPosition,
+          tierSlot.id
+        );
+        this.shiftFightersUp(firstEmpty, bottomPosition, tierSlot.id);
       }
 
+      // Place the fighter at bottom position
+      tierSlot.position = bottomPosition;
+
       // Re-sort slots by position (nulls at end)
-      this.slots = sortBy(this.slots, [
-        slot =>
-          slot.position === null ? Number.POSITIVE_INFINITY : slot.position,
-      ]);
+      this.resortSlotsByPosition();
     },
   };
 }

@@ -1,5 +1,5 @@
 import { useRouter } from 'expo-router';
-import React, { useState } from 'react';
+import { useState } from 'react';
 import {
   ActivityIndicator,
   FlatList,
@@ -11,7 +11,7 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 
 import { useAcceptRivalryMutation } from '../../controllers/c-rivalry';
 import { useAuthUser } from '../../hooks/useAuthUser';
-import { MRivalry } from '../../models/m-rivalry';
+import type { MRivalry } from '../../models/m-rivalry';
 import {
   useAllRivalries,
   useAllRivalriesUpdate,
@@ -87,7 +87,7 @@ export function PendingRivalries() {
     item,
     isAwaitingAcceptance,
   }: {
-    item: any;
+    item: MRivalry;
     isAwaitingAcceptance: boolean;
   }) => {
     const isUserA = item.userAId === user?.id;

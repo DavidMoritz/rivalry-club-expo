@@ -1,6 +1,7 @@
 import { fireEvent, render } from '@testing-library/react-native';
 import React from 'react';
 import { Button, Text } from 'react-native';
+import type { Schema } from '../../amplify/data/resource';
 import { getMRivalry } from '../../src/models/m-rivalry';
 import {
   RivalryProvider,
@@ -9,18 +10,21 @@ import {
   useUpdateRivalry,
 } from '../../src/providers/rivalry';
 
+type Rivalry = Schema['Rivalry']['type'];
+
 describe('RivalryProvider', () => {
-  const mockRivalry = getMRivalry({
-    rivalry: {
-      id: 'rivalry-123',
-      userAId: 'user-a',
-      userBId: 'user-b',
-      gameId: 'game-123',
-      contestCount: 10,
-      createdAt: '2024-01-01',
-      updatedAt: '2024-01-01',
-    } as any,
-  });
+  const mockRivalryData: Rivalry = {
+    __typename: 'Rivalry',
+    id: 'rivalry-123',
+    userAId: 'user-a',
+    userBId: 'user-b',
+    gameId: 'game-123',
+    contestCount: 10,
+    currentContestId: null,
+    createdAt: '2024-01-01',
+    updatedAt: '2024-01-01',
+  };
+  const mockRivalry = getMRivalry({ rivalry: mockRivalryData });
 
   it('should provide rivalry context to children', () => {
     const TestComponent = () => {
@@ -57,17 +61,18 @@ describe('RivalryProvider', () => {
   });
 
   it('should allow updating rivalry', () => {
-    const newRivalry = getMRivalry({
-      rivalry: {
-        id: 'rivalry-456',
-        userAId: 'user-c',
-        userBId: 'user-d',
-        gameId: 'game-456',
-        contestCount: 5,
-        createdAt: '2024-01-02',
-        updatedAt: '2024-01-02',
-      } as any,
-    });
+    const newRivalryData: Rivalry = {
+      __typename: 'Rivalry',
+      id: 'rivalry-456',
+      userAId: 'user-c',
+      userBId: 'user-d',
+      gameId: 'game-456',
+      contestCount: 5,
+      currentContestId: null,
+      createdAt: '2024-01-02',
+      updatedAt: '2024-01-02',
+    };
+    const newRivalry = getMRivalry({ rivalry: newRivalryData });
 
     const TestComponent = () => {
       const rivalry = useRivalry();
@@ -292,17 +297,18 @@ describe('RivalryProvider', () => {
     });
 
     it('should update isUserA/isUserB when rivalry changes', () => {
-      const newRivalry = getMRivalry({
-        rivalry: {
-          id: 'rivalry-456',
-          userAId: 'user-c',
-          userBId: 'user-d',
-          gameId: 'game-456',
-          contestCount: 5,
-          createdAt: '2024-01-02',
-          updatedAt: '2024-01-02',
-        } as any,
-      });
+      const newRivalryData: Rivalry = {
+        __typename: 'Rivalry',
+        id: 'rivalry-456',
+        userAId: 'user-c',
+        userBId: 'user-d',
+        gameId: 'game-456',
+        contestCount: 5,
+        currentContestId: null,
+        createdAt: '2024-01-02',
+        updatedAt: '2024-01-02',
+      };
+      const newRivalry = getMRivalry({ rivalry: newRivalryData });
 
       const TestComponent = () => {
         const { isUserA, isUserB } = useRivalryContext();
@@ -340,15 +346,18 @@ describe('RivalryProvider', () => {
 
     it('should update isUserA/isUserB when same rivalry object is mutated and re-set', () => {
       // Create a rivalry without userIds (simulating initial load with just ID)
-      const initialRivalry = getMRivalry({
-        rivalry: {
-          id: 'rivalry-123',
-          gameId: 'game-123',
-          contestCount: 0,
-          createdAt: '2024-01-01',
-          updatedAt: '2024-01-01',
-        } as any,
-      });
+      const initialRivalryData: Rivalry = {
+        __typename: 'Rivalry',
+        id: 'rivalry-123',
+        userAId: undefined,
+        userBId: undefined,
+        gameId: 'game-123',
+        contestCount: 0,
+        currentContestId: null,
+        createdAt: '2024-01-01',
+        updatedAt: '2024-01-01',
+      };
+      const initialRivalry = getMRivalry({ rivalry: initialRivalryData });
 
       const TestComponent = () => {
         const rivalry = useRivalry();
@@ -399,17 +408,18 @@ describe('RivalryProvider', () => {
     });
 
     it('should handle multiple updates to the same rivalry object', () => {
-      const rivalry = getMRivalry({
-        rivalry: {
-          id: 'rivalry-123',
-          userAId: 'user-a',
-          userBId: 'user-b',
-          gameId: 'game-123',
-          contestCount: 0,
-          createdAt: '2024-01-01',
-          updatedAt: '2024-01-01',
-        } as any,
-      });
+      const rivalryData: Rivalry = {
+        __typename: 'Rivalry',
+        id: 'rivalry-123',
+        userAId: 'user-a',
+        userBId: 'user-b',
+        gameId: 'game-123',
+        contestCount: 0,
+        currentContestId: null,
+        createdAt: '2024-01-01',
+        updatedAt: '2024-01-01',
+      };
+      const rivalry = getMRivalry({ rivalry: rivalryData });
 
       const TestComponent = () => {
         const { isUserA, isUserB } = useRivalryContext();

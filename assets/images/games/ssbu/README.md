@@ -5,8 +5,8 @@ This directory contains a system for displaying zoomed-in, face-focused views of
 ## Files
 
 - **`character_image_map.js`** - Auto-generated map containing face center coordinates and scale factors for each character
-- **`useCharacterZoom.ts`** - Utility functions for applying zoom transformations
-- **`CharacterFaceExample.tsx`** - Example React components demonstrating usage
+- **`use-character-zoom.ts`** - Utility functions for applying zoom transformations
+- **`character-face-example.tsx`** - Example React components demonstrating usage
 - **`index.ts`** - Exports fighter images and zoom data
 
 ## How It Works
@@ -28,7 +28,7 @@ The zoom system uses these values to:
 ```typescript
 import { Image } from 'react-native';
 import { fighterImages } from './assets/images/games/ssbu';
-import { getCharacterZoomStyle } from './assets/images/games/ssbu/useCharacterZoom';
+import { getCharacterZoomStyle } from './assets/images/games/ssbu/use-character-zoom';
 
 function MyComponent() {
   const displaySize = 100; // 100x100 pixel container
@@ -48,7 +48,7 @@ function MyComponent() {
 ### Using the CharacterFace Component
 
 ```typescript
-import { CharacterFace } from './assets/images/games/ssbu/CharacterFaceExample';
+import { CharacterFace } from './assets/images/games/ssbu/character-face-example';
 
 function MyComponent() {
   return (

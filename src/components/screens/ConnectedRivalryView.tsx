@@ -38,6 +38,196 @@ interface ConnectedRivalryViewProps {
   };
 }
 
+// Helper: Update fighter stats if threshold is met
+async function maybeIncrementFighterStats(
+  tierSlot: { fighterId: string; contestCount?: number | null } | undefined,
+  isWinner: boolean,
+  fighterLabel: string
+): Promise<void> {
+  if (!tierSlot) return;
+  if ((tierSlot.contestCount ?? 0) < PROVISIONAL_THRESHOLD) return;
+
+  try {
+    await incrementFighterStats(tierSlot.fighterId, isWinner);
+  } catch (statsError) {
+    console.error(
+      `[Fighter Stats] Failed to update ${fighterLabel}:`,
+      statsError
+    );
+  }
+}
+
+// Helper component: Loading/status message
+function StatusMessage({ message }: { message: string }): React.ReactElement {
+  return (
+    <View style={{ flex: 1, alignItems: 'center', justifyContent: 'center' }}>
+      <Text style={[styles.text, darkStyles.text, { fontSize: 18 }]}>
+        {message}
+      </Text>
+    </View>
+  );
+}
+
+// Helper component: Error message
+function ErrorMessage({ message }: { message: string }): React.ReactElement {
+  return (
+    <View
+      style={{
+        flex: 1,
+        alignItems: 'center',
+        justifyContent: 'center',
+        paddingHorizontal: 16,
+      }}
+    >
+      <Text
+        style={[
+          styles.text,
+          darkStyles.text,
+          {
+            fontSize: 18,
+            fontWeight: 'bold',
+            color: colors.red600,
+            marginBottom: 16,
+          },
+        ]}
+      >
+        Error
+      </Text>
+      <Text style={[styles.text, darkStyles.text]}>{message}</Text>
+    </View>
+  );
+}
+
+interface RivalryViewContentProps {
+  battleResults: {
+    contest: MContest;
+    fighterA: MFighter;
+    fighterB: MFighter;
+    winnerPosition: number | null;
+    loserPosition: number | null;
+  } | null;
+  canShowMainContent: boolean;
+  canShuffle: boolean;
+  createContestError: Error | null;
+  handlePressShuffle: (slot: 'A' | 'B') => void;
+  handleResolveContest: () => void;
+  isCreatingContest: boolean;
+  isError: boolean;
+  isLoading: boolean;
+  isUserB: boolean;
+  loadingError: Error | null;
+  navigation: ConnectedRivalryViewProps['navigation'];
+  onCreateContest: () => void;
+  rivalry: MRivalry | null;
+  setCanShuffle: (value: boolean) => void;
+  showBattleResults: boolean;
+  showCreateButton: boolean;
+  showCreatingContest: boolean;
+  showCurrentContest: boolean;
+  showPreparingTiers: boolean;
+  showResolvingContest: boolean;
+  showRivalryView: boolean;
+  shufflingSlot: 'A' | 'B' | null;
+  tiersReady: boolean;
+}
+
+// Helper component: Renders all conditional content
+function RivalryViewContent({
+  battleResults,
+  canShowMainContent,
+  canShuffle,
+  createContestError,
+  handlePressShuffle,
+  handleResolveContest,
+  isError,
+  isLoading,
+  isUserB,
+  loadingError,
+  navigation,
+  onCreateContest,
+  rivalry,
+  setCanShuffle,
+  showBattleResults,
+  showCreateButton,
+  showCreatingContest,
+  showCurrentContest,
+  showPreparingTiers,
+  showResolvingContest,
+  showRivalryView,
+  shufflingSlot,
+}: RivalryViewContentProps): React.ReactElement {
+  return (
+    <>
+      {/* Priority 1: Battle Results Screen */}
+      {showBattleResults && battleResults && rivalry && (
+        <BattleResults
+          contest={battleResults.contest}
+          fighterA={battleResults.fighterA}
+          fighterB={battleResults.fighterB}
+          isUserB={isUserB}
+          loserPosition={battleResults.loserPosition}
+          rivalry={rivalry}
+          winnerPosition={battleResults.winnerPosition}
+        />
+      )}
+
+      {/* Priority 2: Resolving Contest */}
+      {showResolvingContest && <StatusMessage message="Resolving Contest..." />}
+
+      {/* Priority 3: Creating Contest */}
+      {showCreatingContest && <StatusMessage message="Creating Contest..." />}
+
+      {/* Errors */}
+      {canShowMainContent && createContestError && (
+        <ErrorMessage
+          message={`Error creating contest: ${createContestError.message}`}
+        />
+      )}
+
+      {canShowMainContent && isLoading && (
+        <StatusMessage message="Loading Rivalry..." />
+      )}
+
+      {canShowMainContent && isError && loadingError && (
+        <ErrorMessage
+          message={`Error loading rivalry: ${loadingError.message}`}
+        />
+      )}
+
+      {showCurrentContest && (
+        <CurrentContest
+          canShuffle={canShuffle}
+          onPressShuffle={handlePressShuffle}
+          onResolveContest={handleResolveContest}
+          setCanShuffle={setCanShuffle}
+          shufflingSlot={shufflingSlot}
+        />
+      )}
+
+      {showCreateButton && (
+        <Button
+          onPress={onCreateContest}
+          style={{ height: 56, paddingHorizontal: 32, width: 256 }}
+          text="+ Create new contest"
+        />
+      )}
+
+      {showRivalryView && <RivalryView navigation={navigation} />}
+
+      {/* Priority 4: Preparing Tiers */}
+      {showPreparingTiers && (
+        <View
+          style={{ flex: 1, alignItems: 'center', justifyContent: 'center' }}
+        >
+          <Text style={[styles.text, darkStyles.text, { fontSize: 18 }]}>
+            Preparing Tiers...
+          </Text>
+        </View>
+      )}
+    </>
+  );
+}
+
 export function ConnectedRivalryView({
   navigation,
 }: ConnectedRivalryViewProps): React.ReactElement {
@@ -128,7 +318,7 @@ export function ConnectedRivalryView({
   const resolveContestMutation = useUpdateContestMutation({
     rivalry,
     onSuccess: () => {
-      if (!(rivalry && rivalry.tierListA && rivalry.tierListB)) return;
+      if (!(rivalry?.tierListA && rivalry.tierListB)) return;
 
       if (
         !(
@@ -167,7 +357,7 @@ export function ConnectedRivalryView({
     const isATheWinner = (rivalry.currentContest.result || 0) > 0;
 
     // Capture battle results data for the results screen with calculated new positions
-    const gameData = (game as any).baseGame || game;
+    const gameData = (game as { baseGame?: typeof game })?.baseGame || game;
     const foundFighterA = fighterByIdFromGame(
       gameData,
       rivalry.currentContest.tierSlotA?.fighterId || ''
@@ -177,35 +367,19 @@ export function ConnectedRivalryView({
       rivalry.currentContest.tierSlotB?.fighterId || ''
     );
 
-    if (
-      rivalry.currentContest.tierSlotA &&
-      (rivalry.currentContest.tierSlotA.contestCount ?? 0) >=
-        PROVISIONAL_THRESHOLD
-    ) {
-      try {
-        await incrementFighterStats(
-          rivalry.currentContest.tierSlotA.fighterId,
-          isATheWinner
-        );
-      } catch (error) {
-        console.error('[Fighter Stats] Failed to update Fighter A:', error);
-      }
-    }
-
-    if (
-      rivalry.currentContest.tierSlotB &&
-      (rivalry.currentContest.tierSlotB.contestCount ?? 0) >=
-        PROVISIONAL_THRESHOLD
-    ) {
-      try {
-        await incrementFighterStats(
-          rivalry.currentContest.tierSlotB.fighterId,
-          !isATheWinner
-        );
-      } catch (error) {
-        console.error('[Fighter Stats] Failed to update Fighter B:', error);
-      }
-    }
+    // Update fighter stats in parallel
+    await Promise.all([
+      maybeIncrementFighterStats(
+        rivalry.currentContest.tierSlotA,
+        isATheWinner,
+        'Fighter A'
+      ),
+      maybeIncrementFighterStats(
+        rivalry.currentContest.tierSlotB,
+        !isATheWinner,
+        'Fighter B'
+      ),
+    ]);
 
     const standingResult = rivalry.adjustStanding();
 
@@ -249,179 +423,54 @@ export function ConnectedRivalryView({
     updateCurrentContestShuffleTierSlotsMutation.mutate(slot);
   };
 
+  // Derived UI state - reduces complexity in JSX by pre-computing conditions
+  const showBattleResults = Boolean(battleResults && rivalry);
+  const isCreatingContest = createContestMutation.isPending;
+  const showResolvingContest = !battleResults && isResolvingContest;
+  const isBlocked = Boolean(battleResults || isResolvingContest);
+  const showCreatingContest = !isBlocked && isCreatingContest;
+  const canShowMainContent = !(isBlocked || isCreatingContest);
+  const showCurrentContest =
+    canShowMainContent && tiersReady && Boolean(rivalry?.currentContestId);
+  const showCreateButton =
+    canShowMainContent && tiersReady && !rivalry?.currentContest;
+  const showRivalryView = !battleResults && tiersReady && !isCreatingContest;
+  const showPreparingTiers =
+    canShowMainContent && !tiersReady && !isLoading && !isError;
+
   return (
     <SafeAreaView
       edges={['top', 'bottom']}
       style={[styles.container, darkStyles.container, { flex: 1, padding: 16 }]}
     >
-      {/* Priority 1: Battle Results Screen */}
-      {battleResults && rivalry && (
-        <BattleResults
-          contest={battleResults.contest}
-          fighterA={battleResults.fighterA}
-          fighterB={battleResults.fighterB}
-          isUserB={isUserB}
-          loserPosition={battleResults.loserPosition}
-          rivalry={rivalry}
-          winnerPosition={battleResults.winnerPosition}
-        />
-      )}
-
-      {/* Priority 2: Resolving Contest */}
-      {!battleResults && isResolvingContest && (
-        <View
-          style={{ flex: 1, alignItems: 'center', justifyContent: 'center' }}
-        >
-          <Text style={[styles.text, darkStyles.text, { fontSize: 18 }]}>
-            Resolving Contest...
-          </Text>
-        </View>
-      )}
-
-      {/* Priority 3: Creating Contest */}
-      {!(battleResults || isResolvingContest) &&
-        createContestMutation.isPending && (
-          <View
-            style={{ flex: 1, alignItems: 'center', justifyContent: 'center' }}
-          >
-            <Text style={[styles.text, darkStyles.text, { fontSize: 18 }]}>
-              Creating Contest...
-            </Text>
-          </View>
-        )}
-
-      {/* Errors */}
-      {!(
-        battleResults ||
-        isResolvingContest ||
-        createContestMutation.isPending
-      ) &&
-        createContestMutation.isError && (
-          <View
-            style={{
-              flex: 1,
-              alignItems: 'center',
-              justifyContent: 'center',
-              paddingHorizontal: 16,
-            }}
-          >
-            <Text
-              style={[
-                styles.text,
-                darkStyles.text,
-                {
-                  fontSize: 18,
-                  fontWeight: 'bold',
-                  color: colors.red600,
-                  marginBottom: 16,
-                },
-              ]}
-            >
-              Error
-            </Text>
-            <Text style={[styles.text, darkStyles.text]}>
-              {`Error creating contest: ${createContestMutation.error.message}`}
-            </Text>
-          </View>
-        )}
-
-      {!(
-        battleResults ||
-        isResolvingContest ||
-        createContestMutation.isPending
-      ) &&
-        isLoading && (
-          <View
-            style={{ flex: 1, alignItems: 'center', justifyContent: 'center' }}
-          >
-            <Text style={[styles.text, darkStyles.text, { fontSize: 18 }]}>
-              Loading Rivalry...
-            </Text>
-          </View>
-        )}
-
-      {!(
-        battleResults ||
-        isResolvingContest ||
-        createContestMutation.isPending
-      ) &&
-        isError && (
-          <View
-            style={{
-              flex: 1,
-              alignItems: 'center',
-              justifyContent: 'center',
-              paddingHorizontal: 16,
-            }}
-          >
-            <Text
-              style={[
-                styles.text,
-                darkStyles.text,
-                {
-                  fontSize: 18,
-                  fontWeight: 'bold',
-                  color: colors.red600,
-                  marginBottom: 16,
-                },
-              ]}
-            >
-              Error
-            </Text>
-            <Text
-              style={[styles.text, darkStyles.text]}
-            >{`Error loading rivalry: ${error.message}`}</Text>
-          </View>
-        )}
-
-      {!battleResults &&
-        tiersReady &&
-        !isResolvingContest &&
-        !createContestMutation.isPending &&
-        rivalry?.currentContestId && (
-          <CurrentContest
-            canShuffle={canShuffle}
-            onPressShuffle={handlePressShuffle}
-            onResolveContest={handleResolveContest}
-            setCanShuffle={setCanShuffle}
-            shufflingSlot={shufflingSlot}
-          />
-        )}
-
-      {!battleResults &&
-        tiersReady &&
-        !rivalry?.currentContest &&
-        !createContestMutation.isPending && (
-          <Button
-            onPress={() => {
-              createContestMutation.mutate();
-            }}
-            style={{ height: 56, paddingHorizontal: 32, width: 256 }}
-            text="+ Create new contest"
-          />
-        )}
-
-      {!battleResults && tiersReady && !createContestMutation.isPending && (
-        <RivalryView navigation={navigation} />
-      )}
-
-      {/* Priority 4: Preparing Tiers */}
-      {!(
-        battleResults ||
-        isResolvingContest ||
-        createContestMutation.isPending ||
-        tiersReady ||
-        isLoading ||
-        isError
-      ) && (
-        <View
-          style={{ flex: 1, alignItems: 'center', justifyContent: 'center' }}
-        >
-          <Text style={[styles.text, darkStyles.text, { fontSize: 18 }]}>
-            Preparing Tiers...
-          </Text>
-        </View>
-      )}
+      <RivalryViewContent
+        battleResults={battleResults}
+        canShowMainContent={canShowMainContent}
+        canShuffle={canShuffle}
+        createContestError={
+          createContestMutation.isError ? createContestMutation.error : null
+        }
+        handlePressShuffle={handlePressShuffle}
+        handleResolveContest={handleResolveContest}
+        isCreatingContest={isCreatingContest}
+        isError={isError}
+        isLoading={isLoading}
+        isUserB={isUserB}
+        loadingError={isError ? error : null}
+        navigation={navigation}
+        onCreateContest={() => createContestMutation.mutate()}
+        rivalry={rivalry}
+        setCanShuffle={setCanShuffle}
+        showBattleResults={showBattleResults}
+        showCreateButton={showCreateButton}
+        showCreatingContest={showCreatingContest}
+        showCurrentContest={showCurrentContest}
+        showPreparingTiers={showPreparingTiers}
+        showResolvingContest={showResolvingContest}
+        showRivalryView={showRivalryView}
+        shufflingSlot={shufflingSlot}
+        tiersReady={tiersReady}
+      />
     </SafeAreaView>
   );
 }

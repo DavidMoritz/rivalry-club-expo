@@ -7,7 +7,7 @@ import TierListEditRoute from '../tierListEdit';
 // Mock dependencies
 jest.mock('expo-router', () => ({
   Stack: {
-    Screen: ({ children }: any) => children,
+    Screen: ({ children }: { children: React.ReactNode }) => children,
   },
   useLocalSearchParams: () => ({
     id: 'test-rivalry-id',
@@ -29,7 +29,10 @@ jest.mock('@tanstack/react-query', () => {
 
   return {
     ...actual,
-    useQuery: (options: any) => mockUseQuery(options),
+    useQuery: (options: {
+      enabled: boolean;
+      queryFn: () => Promise<unknown>;
+    }) => mockUseQuery(options),
   };
 });
 
@@ -64,7 +67,7 @@ jest.mock('../../../../src/lib/user-identity', () => ({
 jest.mock(
   '../../../../src/components/screens/parts/TierListEditDisplay',
   () => ({
-    TierListEditDisplay: ({ onChange }: any) => {
+    TierListEditDisplay: ({ onChange }: { onChange: () => void }) => {
       const { Text, TouchableOpacity } = require('react-native');
 
       return (
@@ -94,7 +97,7 @@ describe('TierListEditRoute', () => {
     updatedAt: new Date().toISOString(),
     deletedAt: null,
     // Return tierLists as an async iterable like Amplify does
-    tierLists: (async function* () {
+    tierLists: (function* () {
       yield {
         id: 'tier-list-a',
         userId: 'test-user-id',
@@ -102,8 +105,9 @@ describe('TierListEditRoute', () => {
         standing: 0,
         createdAt: new Date().toISOString(),
         updatedAt: new Date().toISOString(),
-        tierSlots: (async function* () {
-          for (let i = 0; i < 84; i++) {
+        tierSlots: (function* () {
+          const slotCount = 84;
+          for (let i = 0; i < slotCount; i++) {
             yield {
               id: `slot-${i}`,
               fighterId: `fighter-${i}`,
@@ -124,7 +128,10 @@ describe('TierListEditRoute', () => {
         standing: 0,
         createdAt: new Date().toISOString(),
         updatedAt: new Date().toISOString(),
-        tierSlots: (async function* () {})(),
+        // Empty generator for tier list with no slots
+        tierSlots: (function* () {
+          // No slots to yield
+        })(),
       };
     })(),
   });
@@ -183,28 +190,30 @@ describe('TierListEditRoute', () => {
     });
 
     // Don't override useQuery - let it run naturally and call the queryFn
-    mockUseQuery.mockImplementation((options: any) => {
-      const [data, setData] = React.useState(null);
-      const [isLoading, setIsLoading] = React.useState(true);
-      const [isError, setIsError] = React.useState(false);
+    mockUseQuery.mockImplementation(
+      (options: { enabled: boolean; queryFn: () => Promise<unknown> }) => {
+        const [data, setData] = React.useState<unknown>(null);
+        const [isLoading, setIsLoading] = React.useState(true);
+        const [isError, setIsError] = React.useState(false);
 
-      React.useEffect(() => {
-        if (options.enabled) {
-          options
-            .queryFn()
-            .then((result: any) => {
-              setData(result);
-              setIsLoading(false);
-            })
-            .catch(() => {
-              setIsError(true);
-              setIsLoading(false);
-            });
-        }
-      }, []);
+        React.useEffect(() => {
+          if (options.enabled) {
+            options
+              .queryFn()
+              .then((result: unknown) => {
+                setData(result);
+                setIsLoading(false);
+              })
+              .catch(() => {
+                setIsError(true);
+                setIsLoading(false);
+              });
+          }
+        }, [options.enabled, options.queryFn]);
 
-      return { data, isLoading, isError, error: null };
-    });
+        return { data, isLoading, isError, error: null };
+      }
+    );
 
     const { getByText } = render(<TierListEditRoute />);
 
@@ -228,28 +237,30 @@ describe('TierListEditRoute', () => {
     });
 
     // Let useQuery run naturally
-    mockUseQuery.mockImplementation((options: any) => {
-      const [data, setData] = React.useState(null);
-      const [isLoading, setIsLoading] = React.useState(true);
-      const [isError, setIsError] = React.useState(false);
+    mockUseQuery.mockImplementation(
+      (options: { enabled: boolean; queryFn: () => Promise<unknown> }) => {
+        const [data, setData] = React.useState<unknown>(null);
+        const [isLoading, setIsLoading] = React.useState(true);
+        const [isError, setIsError] = React.useState(false);
 
-      React.useEffect(() => {
-        if (options.enabled) {
-          options
-            .queryFn()
-            .then((result: any) => {
-              setData(result);
-              setIsLoading(false);
-            })
-            .catch(() => {
-              setIsError(true);
-              setIsLoading(false);
-            });
-        }
-      }, []);
+        React.useEffect(() => {
+          if (options.enabled) {
+            options
+              .queryFn()
+              .then((result: unknown) => {
+                setData(result);
+                setIsLoading(false);
+              })
+              .catch(() => {
+                setIsError(true);
+                setIsLoading(false);
+              });
+          }
+        }, [options.enabled, options.queryFn]);
 
-      return { data, isLoading, isError, error: null };
-    });
+        return { data, isLoading, isError, error: null };
+      }
+    );
 
     const { getByText, getByTestId } = render(<TierListEditRoute />);
 
@@ -290,7 +301,7 @@ describe('TierListEditRoute', () => {
 
     // Mock successful mutation that calls onSuccess callback
     (useUpdateTierSlotsMutation as jest.Mock).mockImplementation(
-      (config: any) => ({
+      (config: { onSuccess?: () => void }) => ({
         mutate: () => {
           mockMutate();
           // Simulate successful mutation by calling onSuccess
@@ -303,28 +314,30 @@ describe('TierListEditRoute', () => {
     );
 
     // Let useQuery run naturally
-    mockUseQuery.mockImplementation((options: any) => {
-      const [data, setData] = React.useState(null);
-      const [isLoading, setIsLoading] = React.useState(true);
-      const [isError, setIsError] = React.useState(false);
+    mockUseQuery.mockImplementation(
+      (options: { enabled: boolean; queryFn: () => Promise<unknown> }) => {
+        const [data, setData] = React.useState<unknown>(null);
+        const [isLoading, setIsLoading] = React.useState(true);
+        const [isError, setIsError] = React.useState(false);
 
-      React.useEffect(() => {
-        if (options.enabled) {
-          options
-            .queryFn()
-            .then((result: any) => {
-              setData(result);
-              setIsLoading(false);
-            })
-            .catch(() => {
-              setIsError(true);
-              setIsLoading(false);
-            });
-        }
-      }, []);
+        React.useEffect(() => {
+          if (options.enabled) {
+            options
+              .queryFn()
+              .then((result: unknown) => {
+                setData(result);
+                setIsLoading(false);
+              })
+              .catch(() => {
+                setIsError(true);
+                setIsLoading(false);
+              });
+          }
+        }, [options.enabled, options.queryFn]);
 
-      return { data, isLoading, isError, error: null };
-    });
+        return { data, isLoading, isError, error: null };
+      }
+    );
 
     const { getByText, getByTestId } = render(<TierListEditRoute />);
 
@@ -372,28 +385,30 @@ describe('TierListEditRoute', () => {
     });
 
     // Let useQuery run naturally
-    mockUseQuery.mockImplementation((options: any) => {
-      const [data, setData] = React.useState(null);
-      const [isLoading, setIsLoading] = React.useState(true);
-      const [isError, setIsError] = React.useState(false);
+    mockUseQuery.mockImplementation(
+      (options: { enabled: boolean; queryFn: () => Promise<unknown> }) => {
+        const [data, setData] = React.useState<unknown>(null);
+        const [isLoading, setIsLoading] = React.useState(true);
+        const [isError, setIsError] = React.useState(false);
 
-      React.useEffect(() => {
-        if (options.enabled) {
-          options
-            .queryFn()
-            .then((result: any) => {
-              setData(result);
-              setIsLoading(false);
-            })
-            .catch(() => {
-              setIsError(true);
-              setIsLoading(false);
-            });
-        }
-      }, []);
+        React.useEffect(() => {
+          if (options.enabled) {
+            options
+              .queryFn()
+              .then((result: unknown) => {
+                setData(result);
+                setIsLoading(false);
+              })
+              .catch(() => {
+                setIsError(true);
+                setIsLoading(false);
+              });
+          }
+        }, [options.enabled, options.queryFn]);
 
-      return { data, isLoading, isError, error: null };
-    });
+        return { data, isLoading, isError, error: null };
+      }
+    );
 
     const { queryByTestId } = render(<TierListEditRoute />);
 

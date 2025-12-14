@@ -3,6 +3,7 @@
  * These tests cover the atomic increment implementation and related features
  */
 
+import { jest } from '@jest/globals';
 import type { TierList, TierSlot } from '../../amplify/data/resource';
 import { FIGHTER_COUNT, getMTierList } from '../../src/models/m-tier-list';
 
@@ -119,8 +120,8 @@ describe('MTierList - Stat Tracking', () => {
         createMockTierSlot({
           id: 'slot-1',
           position: 5,
-          contestCount: undefined as any,
-          winCount: undefined as any,
+          contestCount: undefined as unknown as number,
+          winCount: undefined as unknown as number,
         }),
       ];
       const mockTierList = createMockTierList(slots);
@@ -295,7 +296,7 @@ describe('MTierList - Diff Checking', () => {
       const slots = [
         createMockTierSlot({
           id: 'slot-1',
-          position: null as any,
+          position: null as unknown as number,
           contestCount: 0,
           winCount: 0,
         }),
@@ -338,7 +339,7 @@ describe('MTierList - Diff Checking', () => {
         }),
         createMockTierSlot({
           id: 'slot-3',
-          position: null as any,
+          position: null as unknown as number,
           contestCount: 0,
           winCount: 0,
         }),
@@ -350,19 +351,19 @@ describe('MTierList - Diff Checking', () => {
 
       // getPositionsPojo uses tierSlot0, tierSlot1, etc. as keys and includes ALL slots
       expect(Object.keys(pojo)).toHaveLength(3);
-      expect(pojo['tierSlot0']).toEqual({
+      expect(pojo.tierSlot0).toEqual({
         id: 'slot-1',
         position: 0,
         contestCount: 5,
         winCount: 2,
       });
-      expect(pojo['tierSlot1']).toEqual({
+      expect(pojo.tierSlot1).toEqual({
         id: 'slot-2',
         position: 1,
         contestCount: 3,
         winCount: 1,
       });
-      expect(pojo['tierSlot2']).toEqual({
+      expect(pojo.tierSlot2).toEqual({
         id: 'slot-3',
         position: null,
         contestCount: 0,
@@ -375,8 +376,8 @@ describe('MTierList - Diff Checking', () => {
         createMockTierSlot({
           id: 'slot-1',
           position: 0,
-          contestCount: undefined as any,
-          winCount: undefined as any,
+          contestCount: undefined as unknown as number,
+          winCount: undefined as unknown as number,
         }),
       ];
       const mockTierList = createMockTierList(slots);
@@ -384,7 +385,7 @@ describe('MTierList - Diff Checking', () => {
 
       const pojo = mTierList.getPositionsPojo();
 
-      expect(pojo['tierSlot0']).toEqual({
+      expect(pojo.tierSlot0).toEqual({
         id: 'slot-1',
         position: 0,
         contestCount: 0,
@@ -410,7 +411,7 @@ describe('MTierList - Position Validation', () => {
       }),
       createMockTierSlot({
         id: 'slot-2',
-        position: null as any,
+        position: null as unknown as number,
         contestCount: 0,
         winCount: 0,
       }),
@@ -480,7 +481,7 @@ describe('MTierList - Position Validation', () => {
       }),
       createMockTierSlot({
         id: 'slot-2',
-        position: null as any,
+        position: null as unknown as number,
         contestCount: 0,
         winCount: 0,
       }),

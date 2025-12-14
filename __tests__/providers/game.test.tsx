@@ -1,9 +1,12 @@
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { render } from '@testing-library/react-native';
-import React from 'react';
 import { Text } from 'react-native';
+
+import type { Schema } from '../../amplify/data/resource';
 import { getMGame } from '../../src/models/m-game';
 import { GameProvider, useGame } from '../../src/providers/game';
+
+type Game = Schema['Game']['type'];
 
 // Create a test query client
 const createTestQueryClient = () =>
@@ -120,7 +123,7 @@ describe('GameProvider', () => {
           },
         ],
       },
-    } as any);
+    } as Game);
 
     const TestComponent = () => {
       const game = useGame();

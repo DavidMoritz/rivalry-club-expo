@@ -1,5 +1,4 @@
 import { fireEvent, render, waitFor } from '@testing-library/react-native';
-import React from 'react';
 
 import { Profile } from '../Profile';
 
@@ -23,7 +22,7 @@ jest.mock('../../../hooks/useAuthUser', () => ({
 const mockUpdatePassword = jest.fn();
 
 jest.mock('../../../lib/amplify-auth', () => ({
-  updatePassword: (...args: any[]) => mockUpdatePassword(...args),
+  updatePassword: (...args: unknown[]) => mockUpdatePassword(...args),
   isExpoGo: false,
 }));
 
@@ -34,7 +33,7 @@ jest.mock('aws-amplify/data', () => ({
   generateClient: jest.fn(() => ({
     models: {
       User: {
-        update: (...args: any[]) => mockUserUpdate(...args),
+        update: (...args: unknown[]) => mockUserUpdate(...args),
       },
     },
   })),
@@ -450,8 +449,10 @@ describe('Profile Component', () => {
       await waitFor(() => {
         // After clicking, there will be 2 "Change Password" texts - the section title and the button
         const buttons = getAllByText('Change Password');
-        const submitButton = buttons[buttons.length - 1]; // Get the last one (the button)
-        fireEvent.press(submitButton);
+        const submitButton = buttons.at(-1); // Get the last one (the button)
+        if (submitButton) {
+          fireEvent.press(submitButton);
+        }
       });
 
       await waitFor(() => {
@@ -484,8 +485,10 @@ describe('Profile Component', () => {
       });
 
       const buttons = getAllByText('Change Password');
-      const submitButton = buttons[buttons.length - 1];
-      fireEvent.press(submitButton);
+      const submitButton = buttons.at(-1);
+      if (submitButton) {
+        fireEvent.press(submitButton);
+      }
 
       await waitFor(() => {
         expect(getByText('New passwords do not match')).toBeTruthy();
@@ -517,8 +520,10 @@ describe('Profile Component', () => {
       });
 
       const buttons = getAllByText('Change Password');
-      const submitButton = buttons[buttons.length - 1];
-      fireEvent.press(submitButton);
+      const submitButton = buttons.at(-1);
+      if (submitButton) {
+        fireEvent.press(submitButton);
+      }
 
       await waitFor(() => {
         expect(
@@ -554,8 +559,10 @@ describe('Profile Component', () => {
       });
 
       const buttons = getAllByText('Change Password');
-      const submitButton = buttons[buttons.length - 1];
-      fireEvent.press(submitButton);
+      const submitButton = buttons.at(-1);
+      if (submitButton) {
+        fireEvent.press(submitButton);
+      }
 
       await waitFor(() => {
         expect(mockUpdatePassword).toHaveBeenCalledWith(
@@ -596,8 +603,10 @@ describe('Profile Component', () => {
       });
 
       const buttons = getAllByText('Change Password');
-      const submitButton = buttons[buttons.length - 1];
-      fireEvent.press(submitButton);
+      const submitButton = buttons.at(-1);
+      if (submitButton) {
+        fireEvent.press(submitButton);
+      }
 
       await waitFor(() => {
         expect(getByText('Password changed successfully')).toBeTruthy();
@@ -648,8 +657,10 @@ describe('Profile Component', () => {
       });
 
       const buttons = getAllByText('Change Password');
-      const submitButton = buttons[buttons.length - 1];
-      fireEvent.press(submitButton);
+      const submitButton = buttons.at(-1);
+      if (submitButton) {
+        fireEvent.press(submitButton);
+      }
 
       await waitFor(() => {
         expect(getByText('Current password is incorrect')).toBeTruthy();
@@ -711,7 +722,7 @@ describe('Profile Component', () => {
         error: null,
       });
 
-      let resolveUpdate: any;
+      let resolveUpdate: ((value: unknown) => void) | undefined;
       const updatePromise = new Promise(resolve => {
         resolveUpdate = resolve;
       });
@@ -730,7 +741,7 @@ describe('Profile Component', () => {
         expect(getByText('Updating...')).toBeTruthy();
       });
 
-      resolveUpdate({ data: { id: 'user-updating' }, errors: null });
+      resolveUpdate?.({ data: { id: 'user-updating' }, errors: null });
     });
   });
 });

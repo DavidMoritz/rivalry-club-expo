@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState } from 'react';
 import { Animated, Text, View } from 'react-native';
 import type { MContest } from '../../models/m-contest';
+import type { MFighter } from '../../models/m-fighter';
 import type { MGame } from '../../models/m-game';
 import type { MRivalry } from '../../models/m-rivalry';
 import type { MTierSlot } from '../../models/m-tier-slot';
@@ -25,8 +26,8 @@ export function ContestRow({
   shouldFadeOut,
 }: ContestRowProps) {
   const [updatedDisplay, setUpdatedDisplay] = useState<string>('');
-  const [fighterA, setFighterA] = useState<any>();
-  const [fighterB, setFighterB] = useState<any>();
+  const [fighterA, setFighterA] = useState<MFighter | null>();
+  const [fighterB, setFighterB] = useState<MFighter | null>();
   const [tierSlotA, setTierSlotA] = useState<MTierSlot>();
   const [tierSlotB, setTierSlotB] = useState<MTierSlot>();
   const fadeAnim = useRef(new Animated.Value(1)).current;
@@ -45,7 +46,7 @@ export function ContestRow({
         useNativeDriver: true,
       }).start();
     }
-  }, [shouldFadeOut, fadeAnim, contest.id]);
+  }, [shouldFadeOut, fadeAnim]);
 
   useEffect(() => {
     const foundTierSlotA = rivalry?.tierListA?.slots.find(

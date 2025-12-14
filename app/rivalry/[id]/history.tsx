@@ -2,7 +2,7 @@ import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { generateClient } from 'aws-amplify/data';
 import { Stack, useLocalSearchParams } from 'expo-router';
 import { StatusBar } from 'expo-status-bar';
-import React, { useCallback, useState } from 'react';
+import { useCallback, useState } from 'react';
 import { ActivityIndicator, Text, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import type { Schema } from '../../../amplify/data/resource';
@@ -27,6 +27,78 @@ function getClient() {
   }
 
   return client;
+}
+
+// Helper function to process tier lists and their slots
+async function processTierLists(
+  tierLists: Awaited<
+    ReturnType<typeof getClient>['models']['Rivalry']['get']
+  >['data'] extends { tierLists?: infer T }
+    ? T
+    : never
+) {
+  const tierListsArray: Schema['TierList']['type'][] = [];
+  if (tierLists) {
+    for await (const tierListData of tierLists) {
+      const tierSlotsArray: Schema['TierSlot']['type'][] = [];
+      if (tierListData.tierSlots) {
+        for await (const tierSlot of tierListData.tierSlots) {
+          tierSlotsArray.push(tierSlot);
+        }
+      }
+      tierListsArray.push({
+        ...tierListData,
+        tierSlots: { items: tierSlotsArray },
+      } as Schema['TierList']['type']);
+    }
+  }
+  return tierListsArray;
+}
+
+// Helper function to populate rivalry users from context or API
+async function populateRivalryUsers(
+  mRivalry: MRivalry,
+  rivalryData: { userAId: string; userBId: string },
+  userAName: string | undefined,
+  userBName: string | undefined
+) {
+  if (userAName && userBName) {
+    // Split full names into first and last names
+    const [firstNameA, ...lastNamePartsA] = userAName.split(' ');
+    const [firstNameB, ...lastNamePartsB] = userBName.split(' ');
+
+    mRivalry.userA = getMUser({
+      user: {
+        id: rivalryData.userAId,
+        firstName: firstNameA,
+        lastName: lastNamePartsA.join(' '),
+      } as Schema['User']['type'],
+    });
+    mRivalry.userB = getMUser({
+      user: {
+        id: rivalryData.userBId,
+        firstName: firstNameB,
+        lastName: lastNamePartsB.join(' '),
+      } as Schema['User']['type'],
+    });
+  } else {
+    // Load user data separately if not in context
+    const [userAResult, userBResult] = await Promise.all([
+      getClient().models.User.get({ id: rivalryData.userAId }),
+      getClient().models.User.get({ id: rivalryData.userBId }),
+    ]);
+
+    if (userAResult.data) {
+      mRivalry.userA = getMUser({
+        user: userAResult.data as Schema['User']['type'],
+      });
+    }
+    if (userBResult.data) {
+      mRivalry.userB = getMUser({
+        user: userBResult.data as Schema['User']['type'],
+      });
+    }
+  }
 }
 
 export default function HistoryRoute() {
@@ -96,60 +168,18 @@ export default function HistoryRoute() {
         throw new Error('Rivalry not found');
       }
 
-      const tierListsArray: any[] = [];
-      if (rivalryData.tierLists) {
-        for await (const tierListData of rivalryData.tierLists) {
-          const tierSlotsArray: any[] = [];
-          if (tierListData.tierSlots) {
-            for await (const tierSlot of tierListData.tierSlots) {
-              tierSlotsArray.push(tierSlot);
-            }
-          }
-          tierListsArray.push({
-            ...tierListData,
-            tierSlots: { items: tierSlotsArray },
-          });
-        }
-      }
+      const tierListsArray = await processTierLists(rivalryData.tierLists);
       const tierLists = { items: tierListsArray };
 
-      const mRivalry = getMRivalry({ rivalry: rivalryData as any });
-      mRivalry.setMTierLists(tierLists as any);
+      const mRivalry = getMRivalry({
+        rivalry: rivalryData as Schema['Rivalry']['type'],
+      });
+      mRivalry.setMTierLists(
+        tierLists as Parameters<typeof mRivalry.setMTierLists>[0]
+      );
 
       // Use user names from context if available, otherwise fetch
-      if (userAName && userBName) {
-        // Split full names into first and last names
-        const [firstNameA, ...lastNamePartsA] = userAName.split(' ');
-        const [firstNameB, ...lastNamePartsB] = userBName.split(' ');
-
-        mRivalry.userA = getMUser({
-          user: {
-            id: rivalryData.userAId,
-            firstName: firstNameA,
-            lastName: lastNamePartsA.join(' '),
-          } as any,
-        });
-        mRivalry.userB = getMUser({
-          user: {
-            id: rivalryData.userBId,
-            firstName: firstNameB,
-            lastName: lastNamePartsB.join(' '),
-          } as any,
-        });
-      } else {
-        // Load user data separately if not in context
-        const [userAResult, userBResult] = await Promise.all([
-          getClient().models.User.get({ id: rivalryData.userAId }),
-          getClient().models.User.get({ id: rivalryData.userBId }),
-        ]);
-
-        if (userAResult.data) {
-          mRivalry.userA = getMUser({ user: userAResult.data as any });
-        }
-        if (userBResult.data) {
-          mRivalry.userB = getMUser({ user: userBResult.data as any });
-        }
-      }
+      await populateRivalryUsers(mRivalry, rivalryData, userAName, userBName);
 
       setRivalry(mRivalry);
 
@@ -157,32 +187,26 @@ export default function HistoryRoute() {
     },
   });
 
-  const { isLoading: isLoadingContests, error } = useQuery({
+  const { isLoading: isLoadingContests, error: contestError } = useQuery({
     enabled: !!rivalryId && !!rivalry && !!game,
     queryKey: ['rivalryContests', rivalryId],
     structuralSharing: false,
     queryFn: async () => {
       // Use the GSI query for efficient sorting by createdAt
-      const {
-        data: contestData,
-        errors,
-      }: {
-        data: any[];
-        errors?: any[];
-      } = await getClient().models.Contest.contestsByRivalryIdAndCreatedAt({
-        rivalryId,
-        sortDirection: 'DESC',
-        limit: 100,
-      });
+      const { data: contestData, errors } =
+        await getClient().models.Contest.contestsByRivalryIdAndCreatedAt({
+          rivalryId,
+          sortDirection: 'DESC',
+          limit: 100,
+        });
 
       if (errors) {
         console.error('[HistoryRoute] GraphQL errors:', errors);
-        throw new Error(errors[0]?.message || 'Failed to fetch contests');
+        throw new Error(errors.at(0)?.message || 'Failed to fetch contests');
       }
 
-      const newNextToken = null;
       const mContests = contestData.map(c => {
-        const mContest = getMContest(c as any);
+        const mContest = getMContest(c as Schema['Contest']['type']);
         if (rivalry) {
           mContest.setRivalryAndSlots(rivalry);
         }
@@ -197,7 +221,7 @@ export default function HistoryRoute() {
       }
 
       setContests(mContests);
-      setNextToken(newNextToken || null);
+      setNextToken(null);
 
       return mContests;
     },
@@ -232,7 +256,7 @@ export default function HistoryRoute() {
       }
 
       const mContests = contestData.map(c => {
-        const mContest = getMContest(c as any);
+        const mContest = getMContest(c as Schema['Contest']['type']);
         mContest.setRivalryAndSlots(rivalry);
 
         return mContest;
@@ -259,8 +283,8 @@ export default function HistoryRoute() {
         return combined;
       });
       setNextToken(newNextToken || null);
-    } catch (error) {
-      console.error('[HistoryRoute] loadMore error:', error);
+    } catch (loadMoreError) {
+      console.error('[HistoryRoute] loadMore error:', loadMoreError);
     } finally {
       setIsLoadingMore(false);
     }
@@ -285,7 +309,7 @@ export default function HistoryRoute() {
     );
   }
 
-  if (error || rivalryError) {
+  if (contestError || rivalryError) {
     return (
       <>
         <Stack.Screen options={{ title: 'Contest History' }} />
@@ -293,7 +317,7 @@ export default function HistoryRoute() {
           <View style={errorContainerStyle}>
             <Text style={errorTitleStyle}>Error loading data</Text>
             <Text style={errorMessageStyle}>
-              {(error instanceof Error ? error.message : null) ||
+              {(contestError instanceof Error ? contestError.message : null) ||
                 (rivalryError instanceof Error
                   ? rivalryError.message
                   : 'Unknown error')}

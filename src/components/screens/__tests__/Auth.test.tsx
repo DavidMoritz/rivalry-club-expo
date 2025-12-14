@@ -1,5 +1,4 @@
 import { fireEvent, render, waitFor } from '@testing-library/react-native';
-import React from 'react';
 
 import { Auth } from '../Auth';
 
@@ -10,10 +9,10 @@ const mockGetCurrentUser = jest.fn();
 const mockConfirmSignUp = jest.fn();
 
 jest.mock('../../../lib/amplify-auth', () => ({
-  signIn: (...args: any[]) => mockSignIn(...args),
-  signUp: (...args: any[]) => mockSignUp(...args),
+  signIn: (...args: unknown[]) => mockSignIn(...args),
+  signUp: (...args: unknown[]) => mockSignUp(...args),
   getCurrentUser: () => mockGetCurrentUser(),
-  confirmSignUp: (...args: any[]) => mockConfirmSignUp(...args),
+  confirmSignUp: (...args: unknown[]) => mockConfirmSignUp(...args),
   isExpoGo: false,
 }));
 

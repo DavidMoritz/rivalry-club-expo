@@ -28,8 +28,11 @@ export function fighterByIdFromGame(
   fighterId: string
 ): MFighter | null {
   // Handle both Game and MGame types - fighters might be LazyLoader or { items: ... }
-  const fighters = game.fighters as any;
-  const fightersItems = fighters?.items || [];
+  const fighters = game.fighters as
+    | { items?: (Fighter | null)[] | null }
+    | null
+    | undefined;
+  const fightersItems = fighters?.items ?? [];
   const fighter = fightersItems.find(
     (thisFighter: Fighter | null) => thisFighter?.id === fighterId
   ) as Fighter | null;

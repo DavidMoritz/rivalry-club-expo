@@ -9,7 +9,7 @@ import {
   type ViewStyle,
 } from 'react-native';
 import { fighterImages } from '../../../assets/images/games/ssbu';
-import { CharacterFace } from '../../../assets/images/games/ssbu/CharacterFaceExample';
+import { CharacterFace } from '../../../assets/images/games/ssbu/character-face-example';
 import type { MFighter } from '../../models/m-fighter';
 import {
   computeTierFromPosition,
@@ -17,6 +17,93 @@ import {
 } from '../../models/m-tier-slot';
 import { sourceCase } from '../../utils';
 import { colors } from '../../utils/colors';
+
+const DEFAULT_DIMENSION = 100;
+const PERCENTAGE_MULTIPLIER = 100;
+
+function TierSlotStats({ tierSlot }: { tierSlot: MTierSlot }) {
+  const hasPosition =
+    tierSlot.position !== undefined && tierSlot.position !== null;
+  const hasContestCount =
+    tierSlot.contestCount !== undefined && tierSlot.contestCount !== null;
+  const hasWinCount =
+    tierSlot.winCount !== undefined && tierSlot.winCount !== null;
+  const canShowWinRate =
+    hasContestCount && hasWinCount && tierSlot.contestCount > 0;
+
+  return (
+    <>
+      <Text style={sectionHeaderStyle}>Rivalry Stats</Text>
+      {hasPosition && (
+        <Text style={statTextStyle}>
+          Position: #{tierSlot.position + 1} (Tier{' '}
+          {computeTierFromPosition(tierSlot.position)})
+        </Text>
+      )}
+      {hasContestCount && (
+        <Text style={statTextStyle}>
+          Rivalry Contests: {tierSlot.contestCount}
+        </Text>
+      )}
+      {hasWinCount && (
+        <Text style={statTextStyle}>Rivalry Wins: {tierSlot.winCount}</Text>
+      )}
+      {canShowWinRate && (
+        <Text style={winRateTextStyle}>
+          Rivalry Win Rate:{' '}
+          {(
+            (tierSlot.winCount / tierSlot.contestCount) *
+            PERCENTAGE_MULTIPLIER
+          ).toFixed(1)}
+          %
+        </Text>
+      )}
+    </>
+  );
+}
+
+function FighterStats({
+  fighter,
+  showGlobalHeader,
+}: {
+  fighter: MFighter;
+  showGlobalHeader: boolean;
+}) {
+  const hasContestCount =
+    fighter.contestCount !== undefined && fighter.contestCount !== null;
+  const hasWinCount =
+    fighter.winCount !== undefined && fighter.winCount !== null;
+  const canShowWinRate =
+    hasContestCount && hasWinCount && fighter.contestCount > 0;
+  const hasRank = fighter.rank !== undefined;
+
+  return (
+    <>
+      {hasContestCount && (
+        <>
+          {showGlobalHeader && (
+            <Text style={globalStatsHeaderStyle}>Global Stats</Text>
+          )}
+          <Text style={statTextStyle}>Contests: {fighter.contestCount}</Text>
+        </>
+      )}
+      {hasWinCount && (
+        <Text style={statTextLargeStyle}>Wins: {fighter.winCount}</Text>
+      )}
+      {canShowWinRate && (
+        <Text style={globalWinRateTextStyle}>
+          Win Rate:{' '}
+          {(
+            (fighter.winCount / fighter.contestCount) *
+            PERCENTAGE_MULTIPLIER
+          ).toFixed(1)}
+          %
+        </Text>
+      )}
+      {hasRank && <Text style={rankTextStyle}>Rank: #{fighter.rank}</Text>}
+    </>
+  );
+}
 
 interface CharacterDisplayProps {
   fighter: MFighter;
@@ -52,8 +139,8 @@ export function CharacterDisplay({
   };
 
   const characterKey = sourceCase(fighter.name);
-  const displayHeight = height || 100; // Use provided height or default to 100
-  const displayWidth = width || height || 100; // Use width if provided, else height, else default to 100
+  const displayHeight = height || DEFAULT_DIMENSION;
+  const displayWidth = width || height || DEFAULT_DIMENSION;
 
   return (
     <>
@@ -109,72 +196,8 @@ export function CharacterDisplay({
             }}
           />
           <View style={statsContainerStyle}>
-            {tierSlot && (
-              <>
-                <Text style={sectionHeaderStyle}>Rivalry Stats</Text>
-                {tierSlot.position !== undefined &&
-                  tierSlot.position !== null && (
-                    <Text style={statTextStyle}>
-                      Position: #{tierSlot.position + 1} (Tier{' '}
-                      {computeTierFromPosition(tierSlot.position)})
-                    </Text>
-                  )}
-                {tierSlot.contestCount !== undefined &&
-                  tierSlot.contestCount !== null && (
-                    <Text style={statTextStyle}>
-                      Rivalry Contests: {tierSlot.contestCount}
-                    </Text>
-                  )}
-                {tierSlot.winCount !== undefined &&
-                  tierSlot.winCount !== null && (
-                    <Text style={statTextStyle}>
-                      Rivalry Wins: {tierSlot.winCount}
-                    </Text>
-                  )}
-                {tierSlot.contestCount !== undefined &&
-                  tierSlot.contestCount !== null &&
-                  tierSlot.contestCount > 0 &&
-                  tierSlot.winCount !== undefined &&
-                  tierSlot.winCount !== null && (
-                    <Text style={winRateTextStyle}>
-                      Rivalry Win Rate:{' '}
-                      {(
-                        (tierSlot.winCount / tierSlot.contestCount) *
-                        100
-                      ).toFixed(1)}
-                      %
-                    </Text>
-                  )}
-              </>
-            )}
-            {fighter.contestCount !== undefined &&
-              fighter.contestCount !== null && (
-                <>
-                  {tierSlot && (
-                    <Text style={globalStatsHeaderStyle}>Global Stats</Text>
-                  )}
-                  <Text style={statTextStyle}>
-                    Contests: {fighter.contestCount}
-                  </Text>
-                </>
-              )}
-            {fighter.winCount !== undefined && fighter.winCount !== null && (
-              <Text style={statTextLargeStyle}>Wins: {fighter.winCount}</Text>
-            )}
-            {fighter.contestCount !== undefined &&
-              fighter.contestCount !== null &&
-              fighter.contestCount > 0 &&
-              fighter.winCount !== undefined &&
-              fighter.winCount !== null && (
-                <Text style={globalWinRateTextStyle}>
-                  Win Rate:{' '}
-                  {((fighter.winCount / fighter.contestCount) * 100).toFixed(1)}
-                  %
-                </Text>
-              )}
-            {fighter.rank !== undefined && (
-              <Text style={rankTextStyle}>Rank: #{fighter.rank}</Text>
-            )}
+            {tierSlot && <TierSlotStats tierSlot={tierSlot} />}
+            <FighterStats fighter={fighter} showGlobalHeader={!!tierSlot} />
           </View>
         </Pressable>
       </Modal>

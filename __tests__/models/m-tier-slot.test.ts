@@ -1,8 +1,7 @@
 import type { Schema } from '../../amplify/data/resource';
-import { getMTierList, TIERS } from '../../src/models/m-tier-list';
+import { getMTierList } from '../../src/models/m-tier-list';
 import {
   getMTierSlot,
-  MTierSlot,
   normalizeTierSlotPositionToIndex,
 } from '../../src/models/m-tier-slot';
 

@@ -56,7 +56,7 @@ const TierListRow: React.FC<TierListRowProps> = props => {
                 style={[
                   slotWrapperStyle,
                   {
-                    borderWidth: isSelected ? 3 : 0,
+                    borderWidth: isSelected ? SELECTED_BORDER_WIDTH : 0,
                     borderColor: isSelected ? colors.amber400 : colors.white,
                   },
                 ]}
@@ -81,6 +81,7 @@ const center = 'center' as const;
 const row = 'row' as const;
 const bold = 'bold' as const;
 const wrap = 'wrap' as const;
+const SELECTED_BORDER_WIDTH = 3;
 
 const rowContainerStyle = {
   flexDirection: row,

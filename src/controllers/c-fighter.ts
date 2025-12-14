@@ -7,6 +7,8 @@ import {
   updateFighterStats,
 } from '../axios/mutations';
 
+const SAMPLE_FIGHTERS_COUNT = 3;
+
 // Lazy client initialization
 let client: ReturnType<typeof generateClient<Schema>> | null = null;
 
@@ -22,11 +24,9 @@ function getClient() {
 export function useFightersByGameIdQuery({
   gameId,
   enabled = true,
-  onSuccess,
 }: {
   gameId: string;
   enabled?: boolean;
-  onSuccess?: (fighters: Schema['Fighter']['type'][]) => void;
 }) {
   return useQuery({
     queryKey: ['fighters', gameId],
@@ -67,8 +67,8 @@ export function useFightersByGameIdQuery({
         'fighters with stats'
       );
 
-      // Log 3 sample fighters to verify data structure
-      const samples = fighters.slice(0, 3);
+      // Log sample fighters to verify data structure
+      const samples = fighters.slice(0, SAMPLE_FIGHTERS_COUNT);
       console.log(
         '[useFightersByGameIdQuery] Sample fighters:',
         JSON.stringify(samples, null, 2)

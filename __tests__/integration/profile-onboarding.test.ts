@@ -3,14 +3,23 @@
  * Tests the complete flow from authentication to profile completion
  */
 
-import { act, render, waitFor } from '@testing-library/react-native';
 import { generateClient } from 'aws-amplify/data';
 import { useRouter } from 'expo-router';
-import React from 'react';
 
-import type { Schema } from '../../amplify/data/resource';
-import { Auth } from '../../src/components/screens/Auth';
-import { Profile } from '../../src/components/screens/Profile';
+interface MockRouter {
+  replace: jest.Mock;
+  push: jest.Mock;
+  back: jest.Mock;
+}
+
+interface MockClient {
+  models: {
+    User: {
+      list: jest.Mock;
+      update: jest.Mock;
+    };
+  };
+}
 
 // Mock the dependencies
 jest.mock('expo-router', () => ({
@@ -36,8 +45,8 @@ jest.mock('../../src/hooks/useAuthUser', () => ({
 }));
 
 describe('Profile Onboarding Flow - Integration Tests', () => {
-  let mockRouter: any;
-  let mockClient: any;
+  let mockRouter: MockRouter;
+  let mockClient: MockClient;
 
   beforeEach(() => {
     mockRouter = {
@@ -63,7 +72,7 @@ describe('Profile Onboarding Flow - Integration Tests', () => {
   });
 
   describe('New user journey', () => {
-    it('completes full onboarding flow: auth -> profile -> rivalries', async () => {
+    it('completes full onboarding flow: auth -> profile -> rivalries', () => {
       // Scenario: A brand new user signs up and completes their profile
       // This test validates the logic flow documented in app/auth.tsx
 
@@ -72,7 +81,7 @@ describe('Profile Onboarding Flow - Integration Tests', () => {
       const email = 'newuser@test.com';
 
       // Step 1: User authenticates successfully
-      const session = {
+      const _session = {
         user: { id: awsSub, email },
       };
 
@@ -170,7 +179,7 @@ describe('Profile Onboarding Flow - Integration Tests', () => {
       expect(isNewUser).toBe(false);
 
       // User updates profile
-      const userAfter = {
+      const _userAfter = {
         ...userBefore,
         firstName: 'Updated',
         lastName: 'Name',
@@ -224,11 +233,10 @@ describe('Profile Onboarding Flow - Integration Tests', () => {
         { firstName: 'John', lastName: '  Doe  ', isValid: true }, // Trimmed
       ];
 
-      validations.forEach(({ firstName, lastName, isValid }) => {
-        const result =
-          firstName.trim() !== '' && lastName.trim() !== '' ? true : false;
+      for (const { firstName, lastName, isValid } of validations) {
+        const result = firstName.trim() !== '' && lastName.trim() !== '';
         expect(result).toBe(isValid);
-      });
+      }
     });
   });
 
@@ -251,7 +259,7 @@ describe('Profile Onboarding Flow - Integration Tests', () => {
       expect(mockRouter.replace).toHaveBeenCalledWith('/rivalries');
     });
 
-    it('shows error message on profile update failure but allows retry', async () => {
+    it('shows error message on profile update failure but allows retry', () => {
       // Scenario: Profile update fails
       const updateError = { message: 'Network error' };
 
@@ -334,13 +342,13 @@ describe('Profile Onboarding Flow - Integration Tests', () => {
         { event: 'SIGNED_IN', userId: 'user-123' },
       ];
 
-      authStateChanges.forEach(change => {
+      for (const change of authStateChanges) {
         if (change.event === 'SIGNED_IN' && change.userId) {
           // Should check profile on each sign-in
           const shouldCheckProfile = true;
           expect(shouldCheckProfile).toBe(true);
         }
-      });
+      }
     });
 
     it('checks profile on initial session load', () => {

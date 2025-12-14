@@ -1,6 +1,6 @@
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { render, waitFor } from '@testing-library/react-native';
-import React from 'react';
+import type { Schema } from '../../../../../amplify/data/resource';
 import { getMGame } from '../../../../models/m-game';
 import { getMRivalry } from '../../../../models/m-rivalry';
 import { getMTierList } from '../../../../models/m-tier-list';
@@ -11,6 +11,10 @@ import {
   syncedScrollViewState,
 } from '../../../../providers/scroll-view';
 import { TierListDisplay } from '../TierListDisplay';
+
+type Game = Schema['Game']['type'];
+type Rivalry = Schema['Rivalry']['type'];
+type TierList = Schema['TierList']['type'];
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -28,7 +32,7 @@ const mockGame = getMGame({
       { id: 'fighter-2', name: 'Link', gameId: 'game-1' },
     ],
   },
-} as any);
+} as unknown as Game);
 
 const createMockTierList = () => {
   const tierSlots = Array.from({ length: 12 }, (_, i) => ({
@@ -46,7 +50,7 @@ const createMockTierList = () => {
     tierSlots: {
       items: tierSlots,
     },
-  } as any);
+  } as unknown as TierList);
 };
 
 const mockRivalry = getMRivalry({
@@ -55,7 +59,7 @@ const mockRivalry = getMRivalry({
     userAId: 'user-1',
     userBId: 'user-2',
     gameId: 'game-1',
-  } as any,
+  } as unknown as Rivalry,
 });
 
 describe('TierListDisplay', () => {
@@ -119,7 +123,7 @@ describe('TierListDisplay', () => {
       tierSlots: {
         items: [],
       },
-    } as any);
+    } as unknown as TierList);
 
     const { root } = render(
       <QueryClientProvider client={queryClient}>
@@ -170,7 +174,7 @@ describe('TierListDisplay', () => {
       tierSlots: {
         items: unsortedSlots,
       },
-    } as any);
+    } as unknown as TierList);
 
     const { getByText } = render(
       <QueryClientProvider client={queryClient}>

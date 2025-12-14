@@ -15,7 +15,12 @@ interface ContestHistoryTableProps {
   contests: MContest[];
   game: MGame;
   rivalry: MRivalry;
-  deleteMostRecentContestMutation: UseMutationResult<any, Error, void, unknown>;
+  deleteMostRecentContestMutation: UseMutationResult<
+    unknown,
+    Error,
+    void,
+    unknown
+  >;
   loadMore: () => void;
   isLoadingMore: boolean;
   hideUndoButton: boolean;
@@ -50,7 +55,7 @@ export function ContestHistoryTable({
     // Reset fading state after animation completes
     setTimeout(() => {
       setFadingContestId(null);
-    }, 2000);
+    }, FADE_ANIMATION_DURATION_MS);
   };
 
   const renderFooter = () => {
@@ -133,6 +138,7 @@ export function ContestHistoryTable({
   );
 }
 
+const FADE_ANIMATION_DURATION_MS = 2000;
 const center = 'center' as const;
 const bold = 'bold' as const;
 

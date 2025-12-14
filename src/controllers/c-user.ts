@@ -1,4 +1,4 @@
-import { useMutation, useQuery } from '@tanstack/react-query';
+import { useQuery } from '@tanstack/react-query';
 import { generateClient } from 'aws-amplify/data';
 import type { Schema } from '../../amplify/data/resource';
 
@@ -57,6 +57,85 @@ const SEARCH_SCORE = {
   CONTAINS_EMAIL: 15,
   CONTAINS_FULL_NAME: 10,
 } as const;
+
+// User role constants
+const USER_ROLE = {
+  NPC: 13,
+} as const;
+
+// Search configuration
+const SEARCH_CONFIG = {
+  MAX_RANDOM_NPCS: 5,
+  SHUFFLE_THRESHOLD: 0.5,
+} as const;
+
+// Top-level regex for word splitting (performance optimization)
+const WHITESPACE_REGEX = /\s+/;
+
+// Type for user data returned from selection set queries
+type UserFromSelection = Schema['User']['type'];
+
+// Helper to check if search matches word boundaries in name
+function hasWordBoundaryMatch(
+  searchLower: string,
+  firstName: string,
+  lastName: string
+): boolean {
+  const searchWords = searchLower.split(WHITESPACE_REGEX);
+  const nameWords = [firstName, lastName].filter(Boolean);
+
+  if (searchWords.length <= 1 || nameWords.length <= 1) return false;
+
+  return searchWords.every((searchWord, idx) =>
+    nameWords[idx]?.startsWith(searchWord)
+  );
+}
+
+// Helper function to calculate user search relevance score
+function calculateUserSearchScore(
+  user: { firstName?: string | null; lastName?: string | null; email: string },
+  searchLower: string
+): number {
+  const firstName = (user.firstName ?? '').toLowerCase();
+  const lastName = (user.lastName ?? '').toLowerCase();
+  const email = user.email.toLowerCase();
+  const fullName = `${firstName} ${lastName}`.trim();
+
+  let score = 0;
+
+  // Exact matches get highest priority
+  const hasExactMatch =
+    firstName === searchLower ||
+    lastName === searchLower ||
+    email === searchLower;
+  if (hasExactMatch) score += SEARCH_SCORE.EXACT_MATCH;
+
+  // Full name exact match
+  if (fullName === searchLower) score += SEARCH_SCORE.FULL_NAME_MATCH;
+
+  // Starts with matches
+  if (firstName.startsWith(searchLower))
+    score += SEARCH_SCORE.STARTS_WITH_FIRST_NAME;
+  if (lastName.startsWith(searchLower))
+    score += SEARCH_SCORE.STARTS_WITH_LAST_NAME;
+  if (email.startsWith(searchLower)) score += SEARCH_SCORE.STARTS_WITH_EMAIL;
+  if (fullName.startsWith(searchLower))
+    score += SEARCH_SCORE.STARTS_WITH_FULL_NAME;
+
+  // Contains matches
+  if (firstName.includes(searchLower))
+    score += SEARCH_SCORE.CONTAINS_FIRST_NAME;
+  if (lastName.includes(searchLower)) score += SEARCH_SCORE.CONTAINS_LAST_NAME;
+  if (email.includes(searchLower)) score += SEARCH_SCORE.CONTAINS_EMAIL;
+  if (fullName.includes(searchLower)) score += SEARCH_SCORE.CONTAINS_FULL_NAME;
+
+  // Word boundary matches (e.g., "john doe" matches "j d")
+  if (hasWordBoundaryMatch(searchLower, firstName, lastName)) {
+    score += SEARCH_SCORE.WORD_BOUNDARY_MATCH;
+  }
+
+  return score;
+}
 
 interface UserDataQueryProps {
   rivalries: MRivalry[];
@@ -142,9 +221,9 @@ export const useUserDataQuery = ({ rivalries }: UserDataQueryProps) => {
       if (!uniqueUserIds.length) return null;
 
       // Fetch all users in parallel using Gen 2 client
-      const client = getClient();
+      const apiClient = getClient();
       const userPromises = uniqueUserIds.map(userId =>
-        client.models.User.get(
+        apiClient.models.User.get(
           { id: userId },
           {
             selectionSet: USER_SELECTION_SET,
@@ -192,85 +271,43 @@ export const useUserSearchQuery = ({
         throw new Error(errors[0]?.message || 'Failed to fetch users');
       }
 
-      // Separate NPC users (role = 13) from other users
+      // Separate NPC users from other users
       const npcUsers = users.filter(
-        user => user.role === 13 && user.id !== currentUserId && !user.deletedAt
+        user =>
+          user.role === USER_ROLE.NPC &&
+          user.id !== currentUserId &&
+          !user.deletedAt
       );
       const regularUsers = users.filter(
-        user => user.role !== 13 && user.id !== currentUserId && !user.deletedAt
+        user =>
+          user.role !== USER_ROLE.NPC &&
+          user.id !== currentUserId &&
+          !user.deletedAt
       );
 
       const finalResults: MUser[] = [];
 
-      // If NPC search, add 5 random NPCs at the top
+      // If NPC search, add random NPCs at the top
       if (isNpcSearch && npcUsers.length > 0) {
-        // Shuffle and take 5 random NPCs
-        const shuffledNpcs = [...npcUsers].sort(() => Math.random() - 0.5);
+        // Shuffle and take random NPCs
+        const shuffledNpcs = [...npcUsers].sort(
+          () => Math.random() - SEARCH_CONFIG.SHUFFLE_THRESHOLD
+        );
         const randomNpcs = shuffledNpcs
-          .slice(0, 5)
-          .map(user => getMUser({ user: user as any }));
+          .slice(0, SEARCH_CONFIG.MAX_RANDOM_NPCS)
+          .map(user => getMUser({ user: user as UserFromSelection }));
         finalResults.push(...randomNpcs);
       }
 
       // Filter and score regular users based on search relevance
       const scoredUsers = regularUsers
-        .map(user => {
-          const firstName = (user.firstName || '').toLowerCase();
-          const lastName = (user.lastName || '').toLowerCase();
-          const email = (user.email || '').toLowerCase();
-          const fullName = `${firstName} ${lastName}`.trim();
-
-          let score = 0;
-
-          // Exact matches get highest priority
-          if (
-            firstName === searchLower ||
-            lastName === searchLower ||
-            email === searchLower
-          ) {
-            score += SEARCH_SCORE.EXACT_MATCH;
-          }
-
-          // Full name exact match
-          if (fullName === searchLower) {
-            score += SEARCH_SCORE.FULL_NAME_MATCH;
-          }
-
-          // Starts with matches
-          if (firstName.startsWith(searchLower))
-            score += SEARCH_SCORE.STARTS_WITH_FIRST_NAME;
-          if (lastName.startsWith(searchLower))
-            score += SEARCH_SCORE.STARTS_WITH_LAST_NAME;
-          if (email.startsWith(searchLower))
-            score += SEARCH_SCORE.STARTS_WITH_EMAIL;
-          if (fullName.startsWith(searchLower))
-            score += SEARCH_SCORE.STARTS_WITH_FULL_NAME;
-
-          // Contains matches
-          if (firstName.includes(searchLower))
-            score += SEARCH_SCORE.CONTAINS_FIRST_NAME;
-          if (lastName.includes(searchLower))
-            score += SEARCH_SCORE.CONTAINS_LAST_NAME;
-          if (email.includes(searchLower)) score += SEARCH_SCORE.CONTAINS_EMAIL;
-          if (fullName.includes(searchLower))
-            score += SEARCH_SCORE.CONTAINS_FULL_NAME;
-
-          // Word boundary matches (e.g., "john doe" matches "j d")
-          const searchWords = searchLower.split(/\s+/);
-          const nameWords = [firstName, lastName].filter(Boolean);
-
-          if (searchWords.length > 1 && nameWords.length > 1) {
-            const allWordsMatch = searchWords.every((searchWord, idx) =>
-              nameWords[idx]?.startsWith(searchWord)
-            );
-            if (allWordsMatch) score += SEARCH_SCORE.WORD_BOUNDARY_MATCH;
-          }
-
-          return { user, score };
-        })
+        .map(user => ({
+          user,
+          score: calculateUserSearchScore(user, searchLower),
+        }))
         .filter(({ score }) => score > 0)
         .sort((a, b) => b.score - a.score)
-        .map(({ user }) => getMUser({ user: user as any }));
+        .map(({ user }) => getMUser({ user: user as UserFromSelection }));
 
       // Add regular search results after NPCs
       finalResults.push(...scoredUsers);

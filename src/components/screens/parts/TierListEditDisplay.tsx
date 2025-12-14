@@ -1,4 +1,4 @@
-import React, { type ReactNode, useEffect, useState } from 'react';
+import { type ReactNode, useEffect, useState } from 'react';
 import {
   LayoutAnimation,
   Platform,
@@ -16,9 +16,25 @@ import { fighterByIdFromGame } from '../../../utils';
 import { colors } from '../../../utils/colors';
 import { CharacterDisplay } from '../../common/CharacterDisplay';
 
+// Style constants for selected state
+const SELECTED_OPACITY = 0.5;
+const SELECTED_SCALE = 0.9;
+
+// Maximum tier position (total slots across all tiers minus 1)
+const MAX_TIER_POSITION = 85;
+
 interface TierListEditDisplayProps {
   tierList: MTierList;
   onChange: () => void;
+}
+
+interface MoveSlotOptions {
+  fromIndex: number;
+  toIndex: number;
+  isFromUnknown?: boolean;
+  shiftDirection?: 'up' | 'down';
+  customPositionedSlots?: MTierSlot[];
+  customUnknownSlots?: MTierSlot[];
 }
 
 // Enable LayoutAnimation on Android
@@ -60,147 +76,160 @@ export function TierListEditDisplay({
     setUnknownSlots(unknown);
   }, [tierList]);
 
-  const moveSlot = (
-    fromIndex: number,
+  // Helper: Find first available position in a direction
+  const findFirstAvailablePosition = (
+    occupiedPositions: Set<number | null | undefined>,
+    startPos: number,
+    direction: 'up' | 'down'
+  ): number => {
+    let pos = startPos;
+    if (direction === 'down') {
+      while (occupiedPositions.has(pos) && pos <= MAX_TIER_POSITION) {
+        pos++;
+      }
+    } else {
+      while (occupiedPositions.has(pos) && pos >= 0) {
+        pos--;
+      }
+    }
+    return pos;
+  };
+
+  // Helper: Build position shift map for cascade
+  const buildPositionShiftMap = (
+    slots: MTierSlot[],
     toIndex: number,
-    isFromUnknown = false,
-    shiftDirection: 'up' | 'down' = 'down',
-    customPositionedSlots?: MTierSlot[],
-    customUnknownSlots?: MTierSlot[]
-  ): boolean => {
+    firstAvailablePos: number,
+    direction: 'up' | 'down'
+  ): Map<number, number> => {
+    const newPositionMap = new Map<number, number>();
+    const delta = direction === 'down' ? 1 : -1;
+
+    const fightersToShift = slots.filter(s => {
+      const pos = s.position ?? 0;
+      return direction === 'down'
+        ? pos >= toIndex && pos < firstAvailablePos
+        : pos > firstAvailablePos && pos <= toIndex;
+    });
+
+    for (const fighter of fightersToShift) {
+      const oldPos = fighter.position ?? 0;
+      newPositionMap.set(oldPos, oldPos + delta);
+    }
+
+    return newPositionMap;
+  };
+
+  // Helper: Apply position map to slots
+  const applyPositionMap = (
+    slots: MTierSlot[],
+    positionMap: Map<number, number>
+  ): MTierSlot[] => {
+    return slots.map(slot => {
+      const oldPos = slot.position ?? 0;
+      const newPos = positionMap.get(oldPos);
+      if (newPos !== undefined) {
+        return { ...slot, position: newPos };
+      }
+      return slot;
+    });
+  };
+
+  // Helper: Handle collision when placing a slot
+  const handleSlotCollision = (options: {
+    currentPositionedSlots: MTierSlot[];
+    toIndex: number;
+    shiftDirection: 'up' | 'down';
+    movedSlot: MTierSlot;
+    newUnknownSlots: MTierSlot[];
+    unknownIndex: number;
+  }): MTierSlot[] | null => {
+    const {
+      currentPositionedSlots,
+      toIndex,
+      shiftDirection,
+      movedSlot,
+      newUnknownSlots,
+      unknownIndex,
+    } = options;
+    const occupiedPositions = new Set(
+      currentPositionedSlots.map(s => s.position)
+    );
+
+    const firstAvailablePos = findFirstAvailablePosition(
+      occupiedPositions,
+      toIndex,
+      shiftDirection
+    );
+
+    const isOutOfBounds =
+      shiftDirection === 'down'
+        ? firstAvailablePos > MAX_TIER_POSITION
+        : firstAvailablePos < 0;
+
+    if (isOutOfBounds) {
+      const range =
+        shiftDirection === 'down'
+          ? `[toIndex, ${MAX_TIER_POSITION}]`
+          : '[0, toIndex]';
+      console.warn(
+        `[moveSlot] Cannot place fighter - no empty slots in range ${range}`,
+        { toIndex }
+      );
+      newUnknownSlots.splice(unknownIndex, 0, movedSlot);
+      return null;
+    }
+
+    const positionMap = buildPositionShiftMap(
+      currentPositionedSlots,
+      toIndex,
+      firstAvailablePos,
+      shiftDirection
+    );
+
+    return applyPositionMap(currentPositionedSlots, positionMap);
+  };
+
+  // Helper: Update tier list with new slots
+  const updateTierListSlots = (
+    updatedSlots: MTierSlot[],
+    newUnknownSlots: MTierSlot[]
+  ): void => {
+    const findSlotById = (id: string) =>
+      tierList.slots.find(s => s.id === id) ?? ({} as MTierSlot);
+
+    const allUpdatedSlots = [
+      ...updatedSlots.map(slot => ({
+        ...findSlotById(slot.id),
+        position: slot.position,
+      })),
+      ...newUnknownSlots.map(slot => ({
+        ...findSlotById(slot.id),
+      })),
+    ];
+
+    tierList.slots = allUpdatedSlots;
+  };
+
+  const moveSlot = (options: MoveSlotOptions): boolean => {
+    const {
+      fromIndex,
+      toIndex,
+      isFromUnknown = false,
+      shiftDirection = 'down',
+      customPositionedSlots,
+      customUnknownSlots,
+    } = options;
+
     if (!isFromUnknown && fromIndex === toIndex) return false;
 
     // Use custom arrays if provided (for when we've already updated state)
-    const currentPositionedSlots = customPositionedSlots || positionedSlots;
-    const currentUnknownSlots = customUnknownSlots || unknownSlots;
+    const currentPositionedSlots = customPositionedSlots ?? positionedSlots;
+    const currentUnknownSlots = customUnknownSlots ?? unknownSlots;
 
     LayoutAnimation.configureNext(LayoutAnimation.Presets.easeInEaseOut);
 
-    let newSlots: MTierSlot[];
-    const newUnknownSlots = [...currentUnknownSlots];
-
-    if (isFromUnknown) {
-      // Moving from unknown tier to positioned tier
-      const unknownIndex = currentUnknownSlots.findIndex(
-        s => s.id === selectedSlot?.id
-      );
-      if (unknownIndex === -1) return false;
-
-      const [movedSlot] = newUnknownSlots.splice(unknownIndex, 1);
-
-      // Handle collision: check if there's already a slot at toIndex
-      const existingSlotAtPosition = currentPositionedSlots.find(
-        s => s.position === toIndex
-      );
-
-      if (existingSlotAtPosition) {
-        // There's a collision - cascade positions until finding an empty slot
-        const occupiedPositions = new Set(
-          currentPositionedSlots.map(s => s.position)
-        );
-
-        if (shiftDirection === 'down') {
-          // Find the first available position starting from toIndex
-          let firstAvailablePos = toIndex;
-          while (
-            occupiedPositions.has(firstAvailablePos) &&
-            firstAvailablePos <= 85
-          ) {
-            firstAvailablePos++;
-          }
-
-          if (firstAvailablePos > 85) {
-            console.warn(
-              '[moveSlot] Cannot place fighter - no empty slots in range [toIndex, 85]',
-              {
-                toIndex,
-              }
-            );
-            newUnknownSlots.splice(unknownIndex, 0, movedSlot);
-            return false;
-          }
-
-          // Only shift fighters between toIndex and firstAvailablePos (consecutive occupied positions)
-          const fightersToShift = currentPositionedSlots.filter(
-            s =>
-              (s.position ?? 0) >= toIndex &&
-              (s.position ?? 0) < firstAvailablePos
-          );
-
-          // Shift these fighters: each gets +1 to their position
-          const newPositionMap = new Map<number, number>();
-          for (const fighter of fightersToShift) {
-            const oldPos = fighter.position ?? 0;
-            newPositionMap.set(oldPos, oldPos + 1);
-          }
-
-          // Apply the position changes
-          newSlots = currentPositionedSlots.map(slot => {
-            const oldPos = slot.position ?? 0;
-            if (newPositionMap.has(oldPos)) {
-              return { ...slot, position: newPositionMap.get(oldPos)! };
-            }
-            return slot;
-          });
-        } else {
-          // Find the first available position starting from toIndex (searching downward)
-          let firstAvailablePos = toIndex;
-          while (
-            occupiedPositions.has(firstAvailablePos) &&
-            firstAvailablePos >= 0
-          ) {
-            firstAvailablePos--;
-          }
-
-          if (firstAvailablePos < 0) {
-            console.warn(
-              '[moveSlot] Cannot place fighter - no empty slots in range [0, toIndex]',
-              {
-                toIndex,
-              }
-            );
-            newUnknownSlots.splice(unknownIndex, 0, movedSlot);
-            return false;
-          }
-
-          // Only shift fighters between firstAvailablePos and toIndex (consecutive occupied positions)
-          const fightersToShift = currentPositionedSlots.filter(
-            s =>
-              (s.position ?? 0) > firstAvailablePos &&
-              (s.position ?? 0) <= toIndex
-          );
-
-          // Shift these fighters: each gets -1 to their position
-          const newPositionMap = new Map<number, number>();
-          for (const fighter of fightersToShift) {
-            const oldPos = fighter.position ?? 0;
-            newPositionMap.set(oldPos, oldPos - 1);
-          }
-
-          // Apply the position changes
-          newSlots = currentPositionedSlots.map(slot => {
-            const oldPos = slot.position ?? 0;
-            if (newPositionMap.has(oldPos)) {
-              return { ...slot, position: newPositionMap.get(oldPos)! };
-            }
-            return slot;
-          });
-        }
-      } else {
-        // No collision - just use existing slots
-        newSlots = [...currentPositionedSlots];
-      }
-
-      // Set the slot's position to the target position
-      movedSlot.position = toIndex;
-
-      // Add the moved slot and sort by position
-      newSlots = [...newSlots, movedSlot].sort(
-        (a, b) => (a.position || 0) - (b.position || 0)
-      );
-
-      setUnknownSlots(newUnknownSlots);
-    } else {
+    if (!isFromUnknown) {
       // This shouldn't happen - we only support moving FROM unknown tier
       console.warn(
         '[moveSlot] Unexpected: moving within positioned fighters not supported'
@@ -208,22 +237,47 @@ export function TierListEditDisplay({
       return false;
     }
 
-    const updatedSlots = newSlots;
+    // Moving from unknown tier to positioned tier
+    const unknownIndex = currentUnknownSlots.findIndex(
+      s => s.id === selectedSlot?.id
+    );
+    if (unknownIndex === -1) return false;
 
+    const newUnknownSlots = [...currentUnknownSlots];
+    const [movedSlot] = newUnknownSlots.splice(unknownIndex, 1);
+
+    // Handle collision: check if there's already a slot at toIndex
+    const existingSlotAtPosition = currentPositionedSlots.find(
+      s => s.position === toIndex
+    );
+
+    let newSlots: MTierSlot[];
+    if (existingSlotAtPosition) {
+      const result = handleSlotCollision({
+        currentPositionedSlots,
+        toIndex,
+        shiftDirection,
+        movedSlot,
+        newUnknownSlots,
+        unknownIndex,
+      });
+      if (result === null) return false;
+      newSlots = result;
+    } else {
+      newSlots = [...currentPositionedSlots];
+    }
+
+    // Set the slot's position to the target position
+    movedSlot.position = toIndex;
+
+    // Add the moved slot and sort by position
+    const updatedSlots = [...newSlots, movedSlot].sort(
+      (a, b) => (a.position || 0) - (b.position || 0)
+    );
+
+    setUnknownSlots(newUnknownSlots);
     setPositionedSlots(updatedSlots);
-
-    // Update the tier list's internal slots (positioned + unknown)
-    const allUpdatedSlots = [
-      ...updatedSlots.map(slot => ({
-        ...tierList.slots.find(s => s.id === slot.id)!,
-        position: slot.position,
-      })),
-      ...newUnknownSlots.map(slot => ({
-        ...tierList.slots.find(s => s.id === slot.id)!,
-      })),
-    ];
-
-    tierList.slots = allUpdatedSlots;
+    updateTierListSlots(updatedSlots, newUnknownSlots);
 
     onChange();
     return true;
@@ -471,8 +525,8 @@ export function TierListEditDisplay({
       <View
         key={slot.id}
         style={{
-          opacity: isSelected ? 0.5 : 1,
-          transform: [{ scale: isSelected ? 0.9 : 1 }],
+          opacity: isSelected ? SELECTED_OPACITY : 1,
+          transform: [{ scale: isSelected ? SELECTED_SCALE : 1 }],
           borderWidth: isSelected ? 1 : 0,
           borderColor: colors.blue500,
           borderRadius: 4,
@@ -641,8 +695,8 @@ export function TierListEditDisplay({
                   <View
                     key={slot.id}
                     style={{
-                      opacity: isSelected ? 0.5 : 1,
-                      transform: [{ scale: isSelected ? 0.9 : 1 }],
+                      opacity: isSelected ? SELECTED_OPACITY : 1,
+                      transform: [{ scale: isSelected ? SELECTED_SCALE : 1 }],
                       borderWidth: isSelected ? 1 : 0,
                       borderColor: colors.blue500,
                       borderRadius: 4,

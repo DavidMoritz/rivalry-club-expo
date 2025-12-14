@@ -1,5 +1,5 @@
 import { generateClient } from 'aws-amplify/data';
-import React, { useState } from 'react';
+import { useState } from 'react';
 import {
   ActivityIndicator,
   Modal,
@@ -61,17 +61,18 @@ export function CreateAccountModal({
         // Auto sign-in successful, link the account
         await linkAccountToCognito();
       }
-    } catch (err: any) {
+    } catch (err: unknown) {
       console.error('[CreateAccountModal] Sign up error:', err);
 
-      if (err.name === 'UsernameExistsException') {
+      const caughtError = err as Error & { name?: string };
+      if (caughtError.name === 'UsernameExistsException') {
         setError('An account with this email already exists');
-      } else if (err.name === 'InvalidPasswordException') {
+      } else if (caughtError.name === 'InvalidPasswordException') {
         setError(
           'Password must be at least 8 characters with uppercase, lowercase, numbers, and symbols'
         );
       } else {
-        setError(err?.message || 'Sign up failed. Please try again.');
+        setError(caughtError?.message || 'Sign up failed. Please try again.');
       }
     } finally {
       setLoading(false);
@@ -88,15 +89,18 @@ export function CreateAccountModal({
       // After successful verification, sign in and link account
       await signIn(email.trim(), password.trim());
       await linkAccountToCognito();
-    } catch (err: any) {
+    } catch (err: unknown) {
       console.error('[CreateAccountModal] Verification error:', err);
 
-      if (err.name === 'CodeMismatchException') {
+      const caughtError = err as Error & { name?: string };
+      if (caughtError.name === 'CodeMismatchException') {
         setError('Invalid verification code');
-      } else if (err.name === 'ExpiredCodeException') {
+      } else if (caughtError.name === 'ExpiredCodeException') {
         setError('Verification code has expired. Please try again.');
       } else {
-        setError(err?.message || 'Verification failed. Please try again.');
+        setError(
+          caughtError?.message || 'Verification failed. Please try again.'
+        );
       }
       setLoading(false);
     }
@@ -120,9 +124,12 @@ export function CreateAccountModal({
 
       // Success!
       onSuccess();
-    } catch (err: any) {
+    } catch (err: unknown) {
       console.error('[CreateAccountModal] Link error:', err);
-      setError(err?.message || 'Failed to link account. Please try again.');
+      const caughtError = err as Error;
+      setError(
+        caughtError?.message || 'Failed to link account. Please try again.'
+      );
     } finally {
       setLoading(false);
     }

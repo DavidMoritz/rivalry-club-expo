@@ -1,11 +1,10 @@
 import { useRouter } from 'expo-router';
-import React, { useState } from 'react';
+import { useState } from 'react';
 import { Modal, Pressable, Text, TouchableOpacity, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import { signOut } from '../../lib/amplify-auth';
 import { colors } from '../../utils/colors';
-import { darkStyles } from '../../utils/styles';
 
 export function HamburgerMenu() {
   const router = useRouter();
@@ -54,7 +53,10 @@ export function HamburgerMenu() {
     <>
       <TouchableOpacity
         onPress={() => setMenuVisible(true)}
-        style={[hamburgerButtonStyle, { top: insets.top + 12 }]}
+        style={[
+          hamburgerButtonStyle,
+          { top: insets.top + MENU_BUTTON_TOP_OFFSET },
+        ]}
       >
         <Text style={hamburgerIconStyle}>☰</Text>
       </TouchableOpacity>
@@ -69,7 +71,12 @@ export function HamburgerMenu() {
           onPress={() => setMenuVisible(false)}
           style={modalBackdropStyle}
         >
-          <View style={[menuContainerStyle, { top: insets.top + 64 }]}>
+          <View
+            style={[
+              menuContainerStyle,
+              { top: insets.top + MENU_CONTAINER_TOP_OFFSET },
+            ]}
+          >
             <TouchableOpacity onPress={handleBack} style={menuItemStyle}>
               <Text style={menuIconStyle}>←</Text>
               <Text style={menuTextStyle}>Back</Text>
@@ -118,6 +125,9 @@ export function HamburgerMenu() {
     </>
   );
 }
+
+const MENU_BUTTON_TOP_OFFSET = 12;
+const MENU_CONTAINER_TOP_OFFSET = 64;
 
 const center = 'center' as const;
 const absolute = 'absolute' as const;

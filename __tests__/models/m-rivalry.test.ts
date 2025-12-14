@@ -1,14 +1,13 @@
 import type { Schema } from '../../amplify/data/resource';
 import { getMContest } from '../../src/models/m-contest';
 import { getMRivalry } from '../../src/models/m-rivalry';
-import { getMTierList, TIERS } from '../../src/models/m-tier-list';
+import { getMTierList } from '../../src/models/m-tier-list';
 import { getMUser } from '../../src/models/m-user';
 
 // Extract Gen 2 types
 type Rivalry = Schema['Rivalry']['type'];
-type Contest = Schema['Contest']['type'];
 type TierList = Schema['TierList']['type'];
-type User = Schema['User']['type'];
+type ContestInput = Parameters<typeof getMContest>[0];
 
 describe('MRivalry Model', () => {
   const mockRivalry: Rivalry = {
@@ -424,7 +423,7 @@ describe('MRivalry Model', () => {
           bias: 0,
           createdAt: '2024-01-01',
           updatedAt: '2024-01-01',
-        } as any);
+        } as ContestInput);
 
         contest.setRivalryAndSlots(mRivalry);
         mRivalry.currentContest = contest;
@@ -467,7 +466,7 @@ describe('MRivalry Model', () => {
           bias: 0,
           createdAt: '2024-01-01',
           updatedAt: '2024-01-01',
-        } as any);
+        } as ContestInput);
 
         contest.setRivalryAndSlots(mRivalry);
         mRivalry.currentContest = contest;
@@ -512,7 +511,7 @@ describe('MRivalry Model', () => {
           bias: 0, // No bias for even stock count
           createdAt: '2024-01-01',
           updatedAt: '2024-01-01',
-        } as any);
+        } as ContestInput);
 
         contest.setRivalryAndSlots(mRivalry);
         mRivalry.currentContest = contest;
@@ -554,7 +553,7 @@ describe('MRivalry Model', () => {
           bias: 0,
           createdAt: '2024-01-01',
           updatedAt: '2024-01-01',
-        } as any);
+        } as ContestInput);
 
         contest.setRivalryAndSlots(mRivalry);
         mRivalry.currentContest = contest;
@@ -598,7 +597,7 @@ describe('MRivalry Model', () => {
           bias: 1, // Loser moved up for the odd stock
           createdAt: '2024-01-01',
           updatedAt: '2024-01-01',
-        } as any);
+        } as ContestInput);
 
         contest.setRivalryAndSlots(mRivalry);
         mRivalry.currentContest = contest;
@@ -643,7 +642,7 @@ describe('MRivalry Model', () => {
           result: 3, // A wins by 3 stocks
           createdAt: '2024-01-01',
           updatedAt: '2024-01-01',
-        } as any);
+        } as ContestInput);
 
         contest.setRivalryAndSlots(mRivalry);
         mRivalry.currentContest = contest;
@@ -680,7 +679,7 @@ describe('MRivalry Model', () => {
         bias: 0,
         createdAt: '2024-01-01',
         updatedAt: '2024-01-01',
-      } as any);
+      } as ContestInput);
 
       mRivalry.reverseStanding(contest);
 

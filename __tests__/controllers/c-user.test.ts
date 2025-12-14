@@ -1,10 +1,9 @@
 import { renderHook } from '@testing-library/react-native';
-import React from 'react';
 
 // Create mock functions BEFORE jest.mock and controller imports
-export const mockUserList = jest.fn();
-export const mockUserGet = jest.fn();
-export const mockRivalryList = jest.fn();
+const mockUserList = jest.fn();
+const mockUserGet = jest.fn();
+const mockRivalryList = jest.fn();
 
 // Create mock client that will be returned by generateClient
 const mockClient = {
@@ -38,13 +37,11 @@ import {
 } from '../test-utils';
 
 describe('c-user Controller', () => {
-  let wrapper: any;
-  let queryClient: any;
+  let wrapper: ReturnType<typeof createTestQueryWrapper>['wrapper'];
 
   beforeEach(() => {
     const testWrapper = createTestQueryWrapper();
     wrapper = testWrapper.wrapper;
-    queryClient = testWrapper.queryClient;
     jest.clearAllMocks();
   });
 
@@ -200,7 +197,7 @@ describe('c-user Controller', () => {
 
       await waitForQuerySuccess(result);
 
-      expect(mockUserGet).toHaveBeenCalledTimes(3);
+      expect(mockUserGet).toHaveBeenCalledTimes(mockUsers.length);
       expect(result.current.data).toEqual(mockUsers);
     });
 

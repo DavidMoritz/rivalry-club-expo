@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import { useState } from 'react';
 import {
   KeyboardAvoidingView,
   Platform,
@@ -13,6 +13,29 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { confirmResetPassword, resetPassword } from '../../lib/amplify-auth';
 import { colors } from '../../utils/colors';
 import { darkStyles, styles } from '../../utils/styles';
+
+const MIN_PASSWORD_LENGTH = 8;
+const REDIRECT_DELAY_MS = 2000;
+
+interface CognitoError {
+  name: string;
+  message?: string;
+}
+
+function isCognitoError(err: unknown): err is CognitoError {
+  return (
+    typeof err === 'object' &&
+    err !== null &&
+    'name' in err &&
+    typeof (err as CognitoError).name === 'string'
+  );
+}
+
+function getErrorMessage(err: unknown, fallback: string): string {
+  if (isCognitoError(err)) return err.message ?? fallback;
+  if (err instanceof Error) return err.message;
+  return fallback;
+}
 
 interface ForgotPasswordProps {
   onBack: () => void;
@@ -41,19 +64,22 @@ export function ForgotPassword({
       await resetPassword(email.trim());
       setCodeSent(true);
       setSuccess('Password reset code sent to your email');
-    } catch (err: any) {
+    } catch (err: unknown) {
       console.error('[ForgotPassword] Reset password error:', err);
-
-      if (err.name === 'UserNotFoundException') {
-        setError('No account found with this email');
-      } else if (err.name === 'LimitExceededException') {
-        setError('Too many attempts. Please try again later.');
-      } else {
-        setError(err?.message || 'Failed to send reset code');
-      }
+      setError(getSendCodeErrorMessage(err));
     } finally {
       setLoading(false);
     }
+  }
+
+  function getSendCodeErrorMessage(err: unknown): string {
+    if (!isCognitoError(err))
+      return getErrorMessage(err, 'Failed to send reset code');
+    if (err.name === 'UserNotFoundException')
+      return 'No account found with this email';
+    if (err.name === 'LimitExceededException')
+      return 'Too many attempts. Please try again later.';
+    return getErrorMessage(err, 'Failed to send reset code');
   }
 
   async function handleResetPassword() {
@@ -62,7 +88,7 @@ export function ForgotPassword({
       return;
     }
 
-    if (newPassword.length < 8) {
+    if (newPassword.length < MIN_PASSWORD_LENGTH) {
       setError('Password must be at least 8 characters');
       return;
     }
@@ -84,24 +110,24 @@ export function ForgotPassword({
       // Wait a moment then go back to sign in
       setTimeout(() => {
         onBack();
-      }, 2000);
-    } catch (err: any) {
+      }, REDIRECT_DELAY_MS);
+    } catch (err: unknown) {
       console.error('[ForgotPassword] Confirm reset error:', err);
-
-      if (err.name === 'CodeMismatchException') {
-        setError('Invalid reset code');
-      } else if (err.name === 'ExpiredCodeException') {
-        setError('Reset code has expired. Please request a new one.');
-      } else if (err.name === 'InvalidPasswordException') {
-        setError(
-          'Password must be at least 8 characters with uppercase, lowercase, numbers, and symbols'
-        );
-      } else {
-        setError(err?.message || 'Failed to reset password');
-      }
+      setError(getResetPasswordErrorMessage(err));
     } finally {
       setLoading(false);
     }
+  }
+
+  function getResetPasswordErrorMessage(err: unknown): string {
+    if (!isCognitoError(err))
+      return getErrorMessage(err, 'Failed to reset password');
+    if (err.name === 'CodeMismatchException') return 'Invalid reset code';
+    if (err.name === 'ExpiredCodeException')
+      return 'Reset code has expired. Please request a new one.';
+    if (err.name === 'InvalidPasswordException')
+      return 'Password must be at least 8 characters with uppercase, lowercase, numbers, and symbols';
+    return getErrorMessage(err, 'Failed to reset password');
   }
 
   return (

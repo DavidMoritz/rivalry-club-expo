@@ -1,4 +1,4 @@
-import React, {
+import {
   createContext,
   type ReactNode,
   useCallback,
@@ -45,11 +45,21 @@ const AllRivalriesContext = createContext<AllRivalriesContextValue>({
 
 const AllRivalriesUpdateContext = createContext<AllRivalriesUpdateContextValue>(
   {
-    setRivalries: () => {},
-    addRivalry: () => {},
-    updateRivalry: () => {},
-    removeRivalry: () => {},
-    setUserId: () => {},
+    setRivalries: () => {
+      // noop - default context placeholder
+    },
+    addRivalry: () => {
+      // noop - default context placeholder
+    },
+    updateRivalry: () => {
+      // noop - default context placeholder
+    },
+    removeRivalry: () => {
+      // noop - default context placeholder
+    },
+    setUserId: () => {
+      // noop - default context placeholder
+    },
   }
 );
 

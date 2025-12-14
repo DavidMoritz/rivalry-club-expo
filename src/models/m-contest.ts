@@ -42,27 +42,26 @@ export function getMContest(contest: Contest): MContest {
     // public
     baseContest: contest,
 
-    // setters
+    // accessors (getter/setter pairs)
+    get rivalry() {
+      return this._mRivalry;
+    },
     set rivalry(rivalry: MRivalry | undefined) {
       this._mRivalry = rivalry;
     },
 
-    set tierSlotA(tierSlot: MTierSlot | undefined) {
-      this._mTierSlotA = tierSlot;
-    },
-    set tierSlotB(tierSlot: MTierSlot | undefined) {
-      this._mTierSlotB = tierSlot;
-    },
-
-    // getters
-    get rivalry() {
-      return this._mRivalry;
-    },
     get tierSlotA() {
       return this._mTierSlotA;
     },
+    set tierSlotA(tierSlot: MTierSlot | undefined) {
+      this._mTierSlotA = tierSlot;
+    },
+
     get tierSlotB() {
       return this._mTierSlotB;
+    },
+    set tierSlotB(tierSlot: MTierSlot | undefined) {
+      this._mTierSlotB = tierSlot;
     },
 
     // methods

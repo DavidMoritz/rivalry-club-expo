@@ -5,11 +5,18 @@ import {
   screen,
   waitFor,
 } from '@testing-library/react-native';
-import React from 'react';
 
 import { CreateRivalry } from '../../src/components/screens/CreateRivalry';
-import * as cRivalry from '../../src/controllers/c-rivalry';
-import * as cUser from '../../src/controllers/c-user';
+import {
+  useAcceptRivalryMutation,
+  useCreateNpcRivalryMutation,
+  useCreateRivalryMutation,
+} from '../../src/controllers/c-rivalry';
+import { useUserSearchQuery } from '../../src/controllers/c-user';
+
+// Regex patterns for test queries (must be at top level per Biome rules)
+const SEARCH_PLACEHOLDER_REGEX = /Type 'npc' or search by name/;
+const ERROR_MESSAGE_REGEX = /Error:.*Failed to create rivalry/;
 
 // Mock dependencies
 jest.mock('expo-router', () => ({
@@ -35,9 +42,14 @@ const mockUseAuthUser = require('../../src/hooks/useAuthUser')
   .useAuthUser as jest.Mock;
 const mockUseGame = require('../../src/providers/game').useGame as jest.Mock;
 
+interface MockRouter {
+  back: jest.Mock;
+  push: jest.Mock;
+}
+
 describe('Create Rivalry Integration Test', () => {
   let queryClient: QueryClient;
-  let mockRouter: any;
+  let mockRouter: MockRouter;
   let mockCreateRivalryMutate: jest.Mock;
   const mockUsers = [
     {
@@ -84,19 +96,14 @@ describe('Create Rivalry Integration Test', () => {
     });
 
     // Mock user search to respond to searchText - return users when searchText includes 'jane'
-    (cUser.useUserSearchQuery as jest.Mock).mockImplementation(
-      ({ searchText }) => ({
-        data:
-          searchText && searchText.toLowerCase().includes('jane')
-            ? mockUsers
-            : [],
-        isLoading: false,
-      })
-    );
+    (useUserSearchQuery as jest.Mock).mockImplementation(({ searchText }) => ({
+      data: searchText?.toLowerCase().includes('jane') ? mockUsers : [],
+      isLoading: false,
+    }));
 
     // Mock rivalry creation mutation
     mockCreateRivalryMutate = jest.fn();
-    (cRivalry.useCreateRivalryMutation as jest.Mock).mockReturnValue({
+    (useCreateRivalryMutation as jest.Mock).mockReturnValue({
       mutate: mockCreateRivalryMutate,
       isLoading: false,
       isSuccess: false,
@@ -104,7 +111,7 @@ describe('Create Rivalry Integration Test', () => {
     });
 
     // Mock accept rivalry mutation
-    (cRivalry.useAcceptRivalryMutation as jest.Mock).mockReturnValue({
+    (useAcceptRivalryMutation as jest.Mock).mockReturnValue({
       mutate: jest.fn(),
       isLoading: false,
       isSuccess: false,
@@ -112,7 +119,7 @@ describe('Create Rivalry Integration Test', () => {
     });
 
     // Mock NPC rivalry mutation
-    (cRivalry.useCreateNpcRivalryMutation as jest.Mock).mockReturnValue({
+    (useCreateNpcRivalryMutation as jest.Mock).mockReturnValue({
       mutate: jest.fn(),
       isLoading: false,
       isSuccess: false,
@@ -132,7 +139,7 @@ describe('Create Rivalry Integration Test', () => {
     );
 
     // Enter search text
-    const searchInput = getByPlaceholderText(/Type 'npc' or search by name/);
+    const searchInput = getByPlaceholderText(SEARCH_PLACEHOLDER_REGEX);
     fireEvent.changeText(searchInput, 'jane');
 
     // Force a rerender to apply the mock with new searchText
@@ -158,7 +165,7 @@ describe('Create Rivalry Integration Test', () => {
     // Setup mutation to call onSuccess callback
     mockCreateRivalryMutate.mockImplementation(params => {
       const { onSuccess } =
-        (cRivalry.useCreateRivalryMutation as jest.Mock).mock.calls[0][0] || {};
+        (useCreateRivalryMutation as jest.Mock).mock.calls[0][0] || {};
       if (onSuccess) {
         onSuccess({ id: 'rivalry-1', ...params });
       }
@@ -183,11 +190,10 @@ describe('Create Rivalry Integration Test', () => {
 
   it('should display error when rivalry creation fails', async () => {
     // Setup mutation to call onError callback
-    (cRivalry.useCreateRivalryMutation as jest.Mock).mockReturnValue({
-      mutate: (params: any) => {
+    (useCreateRivalryMutation as jest.Mock).mockReturnValue({
+      mutate: () => {
         const { onError } =
-          (cRivalry.useCreateRivalryMutation as jest.Mock).mock.calls[0][0] ||
-          {};
+          (useCreateRivalryMutation as jest.Mock).mock.calls[0][0] || {};
         if (onError) {
           onError(new Error('Failed to create rivalry'));
         }
@@ -204,7 +210,7 @@ describe('Create Rivalry Integration Test', () => {
     );
 
     // Enter search - mock will return users when 'jane' is in search
-    const searchInput = getByPlaceholderText(/Type 'npc' or search by name/);
+    const searchInput = getByPlaceholderText(SEARCH_PLACEHOLDER_REGEX);
     fireEvent.changeText(searchInput, 'jane');
 
     // Wait for user to appear
@@ -216,9 +222,7 @@ describe('Create Rivalry Integration Test', () => {
     fireEvent.press(createButton);
 
     // Verify error message is displayed
-    const errorMessage = await screen.findByText(
-      /Error:.*Failed to create rivalry/
-    );
+    const errorMessage = await screen.findByText(ERROR_MESSAGE_REGEX);
     expect(errorMessage).toBeTruthy();
 
     // Router back should NOT be called on error

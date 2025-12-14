@@ -1,5 +1,5 @@
 import { render } from '@testing-library/react-native';
-import React, { useContext } from 'react';
+import { useContext } from 'react';
 import { Animated, Text, View } from 'react-native';
 
 import {
@@ -87,12 +87,21 @@ describe('SyncedScrollViewContext', () => {
 
     it('should initialize activeScrollView with value 0', () => {
       // Access the internal _value property to check initial value
-      expect((syncedScrollViewState.activeScrollView as any)._value).toBe(0);
+      expect(
+        (
+          syncedScrollViewState.activeScrollView as unknown as {
+            _value: number;
+          }
+        )._value
+      ).toBe(0);
     });
 
     it('should initialize offsetPercent with value 0', () => {
       // Access the internal _value property to check initial value
-      expect((syncedScrollViewState.offsetPercent as any)._value).toBe(0);
+      expect(
+        (syncedScrollViewState.offsetPercent as unknown as { _value: number })
+          ._value
+      ).toBe(0);
     });
 
     it('should allow activeScrollView to be updated', () => {
@@ -100,9 +109,13 @@ describe('SyncedScrollViewContext', () => {
 
       syncedScrollViewState.activeScrollView.setValue(testValue);
 
-      expect((syncedScrollViewState.activeScrollView as any)._value).toBe(
-        testValue
-      );
+      expect(
+        (
+          syncedScrollViewState.activeScrollView as unknown as {
+            _value: number;
+          }
+        )._value
+      ).toBe(testValue);
 
       // Reset to 0 for other tests
       syncedScrollViewState.activeScrollView.setValue(0);
@@ -113,9 +126,10 @@ describe('SyncedScrollViewContext', () => {
 
       syncedScrollViewState.offsetPercent.setValue(testValue);
 
-      expect((syncedScrollViewState.offsetPercent as any)._value).toBe(
-        testValue
-      );
+      expect(
+        (syncedScrollViewState.offsetPercent as unknown as { _value: number })
+          ._value
+      ).toBe(testValue);
 
       // Reset to 0 for other tests
       syncedScrollViewState.offsetPercent.setValue(0);

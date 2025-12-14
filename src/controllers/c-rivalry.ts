@@ -6,8 +6,40 @@ import type { Schema } from '../../amplify/data/resource';
 import { getMContest, type MContest } from '../models/m-contest';
 import { STEPS_PER_STOCK } from '../models/m-game';
 import { getMRivalry, type MRivalry } from '../models/m-rivalry';
-import type { MTierList } from '../models/m-tier-list';
-import { FIGHTER_COUNT } from '../models/m-tier-list';
+import {
+  FIGHTER_COUNT,
+  getMTierList,
+  type MTierList,
+} from '../models/m-tier-list';
+
+// Type definitions for Amplify Gen 2 data structures
+type Contest = Schema['Contest']['type'];
+type TierSlot = Schema['TierSlot']['type'];
+type TierList = Schema['TierList']['type'];
+type User = Schema['User']['type'];
+type Rivalry = Schema['Rivalry']['type'];
+
+// Type for GraphQL error
+interface GraphQLError {
+  message: string;
+  [key: string]: unknown;
+}
+
+// Connection types matching m-rivalry.ts definitions
+type ModelContestConnection = {
+  items: Array<Contest | null>;
+  nextToken?: string | null;
+};
+
+// Extended tier list with nested tier slots for API responses
+type TierListWithNestedSlots = TierList & {
+  tierSlots: { items: TierSlot[] };
+};
+
+type ModelTierListConnectionWithSlots = {
+  items: Array<TierListWithNestedSlots | null>;
+  nextToken?: string | null;
+};
 
 // Lazy client initialization to avoid crashes when Amplify isn't configured (e.g., Expo Go)
 let client: ReturnType<typeof generateClient<Schema>> | null = null;
@@ -89,6 +121,7 @@ interface PendingRivalriesQueryProps {
  * If missing tier slots are detected, creates them with position: null.
  * This is a fail-safe to maintain data integrity.
  */
+// biome-ignore lint/complexity/noExcessiveCognitiveComplexity: Complex integrity check requires multiple validation steps
 export async function ensureTierListIntegrity(
   tierList: MTierList,
   gameId: string
@@ -119,7 +152,7 @@ export async function ensureTierListIntegrity(
   }
 
   // Extract tier slots from the relationship
-  const tierSlotsArray: any[] = [];
+  const tierSlotsArray: TierSlot[] = [];
   if (tierListData.tierSlots) {
     for await (const tierSlot of tierListData.tierSlots) {
       tierSlotsArray.push(tierSlot);
@@ -309,7 +342,7 @@ export const useRivalryContestsQuery = ({
       }
 
       return {
-        contests: contests.map(c => getMContest(c as any)),
+        contests: contests.map(c => getMContest(c as Contest)),
         nextToken,
       };
     },
@@ -323,6 +356,7 @@ export const useRivalryWithAllInfoQuery = ({
   useQuery({
     enabled: !!rivalry?.id && enabled,
     queryKey: ['rivalryId', rivalry?.id],
+    // biome-ignore lint/complexity/noExcessiveCognitiveComplexity: Complex query fetches and hydrates multiple related entities
     queryFn: async () => {
       // Use Gen 2 client to fetch rivalry with related data
       const { data: rivalryData, errors } =
@@ -391,24 +425,26 @@ export const useRivalryWithAllInfoQuery = ({
               currentContestErrors
             );
           } else if (currentContestData) {
-            contestsArray.unshift(currentContestData as any);
+            contestsArray.unshift(currentContestData as Contest);
           }
         }
       }
 
       const contests = { items: contestsArray };
 
-      const tierListsArray: any[] = [];
+      const tierListsArray: Array<
+        TierList & { tierSlots: { items: TierSlot[] } }
+      > = [];
       if (rivalryData.tierLists) {
         for await (const tierListData of rivalryData.tierLists) {
-          const tierSlotsArray: any[] = [];
+          const tierSlotsArray: TierSlot[] = [];
           if (tierListData.tierSlots) {
             for await (const tierSlot of tierListData.tierSlots) {
               tierSlotsArray.push(tierSlot);
             }
           }
           tierListsArray.push({
-            ...tierListData,
+            ...(tierListData as TierList),
             tierSlots: { items: tierSlotsArray },
           });
         }
@@ -425,8 +461,8 @@ export const useRivalryWithAllInfoQuery = ({
         mRivalry.currentContestId = rivalryData.currentContestId;
         mRivalry.hiddenByA = rivalryData.hiddenByA ?? false;
         mRivalry.hiddenByB = rivalryData.hiddenByB ?? false;
-        mRivalry.setMContests(contests as any);
-        mRivalry.setMTierLists(tierLists as any);
+        mRivalry.setMContests(contests as ModelContestConnection);
+        mRivalry.setMTierLists(tierLists as ModelTierListConnectionWithSlots);
 
         // Fetch user data separately
         const { getMUser } = await import('../models/m-user');
@@ -435,14 +471,14 @@ export const useRivalryWithAllInfoQuery = ({
           id: rivalryData.userAId,
         });
         if (userAData) {
-          mRivalry.userA = getMUser({ user: userAData as any });
+          mRivalry.userA = getMUser({ user: userAData as User });
         }
 
         const { data: userBData } = await getClient().models.User.get({
           id: rivalryData.userBId,
         });
         if (userBData) {
-          mRivalry.userB = getMUser({ user: userBData as any });
+          mRivalry.userB = getMUser({ user: userBData as User });
         }
 
         // FAIL-SAFE: Ensure tier lists have complete tier slots (86 per tier list)
@@ -480,20 +516,22 @@ export const useRivalryWithAllInfoQuery = ({
             );
 
           if (refreshedRivalry?.tierLists) {
-            const refreshedTierListsArray: any[] = [];
+            const refreshedTierListsArray: TierListWithNestedSlots[] = [];
             for await (const tierListData of refreshedRivalry.tierLists) {
-              const tierSlotsArray: any[] = [];
+              const tierSlotsArray: TierSlot[] = [];
               if (tierListData.tierSlots) {
                 for await (const tierSlot of tierListData.tierSlots) {
                   tierSlotsArray.push(tierSlot);
                 }
               }
               refreshedTierListsArray.push({
-                ...tierListData,
+                ...(tierListData as TierList),
                 tierSlots: { items: tierSlotsArray },
               });
             }
-            mRivalry.setMTierLists({ items: refreshedTierListsArray } as any);
+            mRivalry.setMTierLists({
+              items: refreshedTierListsArray,
+            } as ModelTierListConnectionWithSlots);
           }
         }
 
@@ -540,7 +578,7 @@ export const useCreateContestMutation = ({
         throw new Error(errors[0]?.message || 'Failed to create contest');
       }
 
-      return getMContest(contestData as any);
+      return getMContest(contestData as Contest);
     },
     onSuccess: contest => {
       queryClient.invalidateQueries({ queryKey: ['rivalryId', rivalry?.id] });
@@ -559,10 +597,13 @@ export const useUpdateRivalryMutation = ({ rivalry }: RivalryMutationProps) => {
       const updateInput = {
         ...pick(rivalry, UPDATE_RIVALRY_KEYS),
         ...overrides,
+      } as {
+        id: string;
+        contestCount?: number | null;
+        currentContestId?: string | null;
       };
-      const { data, errors } = await getClient().models.Rivalry.update(
-        updateInput as any
-      );
+      const { data, errors } =
+        await getClient().models.Rivalry.update(updateInput);
 
       if (errors) {
         throw new Error(errors[0]?.message || 'Failed to update rivalry');
@@ -763,6 +804,7 @@ export const useUpdateCurrentContestShuffleTierSlotsMutation = ({
   const queryClient = useQueryClient();
 
   return useMutation({
+    // biome-ignore lint/complexity/noExcessiveCognitiveComplexity: Complex reshuffle logic with multiple conditional branches
     mutationFn: async (slotToReshuffle?: 'A' | 'B') => {
       if (!rivalry?.currentContest) {
         throw new Error('No current contest');
@@ -799,11 +841,13 @@ export const useUpdateCurrentContestShuffleTierSlotsMutation = ({
         }
 
         // Collect all affected tier slots from tierListA
-        rivalry.tierListA?.slots.forEach(slot => {
-          if (slot.position !== null && slot.position !== undefined) {
-            tierSlotsToUpdate.push({ id: slot.id, position: slot.position });
+        if (rivalry.tierListA?.slots) {
+          for (const slot of rivalry.tierListA.slots) {
+            if (slot.position !== null && slot.position !== undefined) {
+              tierSlotsToUpdate.push({ id: slot.id, position: slot.position });
+            }
           }
-        });
+        }
       }
 
       if (!slotToReshuffle || slotToReshuffle === 'B') {
@@ -827,11 +871,13 @@ export const useUpdateCurrentContestShuffleTierSlotsMutation = ({
         }
 
         // Collect all affected tier slots from tierListB
-        rivalry.tierListB?.slots.forEach(slot => {
-          if (slot.position !== null && slot.position !== undefined) {
-            tierSlotsToUpdate.push({ id: slot.id, position: slot.position });
+        if (rivalry.tierListB?.slots) {
+          for (const slot of rivalry.tierListB.slots) {
+            if (slot.position !== null && slot.position !== undefined) {
+              tierSlotsToUpdate.push({ id: slot.id, position: slot.position });
+            }
           }
-        });
+        }
       }
 
       if (!(tierSlotA && tierSlotB)) {
@@ -869,7 +915,7 @@ export const useUpdateCurrentContestShuffleTierSlotsMutation = ({
         throw new Error(errors[0]?.message || 'Failed to update contest');
       }
 
-      return getMContest(data as any);
+      return getMContest(data as Contest);
     },
     onSuccess: contest => {
       queryClient.invalidateQueries({ queryKey: ['rivalryId', rivalry?.id] });
@@ -885,6 +931,7 @@ export const useDeleteMostRecentContestMutation = ({
   const queryClient = useQueryClient();
 
   return useMutation({
+    // biome-ignore lint/complexity/noExcessiveCognitiveComplexity: Complex undo operation requires multiple database updates
     mutationFn: async () => {
       if (!rivalry) {
         throw new Error('No rivalry provided');
@@ -911,16 +958,24 @@ export const useDeleteMostRecentContestMutation = ({
 
       // Pass the actual POSITION values, not indices
       // trackStats=false to avoid double-counting on undo (stats are aggregate, not reversible)
-      rivalry.tierListA?.adjustTierSlotPositionBySteps(
-        mostRecentContest.tierSlotA?.position as number,
-        (mostRecentContest.result as number) * STEPS_PER_STOCK,
-        false // Don't increment contestCount/winCount on undo
-      );
-      rivalry.tierListB?.adjustTierSlotPositionBySteps(
-        mostRecentContest.tierSlotB?.position as number,
-        (mostRecentContest.result as number) * STEPS_PER_STOCK * -1,
-        false // Don't increment contestCount/winCount on undo
-      );
+      const tierSlotAPosition = mostRecentContest.tierSlotA?.position;
+      const tierSlotBPosition = mostRecentContest.tierSlotB?.position;
+      const contestResult = mostRecentContest.result ?? 0;
+
+      if (tierSlotAPosition !== null && tierSlotAPosition !== undefined) {
+        rivalry.tierListA?.adjustTierSlotPositionBySteps(
+          tierSlotAPosition,
+          contestResult * STEPS_PER_STOCK,
+          false // Don't increment contestCount/winCount on undo
+        );
+      }
+      if (tierSlotBPosition !== null && tierSlotBPosition !== undefined) {
+        rivalry.tierListB?.adjustTierSlotPositionBySteps(
+          tierSlotBPosition,
+          contestResult * STEPS_PER_STOCK * -1,
+          false // Don't increment contestCount/winCount on undo
+        );
+      }
 
       // Get the updated tier slot positions
       const tierListAPositions = rivalry.tierListA?.getPositionsPojo();
@@ -964,14 +1019,18 @@ export const useDeleteMostRecentContestMutation = ({
       }
 
       // Update both tier lists with reversed standings
+      if (!(rivalry.tierListA?.id && rivalry.tierListB?.id)) {
+        throw new Error('Tier lists not found');
+      }
+
       const [resultA, resultB] = await Promise.all([
         getClient().models.TierList.update({
-          id: rivalry.tierListA!.id,
-          standing: rivalry.tierListA!.standing,
+          id: rivalry.tierListA.id,
+          standing: rivalry.tierListA.standing,
         }),
         getClient().models.TierList.update({
-          id: rivalry.tierListB!.id,
-          standing: rivalry.tierListB!.standing,
+          id: rivalry.tierListB.id,
+          standing: rivalry.tierListB.standing,
         }),
       ]);
 
@@ -1074,10 +1133,10 @@ export const usePendingRivalriesQuery = ({
 
       return {
         awaitingAcceptance: (awaitingAcceptanceData || []).map(r =>
-          getMRivalry({ rivalry: r as any })
+          getMRivalry({ rivalry: r as Rivalry })
         ),
         initiated: (initiatedData || []).map(r =>
-          getMRivalry({ rivalry: r as any })
+          getMRivalry({ rivalry: r as Rivalry })
         ),
       };
     },
@@ -1092,6 +1151,7 @@ export const useCreateRivalryMutation = ({
   const queryClient = useQueryClient();
 
   return useMutation({
+    // biome-ignore lint/complexity/noExcessiveCognitiveComplexity: Complex rivalry creation with template copying and batch operations
     mutationFn: async ({ userAId, userBId, gameId }: CreateRivalryParams) => {
       // Create the rivalry
       const { data: rivalryData, errors: rivalryErrors } =
@@ -1146,7 +1206,7 @@ export const useCreateRivalryMutation = ({
             { selectionSet: ['id', 'tierSlots.*'] }
           );
 
-          const templateTierSlotsArray: any[] = [];
+          const templateTierSlotsArray: TierSlot[] = [];
           if (tierListData?.tierSlots) {
             for await (const tierSlot of tierListData.tierSlots) {
               templateTierSlotsArray.push(tierSlot);
@@ -1155,7 +1215,7 @@ export const useCreateRivalryMutation = ({
 
           const templateTierSlots = templateTierSlotsArray;
 
-          if (templateTierSlots && templateTierSlots.length > 0) {
+          if (templateTierSlots.length > 0) {
             // Use the template tier slots
             tierSlotData = templateTierSlots.map(slot => ({
               fighterId: slot.fighterId,
@@ -1223,9 +1283,13 @@ export const useCreateRivalryMutation = ({
       }
 
       // Create tier list for userA (initiator) only
+      if (!rivalryData?.id) {
+        throw new Error('Rivalry data is missing');
+      }
+
       const { data: tierListAData, errors: tierListAErrors } =
         await getClient().models.TierList.create({
-          rivalryId: rivalryData!.id,
+          rivalryId: rivalryData.id,
           userId: userAId,
           standing: 0,
         });
@@ -1239,7 +1303,7 @@ export const useCreateRivalryMutation = ({
       }
 
       // Create tier slots for userA in batches
-      const allTierSlotErrors: any[] = [];
+      const allTierSlotErrors: GraphQLError[] = [];
 
       for (let i = 0; i < tierSlotData.length; i += TIER_SLOT_BATCH_SIZE) {
         const batch = tierSlotData.slice(i, i + TIER_SLOT_BATCH_SIZE);
@@ -1290,14 +1354,13 @@ export const useCreateRivalryMutation = ({
       );
 
       if (tierListWithSlots) {
-        const { getMTierList } = await import('../models/m-tier-list');
-        const mTierList = getMTierList(tierListWithSlots as any);
+        const mTierList = getMTierList(tierListWithSlots as TierList);
 
         // Check and fix any missing slots
         await ensureTierListIntegrity(mTierList, gameId);
       }
 
-      return getMRivalry({ rivalry: rivalryData as any });
+      return getMRivalry({ rivalry: rivalryData as Rivalry });
     },
     onSuccess: (rivalry, variables) => {
       queryClient.invalidateQueries({
@@ -1320,6 +1383,7 @@ export const useCreateNpcRivalryMutation = ({
   const queryClient = useQueryClient();
 
   return useMutation({
+    // biome-ignore lint/complexity/noExcessiveCognitiveComplexity: NPC rivalry creation requires multiple tier lists and batch operations
     mutationFn: async ({ userAId, userBId, gameId }: CreateRivalryParams) => {
       // Create the rivalry with accepted = true for NPCs
       const { data: rivalryData, errors: rivalryErrors } =
@@ -1364,9 +1428,13 @@ export const useCreateNpcRivalryMutation = ({
       }));
 
       // Create tier list for userA
+      if (!rivalryData?.id) {
+        throw new Error('Rivalry data is missing');
+      }
+
       const { data: tierListAData, errors: tierListAErrors } =
         await getClient().models.TierList.create({
-          rivalryId: rivalryData!.id,
+          rivalryId: rivalryData.id,
           userId: userAId,
           standing: 0,
         });
@@ -1378,7 +1446,7 @@ export const useCreateNpcRivalryMutation = ({
       // Create tier list for userB (NPC)
       const { data: tierListBData, errors: tierListBErrors } =
         await getClient().models.TierList.create({
-          rivalryId: rivalryData!.id,
+          rivalryId: rivalryData.id,
           userId: userBId,
           standing: 0,
         });
@@ -1388,7 +1456,7 @@ export const useCreateNpcRivalryMutation = ({
       }
 
       // Create tier slots for both users in batches
-      const allTierSlotErrors: any[] = [];
+      const allTierSlotErrors: GraphQLError[] = [];
 
       // Create tier slots for userA
       for (let i = 0; i < tierSlotDataA.length; i += TIER_SLOT_BATCH_SIZE) {
@@ -1440,7 +1508,7 @@ export const useCreateNpcRivalryMutation = ({
         );
       }
 
-      return getMRivalry({ rivalry: rivalryData as any });
+      return getMRivalry({ rivalry: rivalryData as Rivalry });
     },
     onSuccess: (rivalry, variables) => {
       queryClient.invalidateQueries({
@@ -1463,6 +1531,7 @@ export const useAcceptRivalryMutation = ({
   const queryClient = useQueryClient();
 
   return useMutation({
+    // biome-ignore lint/complexity/noExcessiveCognitiveComplexity: Complex acceptance flow with template copying and tier list creation
     mutationFn: async (rivalryId: string) => {
       if (!rivalryId) {
         throw new Error('Rivalry ID is required');
@@ -1525,7 +1594,7 @@ export const useAcceptRivalryMutation = ({
             { selectionSet: ['id', 'tierSlots.*'] }
           );
 
-          const templateTierSlotsArray: any[] = [];
+          const templateTierSlotsArray: TierSlot[] = [];
           if (tierListData?.tierSlots) {
             for await (const tierSlot of tierListData.tierSlots) {
               templateTierSlotsArray.push(tierSlot);
@@ -1534,7 +1603,7 @@ export const useAcceptRivalryMutation = ({
 
           const templateTierSlots = templateTierSlotsArray;
 
-          if (templateTierSlots && templateTierSlots.length > 0) {
+          if (templateTierSlots.length > 0) {
             // Use the template tier slots
             tierSlotData = templateTierSlots.map(slot => ({
               fighterId: slot.fighterId,
@@ -1587,7 +1656,7 @@ export const useAcceptRivalryMutation = ({
       }
 
       // Create tier slots for userB in batches
-      const allTierSlotErrors: any[] = [];
+      const allTierSlotErrors: GraphQLError[] = [];
 
       for (let i = 0; i < tierSlotData.length; i += TIER_SLOT_BATCH_SIZE) {
         const batch = tierSlotData.slice(i, i + TIER_SLOT_BATCH_SIZE);
@@ -1634,8 +1703,7 @@ export const useAcceptRivalryMutation = ({
       );
 
       if (tierListWithSlots) {
-        const { getMTierList } = await import('../models/m-tier-list');
-        const mTierList = getMTierList(tierListWithSlots as any);
+        const mTierList = getMTierList(tierListWithSlots as TierList);
 
         // Check and fix any missing slots
         await ensureTierListIntegrity(mTierList, gameId);

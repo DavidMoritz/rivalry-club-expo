@@ -1,6 +1,6 @@
 import { generateClient } from 'aws-amplify/data';
 import { useRouter } from 'expo-router';
-import React, { useEffect, useRef, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import {
   Alert,
   KeyboardAvoidingView,
@@ -21,6 +21,54 @@ import { colors } from '../../utils/colors';
 import { darkStyles, styles } from '../../utils/styles';
 import { CreateAccountModal } from './CreateAccountModal';
 import { LinkAccountModal } from './LinkAccountModal';
+
+// Constants for timeouts and validation
+const REDIRECT_DELAY_MS = 1000;
+const SUCCESS_MESSAGE_DELAY_MS = 1500;
+const MESSAGE_CLEAR_DELAY_MS = 3000;
+const MIN_PASSWORD_LENGTH = 8;
+const DEV_TAP_THRESHOLD = 5;
+
+// Password validation helper
+const validatePasswordFields = (
+  currentPassword: string,
+  newPassword: string,
+  confirmPassword: string
+): string | null => {
+  if (!(currentPassword && newPassword && confirmPassword)) {
+    return 'All password fields are required';
+  }
+  if (newPassword !== confirmPassword) {
+    return 'New passwords do not match';
+  }
+  if (newPassword.length < MIN_PASSWORD_LENGTH) {
+    return 'Password must be at least 8 characters';
+  }
+  return null;
+};
+
+// Password error message mapper
+const getPasswordErrorMessage = (error: unknown): string => {
+  const errorName = error instanceof Error && 'name' in error ? error.name : '';
+  const defaultMessage =
+    error instanceof Error ? error.message : 'Failed to change password';
+
+  if (errorName === 'NotAuthorizedException') {
+    return 'Current password is incorrect';
+  }
+  if (errorName === 'InvalidPasswordException') {
+    return 'Password must be at least 8 characters with uppercase, lowercase, numbers, and symbols';
+  }
+  return defaultMessage;
+};
+
+// Extract error message from unknown error
+const getUpdateErrorMessage = (error: unknown): string =>
+  error instanceof Error ? error.message : 'Failed to update profile';
+
+// Check if user is new (no first name set)
+const isUserNew = (userFirstName: string | undefined | null): boolean =>
+  !userFirstName || userFirstName.trim() === '';
 
 export function Profile() {
   const router = useRouter();
@@ -52,7 +100,6 @@ export function Profile() {
 
     if (!firstName.trim()) {
       setErrorMessage('First name is required');
-
       return;
     }
 
@@ -60,12 +107,11 @@ export function Profile() {
     setErrorMessage('');
     setSuccessMessage('');
 
+    // Check if this is a new user before the update
+    const wasNewUser = isUserNew(user.firstName);
+
     try {
       const client = generateClient<Schema>();
-
-      // Check if this is a new user (no previous first name)
-      const isNewUser = !user.firstName || user.firstName.trim() === '';
-
       const result = await client.models.User.update({
         id: user.id,
         firstName: firstName.trim(),
@@ -78,21 +124,16 @@ export function Profile() {
 
       // Store firstName locally so user never sees "Player_${shortId}" again
       await storeFirstName(firstName.trim());
-
       setSuccessMessage('Profile updated successfully');
 
-      // If this was a new user completing their profile, redirect to rivalries
-      if (isNewUser) {
-        setTimeout(() => {
-          router.replace('/rivalries');
-        }, 1000);
-      } else {
-        setTimeout(() => setSuccessMessage(''), 3000);
-      }
+      // Handle post-update navigation/cleanup
+      const delay = wasNewUser ? REDIRECT_DELAY_MS : MESSAGE_CLEAR_DELAY_MS;
+      const action = wasNewUser
+        ? () => router.replace('/rivalries')
+        : () => setSuccessMessage('');
+      setTimeout(action, delay);
     } catch (error) {
-      setErrorMessage(
-        error instanceof Error ? error.message : 'Failed to update profile'
-      );
+      setErrorMessage(getUpdateErrorMessage(error));
     } finally {
       setIsUpdating(false);
     }
@@ -102,21 +143,13 @@ export function Profile() {
     setErrorMessage('');
     setSuccessMessage('');
 
-    if (!(currentPassword && newPassword && confirmPassword)) {
-      setErrorMessage('All password fields are required');
-
-      return;
-    }
-
-    if (newPassword !== confirmPassword) {
-      setErrorMessage('New passwords do not match');
-
-      return;
-    }
-
-    if (newPassword.length < 8) {
-      setErrorMessage('Password must be at least 8 characters');
-
+    const validationError = validatePasswordFields(
+      currentPassword,
+      newPassword,
+      confirmPassword
+    );
+    if (validationError) {
+      setErrorMessage(validationError);
       return;
     }
 
@@ -133,19 +166,10 @@ export function Profile() {
       // Scroll to top to show the success message
       scrollViewRef.current?.scrollTo({ y: 0, animated: true });
 
-      setTimeout(() => setSuccessMessage(''), 3000);
-    } catch (error: any) {
+      setTimeout(() => setSuccessMessage(''), MESSAGE_CLEAR_DELAY_MS);
+    } catch (error: unknown) {
       console.error('[Profile] Password change error:', error);
-
-      if (error.name === 'NotAuthorizedException') {
-        setErrorMessage('Current password is incorrect');
-      } else if (error.name === 'InvalidPasswordException') {
-        setErrorMessage(
-          'Password must be at least 8 characters with uppercase, lowercase, numbers, and symbols'
-        );
-      } else {
-        setErrorMessage(error?.message || 'Failed to change password');
-      }
+      setErrorMessage(getPasswordErrorMessage(error));
 
       // Scroll to top to show the error message
       scrollViewRef.current?.scrollTo({ y: 0, animated: true });
@@ -158,7 +182,7 @@ export function Profile() {
     const newCount = devTapCount + 1;
     setDevTapCount(newCount);
 
-    if (newCount >= 5) {
+    if (newCount >= DEV_TAP_THRESHOLD) {
       Alert.alert(
         '🛠️ Developer Tools',
         'Reset UUID and test as new user?\n\nThis will:\n• Clear UUID from Keychain\n• Sign out of Cognito\n• Restart the app\n\nYou will appear as a brand new user.',
@@ -202,7 +226,7 @@ export function Profile() {
   }
 
   // Check if this is a new user
-  const isNewUser = !user?.firstName || user.firstName.trim() === '';
+  const isNewUser = isUserNew(user?.firstName);
 
   return (
     <SafeAreaView
@@ -704,7 +728,7 @@ export function Profile() {
               // The app will reload with the linked account
               setTimeout(() => {
                 router.replace('/rivalries');
-              }, 1500);
+              }, SUCCESS_MESSAGE_DELAY_MS);
             }}
             visible={showLinkAccountModal}
           />
@@ -718,7 +742,7 @@ export function Profile() {
               // The user is now linked to Cognito
               setTimeout(() => {
                 router.replace('/rivalries');
-              }, 1500);
+              }, SUCCESS_MESSAGE_DELAY_MS);
             }}
             visible={showCreateAccountModal}
           />

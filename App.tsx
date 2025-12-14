@@ -1,12 +1,11 @@
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { Hub } from 'aws-amplify/utils';
 import { StatusBar } from 'expo-status-bar';
-import React, { useEffect, useState } from 'react';
+import { useEffect, useState } from 'react';
 import 'react-native-get-random-values';
 import 'react-native-url-polyfill/auto';
 
 import { Access } from './src/components/screens/Access';
-import { Auth } from './src/components/screens/Auth';
 import Home from './src/components/screens/Home';
 import { getCurrentUser } from './src/lib/amplify-auth';
 import { AllRivalriesProvider } from './src/providers/all-rivalries';
@@ -73,6 +72,8 @@ function AuthenticatedApp({ selectedGame }: { selectedGame: Game | null }) {
           break;
         case 'signedOut':
           setUserId(undefined);
+          break;
+        default:
           break;
       }
     });

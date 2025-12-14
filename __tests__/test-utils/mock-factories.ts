@@ -36,7 +36,7 @@ export function createMockUser(
  */
 export function createMockGame(
   overrides?: Partial<Schema['Game']['type']>
-): any {
+): Schema['Game']['type'] {
   const now = new Date().toISOString();
 
   return {
@@ -57,7 +57,7 @@ export function createMockGame(
  */
 export function createMockFighter(
   overrides?: Partial<Schema['Fighter']['type']>
-): any {
+): Schema['Fighter']['type'] {
   const now = new Date().toISOString();
 
   return {
@@ -82,7 +82,7 @@ export function createMockFighter(
  */
 export function createMockRivalry(
   overrides?: Partial<Schema['Rivalry']['type']>
-): any {
+): Schema['Rivalry']['type'] {
   const now = new Date().toISOString();
 
   return {
@@ -111,7 +111,7 @@ export function createMockRivalry(
  */
 export function createMockContest(
   overrides?: Partial<Schema['Contest']['type']>
-): any {
+): Schema['Contest']['type'] {
   const now = new Date().toISOString();
 
   return {
@@ -135,7 +135,7 @@ export function createMockContest(
  */
 export function createMockTierList(
   overrides?: Partial<Schema['TierList']['type']>
-): any {
+): Schema['TierList']['type'] {
   const now = new Date().toISOString();
 
   return {
@@ -158,7 +158,7 @@ export function createMockTierList(
  */
 export function createMockTierSlot(
   overrides?: Partial<Schema['TierSlot']['type']>
-): any {
+): Schema['TierSlot']['type'] {
   const now = new Date().toISOString();
 
   return {
@@ -344,7 +344,7 @@ export function createMockTierListWithSlots(options?: {
   userId?: string;
   standing?: number;
   fighters?: Array<{ id: string; name: string; position?: number }>;
-}): any {
+}): Schema['TierList']['type'] {
   const tierListId = options?.tierListId || 'tier-list-test-id';
   const fighters = options?.fighters || [
     { id: 'fighter-1', name: 'Fighter 1', position: 0 },
@@ -382,7 +382,7 @@ export function createMockConnection<T>(
   items: T[],
   typename: string,
   nextToken?: string | null
-): any {
+): { __typename: string; items: T[]; nextToken: string | null } {
   return {
     __typename: `Model${typename}Connection`,
     items,

@@ -2,11 +2,41 @@ import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { renderHook, waitFor } from '@testing-library/react-native';
 import React from 'react';
 
+interface MockTierSlot {
+  id: string;
+  fighterId: string;
+  position: number | null;
+}
+
+interface MockTierListData {
+  id: string;
+  tierSlots?: {
+    items?: MockTierSlot[];
+  };
+}
+
+interface MockFunctions {
+  mockRivalryGet: jest.Mock;
+  mockRivalryUpdate: jest.Mock;
+  mockRivalryList: jest.Mock;
+  mockFighterList: jest.Mock;
+  mockTierListQuery: jest.Mock;
+  mockTierListCreate: jest.Mock;
+  mockTierListList: jest.Mock;
+  mockTierListGet: jest.Mock;
+  mockTierSlotList: jest.Mock;
+  mockTierSlotCreate: jest.Mock;
+}
+
+declare const global: typeof globalThis & {
+  mockAcceptRivalryFns: MockFunctions;
+};
+
 // Mock the m-tier-list module for dynamic import
 jest.mock('../../src/models/m-tier-list', () => ({
-  getMTierList: jest.fn((tierListData: any) => {
+  getMTierList: jest.fn((tierListData: MockTierListData) => {
     // Create 86 slots to match FIGHTER_COUNT and avoid integrity check
-    const slots = [];
+    const slots: MockTierSlot[] = [];
     if (tierListData.tierSlots) {
       // If tierSlots is an async generator, collect all items
       slots.push(...(tierListData.tierSlots.items || []));
@@ -44,7 +74,7 @@ jest.mock('aws-amplify/data', () => {
   };
 
   // Store references globally for use in tests
-  (global as any).mockAcceptRivalryFns = mockFns;
+  global.mockAcceptRivalryFns = mockFns;
 
   return {
     generateClient: jest.fn(() => ({
@@ -80,11 +110,11 @@ describe('useAcceptRivalryMutation', () => {
   let mockRivalryUpdate: jest.Mock;
   let mockRivalryList: jest.Mock;
   let mockFighterList: jest.Mock;
-  let mockTierListQuery: jest.Mock;
+  let _mockTierListQuery: jest.Mock;
   let mockTierListCreate: jest.Mock;
   let mockTierListList: jest.Mock;
   let mockTierListGet: jest.Mock;
-  let mockTierSlotList: jest.Mock;
+  let _mockTierSlotList: jest.Mock;
   let mockTierSlotCreate: jest.Mock;
 
   beforeEach(() => {
@@ -103,16 +133,16 @@ describe('useAcceptRivalryMutation', () => {
     });
 
     // Get references to the mocked functions
-    const globalMocks = (global as any).mockAcceptRivalryFns;
+    const globalMocks = global.mockAcceptRivalryFns;
     mockRivalryGet = globalMocks.mockRivalryGet;
     mockRivalryUpdate = globalMocks.mockRivalryUpdate;
     mockRivalryList = globalMocks.mockRivalryList;
     mockFighterList = globalMocks.mockFighterList;
-    mockTierListQuery = globalMocks.mockTierListQuery;
+    _mockTierListQuery = globalMocks.mockTierListQuery;
     mockTierListCreate = globalMocks.mockTierListCreate;
     mockTierListList = globalMocks.mockTierListList;
     mockTierListGet = globalMocks.mockTierListGet;
-    mockTierSlotList = globalMocks.mockTierSlotList;
+    _mockTierSlotList = globalMocks.mockTierSlotList;
     mockTierSlotCreate = globalMocks.mockTierSlotCreate;
 
     jest.clearAllMocks();
@@ -406,7 +436,7 @@ describe('useAcceptRivalryMutation', () => {
       .mockResolvedValueOnce({
         data: {
           id: 'template-tier-list-1',
-          tierSlots: (async function* () {
+          tierSlots: (function* () {
             for (const slot of mockTemplateTierSlots) {
               yield slot;
             }

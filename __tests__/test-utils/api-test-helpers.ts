@@ -51,7 +51,7 @@ export const DEFAULT_WAIT_FOR_OPTIONS = {
  * await waitForQuerySuccess(result);
  * expect(result.current.data).toBeDefined();
  */
-export async function waitForQuerySuccess<T>(
+export async function waitForQuerySuccess(
   result: {
     current: {
       isSuccess: boolean;
@@ -99,7 +99,7 @@ export async function waitForQuerySuccess<T>(
  * result.current.mutate(data);
  * await waitForMutationSuccess(result);
  */
-export async function waitForMutationSuccess<T>(
+export async function waitForMutationSuccess(
   result: { current: { isSuccess: boolean; isError: boolean; error?: Error } },
   options?: { timeout?: number }
 ) {
@@ -127,7 +127,7 @@ export async function waitForMutationSuccess<T>(
  * await waitForError(result);
  * expect(result.current.error).toBeDefined();
  */
-export async function waitForError<T>(
+export async function waitForError(
   result: { current: { isError: boolean; error?: Error } },
   options?: { timeout?: number }
 ) {
@@ -148,7 +148,7 @@ export async function waitForError<T>(
  */
 export async function waitForMockCall(
   mockFn: jest.Mock,
-  expectedArgs?: any,
+  expectedArgs?: unknown,
   options?: { timeout?: number; times?: number }
 ) {
   await waitFor(
@@ -211,7 +211,10 @@ export function createGraphQLListResponse<T>(
  *   tierLists: createMockAsyncGenerator([tierList1, tierList2])
  * };
  */
-export async function* createMockAsyncGenerator<T>(items: T[]) {
+// biome-ignore lint/suspicious/useAwait: Async generator needed for mocking Amplify Gen 2 LazyLoader fields that return AsyncGenerator
+export async function* createMockAsyncGenerator<T>(
+  items: T[]
+): AsyncGenerator<T> {
   for (const item of items) {
     yield item;
   }
@@ -221,10 +224,14 @@ export async function* createMockAsyncGenerator<T>(items: T[]) {
  * Type guard to check if a value is a GraphQL error response
  */
 export function isGraphQLError(
-  response: any
+  response: unknown
 ): response is { errors: Array<{ message: string }> } {
   return (
-    response && Array.isArray(response.errors) && response.errors.length > 0
+    response !== null &&
+    typeof response === 'object' &&
+    'errors' in response &&
+    Array.isArray((response as { errors: unknown }).errors) &&
+    (response as { errors: unknown[] }).errors.length > 0
   );
 }
 
@@ -234,11 +241,13 @@ export function isGraphQLError(
  */
 export function expectGraphQLMutationCall(
   mockMutation: jest.Mock,
-  expectedInput: any,
+  expectedInput: Record<string, unknown>,
   options?: { times?: number }
 ) {
   const times = options?.times || 1;
+  // biome-ignore lint/suspicious/noMisplacedAssertion: This is a test helper designed to be called from within test functions
   expect(mockMutation).toHaveBeenCalledTimes(times);
+  // biome-ignore lint/suspicious/noMisplacedAssertion: This is a test helper designed to be called from within test functions
   expect(mockMutation).toHaveBeenCalledWith(
     expect.objectContaining(expectedInput)
   );
@@ -250,30 +259,34 @@ export function expectGraphQLMutationCall(
  */
 export function expectGraphQLQueryCall(
   mockQuery: jest.Mock,
-  expectedParams?: {
-    filter?: any;
+  expectedParams: {
+    filter?: Record<string, unknown>;
     limit?: number;
     selectionSet?: string[];
-  },
+  } | null = null,
   options?: { times?: number }
 ) {
   const times = options?.times || 1;
+  // biome-ignore lint/suspicious/noMisplacedAssertion: This is a test helper designed to be called from within test functions
   expect(mockQuery).toHaveBeenCalledTimes(times);
 
   if (expectedParams) {
-    const callArgs = mockQuery.mock.calls[mockQuery.mock.calls.length - 1];
+    const callArgs = mockQuery.mock.calls.at(-1);
 
     if (expectedParams.filter) {
+      // biome-ignore lint/suspicious/noMisplacedAssertion: This is a test helper designed to be called from within test functions
       expect(callArgs[0]?.filter || callArgs[0]).toMatchObject(
         expectedParams.filter
       );
     }
 
     if (expectedParams.selectionSet) {
+      // biome-ignore lint/suspicious/noMisplacedAssertion: This is a test helper designed to be called from within test functions
       expect(callArgs[1]?.selectionSet).toEqual(expectedParams.selectionSet);
     }
 
     if (expectedParams.limit !== undefined) {
+      // biome-ignore lint/suspicious/noMisplacedAssertion: This is a test helper designed to be called from within test functions
       expect(callArgs[0]?.limit || callArgs.limit).toBe(expectedParams.limit);
     }
   }
@@ -358,14 +371,18 @@ export async function waitForMultipleQueries(
  * const mockClient = createMockGraphQLClient();
  * resetMockGraphQLClient(mockClient);
  */
-export function resetMockGraphQLClient(mockClient: any) {
-  Object.values(mockClient.models).forEach((model: any) => {
-    Object.values(model).forEach((method: any) => {
+interface MockGraphQLClient {
+  models: Record<string, Record<string, { mockReset?: () => void }>>;
+}
+
+export function resetMockGraphQLClient(mockClient: MockGraphQLClient) {
+  for (const model of Object.values(mockClient.models)) {
+    for (const method of Object.values(model)) {
       if (typeof method.mockReset === 'function') {
         method.mockReset();
       }
-    });
-  });
+    }
+  }
 }
 
 /**
@@ -379,5 +396,7 @@ export function resetMockGraphQLClient(mockClient: any) {
  * errorSpy.mockRestore();
  */
 export function spyOnConsole(method: 'log' | 'warn' | 'error' | 'info') {
-  return jest.spyOn(console, method).mockImplementation(() => {});
+  return jest.spyOn(console, method).mockImplementation(() => {
+    // Intentionally empty - suppresses console output during tests
+  });
 }

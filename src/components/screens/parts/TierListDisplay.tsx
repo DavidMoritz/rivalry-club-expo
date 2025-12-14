@@ -1,4 +1,4 @@
-import React, { type ReactNode, useEffect, useState } from 'react';
+import { type ReactNode, useEffect, useState } from 'react';
 import { View } from 'react-native';
 
 import {
@@ -13,11 +13,9 @@ import TierListRow from './TierListRow';
 
 export function TierListDisplay({
   tierList,
-  tierListSignifier,
   unlinked = false,
 }: {
   tierList: MTierList;
-  tierListSignifier: 'A' | 'B';
   unlinked: boolean;
 }): ReactNode {
   const [tierSlotsSorted, setTierSlotsSorted] = useState<TierWithSlots[]>([]);
@@ -32,7 +30,7 @@ export function TierListDisplay({
     const positionedSlots = allSlots.filter(
       slot => slot.position !== null && slot.position !== undefined
     );
-    const unknownSlots = allSlots.filter(
+    const filteredUnknownSlots = allSlots.filter(
       slot => slot.position === null || slot.position === undefined
     );
 
@@ -64,13 +62,13 @@ export function TierListDisplay({
     });
 
     setTierSlotsSorted(tiersWithSlots);
-    setUnknownSlots(unknownSlots);
+    setUnknownSlots(filteredUnknownSlots);
   }, [tierList]);
 
   return (
     <View style={{ flex: 1, marginVertical: 8 }}>
       <SyncedScrollView id={Math.random()} unlinked={unlinked}>
-        {tierSlotsSorted.map((sortedTier: TierWithSlots, index: number) => (
+        {tierSlotsSorted.map((sortedTier: TierWithSlots) => (
           <TierListRow
             active={false}
             color={sortedTier.color}

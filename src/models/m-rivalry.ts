@@ -30,7 +30,9 @@ export interface MRivalry extends Omit<Rivalry, 'game'> {
   _mUserB?: MUser;
   adjustStanding: (
     nudge?: number
-  ) => { winnerPosition: number | null; loserPosition: number | null } | void;
+  ) =>
+    | { winnerPosition: number | null; loserPosition: number | null }
+    | undefined;
   reverseStanding: (contest: MContest) => void;
   baseRivalry: Rivalry;
   currentContest?: MContest;
@@ -58,6 +60,166 @@ export interface GetMRivalryProps {
 }
 
 const MOVEMENT_DIRECTIONS = 2; // up or down (winner and loser both move)
+const RANDOM_THRESHOLD = 0.5; // 50% chance for random tiebreaker
+const POSITION_BIAS = 11; // Arbitrary number to allow rapid tier placement of new fighters
+const MIDPOINT = 42; // midpoint (0-based: 85/2) if also unknown
+
+// Types for contest participants
+interface ContestParticipant {
+  tierList: MTierList;
+  tierSlot: { position: number | null | undefined };
+}
+
+// Helper: Check if a fighter's position is unknown
+function isPositionUnknown(
+  position: number | null | undefined
+): position is null | undefined {
+  return position === null || position === undefined;
+}
+
+// Helper: Position an unknown fighter based on contest result
+function positionUnknownFighter(
+  participant: ContestParticipant,
+  opponentPosition: number,
+  result: number,
+  isWinner: boolean
+): number {
+  const offset = Math.abs(result) * POSITION_BIAS;
+  const newPosition = isWinner
+    ? opponentPosition - offset // winner moves UP (lower position number)
+    : opponentPosition + offset; // loser moves DOWN (higher position number)
+
+  participant.tierList.positionUnknownFighter(
+    participant.tierSlot as Parameters<MTierList['positionUnknownFighter']>[0],
+    newPosition
+  );
+
+  return newPosition;
+}
+
+// Helper: Process main tier movements for both players
+function processMainMovements(
+  winner: ContestParticipant,
+  loser: ContestParticipant,
+  moveCount: number
+): void {
+  for (let i = 0; i < moveCount; i++) {
+    winner.tierList.moveDownATier();
+
+    if (!loser.tierList.moveUpATier()) {
+      // Winner moves twice if loser is on top tier
+      winner.tierList.moveDownATier();
+    }
+  }
+}
+
+// Helper: Process additional move with bias
+function processAdditionalMove(
+  winner: ContestParticipant,
+  loser: ContestParticipant,
+  nudge: number | undefined,
+  contest: MContest
+): void {
+  const winnerIsOnLowestTier =
+    ((winner.tierList.standing as number) + 1) % TIERS.length === 0;
+  const loserIsOnHighestTier =
+    (loser.tierList.standing as number) % TIERS.length === 0;
+  const preferLoserToMove =
+    !loserIsOnHighestTier &&
+    ((nudge && nudge > 0) ||
+      (nudge === undefined && Math.random() < RANDOM_THRESHOLD));
+
+  if (
+    (winnerIsOnLowestTier || preferLoserToMove) &&
+    loser.tierList.moveUpATier()
+  ) {
+    contest.bias = 1;
+  } else {
+    winner.tierList.moveDownATier();
+    contest.bias = -1;
+  }
+}
+
+// Helper: Normalize prestige for both tier lists
+function normalizePrestige(tlA: MTierList, tlB: MTierList): void {
+  while ([tlA, tlB].every(tl => tl.getPrestige() > 0)) {
+    tlA.standing = Math.max((tlA.standing as number) - TIERS.length, 0);
+    tlB.standing = Math.max((tlB.standing as number) - TIERS.length, 0);
+  }
+}
+
+// Helper: Reverse additional move based on bias
+function reverseAdditionalMove(
+  winner: ContestParticipant,
+  loser: ContestParticipant,
+  bias: number | null | undefined
+): void {
+  if (bias === 1) {
+    // Loser moved up, so reverse it by moving down
+    loser.tierList.moveDownATier();
+  } else if (bias === -1) {
+    // Winner moved down, so reverse it by moving up
+    winner.tierList.moveUpATier();
+  }
+}
+
+// Helper: Reverse main movements
+function reverseMainMovements(
+  winner: ContestParticipant,
+  loser: ContestParticipant,
+  moveCount: number
+): void {
+  for (let i = 0; i < moveCount; i++) {
+    // Check if loser WAS blocked (we can tell if they're now at top after other reversals)
+    const loserWasBlocked = (loser.tierList.standing as number) === 0;
+
+    if (loserWasBlocked) {
+      // Winner moved down twice, so move up twice
+      winner.tierList.moveUpATier();
+      winner.tierList.moveUpATier();
+    } else {
+      // Normal case: winner moved down once, loser moved up once
+      winner.tierList.moveUpATier();
+      loser.tierList.moveDownATier();
+    }
+  }
+}
+
+// Helper: Resolve positions for unknown fighters
+function resolveUnknownPositions(
+  winner: ContestParticipant,
+  loser: ContestParticipant,
+  result: number
+): {
+  winnerPosition: number | null | undefined;
+  loserPosition: number | null | undefined;
+} {
+  const winnerInitialPosition = winner.tierSlot.position ?? MIDPOINT;
+  const loserInitialPosition = loser.tierSlot.position ?? MIDPOINT;
+
+  let winnerPosition = winner.tierSlot.position;
+  let loserPosition = loser.tierSlot.position;
+
+  if (isPositionUnknown(winner.tierSlot.position)) {
+    winnerPosition = positionUnknownFighter(
+      winner,
+      loserInitialPosition,
+      result,
+      true
+    );
+  }
+
+  if (isPositionUnknown(loser.tierSlot.position)) {
+    loserPosition = positionUnknownFighter(
+      loser,
+      winnerInitialPosition,
+      result,
+      false
+    );
+  }
+
+  return { winnerPosition, loserPosition };
+}
 
 export function getMRivalry({ rivalry }: GetMRivalryProps): MRivalry {
   return {
@@ -72,158 +234,93 @@ export function getMRivalry({ rivalry }: GetMRivalryProps): MRivalry {
     _mUserA: undefined,
     _mUserB: undefined,
 
-    // setters
+    // getters and setters (paired together)
+    get currentContest() {
+      return this._currentContest;
+    },
     set currentContest(contest: MContest | undefined) {
       this._currentContest = contest;
+    },
+    get game() {
+      return this._mGame;
     },
     set game(game: MGame | undefined) {
       this._mGame = game;
     },
+    get mContests() {
+      return this._mContests;
+    },
     set mContests(contests: MContest[]) {
       this._mContests = contests;
+    },
+    get tierListA() {
+      return this._mTierListA;
     },
     set tierListA(tierList: MTierList | undefined) {
       this._mTierListA = tierList;
     },
+    get tierListB() {
+      return this._mTierListB;
+    },
     set tierListB(tierList: MTierList | undefined) {
       this._mTierListB = tierList;
     },
+    get userA() {
+      return this._mUserA;
+    },
     set userA(user: MUser | undefined) {
       this._mUserA = user;
+    },
+    get userB() {
+      return this._mUserB;
     },
     set userB(user: MUser | undefined) {
       this._mUserB = user;
     },
 
-    // getters
-    get currentContest() {
-      return this._currentContest;
-    },
-    get game() {
-      return this._mGame;
-    },
-    get mContests() {
-      return this._mContests;
-    },
-    get tierListA() {
-      return this._mTierListA;
-    },
-    get tierListB() {
-      return this._mTierListB;
-    },
-    get userA() {
-      return this._mUserA;
-    },
-    get userB() {
-      return this._mUserB;
-    },
-
     // methods
     /**
      * Alter the tierLists' standings based on the current contest.
-     * @returns Object with winner and loser positions, or void if contest data is invalid
+     * @returns Object with winner and loser positions, or undefined if contest data is invalid
      */
     adjustStanding(
       nudge?: number
-    ): { winnerPosition: number | null; loserPosition: number | null } | void {
+    ):
+      | { winnerPosition: number | null; loserPosition: number | null }
+      | undefined {
       if (!(this.currentContest && this.tierListA && this.tierListB)) return;
 
       const winner = this.currentContest.getWinner();
       const loser = this.currentContest.getLoser();
 
-      if (
-        !(
-          winner?.tierList &&
-          winner?.tierSlot &&
-          loser?.tierList &&
-          loser?.tierSlot
-        )
-      ) {
-        return;
-      }
+      const hasValidParticipants =
+        winner?.tierList &&
+        winner?.tierSlot &&
+        loser?.tierList &&
+        loser?.tierSlot;
+      if (!hasValidParticipants) return;
 
-      let winnerPosition = winner.tierSlot.position;
-      let loserPosition = loser.tierSlot.position;
-      // Arbitrary number to allow rapid tier placement of new fighters
-      const POSITION_BIAS = 11;
-      const MIDPOINT = 42; // midpoint (0-based: 85/2) if also unknown
-      // NEW: Position unknown fighters BEFORE adjusting positions
       const result = this.currentContest.result as number;
-      const winnerInitalPosition = winner.tierSlot.position ?? MIDPOINT;
-      const loserInitialPosition = loser.tierSlot.position ?? MIDPOINT;
 
-      // Position unknown fighter for winner
-      if (
-        winner.tierSlot.position === null ||
-        winner.tierSlot.position === undefined
-      ) {
-        const winnerOffset = Math.abs(result) * POSITION_BIAS; // result is 1, 2, or 3
-        const winnerNewPosition = loserInitialPosition - winnerOffset; // winner moves UP (lower position number)
-        winner.tierList.positionUnknownFighter(
-          winner.tierSlot,
-          winnerNewPosition
-        );
-        winnerPosition = winnerNewPosition;
-      }
+      // Position unknown fighters BEFORE adjusting positions
+      const { winnerPosition, loserPosition } = resolveUnknownPositions(
+        winner,
+        loser,
+        result
+      );
 
-      // Position unknown fighter for loser
-      if (
-        loser.tierSlot.position === null ||
-        loser.tierSlot.position === undefined
-      ) {
-        const offset = Math.abs(result) * POSITION_BIAS;
-        const calculatedPosition = winnerInitalPosition + offset; // loser moves DOWN (higher position number)
-
-        loser.tierList.positionUnknownFighter(
-          loser.tierSlot,
-          calculatedPosition
-        );
-        loserPosition = calculatedPosition;
-      }
-
-      // EXISTING: Continue with normal standings adjustment
-      const stocks = Math.abs(this.currentContest.result as number);
-
+      // Continue with normal standings adjustment
+      const stocks = Math.abs(result);
       const bothPlayersMoveCount = Math.floor(stocks / MOVEMENT_DIRECTIONS);
       const additionalMove = Boolean(stocks % MOVEMENT_DIRECTIONS);
 
-      for (let i = 0; i < bothPlayersMoveCount; i++) {
-        winner.tierList.moveDownATier();
-
-        if (!loser.tierList.moveUpATier()) {
-          // Winner moves twice if loser is on top tier
-          winner.tierList.moveDownATier();
-        }
-      }
+      processMainMovements(winner, loser, bothPlayersMoveCount);
 
       if (additionalMove) {
-        const winnerIsOnLowestTier =
-          ((winner.tierList.standing as number) + 1) % TIERS.length === 0;
-        const loserIsOnHighestTier =
-          (loser.tierList.standing as number) % TIERS.length === 0;
-        const preferLoserToMove =
-          !loserIsOnHighestTier &&
-          ((nudge && nudge > 0) ||
-            (nudge === undefined && Math.random() < 0.5));
-
-        if (
-          (winnerIsOnLowestTier || preferLoserToMove) &&
-          loser.tierList.moveUpATier()
-        ) {
-          this.currentContest.bias = 1;
-        } else {
-          winner?.tierList.moveDownATier();
-          this.currentContest.bias = -1;
-        }
+        processAdditionalMove(winner, loser, nudge, this.currentContest);
       }
 
-      const tlA = this.tierListA;
-      const tlB = this.tierListB;
-
-      while ([tlA, tlB].every(tl => tl.getPrestige() > 0)) {
-        tlA.standing = Math.max((tlA.standing as number) - TIERS.length, 0);
-        tlB.standing = Math.max((tlB.standing as number) - TIERS.length, 0);
-      }
+      normalizePrestige(this.tierListA, this.tierListB);
 
       return {
         winnerPosition: winnerPosition ?? null,
@@ -236,86 +333,28 @@ export function getMRivalry({ rivalry }: GetMRivalryProps): MRivalry {
       const winner = contest.getWinner();
       const loser = contest.getLoser();
 
-      if (
-        !(
-          winner?.tierList &&
-          winner?.tierSlot &&
-          loser?.tierList &&
-          loser?.tierSlot
-        )
-      ) {
-        return;
-      }
+      const hasValidParticipants =
+        winner?.tierList &&
+        winner?.tierSlot &&
+        loser?.tierList &&
+        loser?.tierSlot;
+      if (!hasValidParticipants) return;
 
       const stocks = Math.abs(contest.result as number);
-
       const bothPlayersMoveCount = Math.floor(stocks / MOVEMENT_DIRECTIONS);
       const additionalMove = Boolean(stocks % MOVEMENT_DIRECTIONS);
 
-      const tlA = this.tierListA;
-      const tlB = this.tierListB;
-
-      // Store current prestige levels before reversal
-      const currentPrestigeA = tlA.getPrestige();
-      const currentPrestigeB = tlB.getPrestige();
-
-      // 2. Reverse the additional move using the bias (this happens second-to-last in adjustStanding)
+      // Reverse the additional move using the bias (this happens second-to-last in adjustStanding)
       if (additionalMove) {
-        if (contest.bias === 1) {
-          // Loser moved up, so reverse it by moving down
-          loser.tierList.moveDownATier();
-        } else if (contest.bias === -1) {
-          // Winner moved down, so reverse it by moving up
-          winner.tierList.moveUpATier();
-        }
+        reverseAdditionalMove(winner, loser, contest.bias);
       }
 
-      // 3. Reverse the main movements (these happen first in adjustStanding)
-      // We need to reverse them, which means checking if loser is NOW at top after reversal
-      for (let i = 0; i < bothPlayersMoveCount; i++) {
-        // Check if loser WAS blocked (we can tell if they're now at top after other reversals)
-        const loserWasBlocked = (loser.tierList.standing as number) === 0;
+      // Reverse the main movements (these happen first in adjustStanding)
+      reverseMainMovements(winner, loser, bothPlayersMoveCount);
 
-        if (loserWasBlocked) {
-          // Winner moved down twice, so move up twice
-          winner.tierList.moveUpATier();
-          winner.tierList.moveUpATier();
-        } else {
-          // Normal case: winner moved down once, loser moved up once
-          winner.tierList.moveUpATier();
-          loser.tierList.moveDownATier();
-        }
-      }
-
-      // 4. Restore prestige that was removed during adjustStanding
-      // adjustStanding's prestige logic (lines 178-181):
-      //   while (both have prestige > 0) { subtract TIERS.length from both }
-      // To reverse this, we add TIERS.length back while both are at prestige 0
-      // BUT we need to check if prestige was actually removed
-      //
-      // The trick: after reversing moves, if both started at prestige 0 (before our reversal)
-      // but now have prestige > 0, it means the original adjustStanding removed prestige
-      const afterPrestigeA = tlA.getPrestige();
-      const afterPrestigeB = tlB.getPrestige();
-
-      if (
-        currentPrestigeA === 0 &&
-        currentPrestigeB === 0 &&
-        afterPrestigeA > 0 &&
-        afterPrestigeB > 0
-      ) {
-        // Both gained prestige during move reversals
-        // This means they both had prestige before adjustStanding, which removed it
-        // We need to restore it - keep the current standings (prestige already added by move reversals)
-      } else if (
-        currentPrestigeA === 0 &&
-        currentPrestigeB === 0 &&
-        (afterPrestigeA === 0 || afterPrestigeB === 0)
-      ) {
-        // At least one is still at prestige 0 after reversals
-        // No prestige was removed during adjustStanding, standings are correct
-      }
-      // Note: We don't use a while loop here because move reversals already handle the standing changes
+      // Note: Prestige restoration is handled implicitly by the move reversals.
+      // The original adjustStanding normalized prestige after moves, and reversing
+      // the moves naturally restores the pre-adjustment prestige levels.
     },
     displayTitle() {
       return `${this.displayUserAName()} vs. ${this.displayUserBName()}`;

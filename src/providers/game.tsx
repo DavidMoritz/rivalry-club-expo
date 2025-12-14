@@ -1,6 +1,6 @@
 import { useQuery } from '@tanstack/react-query';
 import { generateClient } from 'aws-amplify/data';
-import React, {
+import {
   createContext,
   type ReactNode,
   useContext,
@@ -9,6 +9,9 @@ import React, {
 } from 'react';
 import type { Schema } from '../../amplify/data/resource';
 import { getMGame, type MGame } from '../models/m-game';
+
+// Type alias for Game from Schema
+type Game = Schema['Game']['type'];
 
 // Lazy client initialization
 let client: ReturnType<typeof generateClient<Schema>> | null = null;
@@ -22,6 +25,7 @@ function getClient() {
 
 // Hardcoded game ID
 const GAME_ID = '73ed69cf-2775-43d6-bece-aed10da3e25a';
+const PERCENTAGE_MULTIPLIER = 100;
 
 interface GameContextValue {
   game: MGame | null;
@@ -30,6 +34,7 @@ interface GameContextValue {
 
 const GameContext = createContext<GameContextValue>({
   game: null,
+  // biome-ignore lint/suspicious/noEmptyBlockStatements: Default no-op function for context
   setGame: () => {},
 });
 
@@ -83,7 +88,7 @@ export const GameProvider = ({
           fighter.contestCount > 0 &&
           fighter.winCount !== null &&
           fighter.winCount !== undefined
-            ? (fighter.winCount / fighter.contestCount) * 100
+            ? (fighter.winCount / fighter.contestCount) * PERCENTAGE_MULTIPLIER
             : 0;
         return { ...fighter, winRate };
       });
@@ -108,7 +113,7 @@ export const GameProvider = ({
   // Update state when game data is fetched
   useEffect(() => {
     if (fetchedGame && !game) {
-      const mGame = getMGame(fetchedGame as any);
+      const mGame = getMGame(fetchedGame as unknown as Game);
       setGame(mGame);
     }
   }, [fetchedGame, game]);

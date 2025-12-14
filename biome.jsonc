@@ -1,90 +1,72 @@
 {
   "root": true,
   // Schema reference for Biome
-  "$schema": "https://biomejs.dev/schemas/2.3.0/schema.json",
+  "$schema": "https://biomejs.dev/schemas/2.3.8/schema.json",
 
   "files": {
     "includes": [
       "**",
-      "!src/routeTree.gen.ts",
-      "!src/locales/**/*.d.ts",
-      "!public/locales/**/*.d.ts"
+      "!coverage",
+      "!website",
+      "!scripts",
+      "!src/API.ts",
+      "!amplify",
+      "!*.js",
+      "!assets/**/*.js",
+      "!tools"
     ]
   },
 
   "overrides": [
     {
+      "includes": ["App.tsx"], // ~Meritas - React Native/Expo entry point convention
+      "linter": { "rules": { "style": { "useFilenamingConvention": "off" } } }
+    },
+    {
+      // ~Meritas - Expo Router uses [param].tsx naming for dynamic routes
+      "includes": ["app/**/*.tsx"],
+      "linter": { "rules": { "style": { "useFilenamingConvention": "off" } } }
+    },
+    {
+      "includes": ["__mocks__/**/*.js"],
+      "linter": {
+        "rules": {
+          "style": { "useFilenamingConvention": "off" },
+          "correctness": { "noUndeclaredVariables": "off" }
+        }
+      }
+    },
+    {
+      "includes": ["__tests__/**/*.{ts,tsx}"],
+      "linter": {
+        "rules": {
+          "correctness": { "noUndeclaredVariables": "off" }, // Jest globals (jest, describe, it, expect, etc.)
+          "style": { "noMagicNumbers": "off" } // Test files often use magic numbers
+        }
+      }
+    },
+    {
+      // ~Meritas - React Native project structure
       "includes": [
         "src/__mocks__/**/*.{ts,tsx}",
-        "src/{App,Providers}.tsx",
         "src/components/**/*",
-        "src/constants/**/*.ts",
-        "src/contexts/**/*.tsx",
-        "src/forms/**/*.ts",
-        "src/hooks/**/*.{ts,tsx}",
-        "src/reportWebVitals.ts",
-        "src/resources/**/*.ts",
-        "src/routes/**/*.{ts,tsx}",
-        "src/services/**/*.{ts,tsx}",
-        "src/stories/**/*.{ts,tsx}",
-        "src/types/**/*.ts"
+        "src/hooks/**/*.{ts,tsx}"
       ],
       "linter": { "rules": { "style": { "useFilenamingConvention": "off" } } }
     },
     {
-      "includes": ["src/**/*.test.{ts,tsx}"],
-      "linter": { "rules": { "style": { "noMagicNumbers": "off" } } }
-    },
-    {
-      "includes": ["src/locales/**/*.json"],
-      "assist": {
-        "actions": {
-          "source": {
-            "useSortedKeys": "on"
-          }
-        }
-      },
-      "json": {
-        "assist": {
-          "enabled": true
-        }
-      }
-    },
-    {
-      "includes": ["src/routes/*.tsx"],
-      "assist": {
-        "actions": {
-          "source": {
-            "useSortedKeys": "on"
-          }
-        }
-      }
-    },
-    {
-      "includes": ["**/*.css"],
+      "includes": ["src/**/*.test.{ts,tsx}", "__tests__/**/*.{ts,tsx}"],
       "linter": {
         "rules": {
-          "suspicious": {
-            "noUnknownAtRules": "off" // Allow @theme directive from Tailwind v4
-          }
+          "style": { "noMagicNumbers": "off" },
+          "correctness": { "noUndeclaredVariables": "off" } // ~Meritas - Jest globals
         }
       }
     },
     {
-      "includes": ["index.html"],
-      "linter": {
-        "rules": {
-          "suspicious": {
-            "useStrictMode": "off" // Google Tag Manager code doesn't use strict mode
-          },
-          "correctness": {
-            "noUndeclaredVariables": "off" // dataLayer is a global from Google Tag Manager
-          },
-          "complexity": {
-            "noArguments": "off" // Google Tag Manager uses arguments object
-          }
-        }
-      }
+      // ~Meritas - Allow barrel file for test utilities (clean import interface for tests)
+      "includes": ["__tests__/test-utils/index.ts"],
+      "linter": { "rules": { "performance": { "noBarrelFile": "off" } } }
     }
   ],
 
@@ -385,8 +367,6 @@
         // Require generator functions to contain yield.
         "useYield": "error",
 
-        // Disallow destructuring props inside JSX components in Solid projects.
-        "noSolidDestructuredProps": "off",
         // Disallow the use of dependencies that aren't specified in the package.json.
         "noUndeclaredDependencies": "off",
         // Disallow the use of process global.
@@ -429,8 +409,6 @@
       "nursery": {
         // Disallow Promises to be used in places where they are almost certainly a mistake.
         "noMisusedPromises": "error",
-        // Prevent client components from being async functions.
-        "noNextAsyncClientComponent": "error",
         // Disallow non-null assertions after optional chaining expressions.
         // "noNonNullAssertedOptionalChain": "error", // Removed in Biome 2.3.0
         // Disallow useVisibleTask$() functions in Qwik components.
@@ -441,12 +419,6 @@
         "noUnnecessaryConditions": "error",
         // Disallow the use of useless undefined.
         "noUselessUndefined": "error",
-        // Enforce that Vue component data options are declared as functions.
-        "noVueDataObjectDeclaration": "error",
-        // Disallow reserved keys in Vue component data and computed properties.
-        "noVueReservedKeys": "error",
-        // Disallow reserved names to be used as props.
-        "noVueReservedProps": "error",
         // Enforces href attribute for <a> elements.
         // "useAnchorHref": "error", // Removed in Biome 2.3.0
         //Enforce type definitions to consistently use either interface or type.
@@ -472,15 +444,6 @@
         // "noSecrets": "off", // Removed in Biome 2.3.0
         // Enforce types in functions, methods, variables, and parameters.
         "useExplicitType": "off",
-        // Enforce the sorting of CSS utility classes.
-        "useSortedClasses": {
-          "fix": "safe",
-          "level": "error",
-          "options": {
-            "attributes": ["className"],
-            "functions": ["clsx", "cva", "tw", "twMerge", "cn", "twJoin", "tv"]
-          }
-        },
 
         /** ------ These rules should be enabled but Scanner makes them too slow ------ **/
         // Require Promise-like statements to be handled appropriately.
@@ -501,8 +464,7 @@
         "noDelete": "error",
         // Disallow accessing namespace imports dynamically.
         "noDynamicNamespaceImportAccess": "error",
-        // Prevent usage of <img> element in a Next.js project.
-        // "noImgElement": "error",
+        // Prevent usage of <img> element (not applicable to React Native)
         "noImgElement": "off", // ~Meritas
         // Disallow the use of namespace imports.
         "noNamespaceImport": "error",
@@ -516,9 +478,7 @@
         // Disallow await inside loops.
         "noAwaitInLoops": "off",
         // Avoid re-export all.
-        "noReExportAll": "off",
-        // Enforce using Solid's <For /> component for mapping an array to JSX elements.
-        "useSolidForComponent": "off"
+        "noReExportAll": "off"
       },
       "security": {
         /** ------------------------ JavaScript Rules ------------------------ **/
@@ -541,8 +501,6 @@
         "noEnum": "error",
         // Disallow exporting an imported variable.
         "noExportedImports": "error",
-        // Prevent usage of <head> element in a Next.js project.
-        "noHeadElement": "error",
         // Disallow type annotations for variables, parameters, and class properties initialized with a literal expression.
         "noInferrableTypes": "error",
         // Disallow the use of TypeScript's namespaces.
@@ -607,13 +565,12 @@
         // Promotes the use of export type for types.
         "useExportType": "error",
         // Enforce naming conventions for JavaScript and TypeScript filenames.
-        // Supports TanStack Router convention: allows - prefixed files (e.g., -hooks.ts, $slug)
+        // Supports Expo Router convention: allows kebab-case with special prefixes (e.g., [id].tsx)
         "useFilenamingConvention": {
           "level": "error",
           "options": {
             "requireAscii": true,
-            "filenameCases": ["kebab-case"],
-            "match": "[\\-$]?(.+?)[.](.+)"
+            "filenameCases": ["kebab-case"]
           }
         },
         // This rule recommends a for-of loop when in a for loop, the index used to extract an item from the iterated array.
@@ -730,8 +687,6 @@
         "noDebugger": "error",
         // Disallow direct assignments to document.cookie.
         "noDocumentCookie": "error",
-        // Prevents importing next/document outside of pages/_document.jsx in Next.js projects.
-        "noDocumentImportInPage": "error",
         // Require the use of === and !==.
         "noDoubleEquals": "error",
         // Disallow duplicate case labels.
@@ -772,8 +727,6 @@
         "noGlobalIsFinite": "error",
         // Use Number.isNaN instead of global isNaN.
         "noGlobalIsNan": "error",
-        // Prevent using the next/head module in pages/_document.js on Next.js projects.
-        "noHeadImportInDocument": "error",
         // Disallow use of implicit any type on variable declarations.
         "noImplicitAnyLet": "error",
         // Disallow assigning to imported bindings
@@ -881,6 +834,18 @@
     }
   },
   "javascript": {
+    "globals": [
+      "jest",
+      "describe",
+      "it",
+      "expect",
+      "beforeEach",
+      "afterEach",
+      "beforeAll",
+      "afterAll",
+      "test",
+      "__DEV__"
+    ], // ~Meritas - Jest globals + React Native __DEV__
     "formatter": {
       "arrowParentheses": "asNeeded",
       "bracketSameLine": false,
@@ -930,6 +895,6 @@
     "enabled": true,
     "clientKind": "git",
     "useIgnoreFile": true,
-    "defaultBranch": "dev" // ~Meritas
+    "defaultBranch": "main" // ~Meritas - Project uses main branch
   }
 }

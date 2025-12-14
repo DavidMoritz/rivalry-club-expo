@@ -31,7 +31,7 @@ describe('MTierList Model', () => {
     tierSlots: {
       items: createMockTierSlots(21), // 3 slots per tier * 7 tiers
     },
-  } as any as TierList;
+  } as unknown as TierList;
 
   describe('getMTierList', () => {
     it('should create an MTierList from a TierList object', () => {
@@ -159,8 +159,10 @@ describe('MTierList Model', () => {
     });
 
     it('should return false if standing is not a number', () => {
-      const tierListWithoutStanding = { ...mockTierList };
-      delete (tierListWithoutStanding as any).standing;
+      const tierListWithoutStanding = {
+        ...mockTierList,
+        standing: undefined,
+      } as unknown as TierList;
       const mTierList = getMTierList(tierListWithoutStanding);
 
       const result = mTierList.moveDownATier();
@@ -190,8 +192,10 @@ describe('MTierList Model', () => {
     });
 
     it('should return false if standing is not a number', () => {
-      const tierListWithoutStanding = { ...mockTierList };
-      delete (tierListWithoutStanding as any).standing;
+      const tierListWithoutStanding = {
+        ...mockTierList,
+        standing: undefined,
+      } as unknown as TierList;
       const mTierList = getMTierList(tierListWithoutStanding);
 
       const result = mTierList.moveUpATier();

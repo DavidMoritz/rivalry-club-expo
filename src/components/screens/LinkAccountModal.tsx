@@ -1,5 +1,5 @@
 import { generateClient } from 'aws-amplify/data';
-import React, { useState } from 'react';
+import { useState } from 'react';
 import {
   ActivityIndicator,
   KeyboardAvoidingView,
@@ -18,6 +18,23 @@ import { getCurrentUser, signIn } from '../../lib/amplify-auth';
 import { storeFirstName, updateStoredUuid } from '../../lib/user-identity';
 import { colors } from '../../utils/colors';
 import { darkStyles, styles } from '../../utils/styles';
+
+function getErrorMessage(err: unknown): string {
+  if (err instanceof Error) {
+    const errorName = (err as { name?: string }).name;
+    if (errorName === 'NotAuthorizedException') {
+      return 'Incorrect email or password';
+    }
+    if (errorName === 'UserNotFoundException') {
+      return 'User not found';
+    }
+    if (errorName === 'UserNotConfirmedException') {
+      return 'Please verify your email before signing in';
+    }
+    return err.message || 'Failed to link account. Please try again.';
+  }
+  return 'Failed to link account. Please try again.';
+}
 
 interface LinkAccountModalProps {
   visible: boolean;
@@ -96,19 +113,9 @@ export function LinkAccountModal({
         // Success! User is now linked
         onSuccess();
       }
-    } catch (err: any) {
+    } catch (err: unknown) {
       console.error('[LinkAccountModal] Error:', err);
-
-      // Handle Cognito error codes
-      if (err.name === 'NotAuthorizedException') {
-        setError('Incorrect email or password');
-      } else if (err.name === 'UserNotFoundException') {
-        setError('User not found');
-      } else if (err.name === 'UserNotConfirmedException') {
-        setError('Please verify your email before signing in');
-      } else {
-        setError(err?.message || 'Failed to link account. Please try again.');
-      }
+      setError(getErrorMessage(err));
     } finally {
       setLoading(false);
     }

@@ -1,7 +1,8 @@
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { render } from '@testing-library/react-native';
-import React from 'react';
+import type { MGame } from '../../../../models/m-game';
 import { getMGame } from '../../../../models/m-game';
+import type { MTierSlot } from '../../../../models/m-tier-slot';
 import { GameProvider } from '../../../../providers/game';
 import TierListRow from '../TierListRow';
 
@@ -23,12 +24,12 @@ const mockGame = getMGame({
       { id: 'fighter-2', name: 'Link', gameId: 'game-1' },
     ],
   },
-} as any);
+} as unknown as Parameters<typeof getMGame>[0]) as MGame;
 
-const mockSlots = [
+const mockSlots: MTierSlot[] = [
   { id: 'slot-1', fighterId: 'fighter-1', position: 0 },
   { id: 'slot-2', fighterId: 'fighter-2', position: 1 },
-];
+] as unknown as MTierSlot[];
 
 describe('TierListRow', () => {
   it('renders tier label correctly', () => {
@@ -40,7 +41,7 @@ describe('TierListRow', () => {
             active={false}
             color="hsl(0, 100%, 75%)"
             label="S"
-            slots={mockSlots as any}
+            slots={mockSlots}
           />
         </GameProvider>
       </QueryClientProvider>
@@ -58,7 +59,7 @@ describe('TierListRow', () => {
             active={false}
             color="hsl(30, 100%, 75%)"
             label="A"
-            slots={mockSlots as any}
+            slots={mockSlots}
           />
         </GameProvider>
       </QueryClientProvider>
@@ -77,7 +78,7 @@ describe('TierListRow', () => {
             active={false}
             color="hsl(45, 100%, 75%)"
             label="B"
-            slots={mockSlots as any}
+            slots={mockSlots}
           />
         </GameProvider>
       </QueryClientProvider>
@@ -118,7 +119,7 @@ describe('TierListRow', () => {
             active={false}
             color="hsl(90, 100%, 75%)"
             label="D"
-            slots={slotsWithInvalidFighter as any}
+            slots={slotsWithInvalidFighter as unknown as MTierSlot[]}
           />
         </GameProvider>
       </QueryClientProvider>

@@ -4,12 +4,13 @@ import { Image, Text, TouchableOpacity, View } from 'react-native';
 import type { MContest } from '../../../models/m-contest';
 import type { MFighter } from '../../../models/m-fighter';
 import { type MGame, STOCK } from '../../../models/m-game';
+import type { MRivalry } from '../../../models/m-rivalry';
 import type { MTierSlot } from '../../../models/m-tier-slot';
 import { useGame } from '../../../providers/game';
 import { useRivalry, useRivalryContext } from '../../../providers/rivalry';
 import { fighterByIdFromGame } from '../../../utils';
 import { colors } from '../../../utils/colors';
-import { contestStyles, styles } from '../../../utils/styles';
+import { contestStyles } from '../../../utils/styles';
 import { CharacterDisplay } from '../../common/CharacterDisplay';
 
 interface CurrentContestProps {
@@ -20,6 +21,27 @@ interface CurrentContestProps {
   setCanShuffle: (canShuffle: boolean) => void;
 }
 
+interface FighterCardProps {
+  canShuffle: boolean;
+  contest: MContest | undefined;
+  fighter: MFighter;
+  isUserB: boolean;
+  onPressShuffle: (slot: 'A' | 'B') => void;
+  rivalry: MRivalry;
+  setWinner: (winner: MTierSlot | undefined) => void;
+  shufflingSlot: 'A' | 'B' | null | undefined;
+  slot: 'A' | 'B';
+  winner: MTierSlot | undefined;
+}
+
+interface StockButtonProps {
+  isFirstButton: boolean;
+  isLastButton: boolean;
+  isSelected: boolean;
+  onSelect: () => void;
+  value: number;
+}
+
 function WinnerBadge() {
   return (
     <Image
@@ -27,6 +49,113 @@ function WinnerBadge() {
       source={require('../../../../assets/winner.png')}
       style={winnerBadgeStyle}
     />
+  );
+}
+
+function getTextColor(isWinner: boolean) {
+  return isWinner ? colors.black : colors.white;
+}
+
+function FighterCard({
+  canShuffle,
+  contest,
+  fighter,
+  isUserB,
+  onPressShuffle,
+  rivalry,
+  setWinner,
+  shufflingSlot,
+  slot,
+  winner,
+}: FighterCardProps): ReactNode {
+  const tierSlot = slot === 'A' ? contest?.tierSlotA : contest?.tierSlotB;
+  const isWinner = !!(winner && tierSlot === winner);
+  const userName =
+    slot === 'A' ? rivalry.displayUserAName() : rivalry.displayUserBName();
+  const prestigeDisplay =
+    slot === 'A'
+      ? rivalry.tierListA?.prestigeDisplay
+      : rivalry.tierListB?.prestigeDisplay;
+  const getShufflePosition = () => {
+    if (slot === 'A') return isUserB ? 'right' : 'left';
+    return isUserB ? 'left' : 'right';
+  };
+  const shufflePosition = getShufflePosition();
+
+  return (
+    <View
+      style={[
+        fighterContainerStyle,
+        isWinner ? fighterWinnerStyle : fighterNonWinnerStyle,
+      ]}
+    >
+      {canShuffle && (
+        <TouchableOpacity
+          disabled={shufflingSlot === slot}
+          onPress={() => {
+            onPressShuffle(slot);
+          }}
+          style={[shuffleButtonStyle, { [shufflePosition]: -10 }]}
+        >
+          <Text style={{ fontSize: 16 }}>🔀</Text>
+        </TouchableOpacity>
+      )}
+      <Text
+        style={[currentContestUserStyle, { color: getTextColor(isWinner) }]}
+      >
+        {userName} {prestigeDisplay}
+      </Text>
+      <CharacterDisplay
+        fighter={fighter}
+        height={180}
+        hideName={true}
+        onPress={() => {
+          setWinner(tierSlot);
+        }}
+        tierSlot={tierSlot}
+        width={140}
+        zoomMultiplier={1.55}
+      />
+      <Text style={[fighterNameStyle, { color: getTextColor(isWinner) }]}>
+        {fighter.name}
+        {slot === 'A' ? ' ' : ''}
+      </Text>
+      {isWinner && <WinnerBadge />}
+    </View>
+  );
+}
+
+function StockButton({
+  isFirstButton,
+  isLastButton,
+  isSelected,
+  onSelect,
+  value,
+}: StockButtonProps): ReactNode {
+  return (
+    <TouchableOpacity
+      onPress={onSelect}
+      style={[
+        stockButtonStyle,
+        {
+          borderRightWidth: isLastButton ? 1 : 0,
+          backgroundColor: isSelected ? colors.slate900 : colors.slate100,
+          borderTopLeftRadius: isFirstButton ? BUTTON_BORDER_RADIUS : 0,
+          borderBottomLeftRadius: isFirstButton ? BUTTON_BORDER_RADIUS : 0,
+          borderTopRightRadius: isLastButton ? BUTTON_BORDER_RADIUS : 0,
+          borderBottomRightRadius: isLastButton ? BUTTON_BORDER_RADIUS : 0,
+        },
+      ]}
+    >
+      <Text
+        style={{
+          fontSize: 24,
+          color: isSelected ? colors.white : colors.black,
+        }}
+      >
+        {value}
+      </Text>
+    </TouchableOpacity>
   );
 }
 
@@ -59,7 +188,7 @@ export function CurrentContest({
     }
 
     // Use baseGame which has the fighters.items structure from the cache
-    const gameData = (game as any).baseGame || game;
+    const gameData = game.baseGame || game;
     const foundFighterA = fighterByIdFromGame(
       gameData,
       contest.tierSlotA.fighterId
@@ -92,9 +221,6 @@ export function CurrentContest({
     onResolveContest(contest);
   }
 
-  const getTextColor = (isWinner: boolean) =>
-    isWinner ? colors.black : colors.white;
-
   return (
     <>
       <View style={headerContainerStyle}>
@@ -123,66 +249,18 @@ export function CurrentContest({
           ]}
         >
           {fighterA && (
-            <View
-              style={[
-                fighterContainerStyle,
-                winner && contest?.tierSlotA === winner
-                  ? fighterWinnerStyle
-                  : fighterNonWinnerStyle,
-              ]}
-            >
-              {canShuffle && (
-                <TouchableOpacity
-                  disabled={shufflingSlot === 'A'}
-                  onPress={() => {
-                    onPressShuffle('A');
-                  }}
-                  style={[
-                    shuffleButtonStyle,
-                    { [isUserB ? 'right' : 'left']: -10 },
-                  ]}
-                >
-                  <Text style={{ fontSize: 16 }}>🔀</Text>
-                </TouchableOpacity>
-              )}
-              <Text
-                style={[
-                  currentContestUserStyle,
-                  {
-                    color: getTextColor(
-                      !!(winner && contest?.tierSlotA === winner)
-                    ),
-                  },
-                ]}
-              >
-                {rivalry.displayUserAName()}{' '}
-                {rivalry.tierListA?.prestigeDisplay}
-              </Text>
-              <CharacterDisplay
-                fighter={fighterA}
-                height={180}
-                hideName={true}
-                onPress={() => {
-                  setWinner(contest?.tierSlotA);
-                }}
-                tierSlot={contest?.tierSlotA}
-                width={140}
-                zoomMultiplier={1.55}
-              />
-              <Text
-                style={[
-                  fighterNameStyle,
-                  {
-                    color: getTextColor(
-                      !!(winner && contest?.tierSlotA === winner)
-                    ),
-                  },
-                ]}
-              >
-                {fighterA.name}{' '}
-              </Text>
-              {winner && contest?.tierSlotA === winner && <WinnerBadge />}
-            </View>
+            <FighterCard
+              canShuffle={canShuffle}
+              contest={contest}
+              fighter={fighterA}
+              isUserB={isUserB}
+              onPressShuffle={onPressShuffle}
+              rivalry={rivalry}
+              setWinner={setWinner}
+              shufflingSlot={shufflingSlot}
+              slot="A"
+              winner={winner}
+            />
           )}
 
           {!(fighterA || fighterB) && (
@@ -194,66 +272,18 @@ export function CurrentContest({
             </View>
           )}
           {fighterB && (
-            <View
-              style={[
-                fighterContainerStyle,
-                winner && contest?.tierSlotB === winner
-                  ? fighterWinnerStyle
-                  : fighterNonWinnerStyle,
-              ]}
-            >
-              {canShuffle && (
-                <TouchableOpacity
-                  disabled={shufflingSlot === 'B'}
-                  onPress={() => {
-                    onPressShuffle('B');
-                  }}
-                  style={[
-                    shuffleButtonStyle,
-                    { [isUserB ? 'left' : 'right']: -10 },
-                  ]}
-                >
-                  <Text style={{ fontSize: 16 }}>🔀</Text>
-                </TouchableOpacity>
-              )}
-              <Text
-                style={[
-                  currentContestUserStyle,
-                  {
-                    color: getTextColor(
-                      !!(winner && contest?.tierSlotB === winner)
-                    ),
-                  },
-                ]}
-              >
-                {rivalry.displayUserBName()}{' '}
-                {rivalry.tierListB?.prestigeDisplay}
-              </Text>
-              <CharacterDisplay
-                fighter={fighterB}
-                height={180}
-                hideName={true}
-                onPress={() => {
-                  setWinner(contest?.tierSlotB);
-                }}
-                tierSlot={contest?.tierSlotB}
-                width={140}
-                zoomMultiplier={1.55}
-              />
-              <Text
-                style={[
-                  fighterNameStyle,
-                  {
-                    color: getTextColor(
-                      !!(winner && contest?.tierSlotB === winner)
-                    ),
-                  },
-                ]}
-              >
-                {fighterB.name}
-              </Text>
-              {winner && contest?.tierSlotB === winner && <WinnerBadge />}
-            </View>
+            <FighterCard
+              canShuffle={canShuffle}
+              contest={contest}
+              fighter={fighterB}
+              isUserB={isUserB}
+              onPressShuffle={onPressShuffle}
+              rivalry={rivalry}
+              setWinner={setWinner}
+              shufflingSlot={shufflingSlot}
+              slot="B"
+              winner={winner}
+            />
           )}
         </View>
 
@@ -263,42 +293,18 @@ export function CurrentContest({
               Stock remaining
             </Text>
             <View style={{ flexDirection: 'row', marginTop: 8 }}>
-              {range(1, STOCK + 1).map((value, idx) => {
-                const isFirstButton = idx === 0;
-                const isLastButton = idx === STOCK - 1;
-                const isSelected = stockRemaining === value;
-
-                return (
-                  <TouchableOpacity
-                    key={value}
-                    onPress={() => {
-                      setStockRemaining(value);
-                    }}
-                    style={[
-                      stockButtonStyle,
-                      {
-                        borderRightWidth: isLastButton ? 1 : 0,
-                        backgroundColor: isSelected
-                          ? colors.slate900
-                          : colors.slate100,
-                        borderTopLeftRadius: isFirstButton ? 8 : 0,
-                        borderBottomLeftRadius: isFirstButton ? 8 : 0,
-                        borderTopRightRadius: isLastButton ? 8 : 0,
-                        borderBottomRightRadius: isLastButton ? 8 : 0,
-                      },
-                    ]}
-                  >
-                    <Text
-                      style={{
-                        fontSize: 24,
-                        color: isSelected ? colors.white : colors.black,
-                      }}
-                    >
-                      {value}
-                    </Text>
-                  </TouchableOpacity>
-                );
-              })}
+              {range(1, STOCK + 1).map((value, idx) => (
+                <StockButton
+                  isFirstButton={idx === 0}
+                  isLastButton={idx === STOCK - 1}
+                  isSelected={stockRemaining === value}
+                  key={value}
+                  onSelect={() => {
+                    setStockRemaining(value);
+                  }}
+                  value={value}
+                />
+              ))}
             </View>
 
             <TouchableOpacity
@@ -340,6 +346,7 @@ const fighterNonWinnerStyle = {
 // Style constants
 const center = 'center' as const;
 const absolute = 'absolute' as const;
+const BUTTON_BORDER_RADIUS = 8;
 
 const winnerBadgeStyle = {
   position: absolute,

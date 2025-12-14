@@ -1,6 +1,6 @@
 import { useRouter } from 'expo-router';
 import { StatusBar } from 'expo-status-bar';
-import React, { useEffect } from 'react';
+import { useEffect } from 'react';
 
 import { HamburgerMenu } from '../src/components/common/HamburgerMenu';
 import { RivalryIndex } from '../src/components/screens/RivalryIndex';

@@ -28,15 +28,21 @@ import { Image } from 'react-native';
 import {
   preloadAssets,
   preloadFighterImages,
-} from '../../src/utils/preloadAssets';
+} from '../../src/utils/preload-assets';
 
 describe('preloadAssets', () => {
   beforeEach(() => {
     jest.clearAllMocks();
     // Reset console methods
-    jest.spyOn(console, 'log').mockImplementation(() => {});
-    jest.spyOn(console, 'warn').mockImplementation(() => {});
-    jest.spyOn(console, 'error').mockImplementation(() => {});
+    jest.spyOn(console, 'log').mockImplementation(() => {
+      // no-op
+    });
+    jest.spyOn(console, 'warn').mockImplementation(() => {
+      // no-op
+    });
+    jest.spyOn(console, 'error').mockImplementation(() => {
+      // no-op
+    });
   });
 
   afterEach(() => {

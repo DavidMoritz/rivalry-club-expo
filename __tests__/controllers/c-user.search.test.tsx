@@ -1,12 +1,15 @@
+import { jest } from '@jest/globals';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { renderHook } from '@testing-library/react-native';
 import type React from 'react';
 
-import * as cUser from '../../src/controllers/c-user';
+import { useUserSearchQuery as useUserSearchQueryOriginal } from '../../src/controllers/c-user';
 
 // Mock the controller module
 jest.mock('../../src/controllers/c-user', () => {
-  const actual = jest.requireActual('../../src/controllers/c-user');
+  const actual = jest.requireActual<
+    typeof import('../../src/controllers/c-user')
+  >('../../src/controllers/c-user');
 
   return {
     ...actual,
@@ -34,7 +37,7 @@ describe('useUserSearchQuery', () => {
   });
 
   it('should return empty array when search text is less than 2 characters', () => {
-    (cUser.useUserSearchQuery as jest.Mock).mockReturnValue({
+    (useUserSearchQueryOriginal as jest.Mock).mockReturnValue({
       data: [],
       isLoading: false,
       error: null,
@@ -69,7 +72,7 @@ describe('useUserSearchQuery', () => {
       },
     ];
 
-    (cUser.useUserSearchQuery as jest.Mock).mockReturnValue({
+    (useUserSearchQueryOriginal as jest.Mock).mockReturnValue({
       data: mockUsers,
       isLoading: false,
       error: null,
@@ -106,7 +109,7 @@ describe('useUserSearchQuery', () => {
       },
     ];
 
-    (cUser.useUserSearchQuery as jest.Mock).mockReturnValue({
+    (useUserSearchQueryOriginal as jest.Mock).mockReturnValue({
       data: mockUsers,
       isLoading: false,
       error: null,
@@ -143,7 +146,7 @@ describe('useUserSearchQuery', () => {
       },
     ];
 
-    (cUser.useUserSearchQuery as jest.Mock).mockReturnValue({
+    (useUserSearchQueryOriginal as jest.Mock).mockReturnValue({
       data: mockUsers,
       isLoading: false,
       error: null,
@@ -193,7 +196,7 @@ describe('useUserSearchQuery', () => {
       },
     ];
 
-    (cUser.useUserSearchQuery as jest.Mock).mockReturnValue({
+    (useUserSearchQueryOriginal as jest.Mock).mockReturnValue({
       data: mockUsers,
       isLoading: false,
       error: null,
@@ -215,7 +218,7 @@ describe('useUserSearchQuery', () => {
   });
 
   it('should filter out current user from results', () => {
-    (cUser.useUserSearchQuery as jest.Mock).mockReturnValue({
+    (useUserSearchQueryOriginal as jest.Mock).mockReturnValue({
       data: [],
       isLoading: false,
       error: null,
@@ -251,7 +254,7 @@ describe('useUserSearchQuery', () => {
       },
     ];
 
-    (cUser.useUserSearchQuery as jest.Mock).mockReturnValue({
+    (useUserSearchQueryOriginal as jest.Mock).mockReturnValue({
       data: mockUsers,
       isLoading: false,
       error: null,
@@ -288,7 +291,7 @@ describe('useUserSearchQuery', () => {
       },
     ];
 
-    (cUser.useUserSearchQuery as jest.Mock).mockReturnValue({
+    (useUserSearchQueryOriginal as jest.Mock).mockReturnValue({
       data: mockUsers,
       isLoading: false,
       error: null,
@@ -314,5 +317,5 @@ function useUserSearchQuery(props: {
   searchText: string;
   currentUserId?: string;
 }) {
-  return cUser.useUserSearchQuery(props);
+  return useUserSearchQueryOriginal(props);
 }

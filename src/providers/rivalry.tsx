@@ -1,4 +1,4 @@
-import React, {
+import {
   createContext,
   type ReactNode,
   useContext,
@@ -28,7 +28,9 @@ const RivalryContext = createContext<RivalryContextValue>({
 
 const RivalryUpdateContext = createContext<
   (newRivalry: MRivalry | null, userAName?: string, userBName?: string) => void
->(() => {});
+>(() => {
+  // Default no-op function; will be replaced by provider
+});
 
 export const useRivalry = () => {
   const context = useContext(RivalryContext);

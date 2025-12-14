@@ -45,17 +45,12 @@ export function getMTierSlot(tierSlot: TierSlot): MTierSlot {
       );
     },
 
-    // setters
-    set fighter(fighter: MFighter | undefined) {
-      this._mFighter = fighter;
-    },
-    set tierList(tierList: MTierList | undefined) {
-      this._mTierList = tierList;
-    },
-
-    // getters
+    // accessors
     get fighter() {
       return this._mFighter;
+    },
+    set fighter(fighter: MFighter | undefined) {
+      this._mFighter = fighter;
     },
     get fighterTier() {
       return TIERS[
@@ -67,12 +62,16 @@ export function getMTierSlot(tierSlot: TierSlot): MTierSlot {
     get tierList() {
       return this._mTierList;
     },
+    set tierList(tierList: MTierList | undefined) {
+      this._mTierList = tierList;
+    },
   };
 }
 
 /** Utility Functions */
 
 const TIER_COUNT = 7;
+const TIER_LABELS = ['S', 'A', 'B', 'C', 'D', 'E', 'F'] as const;
 
 /**
  * Computes the tier label (S, A, B, C, D, E, F, or UNKNOWN) from a position value.
@@ -92,15 +91,13 @@ export function computeTierFromPosition(position: number | null): string {
     return 'U';
   }
 
-  const BASE_PER_TIER = Math.floor(FIGHTER_COUNT / TIER_COUNT); // 12
+  const slotsPerTier = Math.floor(FIGHTER_COUNT / TIER_COUNT); // 12
+  const tierIndex = Math.min(
+    Math.floor(position / slotsPerTier),
+    TIER_COUNT - 1
+  );
 
-  if (position < BASE_PER_TIER) return 'S';
-  if (position < 2 * BASE_PER_TIER) return 'A';
-  if (position < 3 * BASE_PER_TIER) return 'B';
-  if (position < 4 * BASE_PER_TIER) return 'C';
-  if (position < 5 * BASE_PER_TIER) return 'D';
-  if (position < 6 * BASE_PER_TIER) return 'E';
-  return 'F';
+  return TIER_LABELS[tierIndex];
 }
 
 /**

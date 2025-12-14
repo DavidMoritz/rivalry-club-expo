@@ -10,6 +10,17 @@ import { computeTierFromPosition } from '../../../models/m-tier-slot';
 import { colors } from '../../../utils/colors';
 import { CharacterDisplay } from '../../common/CharacterDisplay';
 
+// Layout constants for character displays
+const WINNER_DISPLAY_WIDTH = 140;
+const WINNER_DISPLAY_HEIGHT = 180;
+const WINNER_BADGE_RATIO = 0.25;
+const LOSER_DISPLAY_WIDTH = 91;
+const LOSER_DISPLAY_HEIGHT = 117;
+const LOSER_BADGE_RATIO = 0.35;
+
+// Game constants
+const MAX_TIER_POSITION = 82;
+
 interface BattleResultsProps {
   contest: MContest;
   fighterA: MFighter;
@@ -53,7 +64,10 @@ export function BattleResults({
   );
   const loserNewTier = computeTierFromPosition(
     loserPosition !== null
-      ? Math.min(82, loserPosition + stockCount * STEPS_PER_STOCK)
+      ? Math.min(
+          MAX_TIER_POSITION,
+          loserPosition + stockCount * STEPS_PER_STOCK
+        )
       : null
   );
 
@@ -96,10 +110,10 @@ export function BattleResults({
             <View style={{ position: 'relative' }}>
               <CharacterDisplay
                 fighter={winnerFighter}
-                height={180}
+                height={WINNER_DISPLAY_HEIGHT}
                 hideName={true}
                 tierSlot={winnerTierSlot}
-                width={140}
+                width={WINNER_DISPLAY_WIDTH}
                 zoomMultiplier={1.75}
               />
               {/* Tier Badge Overlay */}
@@ -109,8 +123,8 @@ export function BattleResults({
                     tierBadgeStyle,
                     {
                       backgroundColor: winnerTierData.color,
-                      width: 140 * 0.25,
-                      height: 140 * 0.25,
+                      width: WINNER_DISPLAY_WIDTH * WINNER_BADGE_RATIO,
+                      height: WINNER_DISPLAY_WIDTH * WINNER_BADGE_RATIO,
                       bottom: 8,
                       right: 8,
                     },
@@ -136,10 +150,10 @@ export function BattleResults({
             <View style={{ position: 'relative' }}>
               <CharacterDisplay
                 fighter={loserFighter}
-                height={117}
+                height={LOSER_DISPLAY_HEIGHT}
                 hideName={true}
                 tierSlot={loserTierSlot}
-                width={91}
+                width={LOSER_DISPLAY_WIDTH}
                 zoomMultiplier={0.95}
               />
               {/* Tier Badge Overlay */}
@@ -149,8 +163,8 @@ export function BattleResults({
                     tierBadgeStyle,
                     {
                       backgroundColor: loserTierData.color,
-                      width: 91 * 0.35,
-                      height: 91 * 0.35,
+                      width: LOSER_DISPLAY_WIDTH * LOSER_BADGE_RATIO,
+                      height: LOSER_DISPLAY_WIDTH * LOSER_BADGE_RATIO,
                       bottom: 4,
                       right: 4,
                     },

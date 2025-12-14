@@ -1,4 +1,3 @@
-import React from 'react';
 import {
   ActivityIndicator,
   Image,
@@ -28,7 +27,7 @@ interface HomeProps {
 
 export default function Home({ onEnterClick, onHowToPlayClick }: HomeProps) {
   // Initialize user immediately on home screen (creates anonymous user in background)
-  const { user } = useAuthUser();
+  useAuthUser();
 
   // Get game from global GameProvider (fetched automatically by provider)
   const game = useGame();
@@ -61,7 +60,7 @@ export default function Home({ onEnterClick, onHowToPlayClick }: HomeProps) {
       </View>
       {!game && <Image source={logoImage} style={styles.gameLogoImage} />}
       <View style={viewLowerStyle}>
-        {isLoading ? (
+        {isLoading && (
           <View
             style={{
               flex: 1,
@@ -77,12 +76,13 @@ export default function Home({ onEnterClick, onHowToPlayClick }: HomeProps) {
               Loading fighters...
             </Text>
           </View>
-        ) : game ? (
+        )}
+        {game && (
           <GameWithCharactersDisplay
             game={game}
             onHowToPlayClick={onHowToPlayClick}
           />
-        ) : null}
+        )}
       </View>
     </SafeAreaView>
   );
@@ -112,11 +112,4 @@ const viewUpperStyle = {
 
 const viewLowerStyle = {
   flex: 3,
-};
-
-const lightStyles = {
-  container: {
-    backgroundColor: colors.gray50,
-    color: colors.black,
-  },
 };

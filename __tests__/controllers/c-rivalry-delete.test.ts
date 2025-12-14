@@ -1,6 +1,17 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { renderHook, waitFor } from '@testing-library/react-native';
 import React from 'react';
+
+interface MockFunctions {
+  mockContestDelete: jest.Mock;
+  mockContestUpdate: jest.Mock;
+  mockTierListUpdate: jest.Mock;
+  mockTierSlotUpdate: jest.Mock;
+  mockRivalryUpdate: jest.Mock;
+}
+
+declare const global: typeof globalThis & { mockFns: MockFunctions };
 
 // Mock the aws-amplify/data module
 jest.mock('aws-amplify/data', () => {
@@ -13,7 +24,7 @@ jest.mock('aws-amplify/data', () => {
   };
 
   // Store references globally for use in tests
-  (global as any).mockFns = mockFns;
+  global.mockFns = mockFns;
 
   return {
     generateClient: jest.fn(() => ({
@@ -63,7 +74,7 @@ describe('useDeleteMostRecentContestMutation', () => {
     });
 
     // Get references to the mocked functions
-    const globalMocks = (global as any).mockFns;
+    const globalMocks = global.mockFns;
     mockContestDelete = globalMocks.mockContestDelete;
     mockContestUpdate = globalMocks.mockContestUpdate;
     mockTierListUpdate = globalMocks.mockTierListUpdate;

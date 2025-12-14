@@ -1,6 +1,5 @@
 import { render } from '@testing-library/react-native';
-import React from 'react';
-import { Animated, Text, View } from 'react-native';
+import { Text, View } from 'react-native';
 import {
   SyncedScrollViewContext,
   syncedScrollViewState,

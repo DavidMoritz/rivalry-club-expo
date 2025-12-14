@@ -1,5 +1,5 @@
 import { useFocusEffect, useRouter } from 'expo-router';
-import React, { useCallback, useEffect, useMemo, useState } from 'react';
+import { useCallback, useEffect, useMemo, useState } from 'react';
 import { Text, TouchableOpacity, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
@@ -47,8 +47,10 @@ export function RivalryIndex() {
 
   // Populate the AllRivalriesProvider when rivalries are loaded
   useEffect(() => {
-    if (allRivalries && user?.id) {
-      setRivalries(allRivalries as any, user.id);
+    if (allRivalries.length > 0 && user?.id) {
+      // Type assertion needed: hook returns simplified RivalryWithUsers,
+      // provider expects MRivalry-based type (structurally compatible for this use)
+      setRivalries(allRivalries as Parameters<typeof setRivalries>[0], user.id);
       setProviderInitialized(true);
     }
   }, [allRivalries, user?.id, setRivalries]);

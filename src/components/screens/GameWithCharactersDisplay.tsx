@@ -1,4 +1,3 @@
-import React from 'react';
 import {
   FlatList,
   Image,
@@ -26,68 +25,67 @@ export function GameWithCharactersDisplay({
   onHowToPlayClick,
 }: GameWithCharactersDisplayProps) {
   // Cast fighters to access items (LazyLoader type)
-  const fighters = (game.fighters as any)?.items || [];
+  const fighters =
+    (game.fighters as { items?: MFighter[] } | undefined)?.items ?? [];
 
   return (
-    <>
-      <FlatList
-        columnWrapperStyle={{ justifyContent: 'space-evenly' }}
-        contentContainerStyle={{ flexGrow: 1 }}
-        data={fighters}
-        key="id"
-        keyExtractor={item => item?.id || ''}
-        ListFooterComponent={
-          <View
+    <FlatList
+      columnWrapperStyle={{ justifyContent: 'space-evenly' }}
+      contentContainerStyle={{ flexGrow: 1 }}
+      data={fighters}
+      key="id"
+      keyExtractor={item => item?.id || ''}
+      ListFooterComponent={
+        <View
+          style={{
+            paddingTop: 12,
+            paddingBottom: 24,
+            paddingHorizontal: 16,
+            alignItems: 'center',
+          }}
+        >
+          <Text
             style={{
-              paddingTop: 12,
-              paddingBottom: 24,
-              paddingHorizontal: 16,
-              alignItems: 'center',
+              color: colors.gray400,
+              fontSize: 17,
+              textAlign: 'center',
             }}
+          >
+            Custom artwork provided by
+          </Text>
+          <TouchableOpacity
+            onPress={() =>
+              Linking.openURL('https://www.deviantart.com/professorfandango')
+            }
           >
             <Text
               style={{
-                color: colors.gray400,
+                color: colors.blue400,
                 fontSize: 17,
-                textAlign: 'center',
+                textDecorationLine: 'underline',
               }}
             >
-              Custom artwork provided by
+              Professor Fandango
             </Text>
-            <TouchableOpacity
-              onPress={() =>
-                Linking.openURL('https://www.deviantart.com/professorfandango')
-              }
-            >
-              <Text
-                style={{
-                  color: colors.blue400,
-                  fontSize: 17,
-                  textDecorationLine: 'underline',
-                }}
-              >
-                Professor Fandango
-              </Text>
-            </TouchableOpacity>
+          </TouchableOpacity>
 
-            {onHowToPlayClick && (
-              <Button
-                onPress={onHowToPlayClick}
-                style={{ marginTop: 26, width: '60%', paddingVertical: 0 }}
-                text="How to Play"
-              />
-            )}
-          </View>
-        }
-        ListHeaderComponent={
-          <Image source={logoImage} style={styles.gameLogoImage} />
-        }
-        numColumns={3}
-        renderItem={({ item }) =>
-          item && <CharacterDisplay fighter={item as MFighter} />
-        }
-        style={{ flex: 1 }}
-      />
-    </>
+          {onHowToPlayClick && (
+            <Button
+              onPress={onHowToPlayClick}
+              style={{ marginTop: 26, width: '60%', paddingVertical: 0 }}
+              text="How to Play"
+            />
+          )}
+        </View>
+      }
+      ListHeaderComponent={
+        <Image source={logoImage} style={styles.gameLogoImage} />
+      }
+      numColumns={3}
+      renderItem={({ item }) =>
+        item && <CharacterDisplay fighter={item as MFighter} />
+      }
+      style={{ flex: 1 }}
+    />
   );
 }

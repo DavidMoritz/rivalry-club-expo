@@ -1,5 +1,4 @@
 import { useRouter } from 'expo-router';
-import React from 'react';
 import { FlatList, Text, TouchableOpacity, View } from 'react-native';
 
 import { useAllRivalries } from '../../../providers/all-rivalries';
@@ -48,7 +47,7 @@ export function RivalriesTable({
 
   return (
     <>
-      {visibleRivalries && visibleRivalries.length > 0 && (
+      {visibleRivalries.length > 0 && (
         <FlatList
           contentContainerStyle={{ padding: 16 }}
           data={visibleRivalries}
@@ -81,7 +80,7 @@ export function RivalriesTable({
         </View>
       )}
 
-      {(!visibleRivalries || visibleRivalries.length === 0) && (
+      {visibleRivalries.length === 0 && (
         <View style={buttonContainerStyle}>
           <TouchableOpacity
             onPress={() => router.push('/how-to-play')}

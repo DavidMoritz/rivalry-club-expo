@@ -1,5 +1,5 @@
 import { fireEvent, render, waitFor } from '@testing-library/react-native';
-import React from 'react';
+import type { MFighter } from '../../../../models/m-fighter';
 import type { MGame } from '../../../../models/m-game';
 import type { MTierList } from '../../../../models/m-tier-list';
 import { TierListEditDisplay } from '../TierListEditDisplay';
@@ -10,7 +10,7 @@ jest.mock('../../../../providers/game', () => ({
 }));
 
 jest.mock('../../../../utils', () => ({
-  fighterByIdFromGame: jest.fn((game, fighterId) => ({
+  fighterByIdFromGame: jest.fn((_game, fighterId) => ({
     id: fighterId,
     name: `Fighter ${fighterId}`,
     gameId: 'test-game',
@@ -18,7 +18,13 @@ jest.mock('../../../../utils', () => ({
 }));
 
 jest.mock('../../../common/CharacterDisplay', () => ({
-  CharacterDisplay: ({ fighter, onPress }: any) => {
+  CharacterDisplay: ({
+    fighter,
+    onPress,
+  }: {
+    fighter: MFighter;
+    onPress?: () => void;
+  }) => {
     const { Text, TouchableOpacity } = require('react-native');
 
     return (
@@ -58,7 +64,7 @@ describe('TierListEditDisplay', () => {
       tierSlots: { items: slots },
       createdAt: new Date().toISOString(),
       updatedAt: new Date().toISOString(),
-    } as any;
+    } as MTierList;
   };
 
   beforeEach(() => {

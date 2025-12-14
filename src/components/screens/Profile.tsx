@@ -9,7 +9,7 @@ import {
   Text,
   TextInput,
   TouchableOpacity,
-  View,
+  View
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
@@ -50,8 +50,7 @@ const validatePasswordFields = (
 // Password error message mapper
 const getPasswordErrorMessage = (error: unknown): string => {
   const errorName = error instanceof Error && 'name' in error ? error.name : '';
-  const defaultMessage =
-    error instanceof Error ? error.message : 'Failed to change password';
+  const defaultMessage = error instanceof Error ? error.message : 'Failed to change password';
 
   if (errorName === 'NotAuthorizedException') {
     return 'Current password is incorrect';
@@ -115,7 +114,7 @@ export function Profile() {
       const result = await client.models.User.update({
         id: user.id,
         firstName: firstName.trim(),
-        lastName: lastName.trim() || ' ',
+        lastName: lastName.trim() || ' '
       });
 
       if (result.errors && result.errors.length > 0) {
@@ -128,9 +127,7 @@ export function Profile() {
 
       // Handle post-update navigation/cleanup
       const delay = wasNewUser ? REDIRECT_DELAY_MS : MESSAGE_CLEAR_DELAY_MS;
-      const action = wasNewUser
-        ? () => router.replace('/rivalries')
-        : () => setSuccessMessage('');
+      const action = wasNewUser ? () => router.replace('/rivalries') : () => setSuccessMessage('');
       setTimeout(action, delay);
     } catch (error) {
       setErrorMessage(getUpdateErrorMessage(error));
@@ -143,11 +140,7 @@ export function Profile() {
     setErrorMessage('');
     setSuccessMessage('');
 
-    const validationError = validatePasswordFields(
-      currentPassword,
-      newPassword,
-      confirmPassword
-    );
+    const validationError = validatePasswordFields(currentPassword, newPassword, confirmPassword);
     if (validationError) {
       setErrorMessage(validationError);
       return;
@@ -193,9 +186,7 @@ export function Profile() {
             style: 'destructive',
             onPress: async () => {
               try {
-                console.log(
-                  '[Profile] 🛠️ DEV MODE: Clearing UUID and signing out...'
-                );
+                console.log('[Profile] 🛠️ DEV MODE: Clearing UUID and signing out...');
                 await clearStoredUuid();
                 await signOut();
                 console.log('[Profile] ✅ UUID cleared, signed out');
@@ -206,8 +197,8 @@ export function Profile() {
                 console.error('[Profile] Error clearing UUID:', error);
                 Alert.alert('Error', 'Failed to reset UUID');
               }
-            },
-          },
+            }
+          }
         ]
       );
     }
@@ -216,9 +207,7 @@ export function Profile() {
   if (userLoading) {
     return (
       <SafeAreaView style={[styles.container, darkStyles.container]}>
-        <View
-          style={{ flex: 1, alignItems: 'center', justifyContent: 'center' }}
-        >
+        <View style={{ flex: 1, alignItems: 'center', justifyContent: 'center' }}>
           <Text style={styles.text}>Loading...</Text>
         </View>
       </SafeAreaView>
@@ -229,10 +218,7 @@ export function Profile() {
   const isNewUser = isUserNew(user?.firstName);
 
   return (
-    <SafeAreaView
-      edges={['top', 'bottom']}
-      style={[styles.container, darkStyles.container]}
-    >
+    <SafeAreaView edges={['top', 'bottom']} style={[styles.container, darkStyles.container]}>
       <KeyboardAvoidingView
         behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
         keyboardVerticalOffset={0}
@@ -254,7 +240,7 @@ export function Profile() {
                 backgroundColor: colors.blue500,
                 padding: 16,
                 borderRadius: 8,
-                marginBottom: 16,
+                marginBottom: 16
               }}
             >
               <Text
@@ -262,7 +248,7 @@ export function Profile() {
                   color: colors.white,
                   textAlign: 'center',
                   fontWeight: '600',
-                  marginBottom: 4,
+                  marginBottom: 4
                 }}
               >
                 Welcome! 👋
@@ -279,12 +265,10 @@ export function Profile() {
                 backgroundColor: colors.green600,
                 padding: 12,
                 borderRadius: 8,
-                marginBottom: 16,
+                marginBottom: 16
               }}
             >
-              <Text style={{ color: colors.white, textAlign: 'center' }}>
-                {successMessage}
-              </Text>
+              <Text style={{ color: colors.white, textAlign: 'center' }}>{successMessage}</Text>
             </View>
           ) : null}
 
@@ -294,22 +278,15 @@ export function Profile() {
                 backgroundColor: colors.red600,
                 padding: 12,
                 borderRadius: 8,
-                marginBottom: 16,
+                marginBottom: 16
               }}
             >
-              <Text style={{ color: colors.white, textAlign: 'center' }}>
-                {errorMessage}
-              </Text>
+              <Text style={{ color: colors.white, textAlign: 'center' }}>{errorMessage}</Text>
             </View>
           ) : null}
 
           <View style={{ marginBottom: 32 }}>
-            <Text
-              style={[
-                styles.text,
-                { fontSize: 20, fontWeight: '600', marginBottom: 16 },
-              ]}
-            >
+            <Text style={[styles.text, { fontSize: 20, fontWeight: '600', marginBottom: 16 }]}>
               Personal Information
             </Text>
 
@@ -329,8 +306,8 @@ export function Profile() {
                     paddingVertical: 12,
                     borderRadius: 8,
                     borderWidth: 1,
-                    borderColor: colors.gray600,
-                  },
+                    borderColor: colors.gray600
+                  }
                 ]}
                 value={firstName}
               />
@@ -352,38 +329,64 @@ export function Profile() {
                     paddingVertical: 12,
                     borderRadius: 8,
                     borderWidth: 1,
-                    borderColor: colors.gray600,
-                  },
+                    borderColor: colors.gray600
+                  }
                 ]}
                 value={lastName}
               />
             </View>
 
             <View style={{ marginBottom: 16 }}>
-              <Text
-                style={[
-                  styles.text,
-                  { marginBottom: 8, color: colors.gray300 },
-                ]}
-              >
-                Email
-              </Text>
-              <Text
-                style={[
-                  styles.text,
-                  {
-                    backgroundColor: colors.slate800,
-                    color: colors.white,
-                    paddingHorizontal: 16,
-                    paddingVertical: 12,
-                    borderRadius: 8,
-                    borderWidth: 1,
-                    borderColor: colors.gray700,
-                  },
-                ]}
-              >
-                {user?.email}
-              </Text>
+              {user?.email.endsWith('@anonymous.local') ? (
+                <>
+                  <Text
+                    style={[styles.text, { marginBottom: 4, fontSize: 12, color: colors.gray400 }]}
+                  >
+                    Friend Code
+                  </Text>
+                  <Text
+                    style={[
+                      styles.text,
+                      {
+                        fontSize: 18,
+                        color: colors.cyan400,
+                        fontWeight: '600',
+                        fontFamily: 'monospace'
+                      }
+                    ]}
+                  >
+                    {user.email.replace('Player_', '').replace('@anonymous.local', '')}
+                  </Text>
+                  <Text
+                    style={[
+                      styles.text,
+                      { marginTop: 4, fontSize: 11, color: colors.gray500, fontStyle: 'italic' }
+                    ]}
+                  >
+                    Friends can search for you using this code
+                  </Text>
+                </>
+              ) : (
+                <>
+                  <Text
+                    style={[styles.text, { marginBottom: 4, fontSize: 12, color: colors.gray400 }]}
+                  >
+                    Email
+                  </Text>
+                  <Text
+                    style={[
+                      styles.text,
+                      {
+                        fontSize: 18,
+                        color: colors.white,
+                        fontWeight: '600'
+                      }
+                    ]}
+                  >
+                    {user?.email}
+                  </Text>
+                </>
+              )}
             </View>
 
             <TouchableOpacity
@@ -398,14 +401,14 @@ export function Profile() {
                 borderColor: colors.slate300,
                 width: '100%',
                 alignItems: 'center',
-                marginTop: 8,
+                marginTop: 8
               }}
             >
               <Text
                 style={{
                   color: colors.white,
                   fontSize: 18,
-                  fontWeight: 'bold',
+                  fontWeight: 'bold'
                 }}
               >
                 {isUpdating ? 'Updating...' : 'Update Profile'}
@@ -418,15 +421,10 @@ export function Profile() {
               borderTopWidth: 1,
               borderTopColor: colors.gray700,
               paddingTop: 32,
-              marginBottom: 32,
+              marginBottom: 32
             }}
           >
-            <Text
-              style={[
-                styles.text,
-                { fontSize: 20, fontWeight: '600', marginBottom: 16 },
-              ]}
-            >
+            <Text style={[styles.text, { fontSize: 20, fontWeight: '600', marginBottom: 16 }]}>
               Account Linking
             </Text>
 
@@ -437,14 +435,14 @@ export function Profile() {
                     backgroundColor: colors.slate600,
                     padding: 12,
                     borderRadius: 8,
-                    marginBottom: 16,
+                    marginBottom: 16
                   }}
                 >
                   <Text
                     style={{
                       color: colors.white,
                       textAlign: 'center',
-                      fontWeight: '600',
+                      fontWeight: '600'
                     }}
                   >
                     📱 Anonymous Account
@@ -454,11 +452,10 @@ export function Profile() {
                       color: colors.slate300,
                       textAlign: 'center',
                       marginTop: 4,
-                      fontSize: 13,
+                      fontSize: 13
                     }}
                   >
-                    Your data is saved locally. Link an account for recovery and
-                    multi-device sync.
+                    Your data is saved locally. Link an account for recovery and multi-device sync.
                   </Text>
                 </View>
 
@@ -470,14 +467,14 @@ export function Profile() {
                     paddingVertical: 14,
                     borderRadius: 8,
                     alignItems: 'center',
-                    marginBottom: 12,
+                    marginBottom: 12
                   }}
                 >
                   <Text
                     style={{
                       color: colors.darkText,
                       fontSize: 16,
-                      fontWeight: 'bold',
+                      fontWeight: 'bold'
                     }}
                   >
                     Link Existing Account
@@ -487,11 +484,11 @@ export function Profile() {
                       color: colors.darkText,
                       fontSize: 12,
                       marginTop: 2,
-                      textAlign: 'center',
+                      textAlign: 'center'
                     }}
                   >
-                    Already have an account? Restore your data. This will remove
-                    all data for {user?.email.split('@')[0] ?? 'this profile'}.
+                    Already have an account? Restore your data. This will remove all data for{' '}
+                    {user?.email.split('@')[0] ?? 'this profile'}.
                   </Text>
                 </TouchableOpacity>
 
@@ -502,14 +499,14 @@ export function Profile() {
                     paddingHorizontal: 24,
                     paddingVertical: 14,
                     borderRadius: 8,
-                    alignItems: 'center',
+                    alignItems: 'center'
                   }}
                 >
                   <Text
                     style={{
                       color: colors.white,
                       fontSize: 16,
-                      fontWeight: 'bold',
+                      fontWeight: 'bold'
                     }}
                   >
                     Create New Account
@@ -518,7 +515,7 @@ export function Profile() {
                     style={{
                       color: colors.slate300,
                       fontSize: 12,
-                      marginTop: 2,
+                      marginTop: 2
                     }}
                   >
                     Link email for recovery
@@ -531,14 +528,14 @@ export function Profile() {
                   backgroundColor: colors.green600,
                   padding: 12,
                   borderRadius: 8,
-                  marginBottom: 16,
+                  marginBottom: 16
                 }}
               >
                 <Text
                   style={{
                     color: colors.white,
                     textAlign: 'center',
-                    fontWeight: '600',
+                    fontWeight: '600'
                   }}
                 >
                   ✅ Linked to Account
@@ -548,7 +545,7 @@ export function Profile() {
                     color: colors.green100,
                     textAlign: 'center',
                     marginTop: 4,
-                    fontSize: 13,
+                    fontSize: 13
                   }}
                 >
                   Your data is backed up and synced across devices
@@ -562,7 +559,7 @@ export function Profile() {
               style={{
                 borderTopWidth: 1,
                 borderTopColor: colors.gray700,
-                paddingTop: 32,
+                paddingTop: 32
               }}
             >
               <TouchableOpacity
@@ -576,14 +573,14 @@ export function Profile() {
                   borderColor: colors.slate300,
                   width: '100%',
                   alignItems: 'center',
-                  marginTop: 8,
+                  marginTop: 8
                 }}
               >
                 <Text
                   style={{
                     color: colors.white,
                     fontSize: 18,
-                    fontWeight: 'bold',
+                    fontWeight: 'bold'
                   }}
                 >
                   Change Password
@@ -596,22 +593,15 @@ export function Profile() {
               style={{
                 borderTopWidth: 1,
                 borderTopColor: colors.gray700,
-                paddingTop: 32,
+                paddingTop: 32
               }}
             >
-              <Text
-                style={[
-                  styles.text,
-                  { fontSize: 20, fontWeight: '600', marginBottom: 16 },
-                ]}
-              >
+              <Text style={[styles.text, { fontSize: 20, fontWeight: '600', marginBottom: 16 }]}>
                 Change Password
               </Text>
 
               <View style={{ marginBottom: 16 }}>
-                <Text style={[styles.text, { marginBottom: 8 }]}>
-                  Current Password
-                </Text>
+                <Text style={[styles.text, { marginBottom: 8 }]}>Current Password</Text>
                 <TextInput
                   autoCapitalize="none"
                   onChangeText={setCurrentPassword}
@@ -627,17 +617,15 @@ export function Profile() {
                       paddingVertical: 12,
                       borderRadius: 8,
                       borderWidth: 1,
-                      borderColor: colors.gray600,
-                    },
+                      borderColor: colors.gray600
+                    }
                   ]}
                   value={currentPassword}
                 />
               </View>
 
               <View style={{ marginBottom: 16 }}>
-                <Text style={[styles.text, { marginBottom: 8 }]}>
-                  New Password
-                </Text>
+                <Text style={[styles.text, { marginBottom: 8 }]}>New Password</Text>
                 <TextInput
                   autoCapitalize="none"
                   onChangeText={setNewPassword}
@@ -653,17 +641,15 @@ export function Profile() {
                       paddingVertical: 12,
                       borderRadius: 8,
                       borderWidth: 1,
-                      borderColor: colors.gray600,
-                    },
+                      borderColor: colors.gray600
+                    }
                   ]}
                   value={newPassword}
                 />
               </View>
 
               <View style={{ marginBottom: 16 }}>
-                <Text style={[styles.text, { marginBottom: 8 }]}>
-                  Confirm New Password
-                </Text>
+                <Text style={[styles.text, { marginBottom: 8 }]}>Confirm New Password</Text>
                 <TextInput
                   autoCapitalize="none"
                   onChangeText={setConfirmPassword}
@@ -679,8 +665,8 @@ export function Profile() {
                       paddingVertical: 12,
                       borderRadius: 8,
                       borderWidth: 1,
-                      borderColor: colors.gray600,
-                    },
+                      borderColor: colors.gray600
+                    }
                   ]}
                   value={confirmPassword}
                 />
@@ -698,14 +684,14 @@ export function Profile() {
                   borderColor: colors.slate300,
                   width: '100%',
                   alignItems: 'center',
-                  marginTop: 8,
+                  marginTop: 8
                 }}
               >
                 <Text
                   style={{
                     color: colors.white,
                     fontSize: 18,
-                    fontWeight: 'bold',
+                    fontWeight: 'bold'
                   }}
                 >
                   {isChangingPassword ? 'Changing...' : 'Change Password'}

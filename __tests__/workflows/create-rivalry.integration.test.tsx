@@ -15,7 +15,7 @@ import {
 import { useUserSearchQuery } from '../../src/controllers/c-user';
 
 // Regex patterns for test queries (must be at top level per Biome rules)
-const SEARCH_PLACEHOLDER_REGEX = /Type 'npc' or search by name/;
+const SEARCH_PLACEHOLDER_REGEX = /Type 'npc', friend code, or name\/email/;
 const ERROR_MESSAGE_REGEX = /Error:.*Failed to create rivalry/;
 
 // Mock dependencies

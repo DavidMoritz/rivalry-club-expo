@@ -32,7 +32,6 @@ export function TierListsDisplay({
         {rivalry.tierListA && (
           <TierListDisplay
             tierList={rivalry.tierListA}
-            tierListSignifier="A"
             unlinked={unlinked}
           />
         )}
@@ -44,7 +43,6 @@ export function TierListsDisplay({
         {rivalry.tierListB && (
           <TierListDisplay
             tierList={rivalry.tierListB}
-            tierListSignifier="B"
             unlinked={unlinked}
           />
         )}

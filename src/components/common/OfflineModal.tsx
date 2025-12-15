@@ -62,7 +62,7 @@ const modalContentStyle = {
   backgroundColor: colors.slate800,
   borderRadius: 16,
   padding: 24,
-  width: '90%',
+  width: '90%' as const,
   maxWidth: 400,
   borderWidth: 2,
   borderColor: colors.orange500,

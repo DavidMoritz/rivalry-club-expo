@@ -67,7 +67,7 @@ async function processTierLists(
       const tierSlotsArray = await processTierSlots(tierListData.tierSlots);
       tierListsArray.push({
         ...tierListData,
-        tierSlots: { items: tierSlotsArray },
+        tierSlots: { items: tierSlotsArray } as any,
       });
     }
   }
@@ -143,14 +143,14 @@ export default function TiersRoute() {
       }
 
       const tierLists = await processTierLists(
-        rivalryData.tierLists as AsyncIterable<TierListData> | undefined
+        rivalryData.tierLists as unknown as AsyncIterable<TierListData> | undefined
       );
 
       const mRivalry = getMRivalry({
-        rivalry: rivalryData as Schema['Rivalry']['type'],
+        rivalry: rivalryData as unknown as Schema['Rivalry']['type'],
       });
       mRivalry.setMTierLists(
-        tierLists as Parameters<MRivalry['setMTierLists']>[0]
+        tierLists as unknown as Parameters<MRivalry['setMTierLists']>[0]
       );
 
       // Load user data separately

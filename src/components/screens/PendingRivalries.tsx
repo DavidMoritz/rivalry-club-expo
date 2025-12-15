@@ -11,8 +11,8 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 
 import { useAcceptRivalryMutation } from '../../controllers/c-rivalry';
 import { useAuthUser } from '../../hooks/useAuthUser';
-import type { MRivalry } from '../../models/m-rivalry';
 import {
+  type RivalryWithUsers,
   useAllRivalries,
   useAllRivalriesUpdate,
 } from '../../providers/all-rivalries';
@@ -87,7 +87,7 @@ export function PendingRivalries() {
     item,
     isAwaitingAcceptance,
   }: {
-    item: MRivalry;
+    item: RivalryWithUsers;
     isAwaitingAcceptance: boolean;
   }) => {
     const isUserA = item.userAId === user?.id;

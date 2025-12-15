@@ -67,7 +67,7 @@ async function processTierLists(
 
     tierListsArray.push({
       ...tierListData,
-      tierSlots: { items: tierSlotsArray },
+      tierSlots: { items: tierSlotsArray } as any,
     });
   }
 

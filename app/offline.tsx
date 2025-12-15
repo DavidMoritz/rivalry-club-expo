@@ -407,37 +407,6 @@ const winnerBadgeStyle = {
   height: 100
 };
 
-const headerContainerStyle = {
-  flexDirection: 'row' as const,
-  alignItems: 'center' as const,
-  justifyContent: 'center' as const,
-  marginBottom: 8
-};
-
-const currentContestTitleStyle = {
-  fontSize: 18,
-  color: colors.white,
-  position: 'absolute' as const,
-  left: 0
-};
-
-const reshuffleButtonStyle = {
-  alignItems: 'center' as const,
-  paddingHorizontal: 16,
-  paddingVertical: 8,
-  borderWidth: 1,
-  borderColor: colors.white,
-  borderRadius: 12,
-  backgroundColor: colors.slate700,
-  marginStart: 80
-};
-
-const reshuffleButtonPlaceholderStyle = {
-  ...reshuffleButtonStyle,
-  borderColor: colors.none,
-  backgroundColor: colors.none
-};
-
 const contestOuterContainerStyle = {
   alignItems: 'center' as const,
   marginVertical: 6,

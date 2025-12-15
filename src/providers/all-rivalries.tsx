@@ -9,7 +9,7 @@ import {
 
 import type { MRivalry } from '../models/m-rivalry';
 
-interface RivalryWithUsers extends MRivalry {
+export interface RivalryWithUsers extends MRivalry {
   userAName?: string;
   userBName?: string;
 }

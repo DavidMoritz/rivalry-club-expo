@@ -19,7 +19,7 @@ import {
 import { useUserSearchQuery } from '../../controllers/c-user';
 import { useAuthUser } from '../../hooks/useAuthUser';
 import type { MUser } from '../../models/m-user';
-import { useAllRivalries, useAllRivalriesUpdate } from '../../providers/all-rivalries';
+import { type RivalryWithUsers, useAllRivalries, useAllRivalriesUpdate } from '../../providers/all-rivalries';
 import { useGame } from '../../providers/game';
 import { colors } from '../../utils/colors';
 import { darkStyles, styles } from '../../utils/styles';
@@ -27,15 +27,10 @@ import { darkStyles, styles } from '../../utils/styles';
 // User role constant for NPC users
 const NPC_ROLE = 13;
 
-interface RivalryWithNames extends Rivalry {
-  userAName?: string;
-  userBName?: string;
-}
-
 interface SelectedUserPanelProps {
   creatingRivalry: boolean;
   onCreateOrAccept: () => void;
-  rivalries: RivalryWithNames[];
+  rivalries: RivalryWithUsers[];
   selectedUser: MUser;
   userId?: string;
 }
@@ -134,7 +129,7 @@ export function CreateRivalry() {
       // Add the newly created rivalry to the provider with user names
       if (newRivalry && selectedUser && user) {
         addRivalry({
-          ...(newRivalry as Rivalry),
+          ...(newRivalry as unknown as RivalryWithUsers),
           userAName: `${user.firstName || ''} ${user.lastName || ''}`.trim() || user.email,
           userBName:
             `${selectedUser.firstName || ''} ${selectedUser.lastName || ''}`.trim() ||
@@ -177,7 +172,7 @@ export function CreateRivalry() {
       // Add the newly created NPC rivalry to the provider with user names
       if (newRivalry && selectedUser && user) {
         addRivalry({
-          ...(newRivalry as Rivalry),
+          ...(newRivalry as unknown as RivalryWithUsers),
           userAName: `${user.firstName || ''} ${user.lastName || ''}`.trim() || user.email,
           userBName:
             `${selectedUser.firstName || ''} ${selectedUser.lastName || ''}`.trim() ||

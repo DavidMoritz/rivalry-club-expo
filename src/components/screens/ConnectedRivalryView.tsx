@@ -362,7 +362,7 @@ export function ConnectedRivalryView({
     const isATheWinner = (rivalry.currentContest.result || 0) > 0;
 
     // Capture battle results data for the results screen with calculated new positions
-    const gameData = (game as { baseGame?: typeof game })?.baseGame || game;
+    const gameData = (game as unknown as { baseGame?: typeof game })?.baseGame || game;
     const foundFighterA = fighterByIdFromGame(
       gameData,
       rivalry.currentContest.tierSlotA?.fighterId || ''

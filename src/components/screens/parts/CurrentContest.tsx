@@ -190,11 +190,11 @@ export function CurrentContest({
     // Use baseGame which has the fighters.items structure from the cache
     const gameData = game.baseGame || game;
     const foundFighterA = fighterByIdFromGame(
-      gameData,
+      gameData as Parameters<typeof fighterByIdFromGame>[0],
       contest.tierSlotA.fighterId
     );
     const foundFighterB = fighterByIdFromGame(
-      gameData,
+      gameData as Parameters<typeof fighterByIdFromGame>[0],
       contest.tierSlotB.fighterId
     );
     if (foundFighterA) setFighterA(foundFighterA);

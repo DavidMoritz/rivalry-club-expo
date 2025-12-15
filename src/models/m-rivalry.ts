@@ -304,8 +304,8 @@ export function getMRivalry({ rivalry }: GetMRivalryProps): MRivalry {
 
       // Position unknown fighters BEFORE adjusting positions
       const { winnerPosition, loserPosition } = resolveUnknownPositions(
-        winner,
-        loser,
+        winner as ContestParticipant,
+        loser as ContestParticipant,
         result
       );
 
@@ -314,10 +314,10 @@ export function getMRivalry({ rivalry }: GetMRivalryProps): MRivalry {
       const bothPlayersMoveCount = Math.floor(stocks / MOVEMENT_DIRECTIONS);
       const additionalMove = Boolean(stocks % MOVEMENT_DIRECTIONS);
 
-      processMainMovements(winner, loser, bothPlayersMoveCount);
+      processMainMovements(winner as ContestParticipant, loser as ContestParticipant, bothPlayersMoveCount);
 
       if (additionalMove) {
-        processAdditionalMove(winner, loser, nudge, this.currentContest);
+        processAdditionalMove(winner as ContestParticipant, loser as ContestParticipant, nudge, this.currentContest);
       }
 
       normalizePrestige(this.tierListA, this.tierListB);
@@ -346,11 +346,11 @@ export function getMRivalry({ rivalry }: GetMRivalryProps): MRivalry {
 
       // Reverse the additional move using the bias (this happens second-to-last in adjustStanding)
       if (additionalMove) {
-        reverseAdditionalMove(winner, loser, contest.bias);
+        reverseAdditionalMove(winner as ContestParticipant, loser as ContestParticipant, contest.bias);
       }
 
       // Reverse the main movements (these happen first in adjustStanding)
-      reverseMainMovements(winner, loser, bothPlayersMoveCount);
+      reverseMainMovements(winner as ContestParticipant, loser as ContestParticipant, bothPlayersMoveCount);
 
       // Note: Prestige restoration is handled implicitly by the move reversals.
       // The original adjustStanding normalized prestige after moves, and reversing

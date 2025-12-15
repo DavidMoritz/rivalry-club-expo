@@ -41,6 +41,8 @@ export function RivalryIndex() {
     useNetworkStatus();
   const [showOfflineModal, setShowOfflineModal] = useState(false);
 
+  const error = userError || rivalriesError;
+
   // Refetch rivalries when the screen comes into focus
   useFocusEffect(
     useCallback(() => {
@@ -118,7 +120,6 @@ export function RivalryIndex() {
     });
   }
 
-  const error = userError || rivalriesError;
   // Check for errors before provider initialization to avoid stuck loading state
   const isLoading =
     userLoading || rivalriesLoading || !(providerInitialized || error);

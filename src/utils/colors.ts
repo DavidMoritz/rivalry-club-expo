@@ -53,6 +53,10 @@ export const colors = {
   yellow500: '#eab308',
   amber400: '#fbbf24',
 
+  // Orange shades
+  orange700: '#c2410c',
+  orange500: '#f97316',
+
   // Violet shades
   violet600: '#7c3aed',
 

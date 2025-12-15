@@ -4,10 +4,12 @@ import { Text, TouchableOpacity, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
 import { useAuthUser } from '../../hooks/useAuthUser';
+import { useNetworkStatus } from '../../hooks/useNetworkStatus';
 import { useUserRivalries } from '../../hooks/useUserRivalries';
 import { useAllRivalriesUpdate } from '../../providers/all-rivalries';
 import { colors } from '../../utils/colors';
 import { darkStyles, styles } from '../../utils/styles';
+import { OfflineModal } from '../common/OfflineModal';
 import { RivalriesTable } from './parts/RivalriesTable';
 
 interface Rivalry {
@@ -35,6 +37,9 @@ export function RivalryIndex() {
   const { setRivalries } = useAllRivalriesUpdate();
   const [showHiddenRivalries, setShowHiddenRivalries] = useState(false);
   const [providerInitialized, setProviderInitialized] = useState(false);
+  const { isConnected, hasShownOfflineModal, setHasShownOfflineModal } =
+    useNetworkStatus();
+  const [showOfflineModal, setShowOfflineModal] = useState(false);
 
   // Refetch rivalries when the screen comes into focus
   useFocusEffect(
@@ -60,6 +65,19 @@ export function RivalryIndex() {
       setProviderInitialized(true);
     }
   }, [allRivalries, rivalriesLoading, user?.id, setRivalries]);
+
+  // Show offline modal when connection is lost or network error occurs (only once per disconnection)
+  useEffect(() => {
+    const isNetworkError = error?.message?.toLowerCase().includes('network');
+    if ((!isConnected || isNetworkError) && !hasShownOfflineModal) {
+      setShowOfflineModal(true);
+      setHasShownOfflineModal(true);
+    }
+    // Close modal when connection is restored
+    if (isConnected && !isNetworkError) {
+      setShowOfflineModal(false);
+    }
+  }, [isConnected, hasShownOfflineModal, setHasShownOfflineModal, error]);
 
   // Check if there are any hidden rivalries
   const hasHiddenRivalries = useMemo(() => {
@@ -108,6 +126,10 @@ export function RivalryIndex() {
   if (isLoading) {
     return (
       <SafeAreaView style={[styles.container, darkStyles.container]}>
+        <OfflineModal
+          onClose={() => setShowOfflineModal(false)}
+          visible={showOfflineModal}
+        />
         <View style={centeredContainerStyle}>
           <Text style={loadingTextStyle}>Loading rivalries...</Text>
         </View>
@@ -118,6 +140,10 @@ export function RivalryIndex() {
   if (error) {
     return (
       <SafeAreaView style={[styles.container, darkStyles.container]}>
+        <OfflineModal
+          onClose={() => setShowOfflineModal(false)}
+          visible={showOfflineModal}
+        />
         <View style={errorContainerStyle}>
           <Text style={errorTitleStyle}>Error</Text>
           <Text style={styles.text}>{error.message}</Text>
@@ -131,6 +157,11 @@ export function RivalryIndex() {
       edges={['top', 'bottom']}
       style={[styles.container, darkStyles.container]}
     >
+      <OfflineModal
+        onClose={() => setShowOfflineModal(false)}
+        visible={showOfflineModal}
+      />
+
       <View style={headerContainerStyle}>
         <Text style={welcomeTextStyle}>
           Welcome{user?.firstName ? `, ${user.firstName}` : ''}!

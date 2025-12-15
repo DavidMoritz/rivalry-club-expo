@@ -13,6 +13,7 @@ import {
   useUpdateRivalryMutation,
   useUpdateTierSlotsMutation,
 } from '../../controllers/c-rivalry';
+import { useNetworkStatus } from '../../hooks/useNetworkStatus';
 import type { MContest } from '../../models/m-contest';
 import type { MFighter } from '../../models/m-fighter';
 import { PROVISIONAL_THRESHOLD, STEPS_PER_STOCK } from '../../models/m-game';
@@ -27,6 +28,7 @@ import { fighterByIdFromGame } from '../../utils';
 import { colors } from '../../utils/colors';
 import { darkStyles, styles } from '../../utils/styles';
 import { Button } from '../common/Button';
+import { OfflineModal } from '../common/OfflineModal';
 import { BattleResults } from './parts/BattleResults';
 import { CurrentContest } from './parts/CurrentContest';
 import { RivalryView } from './parts/RivalryView';
@@ -247,6 +249,9 @@ export function ConnectedRivalryView({
     winnerPosition: number | null;
     loserPosition: number | null;
   } | null>(null);
+  const { isConnected, hasShownOfflineModal, setHasShownOfflineModal } =
+    useNetworkStatus();
+  const [showOfflineModal, setShowOfflineModal] = useState(false);
 
   const updateRivalryMutation = useUpdateRivalryMutation({
     rivalry,
@@ -418,6 +423,18 @@ export function ConnectedRivalryView({
     });
   }, [navigation, rivalry]);
 
+  // Show offline modal when connection is lost (only once per disconnection)
+  useEffect(() => {
+    if (!isConnected && !hasShownOfflineModal) {
+      setShowOfflineModal(true);
+      setHasShownOfflineModal(true);
+    }
+    // Close modal when connection is restored
+    if (isConnected) {
+      setShowOfflineModal(false);
+    }
+  }, [isConnected, hasShownOfflineModal, setHasShownOfflineModal]);
+
   const handlePressShuffle = (slot: 'A' | 'B') => {
     setShufflingSlot(slot); // Track which slot is being shuffled
     updateCurrentContestShuffleTierSlotsMutation.mutate(slot);
@@ -443,6 +460,11 @@ export function ConnectedRivalryView({
       edges={['top', 'bottom']}
       style={[styles.container, darkStyles.container, { flex: 1, padding: 16 }]}
     >
+      <OfflineModal
+        onClose={() => setShowOfflineModal(false)}
+        visible={showOfflineModal}
+      />
+
       <RivalryViewContent
         battleResults={battleResults}
         canShowMainContent={canShowMainContent}

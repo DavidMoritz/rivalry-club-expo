@@ -1,3 +1,4 @@
+import { useEffect, useState } from 'react';
 import {
   ActivityIndicator,
   Image,
@@ -9,10 +10,12 @@ import {
 
 import { logoImage } from '../../../assets/images/games/ssbu';
 import { useAuthUser } from '../../hooks/useAuthUser';
+import { useNetworkStatus } from '../../hooks/useNetworkStatus';
 import { useGame } from '../../providers/game';
 import { colors } from '../../utils/colors';
 import { darkStyles, styles } from '../../utils/styles';
 import { Button } from '../common/Button';
+import { OfflineModal } from '../common/OfflineModal';
 import { GameWithCharactersDisplay } from './GameWithCharactersDisplay';
 
 interface Game {
@@ -33,8 +36,29 @@ export default function Home({ onEnterClick, onHowToPlayClick }: HomeProps) {
   const game = useGame();
   const isLoading = !game;
 
+  // Network status detection
+  const { isConnected, hasShownOfflineModal, setHasShownOfflineModal } =
+    useNetworkStatus();
+  const [showOfflineModal, setShowOfflineModal] = useState(false);
+
+  // Show offline modal when app opens without connection (only once per disconnection)
+  useEffect(() => {
+    if (!isConnected && !hasShownOfflineModal) {
+      setShowOfflineModal(true);
+      setHasShownOfflineModal(true);
+    }
+    // Close modal when connection is restored
+    if (isConnected) {
+      setShowOfflineModal(false);
+    }
+  }, [isConnected, hasShownOfflineModal, setHasShownOfflineModal]);
+
   return (
     <SafeAreaView style={[styles.container, darkStyles.container]}>
+      <OfflineModal
+        onClose={() => setShowOfflineModal(false)}
+        visible={showOfflineModal}
+      />
       <View style={viewUpperStyle}>
         <TouchableWithoutFeedback onPress={() => game && onEnterClick(game)}>
           <Image

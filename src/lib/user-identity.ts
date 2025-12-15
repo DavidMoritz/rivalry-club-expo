@@ -192,22 +192,10 @@ export async function getStoredFirstName(): Promise<string | null> {
 }
 
 /**
- * Gets the display name for the user.
- *
- * Priority:
- * 1. Stored firstName (if user has ever set their name)
- * 2. Fallback to "Player_${shortId}"
- *
- * This ensures users never see "Player_${shortId}" after they've set their name once.
+ * Generates a display name from UUID (e.g., "Player_abc12")
+ * This is used ONLY when creating a new anonymous user.
+ * The DB User record is the single source of truth for names after that.
  */
 export async function getDisplayName(uuid: string): Promise<string> {
-  // Check if we have a stored firstName
-  const storedFirstName = await getStoredFirstName();
-
-  if (storedFirstName) {
-    return storedFirstName;
-  }
-
-  // Fallback to generated name
   return generateDisplayName(uuid);
 }

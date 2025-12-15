@@ -2,7 +2,10 @@ import { generateClient } from 'aws-amplify/data';
 import { useState } from 'react';
 import {
   ActivityIndicator,
+  KeyboardAvoidingView,
   Modal,
+  Platform,
+  ScrollView,
   Text,
   TextInput,
   TouchableOpacity,
@@ -119,10 +122,12 @@ export function CreateAccountModal({
         id: currentUserId,
         awsSub: cognitoAwsSub,
         email: email.trim(),
-        role: 1, // Regular user role
+        role: 1 // Regular user role
+        // Keep existing firstName/lastName - user can change anytime in Profile
       });
 
-      // Success!
+      // Success! User is now linked
+      // DB is the single source of truth for their name
       onSuccess();
     } catch (err: unknown) {
       console.error('[CreateAccountModal] Link error:', err);
@@ -145,30 +150,40 @@ export function CreateAccountModal({
         edges={['top', 'bottom']}
         style={[styles.container, darkStyles.container]}
       >
-        <View style={{ flex: 1, paddingHorizontal: 24 }}>
-          <View
-            style={{
-              flexDirection: 'row',
-              justifyContent: 'space-between',
-              alignItems: 'center',
-              paddingVertical: 16,
-              borderBottomWidth: 1,
-              borderBottomColor: colors.gray750,
-            }}
-          >
-            <Text style={[styles.text, { fontSize: 24, fontWeight: 'bold' }]}>
-              {needsVerification ? 'Verify Email' : 'Create New Account'}
-            </Text>
-            <TouchableOpacity onPress={onClose}>
-              <Text
-                style={[styles.text, { fontSize: 16, color: colors.slate500 }]}
-              >
-                Cancel
+        <KeyboardAvoidingView
+          behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+          keyboardVerticalOffset={0}
+          style={{ flex: 1 }}
+        >
+          <View style={{ flex: 1, paddingHorizontal: 24 }}>
+            <View
+              style={{
+                flexDirection: 'row',
+                justifyContent: 'space-between',
+                alignItems: 'center',
+                paddingVertical: 16,
+                borderBottomWidth: 1,
+                borderBottomColor: colors.gray750,
+              }}
+            >
+              <Text style={[styles.text, { fontSize: 24, fontWeight: 'bold' }]}>
+                {needsVerification ? 'Verify Email' : 'Create New Account'}
               </Text>
-            </TouchableOpacity>
-          </View>
+              <TouchableOpacity onPress={onClose}>
+                <Text
+                  style={[styles.text, { fontSize: 16, color: colors.slate500 }]}
+                >
+                  Cancel
+                </Text>
+              </TouchableOpacity>
+            </View>
 
-          <View style={{ flex: 1, justifyContent: 'center' }}>
+            <ScrollView
+              contentContainerStyle={{ flexGrow: 1, justifyContent: 'center', paddingBottom: 40 }}
+              keyboardShouldPersistTaps="handled"
+              showsVerticalScrollIndicator={false}
+              style={{ flex: 1 }}
+            >
             {needsVerification ? (
               <>
                 <Text
@@ -432,8 +447,9 @@ export function CreateAccountModal({
                 </TouchableOpacity>
               </>
             )}
+            </ScrollView>
           </View>
-        </View>
+        </KeyboardAvoidingView>
       </SafeAreaView>
     </Modal>
   );

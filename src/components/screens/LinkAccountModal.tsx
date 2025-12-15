@@ -15,7 +15,7 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 
 import type { Schema } from '../../../amplify/data/resource';
 import { getCurrentUser, signIn } from '../../lib/amplify-auth';
-import { storeFirstName, updateStoredUuid } from '../../lib/user-identity';
+import { updateStoredUuid } from '../../lib/user-identity';
 import { colors } from '../../utils/colors';
 import { darkStyles, styles } from '../../utils/styles';
 
@@ -86,19 +86,11 @@ export function LinkAccountModal({
         // Delete the anonymous user
         await client.models.User.delete({ id: currentUserId });
 
-        // Update stored UUID to the existing user's ID
+        // Update stored UUID to the existing user's ID (app will reload with existing user)
         await updateStoredUuid(existingUser.id);
 
-        // Store the existing user's firstName locally so they never see "Player_${shortId}" again
-        if (existingUser.firstName && existingUser.firstName.trim() !== '') {
-          await storeFirstName(existingUser.firstName.trim());
-          console.log(
-            '[LinkAccountModal] Stored existing user firstName:',
-            existingUser.firstName
-          );
-        }
-
         // Success! The app will reload with the existing user
+        // DB is the single source of truth for their name
         onSuccess();
       } else {
         // 5. No existing user found - this Cognito account hasn't been used in the app before
@@ -107,10 +99,12 @@ export function LinkAccountModal({
           id: currentUserId,
           awsSub: cognitoAwsSub,
           email: email.trim(),
-          role: 1, // Regular user role
+          role: 1 // Regular user role
+          // Keep existing firstName/lastName - user can change anytime in Profile
         });
 
         // Success! User is now linked
+        // DB is the single source of truth for their name
         onSuccess();
       }
     } catch (err: unknown) {

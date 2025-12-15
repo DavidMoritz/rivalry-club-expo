@@ -16,7 +16,7 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import type { Schema } from '../../../amplify/data/resource';
 import { useAuthUser } from '../../hooks/useAuthUser';
 import { signOut, updatePassword } from '../../lib/amplify-auth';
-import { clearStoredUuid, storeFirstName } from '../../lib/user-identity';
+import { clearStoredUuid } from '../../lib/user-identity';
 import { colors } from '../../utils/colors';
 import { darkStyles, styles } from '../../utils/styles';
 import { CreateAccountModal } from './CreateAccountModal';
@@ -121,8 +121,7 @@ export function Profile() {
         throw new Error(result.errors[0].message);
       }
 
-      // Store firstName locally so user never sees "Player_${shortId}" again
-      await storeFirstName(firstName.trim());
+      // DB is the single source of truth for firstName (no local storage)
       setSuccessMessage('Profile updated successfully');
 
       // Handle post-update navigation/cleanup

@@ -4,7 +4,7 @@ import { useEffect, useState } from 'react';
 
 import type { Schema } from '../../amplify/data/resource';
 import { getCurrentUser } from '../lib/amplify-auth';
-import { getDisplayName, getOrCreateUserUuid } from '../lib/user-identity';
+import { getDisplayName, getOrCreateUserUuid, getStoredUuid } from '../lib/user-identity';
 
 interface AuthUser {
   id: string;
@@ -33,35 +33,26 @@ function throwIfErrors(
  * Handles the Cognito authenticated user flow
  */
 async function fetchCognitoUser(client: AmplifyClient): Promise<AuthUser> {
-  const currentUser = await getCurrentUser();
-  const email = currentUser.signInDetails?.loginId || '';
-  const awsSub = currentUser.userId;
+  // Check if there's a stored UUID from an anonymous user that's being linked
+  // The user MUST have an anonymous account to reach the Profile/CreateAccount screen
+  const storedUuid = await getStoredUuid();
 
-  const listResult = await client.models.User.list({
-    filter: { awsSub: { eq: awsSub } },
-  });
-
-  throwIfErrors(listResult.errors, 'Query failed');
-
-  const users = listResult.data;
-  if (users && users.length > 0) {
-    return users[0] as AuthUser;
+  if (!storedUuid) {
+    throw new Error('No stored user UUID found. User must start as anonymous before creating a Cognito account.');
   }
 
-  // Create new user in database
-  const createResult = await client.models.User.create({
-    email,
-    awsSub,
-    role: 0, // Default role for Cognito users
-  });
+  // Fetch the existing user by their stored UUID
+  const userResult = await client.models.User.get({ id: storedUuid });
 
-  throwIfErrors(createResult.errors, 'Failed to create user');
+  throwIfErrors(userResult.errors, 'Failed to fetch user');
 
-  if (!createResult.data) {
-    throw new Error('User creation returned no data');
+  if (!userResult.data) {
+    throw new Error(`User not found with UUID: ${storedUuid}`);
   }
 
-  return createResult.data as AuthUser;
+  // This is the user that was just linked (or is being linked)
+  // Return it regardless of awsSub value - it will be updated by CreateAccountModal
+  return userResult.data as AuthUser;
 }
 
 /**

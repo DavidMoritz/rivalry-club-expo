@@ -119,6 +119,22 @@ This directory contains technical reports and documentation generated during dev
 - ❌ Don't extract: A/B parallel structures, one-off logic, code that's already clear
 **Golden Rule**: Refactor for readability, not just to reduce line count
 
+### new_project_duplication_guide.md ✨
+**Topic**: Complete guide for creating a new project using the Rivalry Club technology stack
+**Summary**: Comprehensive 900+ line guide for duplicating the Rivalry Club architecture in a new project. Covers full technology stack (Expo 54, React Native, TypeScript, AWS Amplify Gen 2, Cognito, React Query), step-by-step initialization, essential configuration files (tsconfig, biome, jest), AWS Amplify Gen 2 setup (auth, data, backend), project structure, architectural patterns (Model/Controller/Provider patterns), development workflow, testing setup, and best practices. Includes complete code examples, configuration templates, checklist, and references to key project files. Designed as a handoff document for a new Claude instance or developer to hit the ground running.
+**Use when**: Starting a new project with this stack, onboarding new developers, setting up similar architecture, understanding the complete project structure, creating project templates
+**Key Sections**:
+- Technology stack overview (dependencies, versions)
+- Project initialization (npm install commands, setup steps)
+- Configuration files (tsconfig, biome, jest, app.json)
+- Amplify Gen 2 setup (auth, data schema, backend)
+- Project structure (directory layout, naming conventions)
+- Architectural patterns (M prefix models, C prefix controllers, Providers)
+- Development workflow (sandbox vs production, testing, code quality)
+- Best practices (React Query patterns, performance, common pitfalls)
+**Key References**: `REFACTORING_PREFERENCES.md`, `biome.jsonc`, `amplify/` configs, `src/models/`, `src/controllers/`, `CLAUDE.md`
+**Target Audience**: New Claude instances, new developers, technical leads planning similar projects
+
 ## Feature Implementation Reports
 
 ### atomic-increment-implementation.md ✅

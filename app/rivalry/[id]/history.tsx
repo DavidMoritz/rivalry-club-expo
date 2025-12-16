@@ -187,11 +187,12 @@ export default function HistoryRoute() {
     structuralSharing: false,
     queryFn: async () => {
       // Use the GSI query for efficient sorting by createdAt
-      const { data: contestData, errors } =
+      const { data: contestData, errors, nextToken: responseNextToken } =
         await getClient().models.Contest.contestsByRivalryIdAndCreatedAt({
           rivalryId,
           // @ts-expect-error - Amplify Gen 2 type doesn't recognize 'limit' parameter in IndexQueryInput but it works at runtime
-          limit: 100
+          limit: 100,
+          sortDirection: 'DESC'
         });
 
       if (errors) {
@@ -215,7 +216,7 @@ export default function HistoryRoute() {
       }
 
       setContests(mContests);
-      setNextToken(null);
+      setNextToken(responseNextToken || null);
 
       return mContests;
     }
@@ -237,9 +238,11 @@ export default function HistoryRoute() {
         data: contestData,
         errors,
         nextToken: newNextToken
-      } = await getClient().models.Contest.list({
-        filter: { rivalryId: { eq: rivalryId } },
+      } = await getClient().models.Contest.contestsByRivalryIdAndCreatedAt({
+        rivalryId,
+        // @ts-expect-error - Amplify Gen 2 type doesn't recognize 'limit' and 'nextToken' parameters but they work at runtime
         limit: 100,
+        sortDirection: 'DESC',
         nextToken
       });
 
@@ -256,26 +259,8 @@ export default function HistoryRoute() {
         return mContest;
       });
 
-      // Sort the new contests before adding them
-      mContests.sort((a, b) => {
-        const dateA = new Date(a.createdAt || 0).getTime();
-        const dateB = new Date(b.createdAt || 0).getTime();
-
-        return dateB - dateA; // Descending order
-      });
-
-      setContests((prev) => {
-        // Combine and re-sort to maintain order
-        const combined = [...prev, ...mContests];
-        combined.sort((a, b) => {
-          const dateA = new Date(a.createdAt || 0).getTime();
-          const dateB = new Date(b.createdAt || 0).getTime();
-
-          return dateB - dateA;
-        });
-
-        return combined;
-      });
+      // GSI query already returns sorted data, so we can just append
+      setContests((prev) => [...prev, ...mContests]);
       setNextToken(newNextToken || null);
     } catch (loadMoreError) {
       console.error('[HistoryRoute] loadMore error:', loadMoreError);

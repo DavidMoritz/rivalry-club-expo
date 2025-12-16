@@ -1,5 +1,5 @@
 import type React from 'react';
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { Text, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
@@ -253,6 +253,9 @@ export function ConnectedRivalryView({
     useNetworkStatus();
   const [showOfflineModal, setShowOfflineModal] = useState(false);
 
+  // Track if we've already auto-created a contest for this rivalry
+  const hasAutoCreatedContestRef = useRef<string | null>(null);
+
   const updateRivalryMutation = useUpdateRivalryMutation({
     rivalry,
   });
@@ -434,6 +437,28 @@ export function ConnectedRivalryView({
       setShowOfflineModal(false);
     }
   }, [isConnected, hasShownOfflineModal, setHasShownOfflineModal]);
+
+  // Auto-create first contest for brand new rivalries
+  useEffect(() => {
+    // Only auto-create if:
+    // 1. Rivalry exists and has an ID
+    // 2. Tiers are ready
+    // 3. There's no current contest
+    // 4. The rivalry has 0 or 1 contests (brand new)
+    // 5. We haven't already auto-created a contest for this rivalry
+    // 6. We're not currently creating a contest
+    if (
+      rivalry?.id &&
+      tiersReady &&
+      !rivalry.currentContest &&
+      (rivalry.contestCount === 0 || rivalry.contestCount === 1) &&
+      hasAutoCreatedContestRef.current !== rivalry.id &&
+      !createContestMutation.isPending
+    ) {
+      hasAutoCreatedContestRef.current = rivalry.id;
+      createContestMutation.mutate();
+    }
+  }, [rivalry?.id, rivalry?.currentContest, rivalry?.contestCount, tiersReady, createContestMutation]);
 
   const handlePressShuffle = (slot: 'A' | 'B') => {
     setShufflingSlot(slot); // Track which slot is being shuffled

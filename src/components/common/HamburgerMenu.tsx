@@ -3,13 +3,18 @@ import { useState } from 'react';
 import { Modal, Pressable, Text, TouchableOpacity, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
+import { useAuthUser } from '../../hooks/useAuthUser';
 import { signOut } from '../../lib/amplify-auth';
 import { colors } from '../../utils/colors';
 
 export function HamburgerMenu() {
   const router = useRouter();
+  const { user } = useAuthUser();
   const [menuVisible, setMenuVisible] = useState(false);
   const insets = useSafeAreaInsets();
+
+  // Check if user is anonymous
+  const isAnonymous = user?.awsSub === 'anonymous';
 
   const handleSignOut = async () => {
     try {
@@ -113,12 +118,16 @@ export function HamburgerMenu() {
               <Text style={menuTextStyle}>How to Play</Text>
             </TouchableOpacity>
 
-            <View style={dividerStyle} />
+            {!isAnonymous && (
+              <>
+                <View style={dividerStyle} />
 
-            <TouchableOpacity onPress={handleSignOut} style={menuItemStyle}>
-              <Text style={signOutIconStyle}>→</Text>
-              <Text style={signOutTextStyle}>Sign Out</Text>
-            </TouchableOpacity>
+                <TouchableOpacity onPress={handleSignOut} style={menuItemStyle}>
+                  <Text style={signOutIconStyle}>→</Text>
+                  <Text style={signOutTextStyle}>Sign Out</Text>
+                </TouchableOpacity>
+              </>
+            )}
           </View>
         </Pressable>
       </Modal>

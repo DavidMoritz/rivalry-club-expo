@@ -1519,13 +1519,73 @@ export const useCreateNpcRivalryMutation = ({
         );
       }
 
-      return getMRivalry({ rivalry: rivalryData as Rivalry });
+      // Auto-create the first contest now that both tier lists exist
+      let finalRivalryData = rivalryData;
+
+      try {
+        // Get the full rivalry with tier lists to create the contest
+        const { data: fullRivalryData } = await getClient().models.Rivalry.get(
+          { id: rivalryData.id },
+          {
+            selectionSet: [
+              'id',
+              'userAId',
+              'userBId',
+              'gameId',
+              'contestCount',
+              'currentContestId',
+              'accepted',
+              'tierLists.*',
+              'tierLists.tierSlots.*',
+            ] as const,
+          }
+        );
+
+        if (fullRivalryData) {
+          // @ts-expect-error - Amplify Gen 2 readonly types from get() don't match writable Rivalry structure
+          const mRivalry = getMRivalry(fullRivalryData as Rivalry);
+
+          // Sample eligible tier slots from both tier lists
+          const tierSlotA = mRivalry.tierListA?.sampleEligibleSlot();
+          const tierSlotB = mRivalry.tierListB?.sampleEligibleSlot();
+
+          if (tierSlotA && tierSlotB) {
+            // Create the first contest
+            const { data: contestData } = await getClient().models.Contest.create({
+              rivalryId: rivalryData.id,
+              tierSlotAId: tierSlotA.id,
+              tierSlotBId: tierSlotB.id,
+              result: 0,
+              bias: 0,
+            });
+
+            // Update rivalry with the new contest ID
+            if (contestData?.id) {
+              const { data: updatedRivalry } = await getClient().models.Rivalry.update({
+                id: rivalryData.id,
+                currentContestId: contestData.id,
+                contestCount: 1,
+              });
+
+              if (updatedRivalry) {
+                finalRivalryData = updatedRivalry;
+              }
+            }
+          }
+        }
+      } catch (contestError) {
+        // Log error but don't fail the rivalry creation
+        console.error('[useCreateNpcRivalryMutation] Failed to auto-create first contest:', contestError);
+      }
+
+      return getMRivalry({ rivalry: finalRivalryData as Rivalry });
     },
     onSuccess: (rivalry, variables) => {
       queryClient.invalidateQueries({
         queryKey: ['pendingRivalries', variables.userAId],
       });
       queryClient.invalidateQueries({ queryKey: ['usersByAwsSub'] });
+      queryClient.invalidateQueries({ queryKey: ['rivalryId', rivalry.id] });
       onSuccess?.(rivalry);
     },
     onError: (error: Error) => {
@@ -1734,11 +1794,73 @@ export const useAcceptRivalryMutation = ({
         throw new Error(errors[0]?.message || 'Failed to accept rivalry');
       }
 
-      return data;
+      let finalRivalryData = data;
+
+      // Auto-create the first contest now that both tier lists exist
+      try {
+        // Get the full rivalry with tier lists to create the contest
+        const { data: fullRivalryData } = await getClient().models.Rivalry.get(
+          { id: rivalryId },
+          {
+            selectionSet: [
+              'id',
+              'userAId',
+              'userBId',
+              'gameId',
+              'contestCount',
+              'currentContestId',
+              'accepted',
+              'tierLists.*',
+              'tierLists.tierSlots.*',
+            ] as const,
+          }
+        );
+
+        if (fullRivalryData) {
+          // @ts-expect-error - Amplify Gen 2 readonly types from get() don't match writable Rivalry structure
+          const mRivalry = getMRivalry(fullRivalryData as Rivalry);
+
+          // Sample eligible tier slots from both tier lists
+          const tierSlotA = mRivalry.tierListA?.sampleEligibleSlot();
+          const tierSlotB = mRivalry.tierListB?.sampleEligibleSlot();
+
+          if (tierSlotA && tierSlotB) {
+            // Create the first contest
+            const { data: contestData } = await getClient().models.Contest.create({
+              rivalryId,
+              tierSlotAId: tierSlotA.id,
+              tierSlotBId: tierSlotB.id,
+              result: 0,
+              bias: 0,
+            });
+
+            // Update rivalry with the new contest ID
+            if (contestData?.id) {
+              const { data: updatedRivalry } = await getClient().models.Rivalry.update({
+                id: rivalryId,
+                currentContestId: contestData.id,
+                contestCount: 1,
+              });
+
+              if (updatedRivalry) {
+                finalRivalryData = updatedRivalry;
+              }
+            }
+          }
+        }
+      } catch (contestError) {
+        // Log error but don't fail the acceptance
+        console.error('[useAcceptRivalryMutation] Failed to auto-create first contest:', contestError);
+      }
+
+      return finalRivalryData;
     },
-    onSuccess: () => {
+    onSuccess: (data) => {
       queryClient.invalidateQueries({ queryKey: ['pendingRivalries'] });
       queryClient.invalidateQueries({ queryKey: ['usersByAwsSub'] });
+      if (data?.id) {
+        queryClient.invalidateQueries({ queryKey: ['rivalryId', data.id] });
+      }
       onSuccess?.();
     },
     onError: (error: Error) => {

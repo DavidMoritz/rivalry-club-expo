@@ -61,6 +61,7 @@ const SEARCH_SCORE = {
 // User role constants
 const USER_ROLE = {
   NPC: 13,
+  DELETED: 5,
 } as const;
 
 // Search configuration
@@ -281,6 +282,7 @@ export const useUserSearchQuery = ({
       const regularUsers = users.filter(
         user =>
           user.role !== USER_ROLE.NPC &&
+          user.role !== USER_ROLE.DELETED &&
           user.id !== currentUserId &&
           !user.deletedAt
       );

@@ -1,6 +1,7 @@
 import {
   confirmResetPassword as authConfirmResetPassword,
   confirmSignUp as authConfirmSignUp,
+  deleteUser as authDeleteUser,
   getCurrentUser as authGetCurrentUser,
   resetPassword as authResetPassword,
   signIn as authSignIn,
@@ -204,4 +205,17 @@ export async function confirmResetPassword(
     confirmationCode: code,
     newPassword,
   });
+}
+
+/**
+ * Delete the currently authenticated user from Cognito
+ */
+export async function deleteUser() {
+  // Bypass in Expo Go
+  if (isExpoGo) {
+    currentDevUserEmail = null;
+    return;
+  }
+
+  return await authDeleteUser();
 }

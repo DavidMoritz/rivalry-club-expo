@@ -4,15 +4,11 @@ import { Auth } from '../Auth';
 
 // Mock AWS Amplify Auth
 const mockSignIn = jest.fn();
-const mockSignUp = jest.fn();
 const mockGetCurrentUser = jest.fn();
-const mockConfirmSignUp = jest.fn();
 
 jest.mock('../../../lib/amplify-auth', () => ({
   signIn: (...args: unknown[]) => mockSignIn(...args),
-  signUp: (...args: unknown[]) => mockSignUp(...args),
   getCurrentUser: () => mockGetCurrentUser(),
-  confirmSignUp: (...args: unknown[]) => mockConfirmSignUp(...args),
   isExpoGo: false,
 }));
 
@@ -37,18 +33,12 @@ describe('Auth Component', () => {
       expect(getByPlaceholderText('Enter your password')).toBeTruthy();
     });
 
-    it('does not show confirm password field in sign in mode', () => {
+    it('does not show confirm password field', () => {
       const { queryByPlaceholderText } = render(
         <Auth onAuthSuccess={mockOnAuthSuccess} />
       );
 
       expect(queryByPlaceholderText('Confirm your password')).toBeNull();
-    });
-
-    it('shows sign up link', () => {
-      const { getByText } = render(<Auth onAuthSuccess={mockOnAuthSuccess} />);
-
-      expect(getByText("Don't have an account? Sign Up")).toBeTruthy();
     });
   });
 
@@ -76,35 +66,6 @@ describe('Auth Component', () => {
       await waitFor(() => {
         expect(mockOnAuthSuccess).not.toHaveBeenCalled();
       });
-    });
-  });
-
-  describe('Toggle Sign Up/Sign In', () => {
-    it('switches to sign up mode when clicking sign up link', () => {
-      const { getByText, getAllByText, queryByPlaceholderText } = render(
-        <Auth onAuthSuccess={mockOnAuthSuccess} />
-      );
-
-      const signUpLink = getByText("Don't have an account? Sign Up");
-      fireEvent.press(signUpLink);
-
-      expect(getAllByText('Sign Up').length).toBeGreaterThan(0);
-      expect(queryByPlaceholderText('Confirm your password')).toBeTruthy();
-    });
-
-    it('switches back to sign in mode when clicking sign in link', () => {
-      const { getByText, getAllByText, queryByPlaceholderText } = render(
-        <Auth onAuthSuccess={mockOnAuthSuccess} />
-      );
-
-      // Go to sign up
-      fireEvent.press(getByText("Don't have an account? Sign Up"));
-
-      // Go back to sign in
-      fireEvent.press(getByText('Already have an account? Sign In'));
-
-      expect(getAllByText('Sign In').length).toBeGreaterThan(0);
-      expect(queryByPlaceholderText('Confirm your password')).toBeNull();
     });
   });
 
@@ -202,111 +163,6 @@ describe('Auth Component', () => {
     });
   });
 
-  describe('Sign Up Flow', () => {
-    it('successfully signs up with matching passwords', async () => {
-      // Mock successful sign up with auto sign-in (DONE step means auto sign-in)
-      mockSignUp.mockResolvedValue({
-        isSignUpComplete: true,
-        nextStep: {
-          signUpStep: 'DONE',
-        },
-      });
-
-      const { getByPlaceholderText, getByText, getAllByText } = render(
-        <Auth onAuthSuccess={mockOnAuthSuccess} />
-      );
-
-      // Switch to sign up mode
-      fireEvent.press(getByText("Don't have an account? Sign Up"));
-
-      const emailInput = getByPlaceholderText('Enter your email');
-      const passwordInput = getByPlaceholderText('Enter your password');
-      const confirmPasswordInput = getByPlaceholderText(
-        'Confirm your password'
-      );
-      const signUpButton = getAllByText('Sign Up')[1];
-
-      fireEvent.changeText(emailInput, 'newuser@test.com');
-      fireEvent.changeText(passwordInput, 'password123');
-      fireEvent.changeText(confirmPasswordInput, 'password123');
-      fireEvent.press(signUpButton);
-
-      await waitFor(() => {
-        expect(mockSignUp).toHaveBeenCalledWith(
-          'newuser@test.com',
-          'password123'
-        );
-      });
-
-      await waitFor(() => {
-        expect(mockOnAuthSuccess).toHaveBeenCalled();
-      });
-    });
-
-    it('shows error when passwords do not match', async () => {
-      const { getByPlaceholderText, getByText, getAllByText } = render(
-        <Auth onAuthSuccess={mockOnAuthSuccess} />
-      );
-
-      // Switch to sign up mode
-      fireEvent.press(getByText("Don't have an account? Sign Up"));
-
-      const emailInput = getByPlaceholderText('Enter your email');
-      const passwordInput = getByPlaceholderText('Enter your password');
-      const confirmPasswordInput = getByPlaceholderText(
-        'Confirm your password'
-      );
-      const signUpButton = getAllByText('Sign Up')[1];
-
-      fireEvent.changeText(emailInput, 'newuser@test.com');
-      fireEvent.changeText(passwordInput, 'password123');
-      fireEvent.changeText(confirmPasswordInput, 'differentpassword');
-      fireEvent.press(signUpButton);
-
-      await waitFor(() => {
-        expect(getByText('Passwords do not match')).toBeTruthy();
-      });
-
-      expect(mockSignUp).not.toHaveBeenCalled();
-      expect(mockOnAuthSuccess).not.toHaveBeenCalled();
-    });
-
-    it('shows error when sign up fails', async () => {
-      // Mock sign up throwing an error (AWS Cognito style)
-      mockSignUp.mockRejectedValue({
-        name: 'UsernameExistsException',
-        message: 'An account with this email already exists',
-      });
-
-      const { getByPlaceholderText, getByText, getAllByText } = render(
-        <Auth onAuthSuccess={mockOnAuthSuccess} />
-      );
-
-      // Switch to sign up mode
-      fireEvent.press(getByText("Don't have an account? Sign Up"));
-
-      const emailInput = getByPlaceholderText('Enter your email');
-      const passwordInput = getByPlaceholderText('Enter your password');
-      const confirmPasswordInput = getByPlaceholderText(
-        'Confirm your password'
-      );
-      const signUpButton = getAllByText('Sign Up')[1];
-
-      fireEvent.changeText(emailInput, 'existing@test.com');
-      fireEvent.changeText(passwordInput, 'password123');
-      fireEvent.changeText(confirmPasswordInput, 'password123');
-      fireEvent.press(signUpButton);
-
-      await waitFor(() => {
-        expect(
-          getByText('An account with this email already exists')
-        ).toBeTruthy();
-      });
-
-      expect(mockOnAuthSuccess).not.toHaveBeenCalled();
-    });
-  });
-
   describe('Loading States', () => {
     it('shows loading text when signing in', async () => {
       mockSignIn.mockImplementation(
@@ -370,33 +226,4 @@ describe('Auth Component', () => {
     });
   });
 
-  describe('Error Handling', () => {
-    it('clears error when switching between sign in and sign up', async () => {
-      mockSignIn.mockRejectedValue({
-        name: 'NotAuthorizedException',
-        message: 'Incorrect username or password.',
-      });
-
-      const { getByPlaceholderText, getByText, getAllByText, queryByText } =
-        render(<Auth onAuthSuccess={mockOnAuthSuccess} />);
-
-      // Trigger error
-      const emailInput = getByPlaceholderText('Enter your email');
-      const passwordInput = getByPlaceholderText('Enter your password');
-
-      fireEvent.changeText(emailInput, 'test@test.com');
-      fireEvent.changeText(passwordInput, 'wrong');
-      fireEvent.press(getAllByText('Sign In')[1]);
-
-      await waitFor(() => {
-        expect(getByText('Incorrect email or password')).toBeTruthy();
-      });
-
-      // Switch to sign up
-      fireEvent.press(getByText("Don't have an account? Sign Up"));
-
-      // Error should be cleared
-      expect(queryByText('Incorrect email or password')).toBeNull();
-    });
-  });
 });

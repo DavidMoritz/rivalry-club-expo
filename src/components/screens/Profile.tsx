@@ -15,7 +15,7 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 
 import type { Schema } from '../../../amplify/data/resource';
 import { useAuthUser } from '../../hooks/useAuthUser';
-import { signOut, updatePassword } from '../../lib/amplify-auth';
+import { deleteUser, signOut, updatePassword } from '../../lib/amplify-auth';
 import { clearStoredUuid } from '../../lib/user-identity';
 import { colors } from '../../utils/colors';
 import { darkStyles, styles } from '../../utils/styles';
@@ -185,10 +185,8 @@ export function Profile() {
             style: 'destructive',
             onPress: async () => {
               try {
-                console.log('[Profile] 🛠️ DEV MODE: Clearing UUID and signing out...');
                 await clearStoredUuid();
                 await signOut();
-                console.log('[Profile] ✅ UUID cleared, signed out');
                 setDevTapCount(0);
                 // Navigate to home to restart flow
                 router.replace('/');
@@ -698,6 +696,102 @@ export function Profile() {
               </TouchableOpacity>
             </View>
           )}
+
+          {/* Account Deletion Section */}
+          <View
+            style={{
+              borderTopWidth: 1,
+              borderTopColor: colors.gray700,
+              paddingTop: 32,
+              marginTop: 32
+            }}
+          >
+            <Text style={[styles.text, { fontSize: 20, fontWeight: '600', marginBottom: 8 }]}>
+              Delete Account
+            </Text>
+            <Text
+              style={[
+                styles.text,
+                { fontSize: 14, color: colors.gray400, marginBottom: 16, lineHeight: 20 }
+              ]}
+            >
+              {user?.awsSub === 'anonymous'
+                ? 'Deleting your account will make all your current rivalries inaccessible. This action cannot be undone.'
+                : 'Permanently delete your account and all associated data. Once deleted, you will not be able to recover your rivalries. This action cannot be undone.'}
+            </Text>
+
+            <TouchableOpacity
+              onPress={() => {
+                const isAnonymous = user?.awsSub === 'anonymous';
+
+                const warningMessage = isAnonymous
+                  ? 'All your current rivalries will no longer be accessible.\n\nThis action cannot be undone.'
+                  : 'Once your account is deleted, you will no longer be able to recover your rivalries.\n\nThis will permanently delete your account from our system.\n\nThis action cannot be undone.';
+
+                Alert.alert('Delete Account', warningMessage, [
+                  { text: 'Cancel', style: 'cancel' },
+                  {
+                    text: 'Delete Account',
+                    style: 'destructive',
+                    onPress: async () => {
+                      try {
+                        if (!user) {
+                          throw new Error('No user found');
+                        }
+
+                        // Step 1: Update database - set email to "anonymous" and role to 5 (deleted)
+                        const client = generateClient<Schema>();
+                        const updateResult = await client.models.User.update({
+                          id: user.id,
+                          email: 'anonymous',
+                          role: 5
+                        });
+
+                        if (updateResult.errors && updateResult.errors.length > 0) {
+                          throw new Error(updateResult.errors[0].message);
+                        }
+
+                        // Step 2: Delete from Cognito if not anonymous
+                        if (!isAnonymous) {
+                          await deleteUser();
+                        }
+
+                        // Step 3: Clear UUID and sign out
+                        await clearStoredUuid();
+                        await signOut();
+
+                        // Navigate to home to restart flow
+                        router.replace('/');
+                      } catch (error) {
+                        console.error('[Profile] Error deleting account:', error);
+                        Alert.alert('Error', 'Failed to delete account. Please try again.');
+                      }
+                    }
+                  }
+                ]);
+              }}
+              style={{
+                backgroundColor: colors.red600,
+                paddingHorizontal: 32,
+                paddingVertical: 16,
+                borderRadius: 25,
+                borderWidth: 1,
+                borderColor: colors.red900,
+                width: '100%',
+                alignItems: 'center'
+              }}
+            >
+              <Text
+                style={{
+                  color: colors.white,
+                  fontSize: 18,
+                  fontWeight: 'bold'
+                }}
+              >
+                Delete Account
+              </Text>
+            </TouchableOpacity>
+          </View>
         </ScrollView>
       </KeyboardAvoidingView>
 

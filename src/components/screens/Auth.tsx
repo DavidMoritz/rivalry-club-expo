@@ -6,16 +6,11 @@ import {
   Text,
   TextInput,
   TouchableOpacity,
-  View,
+  View
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
-import {
-  confirmSignUp,
-  getCurrentUser,
-  signIn,
-  signUp,
-} from '../../lib/amplify-auth';
+import { confirmSignUp, getCurrentUser, signIn, signUp } from '../../lib/amplify-auth';
 import { colors } from '../../utils/colors';
 import { darkStyles, styles } from '../../utils/styles';
 import { ForgotPassword } from './ForgotPassword';
@@ -34,15 +29,13 @@ function isCognitoError(err: unknown): err is CognitoError {
   return typeof err === 'object' && err !== null;
 }
 
-function getAuthTitle(needsVerification: boolean, isSignUp: boolean): string {
+function getAuthTitle(needsVerification: boolean): string {
   if (needsVerification) return 'Verify Email';
-  if (isSignUp) return 'Sign Up';
   return 'Sign In';
 }
 
-function getSubmitButtonText(loading: boolean, isSignUp: boolean): string {
+function getSubmitButtonText(loading: boolean): string {
   if (loading) return 'Loading...';
-  if (isSignUp) return 'Sign Up';
   return 'Sign In';
 }
 
@@ -53,14 +46,10 @@ function getSignInErrorMessage(err: unknown): string {
   const errorMap: Record<string, string> = {
     NotAuthorizedException: 'Incorrect email or password',
     UserNotFoundException: 'User not found',
-    UserNotConfirmedException: 'Please verify your email before signing in',
+    UserNotConfirmedException: 'Please verify your email before signing in'
   };
 
-  return (
-    errorMap[errorName ?? ''] ??
-    errorMessage ??
-    'Sign in failed. Please try again.'
-  );
+  return errorMap[errorName ?? ''] ?? errorMessage ?? 'Sign in failed. Please try again.';
 }
 
 function getSignUpErrorMessage(err: unknown): string {
@@ -70,14 +59,10 @@ function getSignUpErrorMessage(err: unknown): string {
   const errorMap: Record<string, string> = {
     UsernameExistsException: 'An account with this email already exists',
     InvalidPasswordException:
-      'Password must be at least 8 characters with uppercase, lowercase, numbers, and symbols',
+      'Password must be at least 8 characters with uppercase, lowercase, numbers, and symbols'
   };
 
-  return (
-    errorMap[errorName ?? ''] ??
-    errorMessage ??
-    'Sign up failed. Please try again.'
-  );
+  return errorMap[errorName ?? ''] ?? errorMessage ?? 'Sign up failed. Please try again.';
 }
 
 function getVerificationErrorMessage(err: unknown): string {
@@ -86,15 +71,10 @@ function getVerificationErrorMessage(err: unknown): string {
 
   const errorMap: Record<string, string> = {
     CodeMismatchException: 'Invalid verification code',
-    ExpiredCodeException:
-      'Verification code has expired. Please sign up again.',
+    ExpiredCodeException: 'Verification code has expired. Please sign up again.'
   };
 
-  return (
-    errorMap[errorName ?? ''] ??
-    errorMessage ??
-    'Verification failed. Please try again.'
-  );
+  return errorMap[errorName ?? ''] ?? errorMessage ?? 'Verification failed. Please try again.';
 }
 
 function getErrorColor(error: string): string {
@@ -110,13 +90,13 @@ const inputStyle = {
   paddingVertical: 14,
   backgroundColor: colors.gray800,
   borderWidth: 2,
-  borderColor: colors.gray600,
+  borderColor: colors.gray600
 };
 
 const labelStyle = {
   marginBottom: 8,
   fontSize: 16,
-  fontWeight: '500' as const,
+  fontWeight: '500' as const
 };
 
 const buttonStyle = {
@@ -129,13 +109,13 @@ const buttonStyle = {
   width: '75%' as const,
   alignItems: 'center' as const,
   marginTop: 8,
-  marginBottom: 16,
+  marginBottom: 16
 };
 
 const buttonTextStyle = {
   color: colors.white,
   fontSize: 18,
-  fontWeight: 'bold' as const,
+  fontWeight: 'bold' as const
 };
 
 interface VerificationFormProps {
@@ -157,7 +137,7 @@ function VerificationForm({
   onEmailChange,
   onCodeChange,
   onVerify,
-  onBack,
+  onBack
 }: VerificationFormProps) {
   return (
     <>
@@ -195,10 +175,7 @@ function VerificationForm({
 
       {error && (
         <Text
-          style={[
-            styles.text,
-            { marginBottom: 16, textAlign: 'center', color: colors.red400 },
-          ]}
+          style={[styles.text, { marginBottom: 16, textAlign: 'center', color: colors.red400 }]}
         >
           {error}
         </Text>
@@ -206,22 +183,18 @@ function VerificationForm({
 
       <TouchableOpacity
         accessibilityState={{
-          disabled: loading || !verificationCode || !email,
+          disabled: loading || !verificationCode || !email
         }}
         disabled={loading || !verificationCode || !email}
         onPress={onVerify}
         style={buttonStyle}
         testID="verify-submit-button"
       >
-        <Text style={buttonTextStyle}>
-          {loading ? 'Verifying...' : 'Verify'}
-        </Text>
+        <Text style={buttonTextStyle}>{loading ? 'Verifying...' : 'Verify'}</Text>
       </TouchableOpacity>
 
       <TouchableOpacity onPress={onBack} style={{ marginTop: 8 }}>
-        <Text style={{ color: colors.cyan400, fontSize: 16 }}>
-          Back to Sign Up
-        </Text>
+        <Text style={{ color: colors.cyan400, fontSize: 16 }}>Back to Sign Up</Text>
       </TouchableOpacity>
     </>
   );
@@ -231,14 +204,12 @@ interface AuthFormProps {
   email: string;
   password: string;
   confirmPassword: string;
-  isSignUp: boolean;
   error: string | null;
   loading: boolean;
   onEmailChange: (text: string) => void;
   onPasswordChange: (text: string) => void;
   onConfirmPasswordChange: (text: string) => void;
   onSubmit: () => void;
-  onToggleMode: () => void;
   onForgotPassword: () => void;
   onVerifyCode: () => void;
 }
@@ -246,17 +217,13 @@ interface AuthFormProps {
 function AuthForm({
   email,
   password,
-  confirmPassword,
-  isSignUp,
   error,
   loading,
   onEmailChange,
   onPasswordChange,
-  onConfirmPasswordChange,
   onSubmit,
-  onToggleMode,
   onForgotPassword,
-  onVerifyCode,
+  onVerifyCode
 }: AuthFormProps) {
   return (
     <>
@@ -287,21 +254,6 @@ function AuthForm({
         />
       </View>
 
-      {isSignUp && (
-        <View style={{ width: '100%', marginBottom: 20 }}>
-          <Text style={[styles.text, labelStyle]}>Confirm Password</Text>
-          <TextInput
-            autoCapitalize="none"
-            onChangeText={onConfirmPasswordChange}
-            placeholder="Confirm your password"
-            placeholderTextColor={colors.gray200}
-            secureTextEntry
-            style={[styles.text, inputStyle]}
-            value={confirmPassword}
-          />
-        </View>
-      )}
-
       {error && (
         <Text
           style={[
@@ -309,8 +261,8 @@ function AuthForm({
             {
               marginBottom: 16,
               textAlign: 'center',
-              color: getErrorColor(error),
-            },
+              color: getErrorColor(error)
+            }
           ]}
         >
           {error}
@@ -324,26 +276,12 @@ function AuthForm({
         style={buttonStyle}
         testID="auth-submit-button"
       >
-        <Text style={buttonTextStyle}>
-          {getSubmitButtonText(loading, isSignUp)}
-        </Text>
+        <Text style={buttonTextStyle}>{getSubmitButtonText(loading)}</Text>
       </TouchableOpacity>
 
-      <TouchableOpacity onPress={onToggleMode} style={{ marginTop: 8 }}>
-        <Text style={{ color: colors.cyan400, fontSize: 16 }}>
-          {isSignUp
-            ? 'Already have an account? Sign In'
-            : "Don't have an account? Sign Up"}
-        </Text>
+      <TouchableOpacity onPress={onForgotPassword} style={{ marginTop: 12 }}>
+        <Text style={{ color: colors.gray200, fontSize: 16 }}>Forgot Password?</Text>
       </TouchableOpacity>
-
-      {!isSignUp && (
-        <TouchableOpacity onPress={onForgotPassword} style={{ marginTop: 12 }}>
-          <Text style={{ color: colors.gray200, fontSize: 16 }}>
-            Forgot Password?
-          </Text>
-        </TouchableOpacity>
-      )}
 
       <TouchableOpacity onPress={onVerifyCode} style={{ marginTop: 12 }}>
         <Text style={{ color: colors.gray200, fontSize: 16 }}>
@@ -359,7 +297,6 @@ export function Auth({ onAuthSuccess }: AuthProps) {
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
   const [verificationCode, setVerificationCode] = useState('');
-  const [isSignUp, setIsSignUp] = useState(false);
   const [needsVerification, setNeedsVerification] = useState(false);
   const [showForgotPassword, setShowForgotPassword] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -432,7 +369,6 @@ export function Auth({ onAuthSuccess }: AuthProps) {
 
       // After successful verification, redirect to sign-in screen
       setNeedsVerification(false);
-      setIsSignUp(false);
       setVerificationCode('');
       setPassword('');
       setConfirmPassword('');
@@ -447,19 +383,11 @@ export function Auth({ onAuthSuccess }: AuthProps) {
 
   // Show forgot password screen if requested
   if (showForgotPassword) {
-    return (
-      <ForgotPassword
-        initialEmail={email}
-        onBack={() => setShowForgotPassword(false)}
-      />
-    );
+    return <ForgotPassword initialEmail={email} onBack={() => setShowForgotPassword(false)} />;
   }
 
   return (
-    <SafeAreaView
-      edges={['top', 'bottom']}
-      style={[styles.container, darkStyles.container]}
-    >
+    <SafeAreaView edges={['top', 'bottom']} style={[styles.container, darkStyles.container]}>
       <KeyboardAvoidingView
         behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
         keyboardVerticalOffset={0}
@@ -471,13 +399,13 @@ export function Auth({ onAuthSuccess }: AuthProps) {
             justifyContent: 'center',
             alignItems: 'center',
             paddingHorizontal: 32,
-            paddingBottom: 40,
+            paddingBottom: 40
           }}
           keyboardShouldPersistTaps="handled"
           showsVerticalScrollIndicator={false}
         >
           <Text style={[styles.title, { marginBottom: 48 }]}>
-            {getAuthTitle(needsVerification, isSignUp)}
+            {getAuthTitle(needsVerification)}
           </Text>
 
           {needsVerification ? (
@@ -500,7 +428,6 @@ export function Auth({ onAuthSuccess }: AuthProps) {
               confirmPassword={confirmPassword}
               email={email}
               error={error}
-              isSignUp={isSignUp}
               loading={loading}
               onConfirmPasswordChange={setConfirmPassword}
               onEmailChange={setEmail}
@@ -509,11 +436,7 @@ export function Auth({ onAuthSuccess }: AuthProps) {
                 setError(null);
               }}
               onPasswordChange={setPassword}
-              onSubmit={isSignUp ? handleSignUp : handleSignIn}
-              onToggleMode={() => {
-                setIsSignUp(!isSignUp);
-                setError(null);
-              }}
+              onSubmit={handleSignIn}
               onVerifyCode={() => {
                 setNeedsVerification(true);
                 setError(null);

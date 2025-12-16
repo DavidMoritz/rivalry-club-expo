@@ -20,10 +20,21 @@ jest.mock('../../../hooks/useAuthUser', () => ({
 
 // Mock AWS Amplify Auth
 const mockUpdatePassword = jest.fn();
+const mockDeleteUser = jest.fn();
+const mockSignOut = jest.fn();
 
 jest.mock('../../../lib/amplify-auth', () => ({
   updatePassword: (...args: unknown[]) => mockUpdatePassword(...args),
+  deleteUser: () => mockDeleteUser(),
+  signOut: () => mockSignOut(),
   isExpoGo: false,
+}));
+
+// Mock user identity
+const mockClearStoredUuid = jest.fn();
+
+jest.mock('../../../lib/user-identity', () => ({
+  clearStoredUuid: () => mockClearStoredUuid(),
 }));
 
 // Mock AWS Amplify
@@ -742,6 +753,307 @@ describe('Profile Component', () => {
       });
 
       resolveUpdate?.({ data: { id: 'user-updating' }, errors: null });
+    });
+  });
+
+  describe('Account Deletion', () => {
+    it('shows Delete Account section', () => {
+      mockUseAuthUser.mockReturnValue({
+        user: {
+          id: 'user-delete',
+          email: 'delete@test.com',
+          firstName: 'Delete',
+          lastName: 'Test',
+          role: 1,
+          awsSub: 'aws-sub-delete',
+        },
+        isLoading: false,
+        error: null,
+      });
+
+      const { getAllByText } = render(<Profile />);
+
+      // Should have both the section title and button with "Delete Account" text
+      const deleteAccountElements = getAllByText('Delete Account');
+      expect(deleteAccountElements.length).toBeGreaterThanOrEqual(1);
+    });
+
+    it('shows appropriate warning for anonymous users', () => {
+      mockUseAuthUser.mockReturnValue({
+        user: {
+          id: 'user-anon-delete',
+          email: 'Player_ABC123@anonymous.local',
+          firstName: 'Anon',
+          lastName: 'User',
+          role: 1,
+          awsSub: 'anonymous',
+        },
+        isLoading: false,
+        error: null,
+      });
+
+      const { getByText } = render(<Profile />);
+
+      expect(
+        getByText(
+          'Deleting your account will make all your current rivalries inaccessible. This action cannot be undone.'
+        )
+      ).toBeTruthy();
+    });
+
+    it('shows appropriate warning for Cognito users', () => {
+      mockUseAuthUser.mockReturnValue({
+        user: {
+          id: 'user-cognito-delete',
+          email: 'cognito@test.com',
+          firstName: 'Cognito',
+          lastName: 'User',
+          role: 1,
+          awsSub: 'aws-sub-cognito',
+        },
+        isLoading: false,
+        error: null,
+      });
+
+      const { getByText } = render(<Profile />);
+
+      expect(
+        getByText(
+          'Permanently delete your account and all associated data. Once deleted, you will not be able to recover your rivalries. This action cannot be undone.'
+        )
+      ).toBeTruthy();
+    });
+
+    it('successfully deletes anonymous user account', async () => {
+      mockUseAuthUser.mockReturnValue({
+        user: {
+          id: 'user-anon-delete',
+          email: 'Player_ABC123@anonymous.local',
+          firstName: 'Anon',
+          lastName: 'User',
+          role: 1,
+          awsSub: 'anonymous',
+        },
+        isLoading: false,
+        error: null,
+      });
+
+      mockUserUpdate.mockResolvedValue({
+        data: {
+          id: 'user-anon-delete',
+          email: 'anonymous',
+          role: 5,
+        },
+        errors: null,
+      });
+
+      mockClearStoredUuid.mockResolvedValue(undefined);
+      mockSignOut.mockResolvedValue(undefined);
+
+      const { getAllByText } = render(<Profile />);
+
+      // Mock Alert.alert to auto-confirm
+      const mockAlert = jest.spyOn(require('react-native').Alert, 'alert');
+      mockAlert.mockImplementation((title, message, buttons) => {
+        // Simulate pressing the "Delete Account" button
+        const deleteButton = buttons?.find(
+          (b: { text: string }) => b.text === 'Delete Account'
+        );
+        deleteButton?.onPress?.();
+      });
+
+      // Get the button (last occurrence of "Delete Account" text)
+      const deleteButtons = getAllByText('Delete Account');
+      const deleteButton = deleteButtons[deleteButtons.length - 1];
+      fireEvent.press(deleteButton);
+
+      await waitFor(() => {
+        expect(mockUserUpdate).toHaveBeenCalledWith({
+          id: 'user-anon-delete',
+          email: 'anonymous',
+          role: 5,
+        });
+      });
+
+      // Should NOT delete from Cognito for anonymous users
+      expect(mockDeleteUser).not.toHaveBeenCalled();
+
+      // Should clear UUID and sign out
+      await waitFor(() => {
+        expect(mockClearStoredUuid).toHaveBeenCalled();
+        expect(mockSignOut).toHaveBeenCalled();
+      });
+
+      // Should redirect to home
+      await waitFor(() => {
+        expect(mockReplace).toHaveBeenCalledWith('/');
+      });
+
+      mockAlert.mockRestore();
+    });
+
+    it('successfully deletes Cognito user account', async () => {
+      mockUseAuthUser.mockReturnValue({
+        user: {
+          id: 'user-cognito-delete',
+          email: 'cognito@test.com',
+          firstName: 'Cognito',
+          lastName: 'User',
+          role: 1,
+          awsSub: 'aws-sub-cognito',
+        },
+        isLoading: false,
+        error: null,
+      });
+
+      mockUserUpdate.mockResolvedValue({
+        data: {
+          id: 'user-cognito-delete',
+          email: 'anonymous',
+          role: 5,
+        },
+        errors: null,
+      });
+
+      mockDeleteUser.mockResolvedValue(undefined);
+      mockClearStoredUuid.mockResolvedValue(undefined);
+      mockSignOut.mockResolvedValue(undefined);
+
+      const { getAllByText } = render(<Profile />);
+
+      // Mock Alert.alert to auto-confirm
+      const mockAlert = jest.spyOn(require('react-native').Alert, 'alert');
+      mockAlert.mockImplementation((title, message, buttons) => {
+        const deleteButton = buttons?.find(
+          (b: { text: string }) => b.text === 'Delete Account'
+        );
+        deleteButton?.onPress?.();
+      });
+
+      // Get the button (last occurrence of "Delete Account" text)
+      const deleteButtons = getAllByText('Delete Account');
+      const deleteButton = deleteButtons[deleteButtons.length - 1];
+      fireEvent.press(deleteButton);
+
+      await waitFor(() => {
+        expect(mockUserUpdate).toHaveBeenCalledWith({
+          id: 'user-cognito-delete',
+          email: 'anonymous',
+          role: 5,
+        });
+      });
+
+      // Should delete from Cognito for authenticated users
+      await waitFor(() => {
+        expect(mockDeleteUser).toHaveBeenCalled();
+      });
+
+      // Should clear UUID and sign out
+      await waitFor(() => {
+        expect(mockClearStoredUuid).toHaveBeenCalled();
+        expect(mockSignOut).toHaveBeenCalled();
+      });
+
+      // Should redirect to home
+      await waitFor(() => {
+        expect(mockReplace).toHaveBeenCalledWith('/');
+      });
+
+      mockAlert.mockRestore();
+    });
+
+    it('handles deletion error gracefully', async () => {
+      mockUseAuthUser.mockReturnValue({
+        user: {
+          id: 'user-error-delete',
+          email: 'error@test.com',
+          firstName: 'Error',
+          lastName: 'User',
+          role: 1,
+          awsSub: 'aws-sub-error',
+        },
+        isLoading: false,
+        error: null,
+      });
+
+      mockUserUpdate.mockRejectedValue(new Error('Database error'));
+
+      const { getAllByText } = render(<Profile />);
+
+      // Mock Alert.alert to capture both the confirmation and error alerts
+      const mockAlert = jest.spyOn(require('react-native').Alert, 'alert');
+      let errorAlertCalled = false;
+
+      mockAlert.mockImplementation((title, message, buttons) => {
+        if (title === 'Delete Account' && buttons) {
+          // Confirmation alert - press delete
+          const deleteButton = buttons.find(
+            (b: { text: string }) => b.text === 'Delete Account'
+          );
+          deleteButton?.onPress?.();
+        } else if (title === 'Error') {
+          // Error alert
+          errorAlertCalled = true;
+          expect(message).toBe('Failed to delete account. Please try again.');
+        }
+      });
+
+      // Get the button (last occurrence of "Delete Account" text)
+      const deleteButtons = getAllByText('Delete Account');
+      const deleteButton = deleteButtons[deleteButtons.length - 1];
+      fireEvent.press(deleteButton);
+
+      await waitFor(() => {
+        expect(errorAlertCalled).toBe(true);
+      });
+
+      // Should not proceed with deletion steps after database error
+      expect(mockDeleteUser).not.toHaveBeenCalled();
+      expect(mockClearStoredUuid).not.toHaveBeenCalled();
+      expect(mockSignOut).not.toHaveBeenCalled();
+      expect(mockReplace).not.toHaveBeenCalled();
+
+      mockAlert.mockRestore();
+    });
+
+    it('allows user to cancel account deletion', async () => {
+      mockUseAuthUser.mockReturnValue({
+        user: {
+          id: 'user-cancel',
+          email: 'cancel@test.com',
+          firstName: 'Cancel',
+          lastName: 'User',
+          role: 1,
+          awsSub: 'aws-sub-cancel',
+        },
+        isLoading: false,
+        error: null,
+      });
+
+      const { getAllByText } = render(<Profile />);
+
+      // Mock Alert.alert to simulate cancel
+      const mockAlert = jest.spyOn(require('react-native').Alert, 'alert');
+      mockAlert.mockImplementation((title, message, buttons) => {
+        const cancelButton = buttons?.find(
+          (b: { text: string }) => b.text === 'Cancel'
+        );
+        cancelButton?.onPress?.();
+      });
+
+      // Get the button (last occurrence of "Delete Account" text)
+      const deleteButtons = getAllByText('Delete Account');
+      const deleteButton = deleteButtons[deleteButtons.length - 1];
+      fireEvent.press(deleteButton);
+
+      // Should not perform any deletion actions
+      expect(mockUserUpdate).not.toHaveBeenCalled();
+      expect(mockDeleteUser).not.toHaveBeenCalled();
+      expect(mockClearStoredUuid).not.toHaveBeenCalled();
+      expect(mockSignOut).not.toHaveBeenCalled();
+      expect(mockReplace).not.toHaveBeenCalled();
+
+      mockAlert.mockRestore();
     });
   });
 });

@@ -1,10 +1,11 @@
+import { useQueryClient } from '@tanstack/react-query';
 import { generateClient } from 'aws-amplify/data';
 import { Hub } from 'aws-amplify/utils';
 import { useEffect, useState } from 'react';
 
 import type { Schema } from '../../amplify/data/resource';
 import { getCurrentUser } from '../lib/amplify-auth';
-import { getDisplayName, getOrCreateUserUuid, getStoredUuid } from '../lib/user-identity';
+import { clearStoredUuid, getDisplayName, getOrCreateUserUuid, getStoredUuid, updateStoredUuid } from '../lib/user-identity';
 
 interface AuthUser {
   id: string;
@@ -33,26 +34,44 @@ function throwIfErrors(
  * Handles the Cognito authenticated user flow
  */
 async function fetchCognitoUser(client: AmplifyClient): Promise<AuthUser> {
-  // Check if there's a stored UUID from an anonymous user that's being linked
-  // The user MUST have an anonymous account to reach the Profile/CreateAccount screen
+  // Get the Cognito user's awsSub
+  const cognitoUser = await getCurrentUser();
+  const cognitoAwsSub = cognitoUser.userId;
+
+  // Search for existing user by Cognito awsSub
+  const listResult = await client.models.User.list({
+    filter: {
+      awsSub: {
+        eq: cognitoAwsSub,
+      },
+    },
+  });
+
+  throwIfErrors(listResult.errors, 'Failed to search for user by awsSub');
+
+  const existingUsers = listResult.data;
+
+  if (existingUsers && existingUsers.length > 0) {
+    // Found user with this Cognito account - update stored UUID to match
+    const existingUser = existingUsers[0];
+    await updateStoredUuid(existingUser.id);
+    return existingUser as AuthUser;
+  }
+
+  // No user found with this awsSub - use current stored UUID (or create anonymous user)
   const storedUuid = await getStoredUuid();
 
-  if (!storedUuid) {
-    throw new Error('No stored user UUID found. User must start as anonymous before creating a Cognito account.');
+  if (storedUuid) {
+    // Fetch the user by stored UUID
+    const userResult = await client.models.User.get({ id: storedUuid });
+
+    if (userResult.data) {
+      return userResult.data as AuthUser;
+    }
   }
 
-  // Fetch the existing user by their stored UUID
-  const userResult = await client.models.User.get({ id: storedUuid });
-
-  throwIfErrors(userResult.errors, 'Failed to fetch user');
-
-  if (!userResult.data) {
-    throw new Error(`User not found with UUID: ${storedUuid}`);
-  }
-
-  // This is the user that was just linked (or is being linked)
-  // Return it regardless of awsSub value - it will be updated by CreateAccountModal
-  return userResult.data as AuthUser;
+  // No stored UUID or user not found - create new anonymous user
+  return await fetchAnonymousUser(client);
 }
 
 /**
@@ -96,6 +115,7 @@ async function fetchAnonymousUser(client: AmplifyClient): Promise<AuthUser> {
  * 3. Returns the User record
  */
 export function useAuthUser() {
+  const queryClient = useQueryClient();
   const [user, setUser] = useState<AuthUser | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<Error | null>(null);
@@ -110,11 +130,17 @@ export function useAuthUser() {
     const hubListener = Hub.listen('auth', ({ payload }) => {
       switch (payload.event) {
         case 'signedIn':
+          // Invalidate all queries to force refetch with new user data
+          queryClient.invalidateQueries();
           getCurrentUser()
             .then(cognitoUser => setCognitoUserId(cognitoUser.userId))
             .catch(() => setCognitoUserId(null));
           break;
         case 'signedOut':
+          // Clear stored UUID to prevent showing old user's data
+          clearStoredUuid().catch(err => console.error('[useAuthUser] Error clearing UUID:', err));
+          // Invalidate all queries to clear cached data
+          queryClient.invalidateQueries();
           setCognitoUserId(null);
           break;
         default:
@@ -124,7 +150,7 @@ export function useAuthUser() {
     });
 
     return () => hubListener();
-  }, []);
+  }, [queryClient]);
 
   useEffect(() => {
     async function fetchOrCreateUser() {

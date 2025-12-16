@@ -15,8 +15,9 @@ import { getMRivalry, type MRivalry } from '../../../src/models/m-rivalry';
 import { getMUser } from '../../../src/models/m-user';
 import { useGame } from '../../../src/providers/game';
 import { RivalryProvider } from '../../../src/providers/rivalry';
+
+import { center, darkStyles, styles } from '../../../src/utils/styles';
 import { colors } from '../../../src/utils/colors';
-import { darkStyles, styles } from '../../../src/utils/styles';
 
 // Lazy client initialization to avoid crashes when Amplify isn't configured
 let client: ReturnType<typeof generateClient<Schema>> | null = null;
@@ -30,9 +31,7 @@ function getClient() {
 }
 
 // Helper function to process tier lists and their slots
-async function processTierLists(
-  tierLists: NonNullable<Schema['Rivalry']['type']['tierLists']>
-) {
+async function processTierLists(tierLists: NonNullable<Schema['Rivalry']['type']['tierLists']>) {
   const tierListsArray: Schema['TierList']['type'][] = [];
   if (tierLists) {
     // @ts-expect-error - Amplify Gen 2 LazyLoader type doesn't have async iterator in type definition but works at runtime
@@ -45,7 +44,7 @@ async function processTierLists(
       }
       tierListsArray.push({
         ...tierListData,
-        tierSlots: { items: tierSlotsArray },
+        tierSlots: { items: tierSlotsArray }
       } as Schema['TierList']['type']);
     }
   }
@@ -68,31 +67,31 @@ async function populateRivalryUsers(
       user: {
         id: rivalryData.userAId,
         firstName: firstNameA,
-        lastName: lastNamePartsA.join(' '),
-      } as Schema['User']['type'],
+        lastName: lastNamePartsA.join(' ')
+      } as Schema['User']['type']
     });
     mRivalry.userB = getMUser({
       user: {
         id: rivalryData.userBId,
         firstName: firstNameB,
-        lastName: lastNamePartsB.join(' '),
-      } as Schema['User']['type'],
+        lastName: lastNamePartsB.join(' ')
+      } as Schema['User']['type']
     });
   } else {
     // Load user data separately if not in context
     const [userAResult, userBResult] = await Promise.all([
       getClient().models.User.get({ id: rivalryData.userAId }),
-      getClient().models.User.get({ id: rivalryData.userBId }),
+      getClient().models.User.get({ id: rivalryData.userBId })
     ]);
 
     if (userAResult.data) {
       mRivalry.userA = getMUser({
-        user: userAResult.data as Schema['User']['type'],
+        user: userAResult.data as Schema['User']['type']
       });
     }
     if (userBResult.data) {
       mRivalry.userB = getMUser({
-        user: userBResult.data as Schema['User']['type'],
+        user: userBResult.data as Schema['User']['type']
       });
     }
   }
@@ -116,12 +115,12 @@ export default function HistoryRoute() {
     onSuccess: () => {
       // Invalidate queries to refetch contests after undo
       queryClient.invalidateQueries({
-        queryKey: ['rivalryContests', rivalryId],
+        queryKey: ['rivalryContests', rivalryId]
       });
       queryClient.invalidateQueries({
-        queryKey: ['rivalryWithInfo', rivalryId],
+        queryKey: ['rivalryWithInfo', rivalryId]
       });
-    },
+    }
   });
 
   // Get game from global GameProvider (includes fighter stats)
@@ -130,31 +129,30 @@ export default function HistoryRoute() {
   const {
     data: _rivalryData,
     isLoading: isLoadingRivalry,
-    error: rivalryError,
+    error: rivalryError
   } = useQuery({
     enabled: !!rivalryId,
     queryKey: ['rivalryWithInfo', rivalryId],
     structuralSharing: false,
     queryFn: async () => {
-      const { data: rivalryData, errors } =
-        await getClient().models.Rivalry.get(
-          { id: rivalryId },
-          {
-            selectionSet: [
-              'id',
-              'userAId',
-              'userBId',
-              'gameId',
-              'contestCount',
-              'currentContestId',
-              'createdAt',
-              'updatedAt',
-              'deletedAt',
-              'tierLists.*',
-              'tierLists.tierSlots.*',
-            ],
-          }
-        );
+      const { data: rivalryData, errors } = await getClient().models.Rivalry.get(
+        { id: rivalryId },
+        {
+          selectionSet: [
+            'id',
+            'userAId',
+            'userBId',
+            'gameId',
+            'contestCount',
+            'currentContestId',
+            'createdAt',
+            'updatedAt',
+            'deletedAt',
+            'tierLists.*',
+            'tierLists.tierSlots.*'
+          ]
+        }
+      );
 
       if (errors) {
         console.error('[HistoryRoute] GraphQL errors loading rivalry:', errors);
@@ -170,11 +168,9 @@ export default function HistoryRoute() {
       const tierLists = { items: tierListsArray };
 
       const mRivalry = getMRivalry({
-        rivalry: rivalryData as unknown as Schema['Rivalry']['type'],
+        rivalry: rivalryData as unknown as Schema['Rivalry']['type']
       });
-      mRivalry.setMTierLists(
-        tierLists as Parameters<typeof mRivalry.setMTierLists>[0]
-      );
+      mRivalry.setMTierLists(tierLists as Parameters<typeof mRivalry.setMTierLists>[0]);
 
       // Use user names from context if available, otherwise fetch
       await populateRivalryUsers(mRivalry, rivalryData, userAName, userBName);
@@ -182,7 +178,7 @@ export default function HistoryRoute() {
       setRivalry(mRivalry);
 
       return mRivalry;
-    },
+    }
   });
 
   const { isLoading: isLoadingContests, error: contestError } = useQuery({
@@ -195,7 +191,7 @@ export default function HistoryRoute() {
         await getClient().models.Contest.contestsByRivalryIdAndCreatedAt({
           rivalryId,
           // @ts-expect-error - Amplify Gen 2 type doesn't recognize 'limit' parameter in IndexQueryInput but it works at runtime
-          limit: 100,
+          limit: 100
         });
 
       if (errors) {
@@ -203,7 +199,7 @@ export default function HistoryRoute() {
         throw new Error(errors.at(0)?.message || 'Failed to fetch contests');
       }
 
-      const mContests = contestData.map(c => {
+      const mContests = contestData.map((c) => {
         const mContest = getMContest(c as Schema['Contest']['type']);
         if (rivalry) {
           mContest.setRivalryAndSlots(rivalry);
@@ -222,7 +218,7 @@ export default function HistoryRoute() {
       setNextToken(null);
 
       return mContests;
-    },
+    }
   });
 
   const isLoading = isLoadingRivalry || isLoadingContests;
@@ -240,11 +236,11 @@ export default function HistoryRoute() {
       const {
         data: contestData,
         errors,
-        nextToken: newNextToken,
+        nextToken: newNextToken
       } = await getClient().models.Contest.list({
         filter: { rivalryId: { eq: rivalryId } },
         limit: 100,
-        nextToken,
+        nextToken
       });
 
       if (errors) {
@@ -253,7 +249,7 @@ export default function HistoryRoute() {
         return;
       }
 
-      const mContests = contestData.map(c => {
+      const mContests = contestData.map((c) => {
         const mContest = getMContest(c as Schema['Contest']['type']);
         mContest.setRivalryAndSlots(rivalry);
 
@@ -268,7 +264,7 @@ export default function HistoryRoute() {
         return dateB - dateA; // Descending order
       });
 
-      setContests(prev => {
+      setContests((prev) => {
         // Combine and re-sort to maintain order
         const combined = [...prev, ...mContests];
         combined.sort((a, b) => {
@@ -296,9 +292,7 @@ export default function HistoryRoute() {
           <View style={centeredContainerStyle}>
             <ActivityIndicator color={colors.white} size="large" />
             <Text style={loadingTextStyle}>
-              {isLoadingRivalry
-                ? 'Loading rivalry data...'
-                : 'Loading contests...'}
+              {isLoadingRivalry ? 'Loading rivalry data...' : 'Loading contests...'}
             </Text>
           </View>
         </SafeAreaView>
@@ -316,9 +310,7 @@ export default function HistoryRoute() {
             <Text style={errorTitleStyle}>Error loading data</Text>
             <Text style={errorMessageStyle}>
               {(contestError instanceof Error ? contestError.message : null) ||
-                (rivalryError instanceof Error
-                  ? rivalryError.message
-                  : 'Unknown error')}
+                (rivalryError instanceof Error ? rivalryError.message : 'Unknown error')}
             </Text>
           </View>
         </SafeAreaView>
@@ -374,38 +366,36 @@ export default function HistoryRoute() {
   );
 }
 
-const center = 'center' as const;
-
 const centeredContainerStyle = {
   flex: 1,
   alignItems: center,
-  justifyContent: center,
+  justifyContent: center
 };
 
 const loadingTextStyle = {
   ...styles.text,
-  marginTop: 16,
+  marginTop: 16
 };
 
 const errorContainerStyle = {
   flex: 1,
   alignItems: center,
   justifyContent: center,
-  paddingHorizontal: 16,
+  paddingHorizontal: 16
 };
 
 const errorTitleStyle = {
   ...styles.text,
   fontSize: 18,
   color: colors.red450,
-  marginBottom: 8,
+  marginBottom: 8
 };
 
 const errorMessageStyle = {
   ...styles.text,
-  color: colors.gray400,
+  color: colors.gray400
 };
 
 const historyContainerStyle = {
-  paddingTop: 72,
+  paddingTop: 72
 };

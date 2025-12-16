@@ -6,9 +6,7 @@
  * - Production builds: amplify_outputs.json (production database, set by EAS prebuild)
  */
 
-// @ts-expect-error - TypeScript doesn't know which file we're importing
 import productionOutputs from './amplify_outputs.json' with { type: 'json' };
-// @ts-expect-error - TypeScript doesn't know which file we're importing
 import sandboxOutputs from './amplify_outputs.sandbox.json' with {
   type: 'json',
 };

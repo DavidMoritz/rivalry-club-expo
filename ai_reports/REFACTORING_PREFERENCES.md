@@ -12,6 +12,10 @@ This document outlines the project's refactoring philosophy: prioritize **readab
 
 ---
 
+## Always follow Biome standards
+
+These standards can be found at the root in the file: "biome.jsonc"
+
 ## ✅ GOOD Refactoring Examples
 
 These types of refactoring improve readability and maintainability:
@@ -21,6 +25,7 @@ These types of refactoring improve readability and maintainability:
 **✅ DO THIS**: Extract inline styles into named constants
 
 **Rules**:
+
 1. **Extract duplicate styles** - If the same style appears multiple times, extract it
 2. **Extract large styles** - If an inline style object takes up **more than 3 lines of code**, extract it to the bottom of the file
 
@@ -154,6 +159,7 @@ if (position >= F_TIER_START_POSITION) {
 **✅ DO THIS**: Before creating new style constants, check `src/utils/styles.ts` for existing styles you can reuse or inherit from
 
 **File structure**:
+
 - `styles` - General reusable styles (containers, text, buttons, etc.)
 - `darkStyles` - Dark mode specific styles
 - `lightStyles` - Light mode specific styles
@@ -175,7 +181,7 @@ const headerContainerStyle = {
 import { contestStyles } from '../../../utils/styles';
 
 const headerContainerStyle = {
-  ...contestStyles.row,  // Already has flexDirection: 'row', alignItems: 'center'
+  ...contestStyles.row, // Already has flexDirection: 'row', alignItems: 'center'
   justifyContent: 'center' as const,
   marginBottom: 8
 };
@@ -209,6 +215,7 @@ import { styles } from '../../../utils/styles';
 ```
 
 **When to add to styles.ts vs keep local**:
+
 - ✅ Add to styles.ts: Used in 3+ files, generic/reusable pattern
 - ❌ Keep local: Component-specific styling, used in 1-2 files only
 
@@ -237,6 +244,7 @@ const currentContestUserStyle = {
 ```
 
 **Why this is good**:
+
 - `styles.ts` stays focused on truly shared styles
 - Easier to find and modify component-specific styles
 - Reduces unused style imports across the app
@@ -264,9 +272,9 @@ const secondaryButtonStyle = {
   paddingHorizontal: 16,
   paddingVertical: 8,
   borderWidth: 1,
-  borderColor: 'transparent',  // Only difference
+  borderColor: 'transparent', // Only difference
   borderRadius: 12,
-  backgroundColor: 'transparent',  // Only difference
+  backgroundColor: 'transparent', // Only difference
   marginStart: 80
 };
 
@@ -290,6 +298,7 @@ const secondaryButtonStyle = {
 ```
 
 **Why this is good**:
+
 - DRY principle - shared properties defined once
 - Easy to maintain - changes to base style automatically apply to variants
 - Clear intent - shows which properties are overridden
@@ -300,6 +309,7 @@ const secondaryButtonStyle = {
 **✅ DO THIS**: Extract recurring style values (like `'center'`, `'absolute'`) that appear in multiple style objects
 
 **Problem**: TypeScript errors when string literals are used in multiple style objects without `as const`:
+
 ```
 Type 'string' is not assignable to type 'FlexAlignType | undefined'
 ```
@@ -310,20 +320,20 @@ Type 'string' is not assignable to type 'FlexAlignType | undefined'
 // ❌ BEFORE: Repeated 'center' with TypeScript errors
 const headerContainerStyle = {
   flexDirection: 'row' as const,
-  alignItems: 'center' as const,      // Repeated
-  justifyContent: 'center' as const,  // Repeated
+  alignItems: 'center' as const, // Repeated
+  justifyContent: 'center' as const, // Repeated
   marginBottom: 8
 };
 
 const buttonStyle = {
-  alignItems: 'center' as const,      // Repeated
+  alignItems: 'center' as const, // Repeated
   paddingHorizontal: 16,
   paddingVertical: 8
 };
 
 const footerStyle = {
-  alignItems: 'center' as const,      // Repeated
-  justifyContent: 'center' as const,  // Repeated
+  alignItems: 'center' as const, // Repeated
+  justifyContent: 'center' as const, // Repeated
   marginTop: 16
 };
 
@@ -351,16 +361,19 @@ const footerStyle = {
 ```
 
 **When to extract**:
+
 - A style value appears **3+ times** across style objects
 - Common examples: `'center'`, `'absolute'`, `'relative'`, `'row'`, `'column'`
 
 **Important**: Always use `as const` when declaring the constant to preserve the literal type:
+
 ```typescript
-const center = 'center' as const;  // ✅ Good - preserves literal type
-const center = 'center';            // ❌ Bad - TypeScript infers as string
+const center = 'center' as const; // ✅ Good - preserves literal type
+const center = 'center'; // ❌ Bad - TypeScript infers as string
 ```
 
 **Why this is good**:
+
 - Fixes TypeScript type inference issues
 - Single source of truth for the value
 - Cleaner style objects (no repetitive `as const` on every usage)
@@ -388,16 +401,19 @@ if (position < 0) return 0;
 ```
 
 **When to use single-line conditionals**:
+
 - The entire line (including `if`, condition, and `return`) is under 80 characters
 - It's a simple guard clause or early return
 - No `else` branch is needed
 
 **When NOT to use**:
+
 - The line would exceed 80 characters
 - There's an `else` or `else if` branch
 - The body has multiple statements
 
 **Why this is good**:
+
 - Reduces visual noise for simple guard clauses
 - Keeps the file shorter and easier to scan
 - Common convention for early returns
@@ -617,6 +633,7 @@ All of these should remain explicit, not abstracted into loops.
 **The Golden Rule**: Refactor for readability, not just to reduce line count.
 
 **Styling workflow**:
+
 1. Check `src/utils/styles.ts` first before creating new styles
 2. Inherit from global styles using spread when appropriate
 3. Add common patterns (3+ files) to `styles.ts` with generic names
@@ -625,6 +642,7 @@ All of these should remain explicit, not abstracted into loops.
 6. Use spread to create style variations
 
 **General principles**:
+
 - Extract duplicate styles, constants, and complex logic
 - Keep A/B rivalry structures explicit and separate
 - Avoid premature abstraction

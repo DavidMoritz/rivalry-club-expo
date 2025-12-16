@@ -65,14 +65,14 @@ async function fetchCognitoUser(client: AmplifyClient): Promise<AuthUser> {
     // Fetch the user by stored UUID
     const userResult = await client.models.User.get({ id: storedUuid });
 
-    if (userResult.data) {
-      return userResult.data as AuthUser;
-    }
+    if (userResult.data) return userResult.data as AuthUser;
   }
 
   // No stored UUID or user not found - create new anonymous user
   return await fetchAnonymousUser(client);
 }
+
+const ANONYMOUS_USER_ROLE = 9;
 
 /**
  * Handles the anonymous user flow
@@ -82,9 +82,7 @@ async function fetchAnonymousUser(client: AmplifyClient): Promise<AuthUser> {
 
   const getResult = await client.models.User.get({ id: uuid });
 
-  if (getResult.data) {
-    return getResult.data as AuthUser;
-  }
+  if (getResult.data) return getResult.data as AuthUser;
 
   // Create new anonymous user
   const displayName = await getDisplayName(uuid);
@@ -93,7 +91,7 @@ async function fetchAnonymousUser(client: AmplifyClient): Promise<AuthUser> {
     email: `${displayName}@anonymous.local`,
     firstName: displayName,
     lastName: ' ',
-    role: 9, // Anonymous user role
+    role: ANONYMOUS_USER_ROLE,
     awsSub: 'anonymous',
   });
 

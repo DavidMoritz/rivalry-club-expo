@@ -6,6 +6,7 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useAuthUser } from '../../hooks/useAuthUser';
 import { signOut } from '../../lib/amplify-auth';
 import { colors } from '../../utils/colors';
+import { absolute, center } from '../../utils/styles';
 
 export function HamburgerMenu() {
   const router = useRouter();
@@ -137,9 +138,6 @@ export function HamburgerMenu() {
 
 const MENU_BUTTON_TOP_OFFSET = 12;
 const MENU_CONTAINER_TOP_OFFSET = 64;
-
-const center = 'center' as const;
-const absolute = 'absolute' as const;
 const row = 'row' as const;
 
 const hamburgerButtonStyle = {

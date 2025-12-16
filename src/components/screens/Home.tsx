@@ -13,7 +13,7 @@ import { useAuthUser } from '../../hooks/useAuthUser';
 import { useNetworkStatus } from '../../hooks/useNetworkStatus';
 import { useGame } from '../../providers/game';
 import { colors } from '../../utils/colors';
-import { darkStyles, styles } from '../../utils/styles';
+import { center, darkStyles, styles } from '../../utils/styles';
 import { Button } from '../common/Button';
 import { OfflineModal } from '../common/OfflineModal';
 import { GameWithCharactersDisplay } from './GameWithCharactersDisplay';
@@ -73,32 +73,16 @@ export default function Home({ onEnterClick, onHowToPlayClick }: HomeProps) {
         </TouchableWithoutFeedback>
         <Button
           onPress={() => game && onEnterClick(game)}
-          style={{
-            marginTop: 4,
-            marginBottom: 8,
-            width: '50%',
-            paddingVertical: 0,
-          }}
+          style={enterButtonStyle}
           text="Enter"
         />
       </View>
       {!game && <Image source={logoImage} style={styles.gameLogoImage} />}
       <View style={viewLowerStyle}>
         {isLoading && (
-          <View
-            style={{
-              flex: 1,
-              alignItems: 'center',
-              justifyContent: 'center',
-              paddingTop: 40,
-            }}
-          >
+          <View style={loadingContainerStyle}>
             <ActivityIndicator color={colors.blue400} size="large" />
-            <Text
-              style={{ color: colors.gray400, fontSize: 16, marginTop: 16 }}
-            >
-              Loading fighters...
-            </Text>
+            <Text style={loadingTextStyle}>Loading fighters...</Text>
           </View>
         )}
         {game && (
@@ -112,24 +96,44 @@ export default function Home({ onEnterClick, onHowToPlayClick }: HomeProps) {
   );
 }
 
+const enterButtonStyle = {
+  marginTop: 4,
+  marginBottom: 8,
+  width: '50%' as const,
+  paddingVertical: 0,
+};
+
+const loadingContainerStyle = {
+  flex: 1,
+  alignItems: center,
+  justifyContent: center,
+  paddingTop: 40,
+};
+
+const loadingTextStyle = {
+  color: colors.gray400,
+  fontSize: 16,
+  marginTop: 16,
+};
+
 const siteLogoImageStyle = {
-  alignSelf: 'center' as const,
+  alignSelf: center,
   aspectRatio: 1,
   flex: 1,
   resizeMode: 'contain' as const,
 };
 
 const titleContainerStyle = {
-  alignItems: 'center' as const,
+  alignItems: center,
   bottom: 20,
-  justifyContent: 'center' as const,
+  justifyContent: center,
   position: 'absolute' as const,
   top: 0,
 };
 
 const viewUpperStyle = {
   flex: 1,
-  alignItems: 'center' as const,
+  alignItems: center,
   justifyContent: 'space-between' as const,
   width: '100%' as const,
 };

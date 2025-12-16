@@ -18,7 +18,7 @@ import { useAuthUser } from '../../hooks/useAuthUser';
 import { deleteUser, signOut, updatePassword } from '../../lib/amplify-auth';
 import { clearStoredUuid } from '../../lib/user-identity';
 import { colors } from '../../utils/colors';
-import { darkStyles, styles } from '../../utils/styles';
+import { bold, center, darkStyles, styles } from '../../utils/styles';
 import { CreateAccountModal } from './CreateAccountModal';
 import { LinkAccountModal } from './LinkAccountModal';
 
@@ -204,7 +204,7 @@ export function Profile() {
   if (userLoading) {
     return (
       <SafeAreaView style={[styles.container, darkStyles.container]}>
-        <View style={{ flex: 1, alignItems: 'center', justifyContent: 'center' }}>
+        <View style={loadingContainerStyle}>
           <Text style={styles.text}>Loading...</Text>
         </View>
       </SafeAreaView>
@@ -219,169 +219,81 @@ export function Profile() {
       <KeyboardAvoidingView
         behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
         keyboardVerticalOffset={0}
-        style={{ flex: 1 }}
+        style={fullFlexStyle}
       >
         <ScrollView
-          contentContainerStyle={{ padding: 24 }}
+          contentContainerStyle={scrollContentStyle}
           keyboardShouldPersistTaps="handled"
           ref={scrollViewRef}
-          style={{ flex: 1 }}
+          style={fullFlexStyle}
         >
           <TouchableOpacity activeOpacity={0.9} onPress={handleDevTap}>
-            <Text style={[styles.title, { marginBottom: 24 }]}>Profile</Text>
+            <Text style={[styles.title, titleMarginStyle]}>Profile</Text>
           </TouchableOpacity>
 
           {isNewUser && (
-            <View
-              style={{
-                backgroundColor: colors.blue500,
-                padding: 16,
-                borderRadius: 8,
-                marginBottom: 16
-              }}
-            >
-              <Text
-                style={{
-                  color: colors.white,
-                  textAlign: 'center',
-                  fontWeight: '600',
-                  marginBottom: 4
-                }}
-              >
-                Welcome! 👋
-              </Text>
-              <Text style={{ color: colors.white, textAlign: 'center' }}>
+            <View style={welcomeBannerStyle}>
+              <Text style={welcomeHeaderStyle}>Welcome! 👋</Text>
+              <Text style={centeredWhiteTextStyle}>
                 Please enter your first name to get started
               </Text>
             </View>
           )}
 
           {successMessage ? (
-            <View
-              style={{
-                backgroundColor: colors.green600,
-                padding: 12,
-                borderRadius: 8,
-                marginBottom: 16
-              }}
-            >
-              <Text style={{ color: colors.white, textAlign: 'center' }}>{successMessage}</Text>
+            <View style={successBannerStyle}>
+              <Text style={centeredWhiteTextStyle}>{successMessage}</Text>
             </View>
           ) : null}
 
           {errorMessage ? (
-            <View
-              style={{
-                backgroundColor: colors.red600,
-                padding: 12,
-                borderRadius: 8,
-                marginBottom: 16
-              }}
-            >
-              <Text style={{ color: colors.white, textAlign: 'center' }}>{errorMessage}</Text>
+            <View style={errorBannerStyle}>
+              <Text style={centeredWhiteTextStyle}>{errorMessage}</Text>
             </View>
           ) : null}
 
-          <View style={{ marginBottom: 32 }}>
-            <Text style={[styles.text, { fontSize: 20, fontWeight: '600', marginBottom: 16 }]}>
-              Personal Information
-            </Text>
+          <View style={sectionStyle}>
+            <Text style={[styles.text, sectionHeaderStyle]}>Personal Information</Text>
 
-            <View style={{ marginBottom: 16 }}>
-              <Text style={[styles.text, { marginBottom: 8 }]}>First Name</Text>
+            <View style={fieldContainerStyle}>
+              <Text style={[styles.text, fieldLabelStyle]}>First Name</Text>
               <TextInput
                 autoCapitalize="words"
                 onChangeText={setFirstName}
                 placeholder="Enter first name"
                 placeholderTextColor={colors.gray400}
-                style={[
-                  styles.text,
-                  {
-                    backgroundColor: colors.gray800,
-                    color: colors.white,
-                    paddingHorizontal: 16,
-                    paddingVertical: 12,
-                    borderRadius: 8,
-                    borderWidth: 1,
-                    borderColor: colors.gray600
-                  }
-                ]}
+                style={[styles.text, textInputStyle]}
                 value={firstName}
               />
             </View>
 
-            <View style={{ marginBottom: 16 }}>
-              <Text style={[styles.text, { marginBottom: 8 }]}>Last Name</Text>
+            <View style={fieldContainerStyle}>
+              <Text style={[styles.text, fieldLabelStyle]}>Last Name</Text>
               <TextInput
                 autoCapitalize="words"
                 onChangeText={setLastName}
                 placeholder="Enter last name"
                 placeholderTextColor={colors.gray400}
-                style={[
-                  styles.text,
-                  {
-                    backgroundColor: colors.gray800,
-                    color: colors.white,
-                    paddingHorizontal: 16,
-                    paddingVertical: 12,
-                    borderRadius: 8,
-                    borderWidth: 1,
-                    borderColor: colors.gray600
-                  }
-                ]}
+                style={[styles.text, textInputStyle]}
                 value={lastName}
               />
             </View>
 
-            <View style={{ marginBottom: 16 }}>
+            <View style={fieldContainerStyle}>
               {user?.email.endsWith('@anonymous.local') ? (
                 <>
-                  <Text
-                    style={[styles.text, { marginBottom: 4, fontSize: 12, color: colors.gray400 }]}
-                  >
-                    Friend Code
-                  </Text>
-                  <Text
-                    style={[
-                      styles.text,
-                      {
-                        fontSize: 18,
-                        color: colors.cyan400,
-                        fontWeight: '600',
-                        fontFamily: 'monospace'
-                      }
-                    ]}
-                  >
+                  <Text style={[styles.text, smallLabelStyle]}>Friend Code</Text>
+                  <Text style={[styles.text, friendCodeStyle]}>
                     {user.email.replace('Player_', '').replace('@anonymous.local', '')}
                   </Text>
-                  <Text
-                    style={[
-                      styles.text,
-                      { marginTop: 4, fontSize: 11, color: colors.gray500, fontStyle: 'italic' }
-                    ]}
-                  >
+                  <Text style={[styles.text, helperTextStyle]}>
                     Friends can search for you using this code
                   </Text>
                 </>
               ) : (
                 <>
-                  <Text
-                    style={[styles.text, { marginBottom: 4, fontSize: 12, color: colors.gray400 }]}
-                  >
-                    Email
-                  </Text>
-                  <Text
-                    style={[
-                      styles.text,
-                      {
-                        fontSize: 18,
-                        color: colors.white,
-                        fontWeight: '600'
-                      }
-                    ]}
-                  >
-                    {user?.email}
-                  </Text>
+                  <Text style={[styles.text, smallLabelStyle]}>Email</Text>
+                  <Text style={[styles.text, emailDisplayStyle]}>{user?.email}</Text>
                 </>
               )}
             </View>
@@ -389,101 +301,32 @@ export function Profile() {
             <TouchableOpacity
               disabled={isUpdating}
               onPress={handleUpdateProfile}
-              style={{
-                backgroundColor: colors.purple900,
-                paddingHorizontal: 32,
-                paddingVertical: 16,
-                borderRadius: 25,
-                borderWidth: 1,
-                borderColor: colors.slate300,
-                width: '100%',
-                alignItems: 'center',
-                marginTop: 8
-              }}
+              style={primaryButtonStyle}
             >
-              <Text
-                style={{
-                  color: colors.white,
-                  fontSize: 18,
-                  fontWeight: 'bold'
-                }}
-              >
+              <Text style={buttonTextStyle}>
                 {isUpdating ? 'Updating...' : 'Update Profile'}
               </Text>
             </TouchableOpacity>
           </View>
 
-          <View
-            style={{
-              borderTopWidth: 1,
-              borderTopColor: colors.gray700,
-              paddingTop: 32,
-              marginBottom: 32
-            }}
-          >
-            <Text style={[styles.text, { fontSize: 20, fontWeight: '600', marginBottom: 16 }]}>
-              Account Linking
-            </Text>
+          <View style={dividerSectionStyle}>
+            <Text style={[styles.text, sectionHeaderStyle]}>Account Linking</Text>
 
             {user?.awsSub === 'anonymous' ? (
               <>
-                <View
-                  style={{
-                    backgroundColor: colors.slate600,
-                    padding: 12,
-                    borderRadius: 8,
-                    marginBottom: 16
-                  }}
-                >
-                  <Text
-                    style={{
-                      color: colors.white,
-                      textAlign: 'center',
-                      fontWeight: '600'
-                    }}
-                  >
-                    📱 Anonymous Account
-                  </Text>
-                  <Text
-                    style={{
-                      color: colors.slate300,
-                      textAlign: 'center',
-                      marginTop: 4,
-                      fontSize: 13
-                    }}
-                  >
+                <View style={anonymousInfoBannerStyle}>
+                  <Text style={bannerHeaderStyle}>📱 Anonymous Account</Text>
+                  <Text style={bannerSubtextStyle}>
                     Your data is saved locally. Link an account for recovery and multi-device sync.
                   </Text>
                 </View>
 
                 <TouchableOpacity
                   onPress={() => setShowLinkAccountModal(true)}
-                  style={{
-                    backgroundColor: colors.amber400,
-                    paddingHorizontal: 24,
-                    paddingVertical: 14,
-                    borderRadius: 8,
-                    alignItems: 'center',
-                    marginBottom: 12
-                  }}
+                  style={linkExistingButtonStyle}
                 >
-                  <Text
-                    style={{
-                      color: colors.darkText,
-                      fontSize: 16,
-                      fontWeight: 'bold'
-                    }}
-                  >
-                    Link Existing Account
-                  </Text>
-                  <Text
-                    style={{
-                      color: colors.darkText,
-                      fontSize: 12,
-                      marginTop: 2,
-                      textAlign: 'center'
-                    }}
-                  >
+                  <Text style={linkExistingButtonTextStyle}>Link Existing Account</Text>
+                  <Text style={linkExistingSubtextStyle}>
                     Already have an account? Restore your data. This will remove all data for{' '}
                     {user?.email.split('@')[0] ?? 'this profile'}.
                   </Text>
@@ -491,60 +334,16 @@ export function Profile() {
 
                 <TouchableOpacity
                   onPress={() => setShowCreateAccountModal(true)}
-                  style={{
-                    backgroundColor: colors.purple900,
-                    paddingHorizontal: 24,
-                    paddingVertical: 14,
-                    borderRadius: 8,
-                    alignItems: 'center'
-                  }}
+                  style={createAccountButtonStyle}
                 >
-                  <Text
-                    style={{
-                      color: colors.white,
-                      fontSize: 16,
-                      fontWeight: 'bold'
-                    }}
-                  >
-                    Create New Account
-                  </Text>
-                  <Text
-                    style={{
-                      color: colors.slate300,
-                      fontSize: 12,
-                      marginTop: 2
-                    }}
-                  >
-                    Link email for recovery
-                  </Text>
+                  <Text style={createAccountButtonTextStyle}>Create New Account</Text>
+                  <Text style={createAccountSubtextStyle}>Link email for recovery</Text>
                 </TouchableOpacity>
               </>
             ) : (
-              <View
-                style={{
-                  backgroundColor: colors.green600,
-                  padding: 12,
-                  borderRadius: 8,
-                  marginBottom: 16
-                }}
-              >
-                <Text
-                  style={{
-                    color: colors.white,
-                    textAlign: 'center',
-                    fontWeight: '600'
-                  }}
-                >
-                  ✅ Linked to Account
-                </Text>
-                <Text
-                  style={{
-                    color: colors.green100,
-                    textAlign: 'center',
-                    marginTop: 4,
-                    fontSize: 13
-                  }}
-                >
+              <View style={linkedAccountBannerStyle}>
+                <Text style={bannerHeaderStyle}>✅ Linked to Account</Text>
+                <Text style={linkedAccountSubtextStyle}>
                   Your data is backed up and synced across devices
                 </Text>
               </View>
@@ -552,119 +351,51 @@ export function Profile() {
           </View>
 
           {user?.awsSub !== 'anonymous' && !viewChangePassword && (
-            <View
-              style={{
-                borderTopWidth: 1,
-                borderTopColor: colors.gray700,
-                paddingTop: 32
-              }}
-            >
-              <TouchableOpacity
-                onPress={() => setViewChangePassword(true)}
-                style={{
-                  backgroundColor: colors.purple900,
-                  paddingHorizontal: 32,
-                  paddingVertical: 16,
-                  borderRadius: 25,
-                  borderWidth: 1,
-                  borderColor: colors.slate300,
-                  width: '100%',
-                  alignItems: 'center',
-                  marginTop: 8
-                }}
-              >
-                <Text
-                  style={{
-                    color: colors.white,
-                    fontSize: 18,
-                    fontWeight: 'bold'
-                  }}
-                >
-                  Change Password
-                </Text>
+            <View style={dividerSectionNoPaddingStyle}>
+              <TouchableOpacity onPress={() => setViewChangePassword(true)} style={primaryButtonStyle}>
+                <Text style={buttonTextStyle}>Change Password</Text>
               </TouchableOpacity>
             </View>
           )}
           {viewChangePassword && (
-            <View
-              style={{
-                borderTopWidth: 1,
-                borderTopColor: colors.gray700,
-                paddingTop: 32
-              }}
-            >
-              <Text style={[styles.text, { fontSize: 20, fontWeight: '600', marginBottom: 16 }]}>
-                Change Password
-              </Text>
+            <View style={dividerSectionNoPaddingStyle}>
+              <Text style={[styles.text, sectionHeaderStyle]}>Change Password</Text>
 
-              <View style={{ marginBottom: 16 }}>
-                <Text style={[styles.text, { marginBottom: 8 }]}>Current Password</Text>
+              <View style={fieldContainerStyle}>
+                <Text style={[styles.text, fieldLabelStyle]}>Current Password</Text>
                 <TextInput
                   autoCapitalize="none"
                   onChangeText={setCurrentPassword}
                   placeholder="Enter current password"
                   placeholderTextColor={colors.gray400}
                   secureTextEntry
-                  style={[
-                    styles.text,
-                    {
-                      backgroundColor: colors.gray800,
-                      color: colors.white,
-                      paddingHorizontal: 16,
-                      paddingVertical: 12,
-                      borderRadius: 8,
-                      borderWidth: 1,
-                      borderColor: colors.gray600
-                    }
-                  ]}
+                  style={[styles.text, textInputStyle]}
                   value={currentPassword}
                 />
               </View>
 
-              <View style={{ marginBottom: 16 }}>
-                <Text style={[styles.text, { marginBottom: 8 }]}>New Password</Text>
+              <View style={fieldContainerStyle}>
+                <Text style={[styles.text, fieldLabelStyle]}>New Password</Text>
                 <TextInput
                   autoCapitalize="none"
                   onChangeText={setNewPassword}
                   placeholder="Enter new password (min 8 characters)"
                   placeholderTextColor={colors.gray400}
                   secureTextEntry
-                  style={[
-                    styles.text,
-                    {
-                      backgroundColor: colors.gray800,
-                      color: colors.white,
-                      paddingHorizontal: 16,
-                      paddingVertical: 12,
-                      borderRadius: 8,
-                      borderWidth: 1,
-                      borderColor: colors.gray600
-                    }
-                  ]}
+                  style={[styles.text, textInputStyle]}
                   value={newPassword}
                 />
               </View>
 
-              <View style={{ marginBottom: 16 }}>
-                <Text style={[styles.text, { marginBottom: 8 }]}>Confirm New Password</Text>
+              <View style={fieldContainerStyle}>
+                <Text style={[styles.text, fieldLabelStyle]}>Confirm New Password</Text>
                 <TextInput
                   autoCapitalize="none"
                   onChangeText={setConfirmPassword}
                   placeholder="Re-enter new password"
                   placeholderTextColor={colors.gray400}
                   secureTextEntry
-                  style={[
-                    styles.text,
-                    {
-                      backgroundColor: colors.gray800,
-                      color: colors.white,
-                      paddingHorizontal: 16,
-                      paddingVertical: 12,
-                      borderRadius: 8,
-                      borderWidth: 1,
-                      borderColor: colors.gray600
-                    }
-                  ]}
+                  style={[styles.text, textInputStyle]}
                   value={confirmPassword}
                 />
               </View>
@@ -672,25 +403,9 @@ export function Profile() {
               <TouchableOpacity
                 disabled={isChangingPassword}
                 onPress={handleChangePassword}
-                style={{
-                  backgroundColor: colors.purple900,
-                  paddingHorizontal: 32,
-                  paddingVertical: 16,
-                  borderRadius: 25,
-                  borderWidth: 1,
-                  borderColor: colors.slate300,
-                  width: '100%',
-                  alignItems: 'center',
-                  marginTop: 8
-                }}
+                style={primaryButtonStyle}
               >
-                <Text
-                  style={{
-                    color: colors.white,
-                    fontSize: 18,
-                    fontWeight: 'bold'
-                  }}
-                >
+                <Text style={buttonTextStyle}>
                   {isChangingPassword ? 'Changing...' : 'Change Password'}
                 </Text>
               </TouchableOpacity>
@@ -698,23 +413,9 @@ export function Profile() {
           )}
 
           {/* Account Deletion Section */}
-          <View
-            style={{
-              borderTopWidth: 1,
-              borderTopColor: colors.gray700,
-              paddingTop: 32,
-              marginTop: 32
-            }}
-          >
-            <Text style={[styles.text, { fontSize: 20, fontWeight: '600', marginBottom: 8 }]}>
-              Delete Account
-            </Text>
-            <Text
-              style={[
-                styles.text,
-                { fontSize: 14, color: colors.gray400, marginBottom: 16, lineHeight: 20 }
-              ]}
-            >
+          <View style={deleteSectionStyle}>
+            <Text style={[styles.text, sectionHeaderWithSmallMarginStyle]}>Delete Account</Text>
+            <Text style={[styles.text, deleteDescriptionStyle]}>
               {user?.awsSub === 'anonymous'
                 ? 'Deleting your account will make all your current rivalries inaccessible. This action cannot be undone.'
                 : 'Permanently delete your account and all associated data. Once deleted, you will not be able to recover your rivalries. This action cannot be undone.'}
@@ -770,26 +471,9 @@ export function Profile() {
                   }
                 ]);
               }}
-              style={{
-                backgroundColor: colors.red600,
-                paddingHorizontal: 32,
-                paddingVertical: 16,
-                borderRadius: 25,
-                borderWidth: 1,
-                borderColor: colors.red900,
-                width: '100%',
-                alignItems: 'center'
-              }}
+              style={deleteButtonStyle}
             >
-              <Text
-                style={{
-                  color: colors.white,
-                  fontSize: 18,
-                  fontWeight: 'bold'
-                }}
-              >
-                Delete Account
-              </Text>
+              <Text style={buttonTextStyle}>Delete Account</Text>
             </TouchableOpacity>
           </View>
         </ScrollView>
@@ -830,3 +514,233 @@ export function Profile() {
     </SafeAreaView>
   );
 }
+
+// Layout styles
+const fullFlexStyle = { flex: 1 };
+
+const loadingContainerStyle = {
+  flex: 1,
+  alignItems: center,
+  justifyContent: center
+};
+
+const scrollContentStyle = { padding: 24 };
+
+const titleMarginStyle = { marginBottom: 24 };
+
+const sectionStyle = { marginBottom: 32 };
+
+const dividerSectionStyle = {
+  borderTopWidth: 1,
+  borderTopColor: colors.gray700,
+  paddingTop: 32,
+  marginBottom: 32
+};
+
+const dividerSectionNoPaddingStyle = {
+  borderTopWidth: 1,
+  borderTopColor: colors.gray700,
+  paddingTop: 32
+};
+
+const deleteSectionStyle = {
+  borderTopWidth: 1,
+  borderTopColor: colors.gray700,
+  paddingTop: 32,
+  marginTop: 32
+};
+
+const fieldContainerStyle = { marginBottom: 16 };
+
+// Text styles
+const sectionHeaderStyle = {
+  fontSize: 20,
+  fontWeight: '600' as const,
+  marginBottom: 16
+};
+
+const sectionHeaderWithSmallMarginStyle = {
+  fontSize: 20,
+  fontWeight: '600' as const,
+  marginBottom: 8
+};
+
+const fieldLabelStyle = { marginBottom: 8 };
+
+const centeredWhiteTextStyle = {
+  color: colors.white,
+  textAlign: center
+};
+
+const smallLabelStyle = {
+  marginBottom: 4,
+  fontSize: 12,
+  color: colors.gray400
+};
+
+const friendCodeStyle = {
+  fontSize: 18,
+  color: colors.cyan400,
+  fontWeight: '600' as const,
+  fontFamily: 'monospace' as const
+};
+
+const emailDisplayStyle = {
+  fontSize: 18,
+  color: colors.white,
+  fontWeight: '600' as const
+};
+
+const helperTextStyle = {
+  marginTop: 4,
+  fontSize: 11,
+  color: colors.gray500,
+  fontStyle: 'italic' as const
+};
+
+const deleteDescriptionStyle = {
+  fontSize: 14,
+  color: colors.gray400,
+  marginBottom: 16,
+  lineHeight: 20
+};
+
+// Input styles
+const textInputStyle = {
+  backgroundColor: colors.gray800,
+  color: colors.white,
+  paddingHorizontal: 16,
+  paddingVertical: 12,
+  borderRadius: 8,
+  borderWidth: 1,
+  borderColor: colors.gray600
+};
+
+// Button styles
+const primaryButtonStyle = {
+  backgroundColor: colors.purple900,
+  paddingHorizontal: 32,
+  paddingVertical: 16,
+  borderRadius: 25,
+  borderWidth: 1,
+  borderColor: colors.slate300,
+  width: '100%' as const,
+  alignItems: center,
+  marginTop: 8
+};
+
+const buttonTextStyle = {
+  color: colors.white,
+  fontSize: 18,
+  fontWeight: bold
+};
+
+const deleteButtonStyle = {
+  ...primaryButtonStyle,
+  backgroundColor: colors.red600,
+  borderColor: colors.red900
+};
+
+// Banner styles (base)
+const baseBannerStyle = {
+  padding: 12,
+  borderRadius: 8,
+  marginBottom: 16
+};
+
+const welcomeBannerStyle = {
+  ...baseBannerStyle,
+  backgroundColor: colors.blue500,
+  padding: 16
+};
+
+const successBannerStyle = {
+  ...baseBannerStyle,
+  backgroundColor: colors.green600
+};
+
+const errorBannerStyle = {
+  ...baseBannerStyle,
+  backgroundColor: colors.red600
+};
+
+const anonymousInfoBannerStyle = {
+  ...baseBannerStyle,
+  backgroundColor: colors.slate600
+};
+
+const linkedAccountBannerStyle = {
+  ...baseBannerStyle,
+  backgroundColor: colors.green600
+};
+
+// Banner text styles
+const welcomeHeaderStyle = {
+  color: colors.white,
+  textAlign: center,
+  fontWeight: '600' as const,
+  marginBottom: 4
+};
+
+const bannerHeaderStyle = {
+  color: colors.white,
+  textAlign: center,
+  fontWeight: '600' as const
+};
+
+const bannerSubtextStyle = {
+  color: colors.slate300,
+  textAlign: center,
+  marginTop: 4,
+  fontSize: 13
+};
+
+const linkedAccountSubtextStyle = {
+  color: colors.green100,
+  textAlign: center,
+  marginTop: 4,
+  fontSize: 13
+};
+
+// Account linking button styles
+const linkExistingButtonStyle = {
+  backgroundColor: colors.amber400,
+  paddingHorizontal: 24,
+  paddingVertical: 14,
+  borderRadius: 8,
+  alignItems: center,
+  marginBottom: 12
+};
+
+const linkExistingButtonTextStyle = {
+  color: colors.darkText,
+  fontSize: 16,
+  fontWeight: bold
+};
+
+const linkExistingSubtextStyle = {
+  color: colors.darkText,
+  fontSize: 12,
+  marginTop: 2,
+  textAlign: center
+};
+
+const createAccountButtonStyle = {
+  backgroundColor: colors.purple900,
+  paddingHorizontal: 24,
+  paddingVertical: 14,
+  borderRadius: 8,
+  alignItems: center
+};
+
+const createAccountButtonTextStyle = {
+  color: colors.white,
+  fontSize: 16,
+  fontWeight: bold
+};
+
+const createAccountSubtextStyle = {
+  color: colors.slate300,
+  fontSize: 12,
+  marginTop: 2
+};

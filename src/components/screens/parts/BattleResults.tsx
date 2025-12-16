@@ -8,6 +8,7 @@ import type { MRivalry } from '../../../models/m-rivalry';
 import { TIERS } from '../../../models/m-tier-list';
 import { computeTierFromPosition } from '../../../models/m-tier-slot';
 import { colors } from '../../../utils/colors';
+import { absolute, bold, center, relative } from '../../../utils/styles';
 import { CharacterDisplay } from '../../common/CharacterDisplay';
 
 // Layout constants for character displays
@@ -107,7 +108,7 @@ export function BattleResults({
               },
             ]}
           >
-            <View style={{ position: 'relative' }}>
+            <View style={relativePositionStyle}>
               <CharacterDisplay
                 fighter={winnerFighter}
                 height={WINNER_DISPLAY_HEIGHT}
@@ -147,7 +148,7 @@ export function BattleResults({
           </View>
           <Text style={loserUserNameStyle}>{loserUser}</Text>
           <View style={loserFighterBoxStyle}>
-            <View style={{ position: 'relative' }}>
+            <View style={relativePositionStyle}>
               <CharacterDisplay
                 fighter={loserFighter}
                 height={LOSER_DISPLAY_HEIGHT}
@@ -186,9 +187,6 @@ export function BattleResults({
 }
 
 // Styles
-const center = 'center' as const;
-const bold = 'bold' as const;
-
 const containerStyle = {
   flex: 1,
   backgroundColor: colors.slate900,
@@ -219,6 +217,10 @@ const winnerContainerStyle = {
 const loserContainerStyle = {
   ...winnerContainerStyle,
   opacity: 0.6,
+};
+
+const relativePositionStyle = {
+  position: relative,
 };
 
 const winnerUserNameStyle = {
@@ -295,7 +297,7 @@ const scoreTextStyle = {
 };
 
 const tierBadgeStyle = {
-  position: 'absolute' as const,
+  position: absolute,
   borderRadius: 8,
   alignItems: center,
   justifyContent: center,

@@ -19,6 +19,89 @@ Read: /Users/davidmoritz/Code/react-native/rivalry-club/rivalry-club-expo/ai_rep
 
 This file contains the project's refactoring philosophy and specific rules for what to refactor and what to keep as-is.
 
+## TypeScript Error Fixing
+
+**CRITICAL**: When refactoring a file, you MUST fix any TypeScript compilation errors present in that file.
+
+### TypeScript Error Resolution
+
+1. **Check for Errors**: Always be aware of TypeScript errors in files you're refactoring
+2. **Fix During Refactoring**: Resolve type errors as part of your refactoring work
+3. **Common Issues to Fix**:
+   - Missing type annotations
+   - Incorrect type assignments
+   - Incompatible function signatures
+   - Missing required properties
+   - Type assertion errors
+   - `any` types that should be properly typed
+
+4. **Approach**:
+   - Read the file carefully to understand existing types
+   - Fix type errors without changing functionality
+   - Add proper type annotations where missing
+   - Ensure all types are compatible and correct
+
+### Exception: Skippable TypeScript Errors
+
+**DO NOT** attempt to fix TypeScript errors that are marked with `@ts-expect-error` comments containing any of these patterns:
+- `Amplify Gen 2` - AWS Amplify Gen 2 type system incompatibilities
+- `[SKIP]` - Explicitly marked as unfixable
+- `library type mismatch` - Third-party library type definition issues
+
+These errors are **documented architectural limitations** that cannot be resolved without major refactoring or library updates. Leave them as-is.
+
+**Example of skippable error**:
+```typescript
+// @ts-expect-error - Amplify Gen 2 LazyLoader type incompatible with TierSlot schema type
+tierSlotsArray.push(tierSlot);
+```
+
+**Note**: TypeScript errors take priority, EXCEPT for documented architectural limitations marked with the patterns above.
+
+## Biome Code Standards
+
+**CRITICAL**: All refactored code MUST conform to Biome standards. Biome is the project's formatter and linter.
+
+### Core Biome Principles
+
+1. **Formatting Rules**:
+   - Use single quotes for strings (Biome default)
+   - Prefer const over let when variables aren't reassigned
+   - Use arrow functions consistently
+   - Trailing commas in multi-line structures
+   - No semicolons (or consistent semicolons based on project config)
+
+2. **Code Quality Rules**:
+   - Remove unused variables and imports
+   - No console.log statements in production code (use proper logging)
+   - Prefer template literals over string concatenation
+   - Use optional chaining (`?.`) instead of manual null checks where appropriate
+   - Avoid `any` types - use proper TypeScript types
+
+3. **React/React Native Specific**:
+   - Use functional components with hooks
+   - Destructure props at the function signature
+   - Avoid inline function definitions in JSX props (extract to const)
+   - Use proper key props in list rendering
+   - Remove unused useEffect dependencies
+
+4. **Import Organization**:
+   - Remove unused imports
+   - Group imports logically (React, third-party, local)
+   - Use named imports when possible
+
+### Before Committing Refactored Code
+
+Always ensure:
+- ✅ No TypeScript compilation errors
+- ✅ No unused variables or imports
+- ✅ Consistent quote style (single quotes)
+- ✅ Proper TypeScript typing (no `any` unless necessary)
+- ✅ No linting errors would be reported by Biome
+- ✅ Code follows React Native best practices
+
+If you encounter code that violates Biome standards or has TypeScript errors during refactoring, fix those issues as part of your refactoring work.
+
 ## Your Workflow
 
 1. **Read Guidelines**: Start by reading `REFACTORING_PREFERENCES.md` to understand the philosophy

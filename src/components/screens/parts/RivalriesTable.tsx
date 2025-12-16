@@ -3,7 +3,7 @@ import { FlatList, Text, TouchableOpacity, View } from 'react-native';
 
 import { useAllRivalries } from '../../../providers/all-rivalries';
 import { colors } from '../../../utils/colors';
-import { styles } from '../../../utils/styles';
+import { bold, center, styles } from '../../../utils/styles';
 import { RivalryRow } from './RivalryRow';
 
 interface Rivalry {
@@ -49,7 +49,7 @@ export function RivalriesTable({
     <>
       {visibleRivalries.length > 0 && (
         <FlatList
-          contentContainerStyle={{ padding: 16 }}
+          contentContainerStyle={listContainerStyle}
           data={visibleRivalries}
           keyExtractor={item => item.id}
           renderItem={({ item }) => {
@@ -94,8 +94,9 @@ export function RivalriesTable({
   );
 }
 
-const center = 'center' as const;
-const bold = 'bold' as const;
+const listContainerStyle = {
+  padding: 16,
+};
 
 const buttonContainerStyle = {
   paddingHorizontal: 16,

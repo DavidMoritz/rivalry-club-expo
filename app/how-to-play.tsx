@@ -4,7 +4,7 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { Button } from '../src/components/common/Button';
 import { HamburgerMenu } from '../src/components/common/HamburgerMenu';
 import { colors } from '../src/utils/colors';
-import { darkStyles, styles } from '../src/utils/styles';
+import { bold, center, darkStyles, styles } from '../src/utils/styles';
 
 export default function HowToPlay() {
   const router = useRouter();
@@ -13,10 +13,7 @@ export default function HowToPlay() {
     <SafeAreaView edges={['top', 'bottom']} style={[styles.container, darkStyles.container]}>
       <HamburgerMenu />
 
-      <ScrollView
-        contentContainerStyle={{ paddingHorizontal: 16, paddingBottom: 32 }}
-        style={{ flex: 1 }}
-      >
+      <ScrollView contentContainerStyle={scrollContentStyle} style={scrollViewStyle}>
         {/* Header */}
         <View style={headerContainerStyle}>
           <Text style={titleTextStyle}>Rivalry Club</Text>
@@ -173,9 +170,16 @@ export default function HowToPlay() {
   );
 }
 
-const center = 'center' as const;
-const bold = 'bold' as const;
 const italic = 'italic' as const;
+
+const scrollViewStyle = {
+  flex: 1
+};
+
+const scrollContentStyle = {
+  paddingHorizontal: 16,
+  paddingBottom: 32
+};
 
 const headerContainerStyle = {
   paddingVertical: 24,

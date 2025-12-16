@@ -5,10 +5,7 @@ import type { Schema } from '../../amplify/data/resource';
 let client: ReturnType<typeof generateClient<Schema>> | null = null;
 
 function getClient() {
-  if (!client) {
-    client = generateClient<Schema>();
-  }
-
+  if (!client) client = generateClient<Schema>();
   return client;
 }
 
@@ -17,19 +14,24 @@ function getClient() {
  * Uses DynamoDB's ADD operation for race-condition-free increments
  */
 export async function incrementTierSlotStats(tierSlotId: string, won: boolean) {
-  const { data, errors } = await getClient().mutations.incrementTierSlotStats({
-    tierSlotId,
-    won,
-  });
+  try {
+    const { data, errors } = await getClient().mutations.incrementTierSlotStats({
+      tierSlotId,
+      won,
+    });
 
-  if (errors) {
-    console.error('[incrementTierSlotStats] GraphQL errors:', errors);
-    throw new Error(
-      errors[0]?.message || 'Failed to increment tier slot stats'
-    );
+    if (errors) {
+      console.error('[incrementTierSlotStats] GraphQL errors:', errors);
+      throw new Error(
+        errors[0]?.message || 'Failed to increment tier slot stats'
+      );
+    }
+
+    return data;
+  } catch (error) {
+    console.error('[incrementTierSlotStats] Exception thrown:', error);
+    throw error;
   }
-
-  return data;
 }
 
 /**

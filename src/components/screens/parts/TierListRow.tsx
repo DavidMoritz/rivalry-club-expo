@@ -5,6 +5,7 @@ import type { MTierSlot } from '../../../models/m-tier-slot';
 import { useGame } from '../../../providers/game';
 import { fighterByIdFromGame } from '../../../utils';
 import { colors } from '../../../utils/colors';
+import { bold, center, row, wrap } from '../../../utils/styles';
 import { CharacterDisplay } from '../../common/CharacterDisplay';
 
 interface TierListRowProps {
@@ -18,7 +19,7 @@ interface TierListRowProps {
   selectedSlotId?: string | null;
 }
 
-const TierListRow: React.FC<TierListRowProps> = props => {
+const TierListRow: React.FC<TierListRowProps> = (props) => {
   const game = useGame() as MGame;
 
   const TierLabel = props.onTierClick ? TouchableOpacity : View;
@@ -31,20 +32,15 @@ const TierListRow: React.FC<TierListRowProps> = props => {
         style={[
           tierLabelStyle,
           {
-            backgroundColor: props.onTierClick
-              ? colors.tierRowDark
-              : colors.tierRowLight,
-          },
+            backgroundColor: props.onTierClick ? colors.tierRowDark : colors.tierRowLight
+          }
         ]}
       >
         <Text style={tierLabelTextStyle}>{props.label}</Text>
       </TierLabel>
-      <TierBackground
-        onPress={props.onTierBackgroundClick}
-        style={tierBackgroundStyle}
-      >
+      <TierBackground onPress={props.onTierBackgroundClick} style={tierBackgroundStyle}>
         <View style={slotsContainerStyle}>
-          {props.slots.map(slot => {
+          {props.slots.map((slot) => {
             const fighter = fighterByIdFromGame(game, slot.fighterId);
             const isSelected = props.selectedSlotId === slot.id;
 
@@ -57,8 +53,8 @@ const TierListRow: React.FC<TierListRowProps> = props => {
                   slotWrapperStyle,
                   {
                     borderWidth: isSelected ? SELECTED_BORDER_WIDTH : 0,
-                    borderColor: isSelected ? colors.amber400 : colors.white,
-                  },
+                    borderColor: isSelected ? colors.amber400 : colors.white
+                  }
                 ]}
               >
                 <CharacterDisplay
@@ -77,16 +73,12 @@ const TierListRow: React.FC<TierListRowProps> = props => {
   );
 };
 
-const center = 'center' as const;
-const row = 'row' as const;
-const bold = 'bold' as const;
-const wrap = 'wrap' as const;
 const SELECTED_BORDER_WIDTH = 3;
 
 const rowContainerStyle = {
   flexDirection: row,
   borderBottomWidth: 1,
-  borderBottomColor: colors.gray700,
+  borderBottomColor: colors.gray700
 };
 
 const tierLabelStyle = {
@@ -95,28 +87,29 @@ const tierLabelStyle = {
   alignItems: center,
   borderRightWidth: 2,
   borderRightColor: colors.slate800,
-  marginRight: 4,
+  marginRight: 4
 };
 
 const tierLabelTextStyle = {
   fontSize: 32,
   fontWeight: bold,
-  color: colors.black,
+  color: colors.black
 };
 
 const tierBackgroundStyle = {
   flex: 1,
-  paddingVertical: 4,
+  paddingVertical: 4
 };
 
 const slotsContainerStyle = {
   flexDirection: row,
+  wrap,
   flexWrap: wrap,
-  gap: 4,
+  gap: 4
 };
 
 const slotWrapperStyle = {
-  borderRadius: 4,
+  borderRadius: 4
 };
 
 export default TierListRow;

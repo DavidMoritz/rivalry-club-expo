@@ -26,7 +26,7 @@ import {
 } from '../../providers/rivalry';
 import { fighterByIdFromGame } from '../../utils';
 import { colors } from '../../utils/colors';
-import { darkStyles, styles } from '../../utils/styles';
+import { center, darkStyles, styles } from '../../utils/styles';
 import { Button } from '../common/Button';
 import { OfflineModal } from '../common/OfflineModal';
 import { BattleResults } from './parts/BattleResults';
@@ -62,8 +62,8 @@ async function maybeIncrementFighterStats(
 // Helper component: Loading/status message
 function StatusMessage({ message }: { message: string }): React.ReactElement {
   return (
-    <View style={{ flex: 1, alignItems: 'center', justifyContent: 'center' }}>
-      <Text style={[styles.text, darkStyles.text, { fontSize: 18 }]}>
+    <View style={centeredContainerStyle}>
+      <Text style={statusTextStyle}>
         {message}
       </Text>
     </View>
@@ -73,26 +73,8 @@ function StatusMessage({ message }: { message: string }): React.ReactElement {
 // Helper component: Error message
 function ErrorMessage({ message }: { message: string }): React.ReactElement {
   return (
-    <View
-      style={{
-        flex: 1,
-        alignItems: 'center',
-        justifyContent: 'center',
-        paddingHorizontal: 16,
-      }}
-    >
-      <Text
-        style={[
-          styles.text,
-          darkStyles.text,
-          {
-            fontSize: 18,
-            fontWeight: 'bold',
-            color: colors.red600,
-            marginBottom: 16,
-          },
-        ]}
-      >
+    <View style={errorContainerStyle}>
+      <Text style={errorTitleStyle}>
         Error
       </Text>
       <Text style={[styles.text, darkStyles.text]}>{message}</Text>
@@ -209,7 +191,7 @@ function RivalryViewContent({
       {showCreateButton && (
         <Button
           onPress={onCreateContest}
-          style={{ height: 56, paddingHorizontal: 32, width: 256 }}
+          style={createButtonStyle}
           text="+ Create new contest"
         />
       )}
@@ -218,10 +200,8 @@ function RivalryViewContent({
 
       {/* Priority 4: Preparing Tiers */}
       {showPreparingTiers && (
-        <View
-          style={{ flex: 1, alignItems: 'center', justifyContent: 'center' }}
-        >
-          <Text style={[styles.text, darkStyles.text, { fontSize: 18 }]}>
+        <View style={centeredContainerStyle}>
+          <Text style={statusTextStyle}>
             Preparing Tiers...
           </Text>
         </View>
@@ -483,7 +463,7 @@ export function ConnectedRivalryView({
   return (
     <SafeAreaView
       edges={['top', 'bottom']}
-      style={[styles.container, darkStyles.container, { flex: 1, padding: 16 }]}
+      style={[styles.container, darkStyles.container, safeAreaStyle]}
     >
       <OfflineModal
         onClose={() => setShowOfflineModal(false)}
@@ -521,3 +501,43 @@ export function ConnectedRivalryView({
     </SafeAreaView>
   );
 }
+
+// Style constants
+const centeredContainerStyle = {
+  flex: 1,
+  alignItems: center,
+  justifyContent: center,
+};
+
+const statusTextStyle = [
+  styles.text,
+  darkStyles.text,
+  { fontSize: 18 },
+];
+
+const errorContainerStyle = {
+  ...centeredContainerStyle,
+  paddingHorizontal: 16,
+};
+
+const errorTitleStyle = [
+  styles.text,
+  darkStyles.text,
+  {
+    fontSize: 18,
+    fontWeight: 'bold' as const,
+    color: colors.red600,
+    marginBottom: 16,
+  },
+];
+
+const createButtonStyle = {
+  height: 56,
+  paddingHorizontal: 32,
+  width: 256,
+};
+
+const safeAreaStyle = {
+  flex: 1,
+  padding: 16,
+};

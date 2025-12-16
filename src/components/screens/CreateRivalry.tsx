@@ -10,7 +10,6 @@ import {
   View
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import type { Rivalry } from '../../API';
 import {
   useAcceptRivalryMutation,
   useCreateNpcRivalryMutation,
@@ -19,13 +18,20 @@ import {
 import { useUserSearchQuery } from '../../controllers/c-user';
 import { useAuthUser } from '../../hooks/useAuthUser';
 import type { MUser } from '../../models/m-user';
-import { type RivalryWithUsers, useAllRivalries, useAllRivalriesUpdate } from '../../providers/all-rivalries';
+import {
+  type RivalryWithUsers,
+  useAllRivalries,
+  useAllRivalriesUpdate
+} from '../../providers/all-rivalries';
 import { useGame } from '../../providers/game';
 import { colors } from '../../utils/colors';
-import { darkStyles, styles } from '../../utils/styles';
+import { center, darkStyles, styles } from '../../utils/styles';
 
 // User role constant for NPC users
 const NPC_ROLE = 13;
+
+// Opacity for disabled items
+const DISABLED_OPACITY = 0.5;
 
 interface SelectedUserPanelProps {
   creatingRivalry: boolean;
@@ -57,43 +63,27 @@ function SelectedUserPanel({
   const buttonText = getButtonText();
 
   return (
-    <View
-      style={{
-        paddingHorizontal: 16,
-        paddingVertical: 16,
-        borderTopWidth: 1,
-        borderTopColor: colors.gray750,
-        backgroundColor: colors.slate900
-      }}
-    >
-      <Text style={[styles.text, { marginBottom: 8 }]}>
+    <View style={selectedUserPanelContainerStyle}>
+      <Text style={[styles.text, selectedUserLabelStyle]}>
         Selected: {selectedUser.firstName} {selectedUser.lastName}
       </Text>
       <TouchableOpacity
         disabled={creatingRivalry}
         onPress={onCreateOrAccept}
         style={{
-          backgroundColor: colors.purple600,
-          paddingVertical: 14,
-          borderRadius: 8,
-          alignItems: 'center',
+          ...createRivalryButtonStyle,
           opacity: creatingRivalry ? DISABLED_OPACITY : 1
         }}
       >
         {creatingRivalry ? (
           <ActivityIndicator color={colors.white} size="small" />
         ) : (
-          <Text style={[styles.text, { fontWeight: 'bold', color: colors.white }]}>
-            {buttonText}
-          </Text>
+          <Text style={buttonTextStyle}>{buttonText}</Text>
         )}
       </TouchableOpacity>
     </View>
   );
 }
-
-// Opacity for disabled items
-const DISABLED_OPACITY = 0.5;
 
 export function CreateRivalry() {
   const router = useRouter();
@@ -196,9 +186,7 @@ export function CreateRivalry() {
     let errorMsg = 'Missing required information: ';
     if (!selectedUser) errorMsg += 'No user selected. ';
     if (!user) errorMsg += 'You are not logged in. ';
-    if (!gameId) {
-      errorMsg += 'No game selected. Please go back and select a game first. ';
-    }
+    if (!gameId) errorMsg += 'No game selected. Please go back and select a game first. ';
     return errorMsg;
   };
 
@@ -292,30 +280,19 @@ export function CreateRivalry() {
           }
         }}
         style={{
-          paddingVertical: 16,
-          paddingHorizontal: 16,
-          borderBottomWidth: 1,
-          borderBottomColor: colors.gray750,
+          ...userItemStyle,
           backgroundColor: selectedUser?.id === item.id ? colors.gray700 : colors.none,
           opacity: isDisabled ? DISABLED_OPACITY : 1
         }}
       >
-        <View
-          style={{
-            flexDirection: 'row',
-            alignItems: 'center',
-            justifyContent: 'space-between'
-          }}
-        >
-          <Text style={[styles.text, { fontSize: 16, fontWeight: 'bold' }]}>
+        <View style={userItemRowStyle}>
+          <Text style={userNameTextStyle}>
             {item.firstName} {item.lastName}
           </Text>
           {badge && (
             <View
               style={{
-                paddingHorizontal: 8,
-                paddingVertical: 4,
-                borderRadius: 4,
+                ...badgeContainerStyle,
                 backgroundColor: `${badge.color}20`
               }}
             >
@@ -330,66 +307,36 @@ export function CreateRivalry() {
   return (
     <SafeAreaView edges={['top', 'bottom']} style={[styles.container, darkStyles.container]}>
       <View style={{ flex: 1 }}>
-        <View
-          style={{
-            paddingHorizontal: 16,
-            paddingVertical: 16,
-            borderBottomWidth: 1,
-            borderBottomColor: colors.gray750
-          }}
-        >
-          <Text style={[styles.text, { fontSize: 24, fontWeight: 'bold' }]}>
-            Create New Rivalry
-          </Text>
-          <Text style={[styles.text, { marginTop: 14, color: colors.gray400 }]}>
-            Search for a user to challenge in {gameName}
-          </Text>
+        <View style={headerContainerStyle}>
+          <Text style={headerTitleStyle}>Create New Rivalry</Text>
+          <Text style={headerSubtitleStyle}>Search for a user to challenge in {gameName}</Text>
         </View>
 
-        <View style={{ paddingHorizontal: 16, paddingVertical: 16 }}>
+        <View style={searchContainerStyle}>
           <TextInput
             onChangeText={setSearchText}
             placeholder="Type 'npc', friend code, or name/email..."
             placeholderTextColor={colors.gray500}
-            style={{
-              backgroundColor: colors.slate900,
-              color: colors.white,
-              paddingHorizontal: 16,
-              paddingVertical: 12,
-              borderRadius: 8,
-              fontSize: 16,
-              borderWidth: 1,
-              borderColor: colors.slate600
-            }}
+            style={searchInputStyle}
             value={searchText}
           />
         </View>
 
         {error && (
-          <View style={{ paddingHorizontal: 16, paddingBottom: 16 }}>
-            <Text style={[styles.text, { color: colors.red600, fontSize: 14 }]}>
-              Error: {error}
-            </Text>
+          <View style={errorContainerStyle}>
+            <Text style={errorTextStyle}>Error: {error}</Text>
           </View>
         )}
 
         {isSearching && searchText.length >= 2 && (
-          <View style={{ paddingVertical: 32, alignItems: 'center' }}>
+          <View style={loadingContainerStyle}>
             <ActivityIndicator color={colors.purple900} size="large" />
           </View>
         )}
 
         {!isSearching && searchText.length >= 2 && searchResults.length === 0 && (
-          <View
-            style={{
-              paddingVertical: 32,
-              paddingHorizontal: 16,
-              alignItems: 'center'
-            }}
-          >
-            <Text style={[styles.text, { color: colors.gray400 }]}>
-              No users found matching "{searchText}"
-            </Text>
+          <View style={noResultsContainerStyle}>
+            <Text style={noResultsTextStyle}>No users found matching "{searchText}"</Text>
           </View>
         )}
 
@@ -416,3 +363,122 @@ export function CreateRivalry() {
     </SafeAreaView>
   );
 }
+
+// Base padding style - used in multiple containers
+const basePaddingStyle = {
+  paddingHorizontal: 16,
+  paddingVertical: 16
+};
+
+// SelectedUserPanel styles
+const selectedUserPanelContainerStyle = {
+  ...basePaddingStyle,
+  borderTopWidth: 1,
+  borderTopColor: colors.gray750,
+  backgroundColor: colors.slate900
+};
+
+const selectedUserLabelStyle = {
+  marginBottom: 8
+};
+
+const createRivalryButtonStyle = {
+  backgroundColor: colors.purple600,
+  paddingVertical: 14,
+  borderRadius: 8,
+  alignItems: center
+};
+
+const buttonTextStyle = {
+  ...styles.text,
+  fontWeight: 'bold' as const,
+  color: colors.white
+};
+
+// User item styles
+const userItemStyle = {
+  paddingVertical: 16,
+  paddingHorizontal: 16,
+  borderBottomWidth: 1,
+  borderBottomColor: colors.gray750
+};
+
+const userItemRowStyle = {
+  flexDirection: 'row' as const,
+  alignItems: center,
+  justifyContent: 'space-between' as const
+};
+
+const userNameTextStyle = {
+  ...styles.text,
+  fontSize: 16,
+  fontWeight: 'bold' as const
+};
+
+const badgeContainerStyle = {
+  paddingHorizontal: 8,
+  paddingVertical: 4,
+  borderRadius: 4
+};
+
+// Header styles
+const headerContainerStyle = {
+  ...basePaddingStyle,
+  borderBottomWidth: 1,
+  borderBottomColor: colors.gray750
+};
+
+const headerTitleStyle = {
+  ...styles.text,
+  fontSize: 24,
+  fontWeight: 'bold' as const
+};
+
+const headerSubtitleStyle = {
+  ...styles.text,
+  marginTop: 14,
+  color: colors.gray400
+};
+
+// Search input styles
+const searchContainerStyle = basePaddingStyle;
+
+const searchInputStyle = {
+  backgroundColor: colors.slate900,
+  color: colors.white,
+  paddingHorizontal: 16,
+  paddingVertical: 12,
+  borderRadius: 8,
+  fontSize: 16,
+  borderWidth: 1,
+  borderColor: colors.slate600
+};
+
+// Error styles
+const errorContainerStyle = {
+  paddingHorizontal: 16,
+  paddingBottom: 16
+};
+
+const errorTextStyle = {
+  ...styles.text,
+  color: colors.red600,
+  fontSize: 14
+};
+
+// Loading and no results styles
+const loadingContainerStyle = {
+  paddingVertical: 32,
+  alignItems: center
+};
+
+const noResultsContainerStyle = {
+  paddingVertical: 32,
+  paddingHorizontal: 16,
+  alignItems: center
+};
+
+const noResultsTextStyle = {
+  ...styles.text,
+  color: colors.gray400
+};

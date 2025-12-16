@@ -10,9 +10,9 @@ import {
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
-import { confirmSignUp, getCurrentUser, signIn, signUp } from '../../lib/amplify-auth';
+import { confirmSignUp, getCurrentUser, signIn } from '../../lib/amplify-auth';
 import { colors } from '../../utils/colors';
-import { darkStyles, styles } from '../../utils/styles';
+import { center, darkStyles, styles } from '../../utils/styles';
 import { ForgotPassword } from './ForgotPassword';
 
 interface AuthProps {
@@ -50,19 +50,6 @@ function getSignInErrorMessage(err: unknown): string {
   };
 
   return errorMap[errorName ?? ''] ?? errorMessage ?? 'Sign in failed. Please try again.';
-}
-
-function getSignUpErrorMessage(err: unknown): string {
-  const errorName = isCognitoError(err) ? err.name : undefined;
-  const errorMessage = isCognitoError(err) ? err.message : undefined;
-
-  const errorMap: Record<string, string> = {
-    UsernameExistsException: 'An account with this email already exists',
-    InvalidPasswordException:
-      'Password must be at least 8 characters with uppercase, lowercase, numbers, and symbols'
-  };
-
-  return errorMap[errorName ?? ''] ?? errorMessage ?? 'Sign up failed. Please try again.';
 }
 
 function getVerificationErrorMessage(err: unknown): string {
@@ -107,7 +94,7 @@ const buttonStyle = {
   borderWidth: 1,
   borderColor: colors.slate300,
   width: '75%' as const,
-  alignItems: 'center' as const,
+  alignItems: center,
   marginTop: 8,
   marginBottom: 16
 };
@@ -116,6 +103,41 @@ const buttonTextStyle = {
   color: colors.white,
   fontSize: 18,
   fontWeight: 'bold' as const
+};
+
+const inputContainerStyle = {
+  width: '100%' as const,
+  marginBottom: 20
+};
+
+const errorTextStyle = {
+  marginBottom: 16,
+  textAlign: center
+};
+
+const linkTextStyle = {
+  fontSize: 16
+};
+
+const linkContainerStyle = {
+  marginTop: 12
+};
+
+const verificationInstructionStyle = {
+  marginBottom: 24,
+  textAlign: center
+};
+
+const titleContainerStyle = {
+  marginBottom: 48
+};
+
+const scrollViewContentStyle = {
+  flexGrow: 1,
+  justifyContent: center,
+  alignItems: center,
+  paddingHorizontal: 32,
+  paddingBottom: 40
 };
 
 interface VerificationFormProps {
@@ -141,11 +163,11 @@ function VerificationForm({
 }: VerificationFormProps) {
   return (
     <>
-      <Text style={[styles.text, { marginBottom: 24, textAlign: 'center' }]}>
+      <Text style={[styles.text, verificationInstructionStyle]}>
         Please enter your email and the verification code we sent you.
       </Text>
 
-      <View style={{ width: '100%', marginBottom: 20 }}>
+      <View style={inputContainerStyle}>
         <Text style={[styles.text, labelStyle]}>Email</Text>
         <TextInput
           autoCapitalize="none"
@@ -160,7 +182,7 @@ function VerificationForm({
         />
       </View>
 
-      <View style={{ width: '100%', marginBottom: 20 }}>
+      <View style={inputContainerStyle}>
         <Text style={[styles.text, labelStyle]}>Verification Code</Text>
         <TextInput
           autoCapitalize="none"
@@ -174,9 +196,7 @@ function VerificationForm({
       </View>
 
       {error && (
-        <Text
-          style={[styles.text, { marginBottom: 16, textAlign: 'center', color: colors.red400 }]}
-        >
+        <Text style={[styles.text, errorTextStyle, { color: colors.red400 }]}>
           {error}
         </Text>
       )}
@@ -193,8 +213,8 @@ function VerificationForm({
         <Text style={buttonTextStyle}>{loading ? 'Verifying...' : 'Verify'}</Text>
       </TouchableOpacity>
 
-      <TouchableOpacity onPress={onBack} style={{ marginTop: 8 }}>
-        <Text style={{ color: colors.cyan400, fontSize: 16 }}>Back to Sign Up</Text>
+      <TouchableOpacity onPress={onBack} style={linkContainerStyle}>
+        <Text style={[linkTextStyle, { color: colors.cyan400 }]}>Back to Sign Up</Text>
       </TouchableOpacity>
     </>
   );
@@ -227,7 +247,7 @@ function AuthForm({
 }: AuthFormProps) {
   return (
     <>
-      <View style={{ width: '100%', marginBottom: 20 }}>
+      <View style={inputContainerStyle}>
         <Text style={[styles.text, labelStyle]}>Email</Text>
         <TextInput
           autoCapitalize="none"
@@ -241,7 +261,7 @@ function AuthForm({
         />
       </View>
 
-      <View style={{ width: '100%', marginBottom: 20 }}>
+      <View style={inputContainerStyle}>
         <Text style={[styles.text, labelStyle]}>Password</Text>
         <TextInput
           autoCapitalize="none"
@@ -255,16 +275,7 @@ function AuthForm({
       </View>
 
       {error && (
-        <Text
-          style={[
-            styles.text,
-            {
-              marginBottom: 16,
-              textAlign: 'center',
-              color: getErrorColor(error)
-            }
-          ]}
-        >
+        <Text style={[styles.text, errorTextStyle, { color: getErrorColor(error) }]}>
           {error}
         </Text>
       )}
@@ -279,12 +290,12 @@ function AuthForm({
         <Text style={buttonTextStyle}>{getSubmitButtonText(loading)}</Text>
       </TouchableOpacity>
 
-      <TouchableOpacity onPress={onForgotPassword} style={{ marginTop: 12 }}>
-        <Text style={{ color: colors.gray200, fontSize: 16 }}>Forgot Password?</Text>
+      <TouchableOpacity onPress={onForgotPassword} style={linkContainerStyle}>
+        <Text style={[linkTextStyle, { color: colors.gray200 }]}>Forgot Password?</Text>
       </TouchableOpacity>
 
-      <TouchableOpacity onPress={onVerifyCode} style={{ marginTop: 12 }}>
-        <Text style={{ color: colors.gray200, fontSize: 16 }}>
+      <TouchableOpacity onPress={onVerifyCode} style={linkContainerStyle}>
+        <Text style={[linkTextStyle, { color: colors.gray200 }]}>
           Have a confirmation code? Verify
         </Text>
       </TouchableOpacity>
@@ -332,34 +343,6 @@ export function Auth({ onAuthSuccess }: AuthProps) {
     }
   }
 
-  async function handleSignUp() {
-    if (password !== confirmPassword) {
-      setError('Passwords do not match');
-      return;
-    }
-
-    setError(null);
-    setLoading(true);
-
-    try {
-      const result = await signUp(email.trim(), password.trim());
-
-      // Check if email confirmation is required
-      if (result.nextStep.signUpStep === 'CONFIRM_SIGN_UP') {
-        setNeedsVerification(true);
-        setError(null);
-      } else {
-        // Auto sign-in successful
-        onAuthSuccess();
-      }
-    } catch (err: unknown) {
-      console.error('[Auth] Sign up error:', err);
-      setError(getSignUpErrorMessage(err));
-    } finally {
-      setLoading(false);
-    }
-  }
-
   async function handleVerifyCode() {
     setError(null);
     setLoading(true);
@@ -394,17 +377,11 @@ export function Auth({ onAuthSuccess }: AuthProps) {
         style={{ flex: 1 }}
       >
         <ScrollView
-          contentContainerStyle={{
-            flexGrow: 1,
-            justifyContent: 'center',
-            alignItems: 'center',
-            paddingHorizontal: 32,
-            paddingBottom: 40
-          }}
+          contentContainerStyle={scrollViewContentStyle}
           keyboardShouldPersistTaps="handled"
           showsVerticalScrollIndicator={false}
         >
-          <Text style={[styles.title, { marginBottom: 48 }]}>
+          <Text style={[styles.title, titleContainerStyle]}>
             {getAuthTitle(needsVerification)}
           </Text>
 

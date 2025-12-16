@@ -1,6 +1,12 @@
 import type { Schema } from '../../amplify/data/resource';
 import type { MFighter } from './m-fighter';
-import { FIGHTER_COUNT, type MTierList, TIERS, type Tier } from './m-tier-list';
+import {
+  FIGHTER_COUNT,
+  type MTierList,
+  TIER_COUNT,
+  TIERS,
+  type Tier,
+} from './m-tier-list';
 
 // Extract Gen 2 type
 type TierSlot = Schema['TierSlot']['type'];
@@ -70,9 +76,6 @@ export function getMTierSlot(tierSlot: TierSlot): MTierSlot {
 
 /** Utility Functions */
 
-const TIER_COUNT = 7;
-const TIER_LABELS = ['S', 'A', 'B', 'C', 'D', 'E', 'F'] as const;
-
 /**
  * Computes the tier label (S, A, B, C, D, E, F, or UNKNOWN) from a position value.
  * Handles nullable positions and out-of-range values.
@@ -97,7 +100,7 @@ export function computeTierFromPosition(position: number | null): string {
     TIER_COUNT - 1
   );
 
-  return TIER_LABELS[tierIndex];
+  return TIERS[tierIndex].label;
 }
 
 /**

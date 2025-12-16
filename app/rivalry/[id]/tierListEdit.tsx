@@ -3,13 +3,7 @@ import { generateClient } from 'aws-amplify/data';
 import { Stack, useLocalSearchParams, useRouter } from 'expo-router';
 import { StatusBar } from 'expo-status-bar';
 import { useEffect, useState } from 'react';
-import {
-  ActivityIndicator,
-  SafeAreaView,
-  Text,
-  TouchableOpacity,
-  View,
-} from 'react-native';
+import { ActivityIndicator, SafeAreaView, Text, TouchableOpacity, View } from 'react-native';
 import type { Schema } from '../../../amplify/data/resource';
 
 import { HamburgerMenu } from '../../../src/components/common/HamburgerMenu';
@@ -20,8 +14,8 @@ import { getMRivalry, type MRivalry } from '../../../src/models/m-rivalry';
 import type { MTierList } from '../../../src/models/m-tier-list';
 import { getMUser } from '../../../src/models/m-user';
 import { RivalryProvider } from '../../../src/providers/rivalry';
+import { bold, center, darkStyles, styles } from '../../../src/utils/styles';
 import { colors } from '../../../src/utils/colors';
-import { darkStyles, styles } from '../../../src/utils/styles';
 
 // Type definitions for GraphQL response data
 type TierSlotData = Schema['TierSlot']['type'];
@@ -47,12 +41,8 @@ function getClient() {
 /**
  * Process tier lists from GraphQL lazy-loaded data into the format expected by getMRivalry
  */
-async function processTierLists(
-  tierLists: AsyncIterable<TierListData> | undefined
-) {
-  const tierListsArray: Array<
-    TierListData & { tierSlots: { items: TierSlotData[] } }
-  > = [];
+async function processTierLists(tierLists: AsyncIterable<TierListData> | undefined) {
+  const tierListsArray: Array<TierListData & { tierSlots: { items: TierSlotData[] } }> = [];
 
   if (!tierLists) return { items: tierListsArray };
 
@@ -67,7 +57,7 @@ async function processTierLists(
 
     tierListsArray.push({
       ...tierListData,
-      tierSlots: { items: tierSlotsArray } as any,
+      tierSlots: { items: tierSlotsArray } as any
     });
   }
 
@@ -95,8 +85,8 @@ async function fetchRivalryData(
         'updatedAt',
         'deletedAt',
         'tierLists.*',
-        'tierLists.tierSlots.*',
-      ],
+        'tierLists.tierSlots.*'
+      ]
     }
   );
 
@@ -109,31 +99,27 @@ async function fetchRivalryData(
     throw new Error('Rivalry not found');
   }
 
-  const tierLists = await processTierLists(
-    (rivalryData as unknown as RivalryData).tierLists
-  );
+  const tierLists = await processTierLists((rivalryData as unknown as RivalryData).tierLists);
   const mRivalry = getMRivalry({
-    rivalry: rivalryData as unknown as Schema['Rivalry']['type'],
+    rivalry: rivalryData as unknown as Schema['Rivalry']['type']
   });
-  mRivalry.setMTierLists(
-    tierLists as unknown as Parameters<MRivalry['setMTierLists']>[0]
-  );
+  mRivalry.setMTierLists(tierLists as unknown as Parameters<MRivalry['setMTierLists']>[0]);
 
   // Load user data
   const [userAResult, userBResult] = await Promise.all([
     getClient().models.User.get({ id: rivalryData.userAId }),
-    getClient().models.User.get({ id: rivalryData.userBId }),
+    getClient().models.User.get({ id: rivalryData.userBId })
   ]);
 
   if (userAResult.data) {
     mRivalry.userA = getMUser({
-      user: userAResult.data as unknown as UserData,
+      user: userAResult.data as unknown as UserData
     });
   }
 
   if (userBResult.data) {
     mRivalry.userB = getMUser({
-      user: userBResult.data as unknown as UserData,
+      user: userBResult.data as unknown as UserData
     });
   }
 
@@ -213,7 +199,7 @@ function renderContent({
   isPending,
   handleSave,
   handleTierListChange,
-  router,
+  router
 }: {
   isLoading: boolean;
   isError: boolean;
@@ -269,10 +255,7 @@ function renderContent({
             {`TierList A: ${rivalry.tierListA.userId}\nTierList B: ${rivalry.tierListB.userId}`}
           </Text>
         )}
-        <TouchableOpacity
-          onPress={() => router.back()}
-          style={goBackButtonStyle}
-        >
+        <TouchableOpacity onPress={() => router.back()} style={goBackButtonStyle}>
           <Text style={goBackButtonTextStyle}>Go Back</Text>
         </TouchableOpacity>
       </View>
@@ -284,10 +267,7 @@ function renderContent({
       <Text style={editTitleStyle}>Edit Your Tier List</Text>
 
       <View style={editDisplayContainerStyle}>
-        <TierListEditDisplay
-          onChange={handleTierListChange}
-          tierList={userTierList}
-        />
+        <TierListEditDisplay onChange={handleTierListChange} tierList={userTierList} />
       </View>
 
       <TouchableOpacity
@@ -296,17 +276,14 @@ function renderContent({
         style={[
           saveButtonBaseStyle,
           {
-            backgroundColor:
-              hasChanges && !isPending ? colors.blue500 : colors.slate500,
-          },
+            backgroundColor: hasChanges && !isPending ? colors.blue500 : colors.slate500
+          }
         ]}
       >
         {isPending ? (
           <ActivityIndicator color={colors.white} />
         ) : (
-          <Text style={saveButtonTextStyle}>
-            {hasChanges ? 'Save List' : 'No Changes'}
-          </Text>
+          <Text style={saveButtonTextStyle}>{hasChanges ? 'Save List' : 'No Changes'}</Text>
         )}
       </TouchableOpacity>
     </View>
@@ -331,7 +308,7 @@ export default function TierListEditRoute() {
     enabled: !!rivalryId,
     queryKey: ['rivalryTierEdit', rivalryId],
     structuralSharing: false,
-    queryFn: () => fetchRivalryData(rivalryId, setRivalry),
+    queryFn: () => fetchRivalryData(rivalryId, setRivalry)
   });
 
   const { mutate: saveTierSlots, isPending } = useUpdateTierSlotsMutation({
@@ -340,7 +317,7 @@ export default function TierListEditRoute() {
     onSuccess: () => {
       setHasChanges(false);
       router.back();
-    },
+    }
   });
 
   const handleSave = () => {
@@ -373,7 +350,7 @@ export default function TierListEditRoute() {
             isPending,
             handleSave,
             handleTierListChange,
-            router,
+            router
           })}
         </SafeAreaView>
       </RivalryProvider>
@@ -382,27 +359,24 @@ export default function TierListEditRoute() {
   );
 }
 
-const center = 'center' as const;
-const bold = 'bold' as const;
-
 const centeredContainerStyle = {
   flex: 1,
   alignItems: center,
-  justifyContent: center,
+  justifyContent: center
 };
 
 const loadingTextStyle = {
   ...styles.text,
   ...darkStyles.text,
   fontSize: 18,
-  marginTop: 16,
+  marginTop: 16
 };
 
 const errorContainerStyle = {
   flex: 1,
   alignItems: center,
   justifyContent: center,
-  paddingHorizontal: 16,
+  paddingHorizontal: 16
 };
 
 const errorTitleStyle = {
@@ -411,42 +385,42 @@ const errorTitleStyle = {
   fontSize: 18,
   fontWeight: bold,
   color: colors.red600,
-  marginBottom: 16,
+  marginBottom: 16
 };
 
 const editContainerStyle = {
   flex: 1,
-  padding: 16,
+  padding: 16
 };
 
 const editTitleStyle = {
   ...darkStyles.text,
   fontSize: 24,
   fontWeight: bold,
-  marginBottom: 16,
+  marginBottom: 16
 };
 
 const editDisplayContainerStyle = {
-  flex: 1,
+  flex: 1
 };
 
 const saveButtonBaseStyle = {
   padding: 16,
   borderRadius: 8,
   alignItems: center,
-  marginTop: 16,
+  marginTop: 16
 };
 
 const saveButtonTextStyle = {
   color: colors.white,
   fontSize: 18,
-  fontWeight: bold,
+  fontWeight: bold
 };
 
 const messageTextStyle = {
   ...styles.text,
   ...darkStyles.text,
-  fontSize: 18,
+  fontSize: 18
 };
 
 const warningTitleStyle = {
@@ -455,14 +429,14 @@ const warningTitleStyle = {
   fontSize: 18,
   fontWeight: bold,
   color: colors.amber400,
-  marginBottom: 16,
+  marginBottom: 16
 };
 
 const warningBodyStyle = {
   ...styles.text,
   ...darkStyles.text,
   textAlign: center,
-  marginBottom: 8,
+  marginBottom: 8
 };
 
 const debugInfoStyle = {
@@ -471,17 +445,17 @@ const debugInfoStyle = {
   fontSize: 12,
   color: colors.gray300,
   textAlign: center,
-  marginTop: 16,
+  marginTop: 16
 };
 
 const goBackButtonStyle = {
   backgroundColor: colors.blue500,
   padding: 12,
   borderRadius: 8,
-  marginTop: 24,
+  marginTop: 24
 };
 
 const goBackButtonTextStyle = {
   color: colors.white,
-  fontSize: 16,
+  fontSize: 16
 };

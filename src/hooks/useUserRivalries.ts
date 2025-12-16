@@ -114,7 +114,6 @@ export function useUserRivalries(
   const fetchRivalries = useCallback(async () => {
     if (!userId) {
       setIsLoading(false);
-
       return;
     }
 

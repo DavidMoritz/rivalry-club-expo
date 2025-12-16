@@ -97,10 +97,8 @@ export const AllRivalriesProvider = ({
     setRivalriesState(prev => {
       // Check if rivalry already exists
       const exists = prev.some(r => r.id === rivalry.id);
-      if (exists) {
-        // Update existing rivalry
-        return prev.map(r => (r.id === rivalry.id ? rivalry : r));
-      }
+      // Update existing rivalry
+      if (exists) return prev.map(r => (r.id === rivalry.id ? rivalry : r));
       // Add new rivalry
       return [...prev, rivalry];
     });

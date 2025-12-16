@@ -8,7 +8,7 @@ import { useNetworkStatus } from '../../hooks/useNetworkStatus';
 import { useUserRivalries } from '../../hooks/useUserRivalries';
 import { useAllRivalriesUpdate } from '../../providers/all-rivalries';
 import { colors } from '../../utils/colors';
-import { darkStyles, styles } from '../../utils/styles';
+import { bold, center, darkStyles, styles } from '../../utils/styles';
 import { OfflineModal } from '../common/OfflineModal';
 import { RivalriesTable } from './parts/RivalriesTable';
 
@@ -206,9 +206,6 @@ export function RivalryIndex() {
   );
 }
 
-const center = 'center' as const;
-const bold = 'bold' as const;
-
 const centeredContainerStyle = {
   flex: 1,
   alignItems: center,
@@ -221,9 +218,7 @@ const loadingTextStyle = {
 };
 
 const errorContainerStyle = {
-  flex: 1,
-  alignItems: center,
-  justifyContent: center,
+  ...centeredContainerStyle,
   paddingHorizontal: 16,
 };
 
@@ -254,20 +249,26 @@ const subtitleTextStyle = {
   color: colors.gray400,
 };
 
-const createButtonStyle = {
-  backgroundColor: colors.purple900,
+const baseButtonStyle = {
   paddingHorizontal: 24,
   paddingVertical: 12,
   borderRadius: 8,
-  marginTop: 16,
   alignItems: center,
 };
 
-const createButtonTextStyle = {
+const createButtonStyle = {
+  ...baseButtonStyle,
+  backgroundColor: colors.purple900,
+  marginTop: 16,
+};
+
+const baseButtonTextStyle = {
   ...styles.text,
   fontSize: 16,
   fontWeight: bold,
 };
+
+const createButtonTextStyle = baseButtonTextStyle;
 
 const hiddenHeaderStyle = {
   paddingHorizontal: 16,
@@ -287,15 +288,8 @@ const toggleContainerStyle = {
 };
 
 const toggleButtonStyle = {
+  ...baseButtonStyle,
   backgroundColor: colors.gray700,
-  paddingHorizontal: 24,
-  paddingVertical: 12,
-  borderRadius: 8,
-  alignItems: center,
 };
 
-const toggleButtonTextStyle = {
-  ...styles.text,
-  fontSize: 16,
-  fontWeight: bold,
-};
+const toggleButtonTextStyle = baseButtonTextStyle;

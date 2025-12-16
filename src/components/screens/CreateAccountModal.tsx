@@ -16,7 +16,7 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import type { Schema } from '../../../amplify/data/resource';
 import { confirmSignUp, getCurrentUser, signIn, signUp } from '../../lib/amplify-auth';
 import { colors } from '../../utils/colors';
-import { darkStyles, styles } from '../../utils/styles';
+import { center, darkStyles, styles } from '../../utils/styles';
 
 interface CreateAccountModalProps {
   visible: boolean;
@@ -139,45 +139,27 @@ export function CreateAccountModal({
         <KeyboardAvoidingView
           behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
           keyboardVerticalOffset={0}
-          style={{ flex: 1 }}
+          style={flexOneStyle}
         >
-          <View style={{ flex: 1, paddingHorizontal: 24 }}>
-            <View
-              style={{
-                flexDirection: 'row',
-                justifyContent: 'space-between',
-                alignItems: 'center',
-                paddingVertical: 16,
-                borderBottomWidth: 1,
-                borderBottomColor: colors.gray750
-              }}
-            >
-              <Text style={[styles.text, { fontSize: 24, fontWeight: 'bold' }]}>
+          <View style={contentContainerStyle}>
+            <View style={headerContainerStyle}>
+              <Text style={[styles.text, headerTitleStyle]}>
                 {needsVerification ? 'Verify Email' : 'Create New Account'}
               </Text>
               <TouchableOpacity onPress={onClose}>
-                <Text style={[styles.text, { fontSize: 16, color: colors.slate500 }]}>Cancel</Text>
+                <Text style={[styles.text, cancelTextStyle]}>Cancel</Text>
               </TouchableOpacity>
             </View>
 
             <ScrollView
-              contentContainerStyle={{ flexGrow: 1, justifyContent: 'center', paddingBottom: 40 }}
+              contentContainerStyle={scrollContentStyle}
               keyboardShouldPersistTaps="handled"
               showsVerticalScrollIndicator={false}
-              style={{ flex: 1 }}
+              style={flexOneStyle}
             >
               {needsVerification ? (
                 <>
-                  <Text
-                    style={[
-                      styles.text,
-                      {
-                        marginBottom: 24,
-                        textAlign: 'center',
-                        color: colors.gray300
-                      }
-                    ]}
-                  >
+                  <Text style={[styles.text, instructionTextStyle]}>
                     Please enter{' '}
                     {hasCredentials
                       ? 'the verification code we sent to your email'
@@ -186,15 +168,8 @@ export function CreateAccountModal({
 
                   {!hasCredentials && (
                     <>
-                      <View style={{ marginBottom: 20 }}>
-                        <Text
-                          style={[
-                            styles.text,
-                            { marginBottom: 8, fontSize: 16, fontWeight: '500' }
-                          ]}
-                        >
-                          Email
-                        </Text>
+                      <View style={inputContainerStyle}>
+                        <Text style={[styles.text, labelTextStyle]}>Email</Text>
                         <TextInput
                           autoCapitalize="none"
                           autoCorrect={false}
@@ -202,127 +177,49 @@ export function CreateAccountModal({
                           onChangeText={setEmail}
                           placeholder="Enter your email"
                           placeholderTextColor={colors.gray200}
-                          style={[
-                            styles.text,
-                            {
-                              width: '100%',
-                              borderRadius: 8,
-                              fontSize: 16,
-                              paddingHorizontal: 16,
-                              paddingVertical: 14,
-                              backgroundColor: colors.gray800,
-                              borderWidth: 2,
-                              borderColor: colors.gray600
-                            }
-                          ]}
+                          style={[styles.text, textInputStyle]}
                           value={email}
                         />
                       </View>
 
-                      <View style={{ marginBottom: 20 }}>
-                        <Text
-                          style={[
-                            styles.text,
-                            { marginBottom: 8, fontSize: 16, fontWeight: '500' }
-                          ]}
-                        >
-                          Password
-                        </Text>
+                      <View style={inputContainerStyle}>
+                        <Text style={[styles.text, labelTextStyle]}>Password</Text>
                         <TextInput
                           autoCapitalize="none"
                           onChangeText={setPassword}
                           placeholder="Enter your password"
                           placeholderTextColor={colors.gray200}
                           secureTextEntry
-                          style={[
-                            styles.text,
-                            {
-                              width: '100%',
-                              borderRadius: 8,
-                              fontSize: 16,
-                              paddingHorizontal: 16,
-                              paddingVertical: 14,
-                              backgroundColor: colors.gray800,
-                              borderWidth: 2,
-                              borderColor: colors.gray600
-                            }
-                          ]}
+                          style={[styles.text, textInputStyle]}
                           value={password}
                         />
                       </View>
                     </>
                   )}
-                  <View style={{ marginBottom: 20 }}>
-                    <Text
-                      style={[styles.text, { marginBottom: 8, fontSize: 16, fontWeight: '500' }]}
-                    >
-                      Verification Code
-                    </Text>
+                  <View style={inputContainerStyle}>
+                    <Text style={[styles.text, labelTextStyle]}>Verification Code</Text>
                     <TextInput
                       autoCapitalize="none"
                       keyboardType="number-pad"
                       onChangeText={setVerificationCode}
                       placeholder="Enter verification code"
                       placeholderTextColor={colors.gray200}
-                      style={[
-                        styles.text,
-                        {
-                          width: '100%',
-                          borderRadius: 8,
-                          fontSize: 16,
-                          paddingHorizontal: 16,
-                          paddingVertical: 14,
-                          backgroundColor: colors.gray800,
-                          borderWidth: 2,
-                          borderColor: colors.gray600
-                        }
-                      ]}
+                      style={[styles.text, textInputStyle]}
                       value={verificationCode}
                     />
                   </View>
 
-                  {error && (
-                    <Text
-                      style={[
-                        styles.text,
-                        {
-                          marginBottom: 16,
-                          textAlign: 'center',
-                          color: colors.red400
-                        }
-                      ]}
-                    >
-                      {error}
-                    </Text>
-                  )}
+                  {error && <Text style={[styles.text, errorTextStyle]}>{error}</Text>}
 
                   <TouchableOpacity
                     disabled={loading || !verificationCode || !email}
                     onPress={handleVerifyCode}
-                    style={{
-                      backgroundColor: colors.purple900,
-                      paddingHorizontal: 32,
-                      paddingVertical: 16,
-                      borderRadius: 25,
-                      borderWidth: 1,
-                      borderColor: colors.slate300,
-                      width: '100%',
-                      alignItems: 'center',
-                      marginTop: 8
-                    }}
+                    style={primaryButtonStyle}
                   >
                     {loading ? (
                       <ActivityIndicator color="white" />
                     ) : (
-                      <Text
-                        style={{
-                          color: colors.white,
-                          fontSize: 18,
-                          fontWeight: 'bold'
-                        }}
-                      >
-                        Verify
-                      </Text>
+                      <Text style={buttonTextStyle}>Verify</Text>
                     )}
                   </TouchableOpacity>
 
@@ -333,32 +230,19 @@ export function CreateAccountModal({
                       setVerificationCode('');
                       setError(null);
                     }}
-                    style={{ marginTop: 16, alignItems: 'center' }}
+                    style={secondaryButtonStyle}
                   >
-                    <Text style={{ color: colors.cyan400, fontSize: 16 }}>Back</Text>
+                    <Text style={linkTextStyle}>Back</Text>
                   </TouchableOpacity>
                 </>
               ) : (
                 <>
-                  <Text
-                    style={[
-                      styles.text,
-                      {
-                        marginBottom: 24,
-                        textAlign: 'center',
-                        color: colors.gray300
-                      }
-                    ]}
-                  >
+                  <Text style={[styles.text, instructionTextStyle]}>
                     Create an account to back up your data and sync across devices
                   </Text>
 
-                  <View style={{ marginBottom: 20 }}>
-                    <Text
-                      style={[styles.text, { marginBottom: 8, fontSize: 16, fontWeight: '500' }]}
-                    >
-                      Email
-                    </Text>
+                  <View style={inputContainerStyle}>
+                    <Text style={[styles.text, labelTextStyle]}>Email</Text>
                     <TextInput
                       autoCapitalize="none"
                       autoCorrect={false}
@@ -366,123 +250,48 @@ export function CreateAccountModal({
                       onChangeText={setEmail}
                       placeholder="Enter your email"
                       placeholderTextColor={colors.gray200}
-                      style={[
-                        styles.text,
-                        {
-                          width: '100%',
-                          borderRadius: 8,
-                          fontSize: 16,
-                          paddingHorizontal: 16,
-                          paddingVertical: 14,
-                          backgroundColor: colors.gray800,
-                          borderWidth: 2,
-                          borderColor: colors.gray600
-                        }
-                      ]}
+                      style={[styles.text, textInputStyle]}
                       value={email}
                     />
                   </View>
 
-                  <View style={{ marginBottom: 20 }}>
-                    <Text
-                      style={[styles.text, { marginBottom: 8, fontSize: 16, fontWeight: '500' }]}
-                    >
-                      Password
-                    </Text>
+                  <View style={inputContainerStyle}>
+                    <Text style={[styles.text, labelTextStyle]}>Password</Text>
                     <TextInput
                       autoCapitalize="none"
                       onChangeText={setPassword}
                       placeholder="Enter your password"
                       placeholderTextColor={colors.gray200}
                       secureTextEntry
-                      style={[
-                        styles.text,
-                        {
-                          width: '100%',
-                          borderRadius: 8,
-                          fontSize: 16,
-                          paddingHorizontal: 16,
-                          paddingVertical: 14,
-                          backgroundColor: colors.gray800,
-                          borderWidth: 2,
-                          borderColor: colors.gray600
-                        }
-                      ]}
+                      style={[styles.text, textInputStyle]}
                       value={password}
                     />
                   </View>
 
-                  <View style={{ marginBottom: 20 }}>
-                    <Text
-                      style={[styles.text, { marginBottom: 8, fontSize: 16, fontWeight: '500' }]}
-                    >
-                      Confirm Password
-                    </Text>
+                  <View style={inputContainerStyle}>
+                    <Text style={[styles.text, labelTextStyle]}>Confirm Password</Text>
                     <TextInput
                       autoCapitalize="none"
                       onChangeText={setConfirmPassword}
                       placeholder="Confirm your password"
                       placeholderTextColor={colors.gray200}
                       secureTextEntry
-                      style={[
-                        styles.text,
-                        {
-                          width: '100%',
-                          borderRadius: 8,
-                          fontSize: 16,
-                          paddingHorizontal: 16,
-                          paddingVertical: 14,
-                          backgroundColor: colors.gray800,
-                          borderWidth: 2,
-                          borderColor: colors.gray600
-                        }
-                      ]}
+                      style={[styles.text, textInputStyle]}
                       value={confirmPassword}
                     />
                   </View>
 
-                  {error && (
-                    <Text
-                      style={[
-                        styles.text,
-                        {
-                          marginBottom: 16,
-                          textAlign: 'center',
-                          color: colors.red400
-                        }
-                      ]}
-                    >
-                      {error}
-                    </Text>
-                  )}
+                  {error && <Text style={[styles.text, errorTextStyle]}>{error}</Text>}
 
                   <TouchableOpacity
                     disabled={loading || !email || !password || !confirmPassword}
                     onPress={handleSignUp}
-                    style={{
-                      backgroundColor: colors.purple900,
-                      paddingHorizontal: 32,
-                      paddingVertical: 16,
-                      borderRadius: 25,
-                      borderWidth: 1,
-                      borderColor: colors.slate300,
-                      width: '100%',
-                      alignItems: 'center',
-                      marginTop: 8
-                    }}
+                    style={primaryButtonStyle}
                   >
                     {loading ? (
                       <ActivityIndicator color="white" />
                     ) : (
-                      <Text
-                        style={{
-                          color: colors.white,
-                          fontSize: 18,
-                          fontWeight: 'bold'
-                        }}
-                      >
-                        Create Account
-                      </Text>
+                      <Text style={buttonTextStyle}>Create Account</Text>
                     )}
                   </TouchableOpacity>
 
@@ -491,9 +300,9 @@ export function CreateAccountModal({
                       setNeedsVerification(true);
                       setError(null);
                     }}
-                    style={{ marginTop: 16, alignItems: 'center' }}
+                    style={secondaryButtonStyle}
                   >
-                    <Text style={{ color: colors.gray200, fontSize: 16 }}>
+                    <Text style={verificationLinkTextStyle}>
                       Have a confirmation code? Verify
                     </Text>
                   </TouchableOpacity>
@@ -506,3 +315,105 @@ export function CreateAccountModal({
     </Modal>
   );
 }
+
+// Container styles
+const flexOneStyle = { flex: 1 };
+
+const contentContainerStyle = {
+  flex: 1,
+  paddingHorizontal: 24
+};
+
+const headerContainerStyle = {
+  flexDirection: 'row' as const,
+  justifyContent: 'space-between' as const,
+  alignItems: center,
+  paddingVertical: 16,
+  borderBottomWidth: 1,
+  borderBottomColor: colors.gray750
+};
+
+const scrollContentStyle = {
+  flexGrow: 1,
+  justifyContent: center,
+  paddingBottom: 40
+};
+
+const inputContainerStyle = {
+  marginBottom: 20
+};
+
+// Text styles
+const headerTitleStyle = {
+  fontSize: 24,
+  fontWeight: 'bold' as const
+};
+
+const cancelTextStyle = {
+  fontSize: 16,
+  color: colors.slate500
+};
+
+const instructionTextStyle = {
+  marginBottom: 24,
+  textAlign: center,
+  color: colors.gray300
+};
+
+const labelTextStyle = {
+  marginBottom: 8,
+  fontSize: 16,
+  fontWeight: '500' as const
+};
+
+const errorTextStyle = {
+  marginBottom: 16,
+  textAlign: center,
+  color: colors.red400
+};
+
+const linkTextStyle = {
+  color: colors.cyan400,
+  fontSize: 16
+};
+
+const verificationLinkTextStyle = {
+  color: colors.gray200,
+  fontSize: 16
+};
+
+// Input styles
+const textInputStyle = {
+  width: '100%' as const,
+  borderRadius: 8,
+  fontSize: 16,
+  paddingHorizontal: 16,
+  paddingVertical: 14,
+  backgroundColor: colors.gray800,
+  borderWidth: 2,
+  borderColor: colors.gray600
+};
+
+// Button styles
+const primaryButtonStyle = {
+  backgroundColor: colors.purple900,
+  paddingHorizontal: 32,
+  paddingVertical: 16,
+  borderRadius: 25,
+  borderWidth: 1,
+  borderColor: colors.slate300,
+  width: '100%' as const,
+  alignItems: center,
+  marginTop: 8
+};
+
+const secondaryButtonStyle = {
+  marginTop: 16,
+  alignItems: center
+};
+
+const buttonTextStyle = {
+  color: colors.white,
+  fontSize: 18,
+  fontWeight: 'bold' as const
+};

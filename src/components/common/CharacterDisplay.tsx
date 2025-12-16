@@ -6,9 +6,14 @@ import type { MFighter } from '../../models/m-fighter';
 import { computeTierFromPosition, type MTierSlot } from '../../models/m-tier-slot';
 import { sourceCase } from '../../utils';
 import { colors } from '../../utils/colors';
+import { bold, center } from '../../utils/styles';
 
 const DEFAULT_DIMENSION = 100;
 const PERCENTAGE_MULTIPLIER = 100;
+
+function calculateWinRate(wins: number, contests: number): string {
+  return ((wins / contests) * PERCENTAGE_MULTIPLIER).toFixed(1);
+}
 
 function TierSlotStats({ tierSlot }: { tierSlot: MTierSlot }) {
   const hasPosition = tierSlot.position !== undefined && tierSlot.position !== null;
@@ -35,8 +40,7 @@ function TierSlotStats({ tierSlot }: { tierSlot: MTierSlot }) {
         tierSlot.contestCount !== null &&
         tierSlot.contestCount !== undefined && (
           <Text style={winRateTextStyle}>
-            Rivalry Win Rate:{' '}
-            {((tierSlot.winCount / tierSlot.contestCount) * PERCENTAGE_MULTIPLIER).toFixed(1)}%
+            Rivalry Win Rate: {calculateWinRate(tierSlot.winCount, tierSlot.contestCount)}%
           </Text>
         )}
     </>
@@ -72,8 +76,7 @@ function FighterStats({
         fighter.contestCount !== null &&
         fighter.contestCount !== undefined && (
           <Text style={globalWinRateTextStyle}>
-            Win Rate:{' '}
-            {((fighter.winCount / fighter.contestCount) * PERCENTAGE_MULTIPLIER).toFixed(1)}%
+            Win Rate: {calculateWinRate(fighter.winCount, fighter.contestCount)}%
           </Text>
         )}
       {hasRank && <Text style={rankTextStyle}>Rank: #{fighter.rank}</Text>}
@@ -105,9 +108,7 @@ export function CharacterDisplay({
   const [showFullImage, setShowFullImage] = useState(false);
   const screenWidth = Dimensions.get('window').width;
 
-  if (!fighter) {
-    return null;
-  }
+  if (!fighter) return null;
 
   // Log fighter data on long press to debug stats display
   const handleLongPress = () => {
@@ -165,7 +166,7 @@ export function CharacterDisplay({
             style={{
               width: screenWidth,
               height: screenWidth,
-              resizeMode: 'contain' as const
+              resizeMode: contain
             }}
           />
           <View style={statsContainerStyle}>
@@ -178,18 +179,21 @@ export function CharacterDisplay({
   );
 }
 
-const center = 'center' as const;
+// Common style value constants
+const hidden = 'hidden' as const;
+const spaceBetween = 'space-between' as const;
+const contain = 'contain' as const;
 
 const customSizeContainerStyle = {
   alignItems: center,
   justifyContent: center,
-  overflow: 'hidden' as const
+  overflow: hidden
 };
 
 const fighterWrapperStyle = {
   alignItems: center,
   height: 150,
-  justifyContent: 'space-between' as const,
+  justifyContent: spaceBetween,
   marginVertical: 0,
   marginHorizontal: 0,
   width: '33.33%' as const
@@ -198,7 +202,7 @@ const fighterWrapperStyle = {
 const fighterTextStyle = {
   alignItems: center,
   flex: 1,
-  fontWeight: 'bold' as const,
+  fontWeight: bold,
   justifyContent: center,
   width: '100%' as const,
   color: colors.white
@@ -228,7 +232,7 @@ const statsContainerStyle = {
 const sectionHeaderStyle = {
   color: colors.purple400,
   fontSize: 20,
-  fontWeight: 'bold' as const,
+  fontWeight: bold,
   marginBottom: 8
 };
 
@@ -252,7 +256,7 @@ const winRateTextStyle = {
 const globalStatsHeaderStyle = {
   color: colors.green400,
   fontSize: 20,
-  fontWeight: 'bold' as const,
+  fontWeight: bold,
   marginTop: 8,
   marginBottom: 8
 };

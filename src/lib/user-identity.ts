@@ -45,9 +45,7 @@ export function generateDisplayName(uuid: string): string {
  */
 export function getOrCreateUserUuid(): Promise<string> {
   // If a UUID operation is already in progress, wait for it
-  if (uuidPromise) {
-    return uuidPromise;
-  }
+  if (uuidPromise) return uuidPromise;
 
   // Start a new UUID operation
   uuidPromise = (async () => {
@@ -55,9 +53,7 @@ export function getOrCreateUserUuid(): Promise<string> {
       // Try AsyncStorage first (faster)
       let uuid = await AsyncStorage.getItem(UUID_STORAGE_KEY);
 
-      if (uuid) {
-        return uuid;
-      }
+      if (uuid) return uuid;
 
       // Try Keychain (persists across reinstalls)
       uuid = await getItemAsync(UUID_KEYCHAIN_KEY);
@@ -116,9 +112,7 @@ export async function getStoredUuid(): Promise<string | null> {
     // Try AsyncStorage first
     let uuid = await AsyncStorage.getItem(UUID_STORAGE_KEY);
 
-    if (uuid) {
-      return uuid;
-    }
+    if (uuid) return uuid;
 
     // Try Keychain
     uuid = await getItemAsync(UUID_KEYCHAIN_KEY);
@@ -166,11 +160,9 @@ export async function storeFirstName(firstName: string): Promise<void> {
       return;
     }
 
-    await AsyncStorage.setItem(FIRST_NAME_STORAGE_KEY, firstName.trim());
-    console.log(
-      '[user-identity] ✅ Stored firstName locally:',
-      firstName.trim()
-    );
+    const trimmedName = firstName.trim();
+    await AsyncStorage.setItem(FIRST_NAME_STORAGE_KEY, trimmedName);
+    console.log('[user-identity] ✅ Stored firstName locally:', trimmedName);
   } catch (error) {
     console.error('[user-identity] ❌ Error storing firstName:', error);
     // Don't throw - this is not critical

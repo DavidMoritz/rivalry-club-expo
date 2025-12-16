@@ -44,6 +44,13 @@ function getTextColor(isWinner: boolean) {
   return isWinner ? colors.black : colors.white;
 }
 
+function formatFighterName(fighter: string) {
+  return fighter
+    .split('_')
+    .map((word) => word.charAt(0).toUpperCase() + word.slice(1))
+    .join(' ');
+}
+
 function FighterCard({
   fighter,
   onPressShuffle,
@@ -52,10 +59,7 @@ function FighterCard({
   setWinner
 }: FighterCardProps): ReactNode {
   const isWinner = winner === slot;
-  const fighterName = fighter
-    .split('_')
-    .map((word) => word.charAt(0).toUpperCase() + word.slice(1))
-    .join(' ');
+  const fighterName = formatFighterName(fighter);
 
   return (
     <View style={[fighterContainerStyle, isWinner ? fighterWinnerStyle : fighterNonWinnerStyle]}>
@@ -132,23 +136,11 @@ export default function OfflineMode() {
     return availableCharacters[Math.floor(Math.random() * availableCharacters.length)];
   };
 
-  const getRecentFightersForSide = (side: 'A' | 'B', count: number = 20): string[] => {
+  const getRecentFightersForSide = (side: 'A' | 'B', count = 20): string[] => {
     return contestHistory
       .slice(0, count)
-      .map((contest) => side === 'A' ? contest.fighterAName : contest.fighterBName)
-      .map((name) =>
-        name
-          .toLowerCase()
-          .split(' ')
-          .join('_')
-      );
-  };
-
-  const formatFighterName = (fighter: string) => {
-    return fighter
-      .split('_')
-      .map((word) => word.charAt(0).toUpperCase() + word.slice(1))
-      .join(' ');
+      .map((contest) => (side === 'A' ? contest.fighterAName : contest.fighterBName))
+      .map((name) => name.toLowerCase().split(' ').join('_'));
   };
 
   const shuffleBoth = () => {
@@ -363,6 +355,16 @@ export default function OfflineMode() {
 // Style constants
 const BUTTON_BORDER_RADIUS = 8;
 
+// Common style value constants
+const center = 'center' as const;
+const row = 'row' as const;
+const absolute = 'absolute' as const;
+const relative = 'relative' as const;
+const auto = 'auto' as const;
+const bold = 'bold' as const;
+const normal = 'normal' as const;
+const underline = 'underline' as const;
+
 const containerStyle = {
   flex: 1,
   backgroundColor: colors.black,
@@ -371,14 +373,14 @@ const containerStyle = {
 };
 
 const topHeaderStyle = {
-  flexDirection: 'row' as const,
-  alignItems: 'center' as const,
-  justifyContent: 'center' as const,
+  flexDirection: row,
+  alignItems: center,
+  justifyContent: center,
   marginBottom: 20
 };
 
 const backButtonStyle = {
-  position: 'absolute' as const,
+  position: absolute,
   left: 0,
   padding: 8
 };
@@ -394,13 +396,13 @@ const offlineBadgeStyle = {
 
 const offlineBadgeTextStyle = {
   fontSize: 18,
-  fontWeight: 'bold' as const,
+  fontWeight: bold,
   color: colors.black,
   letterSpacing: 1
 };
 
 const winnerBadgeStyle = {
-  position: 'absolute' as const,
+  position: absolute,
   right: -100,
   top: '78%' as const,
   width: 300,
@@ -408,7 +410,7 @@ const winnerBadgeStyle = {
 };
 
 const contestOuterContainerStyle = {
-  alignItems: 'center' as const,
+  alignItems: center,
   marginVertical: 6,
   borderWidth: 1,
   borderColor: colors.yellow500,
@@ -416,17 +418,17 @@ const contestOuterContainerStyle = {
 };
 
 const fightersRowContainerStyle = {
-  alignItems: 'center' as const,
+  alignItems: center,
   justifyContent: 'space-between' as const,
   marginVertical: 6,
   padding: 2,
-  flexDirection: 'row' as const
+  flexDirection: row
 };
 
 const fighterContainerStyle = {
-  position: 'relative' as const,
+  position: relative,
   borderWidth: 4,
-  alignItems: 'center' as const,
+  alignItems: center,
   marginVertical: 20,
   padding: 8,
   borderRadius: 12,
@@ -445,7 +447,7 @@ const fighterNonWinnerStyle = {
 };
 
 const shuffleButtonStyle = {
-  position: 'absolute' as const,
+  position: absolute,
   top: -25,
   padding: 10,
   zIndex: 10
@@ -474,17 +476,17 @@ const resolveButtonStyle = {
 };
 
 const selectWinnerContainerStyle = {
-  flexDirection: 'row' as const,
-  alignItems: 'center' as const,
-  justifyContent: 'center' as const,
+  flexDirection: row,
+  alignItems: center,
+  justifyContent: center,
   gap: 12,
   paddingVertical: 8
 };
 
 const historyButtonsContainerStyle = {
-  flexDirection: 'row' as const,
-  alignItems: 'center' as const,
-  justifyContent: 'center' as const,
+  flexDirection: row,
+  alignItems: center,
+  justifyContent: center,
   gap: 16,
   marginTop: 8
 };
@@ -492,8 +494,8 @@ const historyButtonsContainerStyle = {
 const linkButtonStyle = {
   backgroundColor: colors.none,
   borderWidth: 0,
-  height: 'auto' as const,
-  width: 'auto' as const,
+  height: auto,
+  width: auto,
   paddingHorizontal: 4,
   paddingVertical: 4,
   marginTop: 0
@@ -502,8 +504,8 @@ const linkButtonStyle = {
 const linkTextStyle = {
   color: colors.slate400,
   fontSize: 14,
-  fontWeight: 'normal' as const,
-  textDecorationLine: 'underline' as const
+  fontWeight: normal,
+  textDecorationLine: underline
 };
 
 const historyContainerStyle = {
@@ -519,7 +521,7 @@ const historyScrollStyle = {
 };
 
 const historyRowStyle = {
-  flexDirection: 'row' as const,
+  flexDirection: row,
   paddingVertical: 12,
   borderBottomWidth: 1,
   borderBottomColor: colors.slate700
@@ -527,8 +529,8 @@ const historyRowStyle = {
 
 const historyItemStyle = {
   flex: 1,
-  alignItems: 'center' as const,
-  justifyContent: 'center' as const
+  alignItems: center,
+  justifyContent: center
 };
 
 const historyWinnerStyle = {

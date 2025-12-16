@@ -7,7 +7,7 @@ import type { MGame } from '../../../models/m-game';
 import type { MRivalry } from '../../../models/m-rivalry';
 import { useRivalryContext } from '../../../providers/rivalry';
 import { colors } from '../../../utils/colors';
-import { contestStyles, styles } from '../../../utils/styles';
+import { bold, center, contestStyles, styles } from '../../../utils/styles';
 import { Button } from '../../common/Button';
 import { ContestRow } from '../../common/ContestRow';
 
@@ -139,8 +139,6 @@ export function ContestHistoryTable({
 }
 
 const FADE_ANIMATION_DURATION_MS = 2000;
-const center = 'center' as const;
-const bold = 'bold' as const;
 
 const loaderContainerStyle = {
   paddingVertical: 20,

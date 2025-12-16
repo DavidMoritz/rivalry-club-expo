@@ -10,7 +10,13 @@ import { useGame } from '../../../providers/game';
 import { useRivalry, useRivalryContext } from '../../../providers/rivalry';
 import { fighterByIdFromGame } from '../../../utils';
 import { colors } from '../../../utils/colors';
-import { contestStyles } from '../../../utils/styles';
+import {
+  absolute,
+  center,
+  contestStyles,
+  relative,
+  row,
+} from '../../../utils/styles';
 import { CharacterDisplay } from '../../common/CharacterDisplay';
 
 interface CurrentContestProps {
@@ -97,7 +103,7 @@ function FighterCard({
           }}
           style={[shuffleButtonStyle, { [shufflePosition]: -10 }]}
         >
-          <Text style={{ fontSize: 16 }}>🔀</Text>
+          <Text style={shuffleEmojiStyle}>🔀</Text>
         </TouchableOpacity>
       )}
       <Text
@@ -205,10 +211,7 @@ export function CurrentContest({
   }, [contest, game, rivalry]);
 
   if (!rivalry) return null;
-  if (!game)
-    return (
-      <Text style={{ color: colors.purple100 }}>Loading game data...</Text>
-    );
+  if (!game) return <Text style={loadingTextStyle}>Loading game data...</Text>;
 
   function onPressResolve() {
     if (!(winner && onResolveContest && contest)) return;
@@ -227,16 +230,14 @@ export function CurrentContest({
         <Text style={currentContestTitleStyle}>Current Contest</Text>
         {canShuffle ? (
           <View style={reshuffleButtonPlaceholderStyle}>
-            <Text style={{ fontSize: 16, color: colors.none }}>Reshuffle</Text>
+            <Text style={reshuffleTextPlaceholderStyle}>Reshuffle</Text>
           </View>
         ) : (
           <TouchableOpacity
             onPress={() => setCanShuffle(true)}
             style={reshuffleButtonStyle}
           >
-            <Text style={{ fontSize: 16, color: colors.white }}>
-              🔀 Reshuffle
-            </Text>
+            <Text style={reshuffleTextStyle}>🔀 Reshuffle</Text>
           </TouchableOpacity>
         )}
       </View>
@@ -264,11 +265,11 @@ export function CurrentContest({
           )}
 
           {!(fighterA || fighterB) && (
-            <Text style={{ color: colors.purple100 }}>Loading fighters...</Text>
+            <Text style={loadingTextStyle}>Loading fighters...</Text>
           )}
           {(fighterA || fighterB) && (
             <View style={contestStyles.item}>
-              <Text style={{ fontSize: 14, color: colors.white }}>Vs</Text>
+              <Text style={vsTextStyle}>Vs</Text>
             </View>
           )}
           {fighterB && (
@@ -289,10 +290,8 @@ export function CurrentContest({
 
         {winner ? (
           <>
-            <Text style={{ fontSize: 14, color: colors.white, marginTop: 8 }}>
-              Stock remaining
-            </Text>
-            <View style={{ flexDirection: 'row', marginTop: 8 }}>
+            <Text style={stockRemainingTextStyle}>Stock remaining</Text>
+            <View style={stockButtonsContainerStyle}>
               {range(1, STOCK + 1).map((value, idx) => (
                 <StockButton
                   isFirstButton={idx === 0}
@@ -311,20 +310,12 @@ export function CurrentContest({
               onPress={onPressResolve}
               style={resolveButtonStyle}
             >
-              <Text
-                style={{
-                  fontSize: 20,
-                  fontWeight: 'bold',
-                  color: colors.white,
-                }}
-              >
-                Resolve!
-              </Text>
+              <Text style={resolveButtonTextStyle}>Resolve!</Text>
             </TouchableOpacity>
           </>
         ) : (
           <View style={selectWinnerContainerStyle}>
-            <Text style={{ color: colors.purple100 }}>Select the winner</Text>
+            <Text style={loadingTextStyle}>Select the winner</Text>
           </View>
         )}
       </View>
@@ -344,8 +335,6 @@ const fighterNonWinnerStyle = {
 };
 
 // Style constants
-const center = 'center' as const;
-const absolute = 'absolute' as const;
 const BUTTON_BORDER_RADIUS = 8;
 
 const winnerBadgeStyle = {
@@ -357,7 +346,7 @@ const winnerBadgeStyle = {
 };
 
 const headerContainerStyle = {
-  flexDirection: 'row' as const,
+  flexDirection: row,
   alignItems: center,
   justifyContent: center,
   marginBottom: 8,
@@ -403,7 +392,7 @@ const fightersRowContainerStyle = {
 };
 
 const fighterContainerStyle = {
-  position: 'relative' as const,
+  position: relative,
   borderWidth: 4,
   alignItems: center,
   marginVertical: 20,
@@ -447,9 +436,49 @@ const resolveButtonStyle = {
 };
 
 const selectWinnerContainerStyle = {
-  flexDirection: 'row' as const,
+  flexDirection: row,
   alignItems: center,
   justifyContent: center,
   gap: 12,
   paddingVertical: 8,
+};
+
+const shuffleEmojiStyle = {
+  fontSize: 16,
+};
+
+const loadingTextStyle = {
+  color: colors.purple100,
+};
+
+const reshuffleTextStyle = {
+  fontSize: 16,
+  color: colors.white,
+};
+
+const reshuffleTextPlaceholderStyle = {
+  fontSize: 16,
+  color: colors.none,
+};
+
+const vsTextStyle = {
+  fontSize: 14,
+  color: colors.white,
+};
+
+const stockRemainingTextStyle = {
+  fontSize: 14,
+  color: colors.white,
+  marginTop: 8,
+};
+
+const stockButtonsContainerStyle = {
+  flexDirection: row,
+  marginTop: 8,
+};
+
+const resolveButtonTextStyle = {
+  fontSize: 20,
+  fontWeight: 'bold' as const,
+  color: colors.white,
 };

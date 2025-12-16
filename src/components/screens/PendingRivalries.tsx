@@ -17,7 +17,7 @@ import {
   useAllRivalriesUpdate,
 } from '../../providers/all-rivalries';
 import { colors } from '../../utils/colors';
-import { darkStyles, styles } from '../../utils/styles';
+import { bold, center, darkStyles, styles } from '../../utils/styles';
 
 export function PendingRivalries() {
   const router = useRouter();
@@ -54,18 +54,14 @@ export function PendingRivalries() {
       }
       setAcceptingRivalryId(null);
     },
-    onError: error => {
-      console.error('[PendingRivalries] Failed to accept rivalry:', error);
+    onError: () => {
       setAcceptingRivalryId(null);
       // TODO: Show error toast to user
     },
   });
 
   const handleAcceptRivalry = (rivalryId: string) => {
-    if (!rivalryId) {
-      console.error('[PendingRivalries] Cannot accept rivalry with empty ID');
-      return;
-    }
+    if (!rivalryId) return;
     setAcceptingRivalryId(rivalryId);
     acceptRivalry(rivalryId);
   };
@@ -95,28 +91,13 @@ export function PendingRivalries() {
     const displayName = otherUserName || 'Unknown User';
 
     return (
-      <View
-        style={{
-          paddingVertical: 16,
-          paddingHorizontal: 16,
-          borderBottomWidth: 1,
-          borderBottomColor: colors.gray750,
-          flexDirection: 'row',
-          alignItems: 'center',
-          justifyContent: 'space-between',
-        }}
-      >
+      <View style={rivalryItemContainerStyle}>
         <View style={{ flex: 1 }}>
-          <Text style={[styles.text, { fontSize: 16, fontWeight: 'bold' }]}>
+          <Text style={[styles.text, titleTextStyle]}>
             {isAwaitingAcceptance ? 'Challenge from ' : 'Sent to '}
             {displayName}
           </Text>
-          <Text
-            style={[
-              styles.text,
-              { fontSize: 14, color: colors.gray400, marginTop: 4 },
-            ]}
-          >
+          <Text style={[styles.text, subtitleTextStyle]}>
             {isAwaitingAcceptance
               ? 'Waiting for you to accept'
               : 'Waiting for acceptance'}
@@ -127,17 +108,15 @@ export function PendingRivalries() {
           <TouchableOpacity
             disabled={acceptingRivalryId === item.id}
             onPress={() => handleAcceptRivalry(item.id)}
-            style={{
-              backgroundColor:
-                acceptingRivalryId === item.id
-                  ? colors.slate600
-                  : colors.green600,
-              paddingHorizontal: 16,
-              paddingVertical: 8,
-              borderRadius: 6,
-              flexDirection: 'row',
-              alignItems: 'center',
-            }}
+            style={[
+              acceptButtonStyle,
+              {
+                backgroundColor:
+                  acceptingRivalryId === item.id
+                    ? colors.slate600
+                    : colors.green600,
+              },
+            ]}
           >
             {acceptingRivalryId === item.id ? (
               <ActivityIndicator color="white" size="small" />
@@ -148,9 +127,7 @@ export function PendingRivalries() {
                 >
                   ✓
                 </Text>
-                <Text
-                  style={[styles.text, { fontSize: 14, fontWeight: 'bold' }]}
-                >
+                <Text style={[styles.text, { fontSize: 14, fontWeight: bold }]}>
                   Accept
                 </Text>
               </>
@@ -168,15 +145,8 @@ export function PendingRivalries() {
       edges={['top', 'bottom']}
       style={[styles.container, darkStyles.container]}
     >
-      <View
-        style={{
-          paddingHorizontal: 16,
-          paddingVertical: 16,
-          borderBottomWidth: 1,
-          borderBottomColor: colors.gray750,
-        }}
-      >
-        <Text style={[styles.text, { fontSize: 24, fontWeight: 'bold' }]}>
+      <View style={headerContainerStyle}>
+        <Text style={[styles.text, { fontSize: 24, fontWeight: bold }]}>
           Pending Rivalries
         </Text>
         <Text style={[styles.text, { marginTop: 4, color: colors.gray400 }]}>
@@ -186,16 +156,9 @@ export function PendingRivalries() {
         {awaitingAcceptance.length === 0 && initiated.length === 0 && (
           <TouchableOpacity
             onPress={handleCreateRivalry}
-            style={{
-              backgroundColor: colors.purple900,
-              paddingHorizontal: 24,
-              paddingVertical: 12,
-              borderRadius: 8,
-              marginTop: 16,
-              alignItems: 'center',
-            }}
+            style={createRivalryButtonStyle}
           >
-            <Text style={[styles.text, { fontSize: 16, fontWeight: 'bold' }]}>
+            <Text style={[styles.text, titleTextStyle]}>
               Create New Rivalry
             </Text>
           </TouchableOpacity>
@@ -203,14 +166,7 @@ export function PendingRivalries() {
       </View>
 
       {awaitingAcceptance.length === 0 && initiated.length === 0 ? (
-        <View
-          style={{
-            flex: 1,
-            alignItems: 'center',
-            justifyContent: 'center',
-            paddingHorizontal: 16,
-          }}
-        >
+        <View style={emptyStateContainerStyle}>
           <Text
             style={{ fontSize: 48, color: colors.gray500, marginBottom: 16 }}
           >
@@ -219,7 +175,7 @@ export function PendingRivalries() {
           <Text
             style={[
               styles.text,
-              { fontSize: 18, color: colors.gray400, textAlign: 'center' },
+              { fontSize: 18, color: colors.gray400, textAlign: center },
             ]}
           >
             No pending rivalries
@@ -230,7 +186,7 @@ export function PendingRivalries() {
               {
                 fontSize: 14,
                 color: colors.gray500,
-                textAlign: 'center',
+                textAlign: center,
                 marginTop: 8,
               },
             ]}
@@ -249,19 +205,13 @@ export function PendingRivalries() {
             <>
               {item.data.length > 0 && (
                 <>
-                  <View
-                    style={{
-                      paddingHorizontal: 16,
-                      paddingVertical: 12,
-                      backgroundColor: colors.slate900,
-                    }}
-                  >
+                  <View style={sectionHeaderStyle}>
                     <Text
                       style={[
                         styles.text,
                         {
                           fontSize: 14,
-                          fontWeight: 'bold',
+                          fontWeight: bold,
                           color: colors.slate400,
                         },
                       ]}
@@ -289,3 +239,61 @@ export function PendingRivalries() {
     </SafeAreaView>
   );
 }
+
+const rivalryItemContainerStyle = {
+  paddingVertical: 16,
+  paddingHorizontal: 16,
+  borderBottomWidth: 1,
+  borderBottomColor: colors.gray750,
+  flexDirection: 'row' as const,
+  alignItems: center,
+  justifyContent: 'space-between' as const,
+};
+
+const acceptButtonStyle = {
+  paddingHorizontal: 16,
+  paddingVertical: 8,
+  borderRadius: 6,
+  flexDirection: 'row' as const,
+  alignItems: center,
+};
+
+const headerContainerStyle = {
+  paddingHorizontal: 16,
+  paddingVertical: 16,
+  borderBottomWidth: 1,
+  borderBottomColor: colors.gray750,
+};
+
+const createRivalryButtonStyle = {
+  backgroundColor: colors.purple900,
+  paddingHorizontal: 24,
+  paddingVertical: 12,
+  borderRadius: 8,
+  marginTop: 16,
+  alignItems: center,
+};
+
+const emptyStateContainerStyle = {
+  flex: 1,
+  alignItems: center,
+  justifyContent: center,
+  paddingHorizontal: 16,
+};
+
+const sectionHeaderStyle = {
+  paddingHorizontal: 16,
+  paddingVertical: 12,
+  backgroundColor: colors.slate900,
+};
+
+const titleTextStyle = {
+  fontSize: 16,
+  fontWeight: bold,
+};
+
+const subtitleTextStyle = {
+  fontSize: 14,
+  color: colors.gray400,
+  marginTop: 4,
+};

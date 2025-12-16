@@ -323,7 +323,7 @@ describe('MTierList - Diff Checking', () => {
   });
 
   describe('getPositionsPojo', () => {
-    it('should return all slots with stats using tierSlotN keys', () => {
+    it('should return only positioned slots using tierSlotN keys', () => {
       const slots = [
         createMockTierSlot({
           id: 'slot-1',
@@ -349,8 +349,8 @@ describe('MTierList - Diff Checking', () => {
 
       const pojo = mTierList.getPositionsPojo();
 
-      // getPositionsPojo uses tierSlot0, tierSlot1, etc. as keys and includes ALL slots
-      expect(Object.keys(pojo)).toHaveLength(3);
+      // getPositionsPojo skips unknown fighters (position: null)
+      expect(Object.keys(pojo)).toHaveLength(2);
       expect(pojo.tierSlot0).toEqual({
         id: 'slot-1',
         position: 0,
@@ -363,12 +363,59 @@ describe('MTierList - Diff Checking', () => {
         contestCount: 3,
         winCount: 1,
       });
-      expect(pojo.tierSlot2).toEqual({
-        id: 'slot-3',
-        position: 0, // null coalesces to 0 in getPositionsPojo
-        contestCount: 0,
-        winCount: 0,
+      // slot-3 should NOT be in pojo because position is null
+      expect(pojo.tierSlot2).toBeUndefined();
+    });
+
+    it('should skip slots with null positions (unknown fighters)', () => {
+      const slots = [
+        createMockTierSlot({
+          id: 'positioned-1',
+          position: 10,
+          contestCount: 2,
+          winCount: 1,
+        }),
+        createMockTierSlot({
+          id: 'unknown-1',
+          position: null as unknown as number,
+          contestCount: 0,
+          winCount: 0,
+        }),
+        createMockTierSlot({
+          id: 'positioned-2',
+          position: 25,
+          contestCount: 4,
+          winCount: 3,
+        }),
+        createMockTierSlot({
+          id: 'unknown-2',
+          position: null as unknown as number,
+          contestCount: 0,
+          winCount: 0,
+        }),
+      ];
+      const mockTierList = createMockTierList(slots);
+      const mTierList = getMTierList(mockTierList);
+
+      const pojo = mTierList.getPositionsPojo();
+
+      // Only the 2 positioned fighters should be included
+      expect(Object.keys(pojo)).toHaveLength(2);
+      expect(pojo.tierSlot0).toEqual({
+        id: 'positioned-1',
+        position: 10,
+        contestCount: 2,
+        winCount: 1,
       });
+      expect(pojo.tierSlot2).toEqual({
+        id: 'positioned-2',
+        position: 25,
+        contestCount: 4,
+        winCount: 3,
+      });
+      // Unknown fighters should not be included
+      expect(pojo.tierSlot1).toBeUndefined();
+      expect(pojo.tierSlot3).toBeUndefined();
     });
 
     it('should default contestCount and winCount to 0 if undefined', () => {

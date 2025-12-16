@@ -966,46 +966,63 @@ export const useDeleteMostRecentContestMutation = ({
       // Reverse the standings using the bias
       rivalry.reverseStanding(mostRecentContest);
 
-      // Reverse the tier slot position adjustments (opposite of what was done when resolving)
-      // When resolving: tierListA adjusts by (result * STEPS_PER_STOCK * -1)
-      // When undoing: reverse that, so adjust by (result * STEPS_PER_STOCK)
-
-      // Pass the actual POSITION values, not indices
-      // trackStats=false to avoid double-counting on undo (stats are aggregate, not reversible)
+      // Reverse the tier slot position adjustments
+      // We need to check if fighters were unknown BEFORE this contest by checking their contestCount
+      // If contestCount <= FIRST_CONTEST_THRESHOLD, this was their first contest, so they were positioned from unknown
+      const FIRST_CONTEST_THRESHOLD = 1; // Fighter was unknown if contestCount <= 1
       const tierSlotAPosition = mostRecentContest.tierSlotA?.position;
       const tierSlotBPosition = mostRecentContest.tierSlotB?.position;
       const contestResult = mostRecentContest.result ?? 0;
 
-      if (tierSlotAPosition !== null && tierSlotAPosition !== undefined) {
-        rivalry.tierListA?.adjustTierSlotPositionBySteps(
-          tierSlotAPosition,
-          contestResult * STEPS_PER_STOCK,
-          false // Don't increment contestCount/winCount on undo
-        );
-      }
-      if (tierSlotBPosition !== null && tierSlotBPosition !== undefined) {
-        rivalry.tierListB?.adjustTierSlotPositionBySteps(
-          tierSlotBPosition,
-          contestResult * STEPS_PER_STOCK * -1,
-          false // Don't increment contestCount/winCount on undo
-        );
-      }
+      /**
+       * Helper: Undo tier slot position adjustments for a contest
+       * Handles both unknown fighter restoration (position -> null) and position reversal
+       * @param tierSlot - The tier slot to undo
+       * @param tierList - The tier list containing the slot
+       * @param position - The slot's current position
+       * @param stepsMultiplier - Direction multiplier (1 for tierListA, -1 for tierListB)
+       */
+      const undoTierSlotPosition = (
+        tierSlot: MTierSlot | null | undefined,
+        tierList: MTierList | null | undefined,
+        position: number | null | undefined,
+        stepsMultiplier: number
+      ) => {
+        if (!tierSlot) return;
 
-      // Get the updated tier slot positions
-      const tierListAPositions = rivalry.tierListA?.getPositionsPojo();
-      const tierListBPositions = rivalry.tierListB?.getPositionsPojo();
+        const wasFirstContest = tierSlot.contestCount <= FIRST_CONTEST_THRESHOLD;
 
-      // Helper to create tier slot update promises
-      // @ts-expect-error - ReturnType with optional chaining on rivalry.tierListA causes type error
-      const createTierSlotUpdates = (positions: ReturnType<typeof rivalry.tierListA.getPositionsPojo>) =>
-        Object.values(positions).map(({ id, position, contestCount, winCount }) =>
-          getClient().models.TierSlot.update({ id, position, contestCount, winCount })
-        );
+        if (wasFirstContest) {
+          // Fighter was unknown before this contest, restore to null
+          tierSlot.position = null;
+        } else if (position !== null && position !== undefined) {
+          // Fighter was positioned, reverse the adjustment
+          tierList?.adjustTierSlotPositionBySteps(
+            position,
+            contestResult * STEPS_PER_STOCK * stepsMultiplier,
+            false // Don't increment contestCount/winCount on undo
+          );
+        }
+      };
 
-      // Update tier slots in parallel (including stats - though stats don't change on undo)
+      // Undo position adjustments for both tier slots
+      // When resolving: tierListA adjusts by (result * STEPS_PER_STOCK * -1), so undo with +1 multiplier
+      // When resolving: tierListB adjusts by (result * STEPS_PER_STOCK), so undo with -1 multiplier
+      undoTierSlotPosition(mostRecentContest.tierSlotA, rivalry.tierListA, tierSlotAPosition, 1);
+      undoTierSlotPosition(mostRecentContest.tierSlotB, rivalry.tierListB, tierSlotBPosition, -1);
+
+      // Get changed tier slot positions (includes fighters that were set to null)
+      const tierListAChanged = rivalry.tierListA?.getChangedTierSlots();
+      const tierListBChanged = rivalry.tierListB?.getChangedTierSlots();
+
+      // Update only the changed tier slots in parallel
       const tierSlotUpdates = [
-        ...(tierListAPositions ? createTierSlotUpdates(tierListAPositions) : []),
-        ...(tierListBPositions ? createTierSlotUpdates(tierListBPositions) : []),
+        ...(tierListAChanged || []).map(({ id, position, contestCount, winCount }) =>
+          getClient().models.TierSlot.update({ id, position, contestCount, winCount })
+        ),
+        ...(tierListBChanged || []).map(({ id, position, contestCount, winCount }) =>
+          getClient().models.TierSlot.update({ id, position, contestCount, winCount })
+        ),
       ];
 
       const tierSlotResults = await Promise.all(tierSlotUpdates);

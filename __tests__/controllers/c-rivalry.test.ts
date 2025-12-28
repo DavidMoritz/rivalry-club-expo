@@ -6,6 +6,7 @@ import React from 'react';
 const mockRivalryGet = jest.fn();
 const mockRivalryUpdate = jest.fn();
 const mockContestCreate = jest.fn();
+const mockContestGet = jest.fn();
 const mockContestUpdate = jest.fn();
 const mockContestsByRivalryIdAndCreatedAt = jest.fn();
 const mockTierListUpdate = jest.fn();
@@ -23,6 +24,7 @@ jest.mock('aws-amplify/data', () => {
         },
         Contest: {
           create: mockContestCreate,
+          get: mockContestGet,
           update: mockContestUpdate,
           contestsByRivalryIdAndCreatedAt: mockContestsByRivalryIdAndCreatedAt,
         },
@@ -421,6 +423,16 @@ describe('c-rivalry Controller', () => {
         updatedAt: '2024-01-01',
       } as never);
 
+      // Mock Contest.get for security check - return contest not yet resolved
+      mockContestGet.mockResolvedValue({
+        data: {
+          id: 'contest-123',
+          result: null, // Not yet resolved
+          bias: 1,
+        },
+        errors: null,
+      });
+
       mockContestUpdate.mockResolvedValue({
         data: {
           id: 'contest-123',
@@ -447,6 +459,72 @@ describe('c-rivalry Controller', () => {
       });
 
       expect(mockContestUpdate).toHaveBeenCalled();
+      expect(onSuccess).toHaveBeenCalled();
+    });
+
+    it('should not update contest if already resolved by other player', async () => {
+      const contestRivalry = getMRivalry({
+        rivalry: {
+          id: 'rivalry-123',
+          userAId: 'user-a',
+          userBId: 'user-b',
+          gameId: 'game-123',
+          contestCount: 10,
+          currentContestId: 'contest-123',
+          createdAt: '2024-01-01',
+          updatedAt: '2024-01-01',
+        } as TestRivalry,
+      });
+
+      const { getMContest } = require('../../src/models/m-contest') as {
+        getMContest: (
+          contest: never
+        ) => ReturnType<typeof getMRivalry>['currentContest'];
+      };
+      contestRivalry.currentContest = getMContest({
+        id: 'contest-123',
+        rivalryId: 'rivalry-123',
+        tierSlotAId: 'slot-a',
+        tierSlotBId: 'slot-b',
+        result: 2,
+        bias: 1,
+        createdAt: '2024-01-01',
+        updatedAt: '2024-01-01',
+      } as never);
+
+      // Mock Contest.get to return already resolved contest
+      mockContestGet.mockResolvedValue({
+        data: {
+          id: 'contest-123',
+          result: 3, // Already resolved by other player
+          bias: 1,
+        },
+        errors: null,
+      });
+
+      const onSuccess = jest.fn();
+      const { result } = renderHook(
+        () =>
+          useUpdateContestMutation({
+            rivalry: contestRivalry,
+            onSuccess,
+          }),
+        { wrapper }
+      );
+
+      result.current.mutate();
+
+      await waitFor(() => expect(result.current.isSuccess).toBe(true), {
+        timeout: 5000,
+      });
+
+      // Contest.get should be called for security check
+      expect(mockContestGet).toHaveBeenCalledWith({ id: 'contest-123' });
+
+      // Contest.update should NOT be called since contest is already resolved
+      expect(mockContestUpdate).not.toHaveBeenCalled();
+
+      // onSuccess should still be called (UI will refresh)
       expect(onSuccess).toHaveBeenCalled();
     });
   });

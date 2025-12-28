@@ -633,6 +633,21 @@ export const useUpdateContestMutation = ({ rivalry, onSuccess }: RivalryMutation
 
       if (!contest) throw new Error(ERROR_NO_CURRENT_CONTEST);
 
+      // Security check: verify contest hasn't already been resolved by other player
+      const { data: contestCheck, errors: checkErrors } = await getClient().models.Contest.get({
+        id: contest.id
+      });
+
+      if (checkErrors) {
+        throw new Error(checkErrors[0]?.message || ERROR_FAILED_TO_UPDATE_CONTEST);
+      }
+
+      // If contest is already resolved, refresh UI and abort
+      if (contestCheck?.result !== null && contestCheck?.result !== undefined) {
+        queryClient.invalidateQueries({ queryKey: ['rivalryId', rivalry?.id] });
+        return contestCheck;
+      }
+
       const { data, errors } = await getClient().models.Contest.update({
         id: contest.id,
         result: contest.result,

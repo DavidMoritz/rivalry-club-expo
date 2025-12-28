@@ -303,9 +303,7 @@ export function Profile() {
               onPress={handleUpdateProfile}
               style={primaryButtonStyle}
             >
-              <Text style={buttonTextStyle}>
-                {isUpdating ? 'Updating...' : 'Update Profile'}
-              </Text>
+              <Text style={buttonTextStyle}>{isUpdating ? 'Updating...' : 'Update Profile'}</Text>
             </TouchableOpacity>
           </View>
 
@@ -352,7 +350,10 @@ export function Profile() {
 
           {user?.awsSub !== 'anonymous' && !viewChangePassword && (
             <View style={dividerSectionNoPaddingStyle}>
-              <TouchableOpacity onPress={() => setViewChangePassword(true)} style={primaryButtonStyle}>
+              <TouchableOpacity
+                onPress={() => setViewChangePassword(true)}
+                style={primaryButtonStyle}
+              >
                 <Text style={buttonTextStyle}>Change Password</Text>
               </TouchableOpacity>
             </View>
@@ -418,7 +419,7 @@ export function Profile() {
             <Text style={[styles.text, deleteDescriptionStyle]}>
               {user?.awsSub === 'anonymous'
                 ? 'Deleting your account will make all your current rivalries inaccessible. This action cannot be undone.'
-                : 'Permanently delete your account and all associated data. Once deleted, you will not be able to recover your rivalries. This action cannot be undone.'}
+                : "Permanently delete your account and all associated data. Once deleted, you won't be able to recover your rivalries. This action cannot be undone."}
             </Text>
 
             <TouchableOpacity

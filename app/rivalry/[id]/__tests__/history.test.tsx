@@ -687,7 +687,7 @@ describe('HistoryRoute', () => {
             rivalryId: 'rivalry-123',
             tierSlotAId: 'slot-1',
             tierSlotBId: 'slot-2',
-            result: 0, // Unresolved
+            // result is omitted - will be null for unresolved contest
             bias: 0,
             createdAt: '2024-01-05',
             updatedAt: '2024-01-05',
@@ -793,7 +793,7 @@ describe('HistoryRoute', () => {
             rivalryId: 'rivalry-123',
             tierSlotAId: 'slot-1',
             tierSlotBId: 'slot-2',
-            result: 0,
+            // result is omitted - will be null for unresolved contest
             createdAt: '2024-01-02',
             updatedAt: '2024-01-02',
           },

@@ -61,15 +61,8 @@ describe('MContest Model', () => {
   });
 
   describe('getWinner and getLoser', () => {
-    it('should return undefined winner/loser when result is null', () => {
+    it('should return undefined winner/loser when result is null (unresolved)', () => {
       const contest = getMContest({ ...mockContest, result: null } as Contest);
-
-      expect(contest.getWinner()).toBeUndefined();
-      expect(contest.getLoser()).toBeUndefined();
-    });
-
-    it('should return undefined winner/loser when result is 0', () => {
-      const contest = getMContest({ ...mockContest, result: 0 } as Contest);
 
       expect(contest.getWinner()).toBeUndefined();
       expect(contest.getLoser()).toBeUndefined();

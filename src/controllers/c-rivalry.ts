@@ -576,7 +576,7 @@ export const useCreateContestMutation = ({
         rivalryId: rivalry?.id as string,
         tierSlotAId: tierSlotA.id,
         tierSlotBId: tierSlotB.id,
-        result: 0,
+        // result is omitted - will be set when contest is resolved (never 0)
         bias: 0
       });
 
@@ -632,6 +632,11 @@ export const useUpdateContestMutation = ({ rivalry, onSuccess }: RivalryMutation
       const contest = rivalry?.currentContest;
 
       if (!contest) throw new Error(ERROR_NO_CURRENT_CONTEST);
+
+      // Validation: result must never be 0 (should be -3 to -1 or 1 to 3)
+      if (contest.result === 0) {
+        throw new Error('Contest result cannot be 0 - there must be a winner');
+      }
 
       // Security check: verify contest hasn't already been resolved by other player
       const { data: contestCheck, errors: checkErrors } = await getClient().models.Contest.get({
@@ -1452,7 +1457,7 @@ export const useCreateNpcRivalryMutation = ({
               rivalryId: rivalryData.id,
               tierSlotAId: tierSlotA.id,
               tierSlotBId: tierSlotB.id,
-              result: 0,
+              // result is omitted - will be set when contest is resolved (never 0)
               bias: 0
             });
 
@@ -1706,7 +1711,7 @@ export const useAcceptRivalryMutation = ({ onSuccess, onError }: AcceptRivalryMu
               rivalryId,
               tierSlotAId: tierSlotA.id,
               tierSlotBId: tierSlotB.id,
-              result: 0,
+              // result is omitted - will be set when contest is resolved (never 0)
               bias: 0
             });
 

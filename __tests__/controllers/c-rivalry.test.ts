@@ -312,7 +312,7 @@ describe('c-rivalry Controller', () => {
         rivalryId: 'rivalry-123',
         tierSlotAId: 'slot-a',
         tierSlotBId: 'slot-b',
-        result: 0,
+        // result is omitted - will be null for unresolved contest
         bias: 0,
         createdAt: '2024-01-01',
         updatedAt: '2024-01-01',
@@ -427,7 +427,7 @@ describe('c-rivalry Controller', () => {
       mockContestGet.mockResolvedValue({
         data: {
           id: 'contest-123',
-          result: null, // Not yet resolved
+          // result is omitted - will be null for unresolved contest
           bias: 1,
         },
         errors: null,
@@ -526,6 +526,62 @@ describe('c-rivalry Controller', () => {
 
       // onSuccess should still be called (UI will refresh)
       expect(onSuccess).toHaveBeenCalled();
+    });
+
+    it('should throw error if trying to set result to 0', async () => {
+      const contestRivalry = getMRivalry({
+        rivalry: {
+          id: 'rivalry-123',
+          userAId: 'user-a',
+          userBId: 'user-b',
+          gameId: 'game-123',
+          contestCount: 10,
+          currentContestId: 'contest-123',
+          createdAt: '2024-01-01',
+          updatedAt: '2024-01-01',
+        } as TestRivalry,
+      });
+
+      const { getMContest } = require('../../src/models/m-contest') as {
+        getMContest: (
+          contest: never
+        ) => ReturnType<typeof getMRivalry>['currentContest'];
+      };
+      contestRivalry.currentContest = getMContest({
+        id: 'contest-123',
+        rivalryId: 'rivalry-123',
+        tierSlotAId: 'slot-a',
+        tierSlotBId: 'slot-b',
+        result: 0, // Invalid: result cannot be 0
+        bias: 1,
+        createdAt: '2024-01-01',
+        updatedAt: '2024-01-01',
+      } as never);
+
+      const { result } = renderHook(
+        () =>
+          useUpdateContestMutation({
+            rivalry: contestRivalry,
+          }),
+        { wrapper }
+      );
+
+      result.current.mutate();
+
+      await waitFor(() => expect(result.current.isError).toBe(true), {
+        timeout: 5000,
+      });
+
+      expect(result.current.error).toBeDefined();
+      expect((result.current.error as Error).message).toBe(
+        'Contest result cannot be 0 - there must be a winner'
+      );
+
+      // Contest.get should NOT be called (validation happens before)
+      expect(mockContestGet).not.toHaveBeenCalled();
+
+      // Contest.update should NOT be called
+      expect(mockContestUpdate).not.toHaveBeenCalled();
     });
   });
 

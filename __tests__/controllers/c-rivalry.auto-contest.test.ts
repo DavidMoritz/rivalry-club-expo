@@ -48,7 +48,7 @@ describe('Auto-Contest Creation', () => {
           rivalryId,
           tierSlotAId,
           tierSlotBId,
-          result: 0,
+          // result is omitted - will be null for unresolved contest
           bias: 0,
         },
         errors: null,
@@ -74,7 +74,7 @@ describe('Auto-Contest Creation', () => {
         rivalryId,
         tierSlotAId,
         tierSlotBId,
-        result: 0,
+        // result is omitted - will be null for unresolved contest
         bias: 0,
       });
 
@@ -163,7 +163,7 @@ describe('Auto-Contest Creation', () => {
           rivalryId,
           tierSlotAId,
           tierSlotBId,
-          result: 0,
+          // result is omitted - will be null for unresolved contest
           bias: 0,
         },
         errors: null,
@@ -187,7 +187,7 @@ describe('Auto-Contest Creation', () => {
         rivalryId,
         tierSlotAId,
         tierSlotBId,
-        result: 0,
+        // result is omitted - will be null for unresolved contest
         bias: 0,
       });
 

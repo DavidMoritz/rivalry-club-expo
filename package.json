@@ -1,6 +1,6 @@
 {
   "name": "rivalry-club-expo",
-  "version": "1.0.0",
+  "version": "1.6.1",
   "main": "expo-router/entry",
   "scripts": {
     "start": "expo start",
@@ -12,7 +12,7 @@
     "env:sandbox": "cp amplify_outputs.sandbox.json amplify_outputs.json && echo '✅ Switched to SANDBOX environment'",
     "env:production": "cp amplify_outputs.production.json amplify_outputs.json && echo '✅ Switched to PRODUCTION environment'",
     "build:ios": "node scripts/increment-build.js && eas build --platform ios --profile production --non-interactive --auto-submit",
-    "build:ios:local": "node scripts/increment-build.js && eas build --platform ios --profile production --local --non-interactive && git add app.json && git commit -m \"build $(node -p 'require(\"./app.json\").expo.ios.buildNumber')\" && git push && eas submit --platform ios --path build-*.ipa --non-interactive && mv build-*.ipa ios_builds/",
+    "build:ios:local": "node scripts/increment-build.js && eas build --platform ios --profile production --local --non-interactive && git add app.json package.json && git commit -m \"build $(node -p 'require(\"./app.json\").expo.ios.buildNumber')\" && git push && eas submit --platform ios --path \"$(ls -t build-*.ipa 2>/dev/null | head -1)\" --non-interactive && mkdir -p ios_builds && mv \"$(ls -t build-*.ipa 2>/dev/null | head -1)\" ios_builds/",
     "build:android": "eas build --platform android --profile production --non-interactive",
     "build:android:local": "eas build --platform android --profile production --local --non-interactive",
     "build:all": "npm run build:ios && npm run build:android",

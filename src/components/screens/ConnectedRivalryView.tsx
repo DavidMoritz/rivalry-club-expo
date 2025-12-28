@@ -321,6 +321,12 @@ export function ConnectedRivalryView({
 
       updateTierListsMutation.mutate();
     },
+    onAlreadyResolved: () => {
+      // Contest was already resolved by other player
+      // Clear battle results to refresh UI with current contest
+      setBattleResults(null);
+      setIsResolvingContest(false);
+    },
   });
 
   const updateCurrentContestShuffleTierSlotsMutation =

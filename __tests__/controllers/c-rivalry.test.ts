@@ -503,11 +503,13 @@ describe('c-rivalry Controller', () => {
       });
 
       const onSuccess = jest.fn();
+      const onAlreadyResolved = jest.fn();
       const { result } = renderHook(
         () =>
           useUpdateContestMutation({
             rivalry: contestRivalry,
             onSuccess,
+            onAlreadyResolved,
           }),
         { wrapper }
       );
@@ -524,8 +526,12 @@ describe('c-rivalry Controller', () => {
       // Contest.update should NOT be called since contest is already resolved
       expect(mockContestUpdate).not.toHaveBeenCalled();
 
-      // onSuccess should still be called (UI will refresh)
-      expect(onSuccess).toHaveBeenCalled();
+      // onSuccess should NOT be called when contest was already resolved
+      // This prevents creating a new contest and updating tier lists
+      expect(onSuccess).not.toHaveBeenCalled();
+
+      // onAlreadyResolved SHOULD be called to clear battle results and refresh UI
+      expect(onAlreadyResolved).toHaveBeenCalled();
     });
 
     it('should throw error if trying to set result to 0', async () => {

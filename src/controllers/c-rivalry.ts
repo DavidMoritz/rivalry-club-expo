@@ -94,6 +94,7 @@ interface RivalryQueryProps extends RivalryQueryBaseProps {
 
 interface RivalryMutationProps extends RivalryQueryBaseProps {
   onSuccess?: () => void;
+  onAlreadyResolved?: () => void;
 }
 
 interface RivalryMutationWithContestProps extends RivalryQueryBaseProps {
@@ -624,7 +625,7 @@ export const useUpdateRivalryMutation = ({ rivalry }: RivalryMutationProps) => {
   });
 };
 
-export const useUpdateContestMutation = ({ rivalry, onSuccess }: RivalryMutationProps) => {
+export const useUpdateContestMutation = ({ rivalry, onSuccess, onAlreadyResolved }: RivalryMutationProps) => {
   const queryClient = useQueryClient();
 
   return useMutation({
@@ -648,9 +649,10 @@ export const useUpdateContestMutation = ({ rivalry, onSuccess }: RivalryMutation
       }
 
       // If contest is already resolved, refresh UI and abort
+      // Return the contest with a flag indicating it was already resolved
       if (contestCheck?.result !== null && contestCheck?.result !== undefined) {
         queryClient.invalidateQueries({ queryKey: ['rivalryId', rivalry?.id] });
-        return contestCheck;
+        return { ...contestCheck, __alreadyResolved: true };
       }
 
       const { data, errors } = await getClient().models.Contest.update({
@@ -663,11 +665,17 @@ export const useUpdateContestMutation = ({ rivalry, onSuccess }: RivalryMutation
         throw new Error(errors[0]?.message || ERROR_FAILED_TO_UPDATE_CONTEST);
       }
 
-      return data;
+      return { ...data, __alreadyResolved: false };
     },
-    onSuccess: () => {
+    onSuccess: (data) => {
       queryClient.invalidateQueries({ queryKey: ['rivalryId', rivalry?.id] });
-      onSuccess?.();
+      if (data.__alreadyResolved) {
+        // Contest was already resolved by other player - just refresh UI
+        onAlreadyResolved?.();
+      } else {
+        // Contest was successfully resolved - proceed with tier list updates
+        onSuccess?.();
+      }
     }
   });
 };

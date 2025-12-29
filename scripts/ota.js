@@ -56,7 +56,7 @@ try {
   if (platform === 'ios') {
     // iOS only
     execSync(
-      `eas update --branch production --platform ios --runtime-version ${iosVersion} --message "${message}"`,
+      `eas update --branch production --platform ios --message "${message}"`,
       {
         stdio: 'inherit',
         encoding: 'utf-8'
@@ -65,7 +65,7 @@ try {
   } else if (platform === 'android') {
     // Android only
     execSync(
-      `eas update --branch production --platform android --runtime-version ${androidVersion} --message "${message}"`,
+      `eas update --branch production --platform android --message "${message}"`,
       {
         stdio: 'inherit',
         encoding: 'utf-8'
@@ -81,10 +81,13 @@ try {
       }
     );
   } else {
-    // Both platforms - run separately with different runtime versions
+    // Both platforms - different runtime versions, need to update app.json temporarily
+    console.log('⚠️  Warning: iOS and Android have different versions.');
+    console.log('   You may want to use --ios or --android to target specific platform.');
+    console.log('');
     console.log('Publishing iOS update...');
     execSync(
-      `eas update --branch production --platform ios --runtime-version ${iosVersion} --message "${message}"`,
+      `eas update --branch production --platform ios --message "${message}"`,
       {
         stdio: 'inherit',
         encoding: 'utf-8'
@@ -92,13 +95,23 @@ try {
     );
     console.log('');
     console.log('Publishing Android update...');
+
+    // Temporarily change app.json version for Android
+    const originalVersion = appJson.expo.version;
+    appJson.expo.version = androidVersion;
+    fs.writeFileSync(appJsonPath, JSON.stringify(appJson, null, 2) + '\n');
+
     execSync(
-      `eas update --branch production --platform android --runtime-version ${androidVersion} --message "${message}"`,
+      `eas update --branch production --platform android --message "${message}"`,
       {
         stdio: 'inherit',
         encoding: 'utf-8'
       }
     );
+
+    // Restore original version
+    appJson.expo.version = originalVersion;
+    fs.writeFileSync(appJsonPath, JSON.stringify(appJson, null, 2) + '\n');
   }
 
   console.log('');

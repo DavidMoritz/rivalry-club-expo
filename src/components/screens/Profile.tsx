@@ -419,7 +419,7 @@ export function Profile() {
             <Text style={[styles.text, deleteDescriptionStyle]}>
               {user?.awsSub === 'anonymous'
                 ? 'Deleting your account will make all your current rivalries inaccessible. This action cannot be undone.'
-                : "Permanently delete your account and all associated data. Once deleted, you won't be able to recover your rivalries. This action cannot be undone."}
+                : 'Permanently delete your account and all associated data. Once deleted, you will not be able to recover your rivalries. This action cannot be undone.'}
             </Text>
 
             <TouchableOpacity

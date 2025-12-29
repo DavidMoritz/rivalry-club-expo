@@ -849,6 +849,85 @@ describe('useDeleteMostRecentContestMutation', () => {
     });
   });
 
+  describe('Contest result handling', () => {
+    it('should set contest result to null (not 0) when undoing', async () => {
+      const mockRivalry: Rivalry = {
+        __typename: 'Rivalry',
+        id: 'rivalry-123',
+        userAId: 'user-a',
+        userBId: 'user-b',
+        gameId: 'game-123',
+        contestCount: 2,
+        currentContestId: 'contest-current',
+        createdAt: '2024-01-01',
+        updatedAt: '2024-01-01',
+      };
+
+      const mRivalry = getMRivalry({ rivalry: mockRivalry });
+      mRivalry.tierListA = getMTierList(
+        createTierListWithStanding('user-a', 3)
+      );
+      mRivalry.tierListB = getMTierList(
+        createTierListWithStanding('user-b', 3)
+      );
+
+      // Most recent resolved contest
+      const contest: Contest = {
+        __typename: 'Contest',
+        id: 'contest-123',
+        rivalryId: 'rivalry-123',
+        tierSlotAId: 'slot-user-a',
+        tierSlotBId: 'slot-user-b',
+        result: 2,
+        bias: 0,
+        createdAt: '2024-01-01',
+        updatedAt: '2024-01-01',
+      };
+
+      const mContest = getMContest(contest);
+      mContest.setRivalryAndSlots(mRivalry);
+
+      // Current unresolved contest
+      const currentContest: Contest = {
+        __typename: 'Contest',
+        id: 'contest-current',
+        rivalryId: 'rivalry-123',
+        tierSlotAId: 'slot-user-a',
+        tierSlotBId: 'slot-user-b',
+        result: null,
+        bias: null,
+        createdAt: '2024-01-02',
+        updatedAt: '2024-01-02',
+      };
+
+      const mCurrentContest = getMContest(currentContest);
+      mRivalry.mContests = [mCurrentContest, mContest];
+
+      const { result } = renderHook(
+        () => useDeleteMostRecentContestMutation({ rivalry: mRivalry }),
+        { wrapper }
+      );
+
+      result.current.mutate();
+
+      await waitFor(() => expect(result.current.isSuccess).toBe(true));
+
+      // Verify that the contest update was called with result: null, bias: 0
+      expect(mockContestUpdate).toHaveBeenCalledWith({
+        id: 'contest-123',
+        result: null,
+        bias: 0,
+      });
+
+      // Verify that result was NOT set to 0 (the old buggy behavior)
+      expect(mockContestUpdate).not.toHaveBeenCalledWith({
+        id: 'contest-123',
+        result: 0,
+        bias: 0,
+      });
+    });
+  });
+
   describe('Callback execution', () => {
     it('should call onSuccess callback after successful deletion', async () => {
       const mockRivalry: Rivalry = {

@@ -1036,7 +1036,7 @@ export const useDeleteMostRecentContestMutation = ({
       const { data: resetContestData, errors: resetErrors } =
         await getClient().models.Contest.update({
           id: mostRecentContest.id,
-          result: 0,
+          result: null,
           bias: 0
         });
 

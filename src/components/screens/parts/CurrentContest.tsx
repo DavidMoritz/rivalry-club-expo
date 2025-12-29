@@ -5,12 +5,20 @@ import type { MContest } from '../../../models/m-contest';
 import type { MFighter } from '../../../models/m-fighter';
 import { type MGame, STOCK } from '../../../models/m-game';
 import type { MRivalry } from '../../../models/m-rivalry';
-import type { MTierSlot } from '../../../models/m-tier-slot';
+import { TIERS } from '../../../models/m-tier-list';
+import { computeTierFromPosition, type MTierSlot } from '../../../models/m-tier-slot';
 import { useGame } from '../../../providers/game';
 import { useRivalry, useRivalryContext } from '../../../providers/rivalry';
 import { fighterByIdFromGame } from '../../../utils';
 import { colors } from '../../../utils/colors';
-import { absolute, center, contestStyles, relative, row } from '../../../utils/styles';
+import {
+  absolute,
+  center,
+  contestStyles,
+  relative,
+  row,
+  tierBadgeStyles
+} from '../../../utils/styles';
 import { CharacterDisplay } from '../../common/CharacterDisplay';
 
 interface CurrentContestProps {
@@ -79,6 +87,14 @@ function FighterCard({
   };
   const shufflePosition = getShufflePosition();
 
+  // Determine tier for badge
+  const isUnranked = tierSlot?.position === null;
+  const tier = isUnranked ? null : computeTierFromPosition(tierSlot?.position ?? null);
+  const tierData = tier ? TIERS.find((t) => t.label === tier) : null;
+
+  const DISPLAY_WIDTH = 140;
+  const BADGE_RATIO = 0.25;
+
   return (
     <View style={[fighterContainerStyle, isWinner ? fighterWinnerStyle : fighterNonWinnerStyle]}>
       {canShuffle && (
@@ -95,17 +111,36 @@ function FighterCard({
       <Text style={[currentContestUserStyle, { color: getTextColor(isWinner) }]}>
         {userName} {prestigeDisplay}
       </Text>
-      <CharacterDisplay
-        fighter={fighter}
-        height={180}
-        hideName={true}
-        onPress={() => {
-          setWinner(tierSlot);
-        }}
-        tierSlot={tierSlot}
-        width={140}
-        zoomMultiplier={1.55}
-      />
+      <View style={relativePositionStyle}>
+        <CharacterDisplay
+          fighter={fighter}
+          height={180}
+          hideName={true}
+          onPress={() => {
+            setWinner(tierSlot);
+          }}
+          tierSlot={tierSlot}
+          width={140}
+          zoomMultiplier={1.55}
+        />
+        {/* Tier Badge Overlay for Unranked */}
+        {isUnranked && (
+          <View
+            style={[
+              tierBadgeStyles.badge,
+              {
+                backgroundColor: colors.gray500,
+                width: DISPLAY_WIDTH * BADGE_RATIO,
+                height: DISPLAY_WIDTH * BADGE_RATIO,
+                bottom: 8,
+                right: 8
+              }
+            ]}
+          >
+            <Text style={tierBadgeStyles.text}>U</Text>
+          </View>
+        )}
+      </View>
       <Text style={[fighterNameStyle, { color: getTextColor(isWinner) }]}>
         {fighter.name}
         {slot === 'A' ? ' ' : ''}
@@ -453,4 +488,8 @@ const resolveButtonTextStyle = {
   fontSize: 20,
   fontWeight: 'bold' as const,
   color: colors.white
+};
+
+const relativePositionStyle = {
+  position: relative
 };

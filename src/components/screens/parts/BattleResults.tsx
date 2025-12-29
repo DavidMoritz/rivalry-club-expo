@@ -8,7 +8,7 @@ import type { MRivalry } from '../../../models/m-rivalry';
 import { TIERS } from '../../../models/m-tier-list';
 import { computeTierFromPosition } from '../../../models/m-tier-slot';
 import { colors } from '../../../utils/colors';
-import { absolute, bold, center, relative } from '../../../utils/styles';
+import { bold, center, relative, tierBadgeStyles } from '../../../utils/styles';
 import { CharacterDisplay } from '../../common/CharacterDisplay';
 
 // Layout constants for character displays
@@ -121,7 +121,7 @@ export function BattleResults({
               {winnerTierData && (
                 <View
                   style={[
-                    tierBadgeStyle,
+                    tierBadgeStyles.badge,
                     {
                       backgroundColor: winnerTierData.color,
                       width: WINNER_DISPLAY_WIDTH * WINNER_BADGE_RATIO,
@@ -131,7 +131,7 @@ export function BattleResults({
                     },
                   ]}
                 >
-                  <Text style={tierBadgeTextStyle}>{winnerNewTier}</Text>
+                  <Text style={tierBadgeStyles.text}>{winnerNewTier}</Text>
                 </View>
               )}
             </View>
@@ -161,7 +161,7 @@ export function BattleResults({
               {loserTierData && (
                 <View
                   style={[
-                    tierBadgeStyle,
+                    tierBadgeStyles.badge,
                     {
                       backgroundColor: loserTierData.color,
                       width: LOSER_DISPLAY_WIDTH * LOSER_BADGE_RATIO,
@@ -171,7 +171,7 @@ export function BattleResults({
                     },
                   ]}
                 >
-                  <Text style={[tierBadgeTextStyle, { fontSize: 15 }]}>
+                  <Text style={[tierBadgeStyles.text, { fontSize: 15 }]}>
                     {loserNewTier}
                   </Text>
                 </View>
@@ -294,20 +294,4 @@ const scoreTextStyle = {
   fontWeight: bold,
   color: colors.white,
   marginBottom: 8,
-};
-
-const tierBadgeStyle = {
-  position: absolute,
-  borderRadius: 8,
-  alignItems: center,
-  justifyContent: center,
-  borderWidth: 2,
-  borderColor: colors.black,
-  padding: 2,
-};
-
-const tierBadgeTextStyle = {
-  fontSize: 18,
-  fontWeight: bold,
-  color: colors.black,
 };

@@ -24,6 +24,9 @@ function TierSlotStats({ tierSlot }: { tierSlot: MTierSlot }) {
   return (
     <>
       <Text style={sectionHeaderStyle}>Rivalry Stats</Text>
+      {!hasPosition && tierSlot.position == null && (
+        <Text style={statTextStyle}>Position: ?? (Tier U)</Text>
+      )}
       {hasPosition && tierSlot.position !== null && tierSlot.position !== undefined && (
         <Text style={statTextStyle}>
           Position: #{tierSlot.position + 1} (Tier {computeTierFromPosition(tierSlot.position ?? 0)}

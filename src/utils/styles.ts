@@ -56,3 +56,20 @@ export const contestStyles = StyleSheet.create({
     alignItems: 'center'
   }
 });
+
+export const tierBadgeStyles = StyleSheet.create({
+  badge: {
+    position: 'absolute',
+    borderRadius: 8,
+    alignItems: 'center',
+    justifyContent: 'center',
+    borderWidth: 2,
+    borderColor: colors.black,
+    padding: 2,
+  },
+  text: {
+    fontSize: 18,
+    fontWeight: 'bold',
+    color: colors.black,
+  },
+});

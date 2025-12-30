@@ -111,6 +111,27 @@ const schema = a.schema({
     })
     .authorization(allow => [allow.publicApiKey()]),
 
+  // TierListSnapshot type - represents a saved tier list arrangement that can be shared
+  TierListSnapshot: a
+    .model({
+      userId: a.id().required(),
+      gameId: a.id().required(),
+      game: a.belongsTo('Game', 'gameId'),
+      name: a.string().required(),
+      arrangement: a.json().required(),
+      shareCode: a.string().required(),
+      createdAt: a.datetime(),
+      deletedAt: a.datetime(),
+    })
+    .secondaryIndexes(index => [
+      index('userId')
+        .sortKeys(['createdAt'])
+        .queryField('snapshotsByUserIdAndCreatedAt'),
+      index('shareCode')
+        .queryField('snapshotByShareCode'),
+    ])
+    .authorization(allow => [allow.publicApiKey()]),
+
   // Custom mutation for atomic increment of TierSlot stats
   incrementTierSlotStats: a
     .mutation()

@@ -19,6 +19,7 @@ import { deleteUser, signOut, updatePassword } from '../../lib/amplify-auth';
 import { clearStoredUuid } from '../../lib/user-identity';
 import { colors } from '../../utils/colors';
 import { bold, center, darkStyles, styles } from '../../utils/styles';
+import { LoadingWithCharacter } from '../common/LoadingWithCharacter';
 import { CreateAccountModal } from './CreateAccountModal';
 import { LinkAccountModal } from './LinkAccountModal';
 
@@ -204,9 +205,7 @@ export function Profile() {
   if (userLoading) {
     return (
       <SafeAreaView style={[styles.container, darkStyles.container]}>
-        <View style={loadingContainerStyle}>
-          <Text style={styles.text}>Loading...</Text>
-        </View>
+        <LoadingWithCharacter message="Loading profile..." />
       </SafeAreaView>
     );
   }
@@ -518,12 +517,6 @@ export function Profile() {
 
 // Layout styles
 const fullFlexStyle = { flex: 1 };
-
-const loadingContainerStyle = {
-  flex: 1,
-  alignItems: center,
-  justifyContent: center
-};
 
 const scrollContentStyle = { padding: 24 };
 

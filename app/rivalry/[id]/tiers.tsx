@@ -8,6 +8,7 @@ import type { Schema } from '../../../amplify/data/resource';
 
 import { Button } from '../../../src/components/common/Button';
 import { HamburgerMenu } from '../../../src/components/common/HamburgerMenu';
+import { LoadingWithCharacter } from '../../../src/components/common/LoadingWithCharacter';
 import { TierListsDisplay } from '../../../src/components/screens/parts/TierListsDisplay';
 import { getMRivalry, type MRivalry } from '../../../src/models/m-rivalry';
 import { getMUser } from '../../../src/models/m-user';
@@ -162,10 +163,10 @@ export default function TiersRoute() {
       >
         <SyncedScrollViewContext.Provider value={syncedScrollViewState}>
           <SafeAreaView style={[styles.container, darkStyles.container]}>
-            {isLoading && (
-              <View style={centeredContainerStyle}>
-                <Text style={loadingTextStyle}>Loading Tier Lists...</Text>
-              </View>
+            {(isLoading || !(isError || rivalry)) && (
+              <LoadingWithCharacter
+                message={isLoading ? 'Loading Tier Lists...' : 'Waiting for tier lists...'}
+              />
             )}
 
             {isError && (
@@ -174,12 +175,6 @@ export default function TiersRoute() {
                 <Text
                   style={[styles.text, darkStyles.text]}
                 >{`Error loading tier lists: ${error?.message}`}</Text>
-              </View>
-            )}
-
-            {!(isLoading || isError || rivalry) && (
-              <View style={centeredContainerStyle}>
-                <Text style={loadingTextStyle}>Waiting for tier lists...</Text>
               </View>
             )}
 
@@ -215,18 +210,6 @@ export default function TiersRoute() {
   );
 }
 
-const centeredContainerStyle = {
-  flex: 1,
-  alignItems: center,
-  justifyContent: center
-};
-
-const loadingTextStyle = {
-  ...styles.text,
-  ...darkStyles.text,
-  fontSize: 18
-};
-
 const errorContainerStyle = {
   flex: 1,
   alignItems: center,
@@ -241,14 +224,6 @@ const errorTitleStyle = {
   fontWeight: bold,
   color: colors.red600,
   marginBottom: 16
-};
-
-const debugTextStyle = {
-  ...styles.text,
-  ...darkStyles.text,
-  fontSize: 12,
-  marginTop: 8,
-  color: colors.gray400
 };
 
 const editButtonContainerStyle = {

@@ -26,6 +26,7 @@ import {
 import { useGame } from '../../providers/game';
 import { colors } from '../../utils/colors';
 import { center, darkStyles, styles } from '../../utils/styles';
+import { LoadingWithCharacter } from '../common/LoadingWithCharacter';
 
 // User role constant for NPC users
 const NPC_ROLE = 13;
@@ -75,11 +76,7 @@ function SelectedUserPanel({
           opacity: creatingRivalry ? DISABLED_OPACITY : 1
         }}
       >
-        {creatingRivalry ? (
-          <ActivityIndicator color={colors.white} size="small" />
-        ) : (
-          <Text style={buttonTextStyle}>{buttonText}</Text>
-        )}
+        <Text style={buttonTextStyle}>{buttonText}</Text>
       </TouchableOpacity>
     </View>
   );
@@ -306,60 +303,64 @@ export function CreateRivalry() {
 
   return (
     <SafeAreaView edges={['top', 'bottom']} style={[styles.container, darkStyles.container]}>
-      <View style={{ flex: 1 }}>
-        <View style={headerContainerStyle}>
-          <Text style={headerTitleStyle}>Create New Rivalry</Text>
-          <Text style={headerSubtitleStyle}>Search for a user to challenge in {gameName}</Text>
+      {creatingRivalry && <LoadingWithCharacter message={'Initiating Rivalry'} />}
+
+      {!creatingRivalry && (
+        <View style={{ flex: 1 }}>
+          <View style={headerContainerStyle}>
+            <Text style={headerTitleStyle}>Create New Rivalry</Text>
+            <Text style={headerSubtitleStyle}>Search for a user to challenge in {gameName}</Text>
+          </View>
+
+          <View style={searchContainerStyle}>
+            <TextInput
+              onChangeText={setSearchText}
+              placeholder="Type 'npc', friend code, or name/email..."
+              placeholderTextColor={colors.gray500}
+              style={searchInputStyle}
+              value={searchText}
+            />
+          </View>
+
+          {error && (
+            <View style={errorContainerStyle}>
+              <Text style={errorTextStyle}>Error: {error}</Text>
+            </View>
+          )}
+
+          {isSearching && searchText.length >= 2 && (
+            <View style={loadingContainerStyle}>
+              <ActivityIndicator color={colors.purple900} size="large" />
+            </View>
+          )}
+
+          {!isSearching && searchText.length >= 2 && searchResults.length === 0 && (
+            <View style={noResultsContainerStyle}>
+              <Text style={noResultsTextStyle}>No users found matching "{searchText}"</Text>
+            </View>
+          )}
+
+          {searchResults.length > 0 && (
+            <FlatList
+              data={searchResults}
+              keyExtractor={(item) => item.id}
+              renderItem={renderUserItem}
+              style={{ flex: 1 }}
+              keyboardShouldPersistTaps="handled"
+            />
+          )}
+
+          {selectedUser && (
+            <SelectedUserPanel
+              creatingRivalry={creatingRivalry}
+              onCreateOrAccept={handleCreateOrAcceptRivalry}
+              rivalries={rivalries}
+              selectedUser={selectedUser}
+              userId={user?.id}
+            />
+          )}
         </View>
-
-        <View style={searchContainerStyle}>
-          <TextInput
-            onChangeText={setSearchText}
-            placeholder="Type 'npc', friend code, or name/email..."
-            placeholderTextColor={colors.gray500}
-            style={searchInputStyle}
-            value={searchText}
-          />
-        </View>
-
-        {error && (
-          <View style={errorContainerStyle}>
-            <Text style={errorTextStyle}>Error: {error}</Text>
-          </View>
-        )}
-
-        {isSearching && searchText.length >= 2 && (
-          <View style={loadingContainerStyle}>
-            <ActivityIndicator color={colors.purple900} size="large" />
-          </View>
-        )}
-
-        {!isSearching && searchText.length >= 2 && searchResults.length === 0 && (
-          <View style={noResultsContainerStyle}>
-            <Text style={noResultsTextStyle}>No users found matching "{searchText}"</Text>
-          </View>
-        )}
-
-        {searchResults.length > 0 && (
-          <FlatList
-            data={searchResults}
-            keyExtractor={(item) => item.id}
-            renderItem={renderUserItem}
-            style={{ flex: 1 }}
-            keyboardShouldPersistTaps="handled"
-          />
-        )}
-
-        {selectedUser && (
-          <SelectedUserPanel
-            creatingRivalry={creatingRivalry}
-            onCreateOrAccept={handleCreateOrAcceptRivalry}
-            rivalries={rivalries}
-            selectedUser={selectedUser}
-            userId={user?.id}
-          />
-        )}
-      </View>
+      )}
     </SafeAreaView>
   );
 }

@@ -7,6 +7,7 @@ import { ActivityIndicator, Text, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import type { Schema } from '../../../amplify/data/resource';
 import { HamburgerMenu } from '../../../src/components/common/HamburgerMenu';
+import { LoadingWithCharacter } from '../../../src/components/common/LoadingWithCharacter';
 import { ContestHistoryTable } from '../../../src/components/screens/parts/ContestHistoryTable';
 import { useDeleteMostRecentContestMutation } from '../../../src/controllers/c-rivalry';
 import { getMContest, type MContest } from '../../../src/models/m-contest';
@@ -274,12 +275,9 @@ export default function HistoryRoute() {
       <>
         <Stack.Screen options={{ title: 'Contest History' }} />
         <SafeAreaView style={[styles.container, darkStyles.container]}>
-          <View style={centeredContainerStyle}>
-            <ActivityIndicator color={colors.white} size="large" />
-            <Text style={loadingTextStyle}>
-              {isLoadingRivalry ? 'Loading rivalry data...' : 'Loading contests...'}
-            </Text>
-          </View>
+          <LoadingWithCharacter
+            message={isLoadingRivalry ? 'Loading rivalry data...' : 'Loading contests...'}
+          />
         </SafeAreaView>
         <StatusBar style="light" />
       </>
@@ -350,17 +348,6 @@ export default function HistoryRoute() {
     </>
   );
 }
-
-const centeredContainerStyle = {
-  flex: 1,
-  alignItems: center,
-  justifyContent: center
-};
-
-const loadingTextStyle = {
-  ...styles.text,
-  marginTop: 16
-};
 
 const errorContainerStyle = {
   flex: 1,

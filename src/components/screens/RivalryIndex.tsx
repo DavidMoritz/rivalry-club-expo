@@ -9,6 +9,7 @@ import { useUserRivalries } from '../../hooks/useUserRivalries';
 import { useAllRivalriesUpdate } from '../../providers/all-rivalries';
 import { colors } from '../../utils/colors';
 import { bold, center, darkStyles, styles } from '../../utils/styles';
+import { LoadingWithCharacter } from '../common/LoadingWithCharacter';
 import { OfflineModal } from '../common/OfflineModal';
 import { RivalriesTable } from './parts/RivalriesTable';
 
@@ -131,9 +132,7 @@ export function RivalryIndex() {
           onClose={() => setShowOfflineModal(false)}
           visible={showOfflineModal}
         />
-        <View style={centeredContainerStyle}>
-          <Text style={loadingTextStyle}>Loading rivalries...</Text>
-        </View>
+        <LoadingWithCharacter message="Loading rivalries..." />
       </SafeAreaView>
     );
   }

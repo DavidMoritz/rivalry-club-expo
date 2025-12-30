@@ -7,6 +7,7 @@ import { ActivityIndicator, Alert, SafeAreaView, Text, TouchableOpacity, View } 
 import type { Schema } from '../../../amplify/data/resource';
 
 import { HamburgerMenu } from '../../../src/components/common/HamburgerMenu';
+import { LoadingWithCharacter } from '../../../src/components/common/LoadingWithCharacter';
 import { TierListEditDisplay } from '../../../src/components/screens/parts/TierListEditDisplay';
 import { useUpdateTierSlotsMutation } from '../../../src/controllers/c-rivalry';
 import { getStoredUuid } from '../../../src/lib/user-identity';
@@ -217,12 +218,7 @@ function renderContent({
   router: ReturnType<typeof useRouter>;
 }) {
   if (isLoading) {
-    return (
-      <View style={centeredContainerStyle}>
-        <ActivityIndicator color={colors.white} size="large" />
-        <Text style={loadingTextStyle}>Loading Tier List...</Text>
-      </View>
-    );
+    return <LoadingWithCharacter message="Loading Tier List..." />;
   }
 
   if (isError) {
@@ -420,13 +416,6 @@ const centeredContainerStyle = {
   flex: 1,
   alignItems: center,
   justifyContent: center
-};
-
-const loadingTextStyle = {
-  ...styles.text,
-  ...darkStyles.text,
-  fontSize: 18,
-  marginTop: 16
 };
 
 const errorContainerStyle = {

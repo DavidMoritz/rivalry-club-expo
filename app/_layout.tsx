@@ -7,8 +7,10 @@ import 'react-native-get-random-values';
 import 'react-native-url-polyfill/auto';
 
 import outputs from '../amplify-config';
+import { Header, HEADER_HEIGHT } from '../src/components/common/Header';
 import { AllRivalriesProvider } from '../src/providers/all-rivalries';
 import { GameProvider } from '../src/providers/game';
+import { HeaderProvider, useHeaderConfig } from '../src/providers/header';
 import { UnsavedChangesProvider } from '../src/providers/unsaved-changes';
 import { colors } from '../src/utils/colors';
 import { preloadAssets } from '../src/utils/preload-assets';
@@ -21,6 +23,22 @@ const queryClient = new QueryClient();
 // Amplify.configure calls native modules that aren't ready until after app initialization
 // We'll configure it in RootLayout after a delay to ensure native modules are ready
 let amplifyConfigured = false;
+
+// Component that renders the header based on context
+function HeaderFromContext() {
+  const config = useHeaderConfig();
+
+  if (config.showHeader === false) {
+    return null;
+  }
+
+  return (
+    <Header
+      title={config.title}
+      hide={config.hide as 'rivalries' | 'pending' | 'profile' | 'how-to-play' | undefined}
+    />
+  );
+}
 
 export default function RootLayout() {
   const [_assetsLoaded, setAssetsLoaded] = useState(false);
@@ -77,9 +95,12 @@ export default function RootLayout() {
       <GameProvider game={null}>
         <AllRivalriesProvider>
           <UnsavedChangesProvider>
-            <View style={styles.container}>
-              <Slot />
-            </View>
+            <HeaderProvider>
+              <View style={styles.container}>
+                <HeaderFromContext />
+                <Slot />
+              </View>
+            </HeaderProvider>
           </UnsavedChangesProvider>
         </AllRivalriesProvider>
       </GameProvider>
@@ -91,9 +112,10 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: 'black',
+    paddingTop: HEADER_HEIGHT,
     ...Platform.select({
       android: {
-        paddingTop: 30
+        paddingTop: 30 + HEADER_HEIGHT
       }
     })
   }

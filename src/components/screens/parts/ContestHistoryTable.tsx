@@ -142,8 +142,7 @@ const loaderContainerStyle = {
 
 const undoButtonContainerStyle = {
   alignSelf: 'flex-start' as const,
-  marginBottom: 8,
-  marginTop: -14
+  marginBottom: 8
 };
 
 const undoButtonStyle = {
@@ -168,8 +167,7 @@ const errorTextStyle = {
 };
 
 const tableWrapperStyle = {
-  padding: 10,
-  paddingTop: 85
+  padding: 10
 };
 
 const tableHeaderStyle = {

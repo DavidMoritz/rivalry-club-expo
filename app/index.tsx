@@ -2,6 +2,7 @@ import { useRouter } from 'expo-router';
 import { StatusBar } from 'expo-status-bar';
 
 import Home from '../src/components/screens/Home';
+import { useSetHeader } from '../src/providers/header';
 
 interface Game {
   id: string;
@@ -10,6 +11,9 @@ interface Game {
 
 export default function IndexRoute() {
   const router = useRouter();
+
+  // Hide header on home page
+  useSetHeader({ showHeader: false });
 
   function handleEnterClick(game: Game) {
     if (!game) return;

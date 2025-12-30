@@ -6,7 +6,6 @@ import { useEffect, useState } from 'react';
 import { ActivityIndicator, Alert, SafeAreaView, Text, TouchableOpacity, View } from 'react-native';
 import type { Schema } from '../../../amplify/data/resource';
 
-import { Header, HEADER_HEIGHT } from '../../../src/components/common/Header';
 import { LoadingWithCharacter } from '../../../src/components/common/LoadingWithCharacter';
 import { TierListEditDisplay } from '../../../src/components/screens/parts/TierListEditDisplay';
 import { useUpdateTierSlotsMutation } from '../../../src/controllers/c-rivalry';
@@ -14,6 +13,7 @@ import { getStoredUuid } from '../../../src/lib/user-identity';
 import { getMRivalry, type MRivalry } from '../../../src/models/m-rivalry';
 import type { MTierList } from '../../../src/models/m-tier-list';
 import { getMUser } from '../../../src/models/m-user';
+import { useSetHeader } from '../../../src/providers/header';
 import { RivalryProvider } from '../../../src/providers/rivalry';
 import { useUnsavedChanges } from '../../../src/providers/unsaved-changes';
 import { bold, center, darkStyles, styles } from '../../../src/utils/styles';
@@ -255,8 +255,6 @@ function renderContent({
 
   return (
     <View style={editContainerStyle}>
-      <Text style={editTitleStyle}>Edit Your Tier List</Text>
-
       <View style={editDisplayContainerStyle}>
         <TierListEditDisplay
           onChange={handleTierListChange}
@@ -292,6 +290,8 @@ export default function TierListEditRoute() {
   const userIdParam = params.userId as string | undefined;
   const userAName = params.userAName as string | undefined;
   const userBName = params.userBName as string | undefined;
+
+  useSetHeader({ title: 'Edit Tier List' });
 
   const [rivalry, setRivalry] = useState<MRivalry | null>(null);
   const [hasChanges, setHasChanges] = useState(false);
@@ -371,14 +371,13 @@ export default function TierListEditRoute() {
   return (
     <>
       <Stack.Screen options={{ title: 'Edit Tier List' }} />
-      <Header title="Edit Tier List" />
       <RivalryProvider
         rivalry={rivalry}
         userAName={userAName}
         userBName={userBName}
         userId={userId}
       >
-        <SafeAreaView style={[styles.container, darkStyles.container, { paddingTop: HEADER_HEIGHT }]}>
+        <SafeAreaView style={[styles.container, darkStyles.container]}>
           {renderContent({
             isLoading,
             isError,

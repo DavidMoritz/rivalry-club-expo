@@ -1,16 +1,14 @@
 import { StatusBar } from 'expo-status-bar';
-import { View } from 'react-native';
 
-import { Header, HEADER_HEIGHT } from '../src/components/common/Header';
 import { Profile } from '../src/components/screens/Profile';
+import { useSetHeader } from '../src/providers/header';
 
 export default function ProfileRoute() {
+  useSetHeader({ title: 'Account', hide: 'profile' });
+
   return (
     <>
-      <Header title="Account" hide="profile" />
-      <View style={{ paddingTop: HEADER_HEIGHT }}>
-        <Profile />
-      </View>
+      <Profile />
       <StatusBar style="light" />
     </>
   );

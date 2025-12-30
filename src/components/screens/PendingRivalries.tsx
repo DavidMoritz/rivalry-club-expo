@@ -121,7 +121,7 @@ export function PendingRivalries() {
   const { awaitingAcceptance, initiated } = pendingRivalries;
 
   return (
-    <SafeAreaView edges={['top', 'bottom']} style={[styles.container, darkStyles.container]}>
+    <SafeAreaView edges={['bottom']} style={[styles.container, darkStyles.container]}>
       <View style={headerContainerStyle}>
         <Text style={[styles.text, { marginTop: 4, color: colors.gray400 }]}>
           Challenges waiting for acceptance

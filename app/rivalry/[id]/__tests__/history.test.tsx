@@ -9,6 +9,7 @@ import { useLocalSearchParams } from 'expo-router';
 import type React from 'react';
 import { createMockAsyncGenerator } from '../../../../__tests__/test-utils';
 import { GameProvider } from '../../../../src/providers/game';
+import { HeaderProvider } from '../../../../src/providers/header';
 import { UnsavedChangesProvider } from '../../../../src/providers/unsaved-changes';
 import HistoryRoute from '../history';
 
@@ -183,10 +184,12 @@ describe('HistoryRoute', () => {
 
     return render(
       <QueryClientProvider client={queryClient}>
-        <UnsavedChangesProvider>
-          {/* biome-ignore lint/suspicious/noExplicitAny: GameProvider expects full Game type but tests use partial mock */}
-          <GameProvider game={mockGame as any}>{component}</GameProvider>
-        </UnsavedChangesProvider>
+        <HeaderProvider>
+          <UnsavedChangesProvider>
+            {/* biome-ignore lint/suspicious/noExplicitAny: GameProvider expects full Game type but tests use partial mock */}
+            <GameProvider game={mockGame as any}>{component}</GameProvider>
+          </UnsavedChangesProvider>
+        </HeaderProvider>
       </QueryClientProvider>
     );
   };

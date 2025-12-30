@@ -1,15 +1,17 @@
 import { useRouter } from 'expo-router';
 import { StatusBar } from 'expo-status-bar';
 import { useEffect } from 'react';
-import { View } from 'react-native';
 
-import { Header, HEADER_HEIGHT } from '../src/components/common/Header';
 import { RivalryIndex } from '../src/components/screens/RivalryIndex';
 import { useAuthUser } from '../src/hooks/useAuthUser';
+import { useSetHeader } from '../src/providers/header';
 
 export default function RivalriesRoute() {
   const router = useRouter();
   const { user, isLoading } = useAuthUser();
+
+  // Configure header
+  useSetHeader({ title: 'Rivalries', hide: 'rivalries' });
 
   // Redirect to profile if user hasn't set their name
   useEffect(() => {
@@ -20,10 +22,7 @@ export default function RivalriesRoute() {
 
   return (
     <>
-      <Header title="Rivalries" hide="rivalries" />
-      <View style={{ paddingTop: HEADER_HEIGHT }}>
-        <RivalryIndex />
-      </View>
+      <RivalryIndex />
       <StatusBar style="light" />
     </>
   );

@@ -214,7 +214,7 @@ export function Profile() {
   const isNewUser = isUserNew(user?.firstName);
 
   return (
-    <SafeAreaView edges={['top', 'bottom']} style={[styles.container, darkStyles.container]}>
+    <SafeAreaView edges={['bottom']} style={[styles.container, darkStyles.container]}>
       <KeyboardAvoidingView
         behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
         keyboardVerticalOffset={0}

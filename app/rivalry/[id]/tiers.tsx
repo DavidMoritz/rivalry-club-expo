@@ -7,12 +7,12 @@ import { SafeAreaView, Text, View } from 'react-native';
 import type { Schema } from '../../../amplify/data/resource';
 
 import { Button } from '../../../src/components/common/Button';
-import { Header, HEADER_HEIGHT } from '../../../src/components/common/Header';
 import { LoadingWithCharacter } from '../../../src/components/common/LoadingWithCharacter';
 import { TierListsDisplay } from '../../../src/components/screens/parts/TierListsDisplay';
 import { getMRivalry, type MRivalry } from '../../../src/models/m-rivalry';
 import { getMUser } from '../../../src/models/m-user';
 
+import { useSetHeader } from '../../../src/providers/header';
 import { RivalryProvider } from '../../../src/providers/rivalry';
 import { SyncedScrollViewContext, syncedScrollViewState } from '../../../src/providers/scroll-view';
 import { bold, center, darkStyles, styles } from '../../../src/utils/styles';
@@ -97,6 +97,8 @@ export default function TiersRoute() {
   const userAName = params.userAName as string | undefined;
   const userBName = params.userBName as string | undefined;
 
+  useSetHeader({ title: 'Tier Lists' });
+
   const [unlinked, setUnLinked] = useState<boolean>(false);
   const [rivalry, setRivalry] = useState<MRivalry | null>(null);
 
@@ -154,7 +156,6 @@ export default function TiersRoute() {
   return (
     <>
       <Stack.Screen options={{ title: 'Tier Lists' }} />
-      <Header title="Tier Lists" />
       <RivalryProvider
         rivalry={rivalry}
         userAName={userAName}
@@ -162,9 +163,7 @@ export default function TiersRoute() {
         userId={userId}
       >
         <SyncedScrollViewContext.Provider value={syncedScrollViewState}>
-          <SafeAreaView
-            style={[styles.container, darkStyles.container, { paddingTop: HEADER_HEIGHT }]}
-          >
+          <SafeAreaView style={[styles.container, darkStyles.container]}>
             {(isLoading || !(isError || rivalry)) && (
               <LoadingWithCharacter
                 message={isLoading ? 'Loading Tier Lists...' : 'Waiting for tier lists...'}
@@ -231,15 +230,13 @@ const errorTitleStyle = {
 const editButtonContainerStyle = {
   width: '100%' as const,
   position: 'absolute',
-  alignItems: 'flexEnd',
-  marginStart: 16,
   zIndex: 10
 };
 
 const editButtonStyle = {
-  width: '40%' as const,
+  left: 100,
   paddingVertical: 4,
-  paddingHorizontal: 0
+  paddingHorizontal: 4
 };
 
 const linkButtonStyle = {

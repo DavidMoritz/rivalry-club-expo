@@ -1,18 +1,16 @@
 import { Stack } from 'expo-router';
 import { StatusBar } from 'expo-status-bar';
-import { View } from 'react-native';
 
-import { Header, HEADER_HEIGHT } from '../../src/components/common/Header';
 import { CreateRivalry } from '../../src/components/screens/CreateRivalry';
+import { useSetHeader } from '../../src/providers/header';
 
 export default function CreateRivalryRoute() {
+  useSetHeader({ title: 'Create Rivalry' });
+
   return (
     <>
       <Stack.Screen options={{ title: 'Create Rivalry', headerShown: false }} />
-      <Header title="Create Rivalry" />
-      <View style={{ paddingTop: HEADER_HEIGHT }}>
-        <CreateRivalry />
-      </View>
+      <CreateRivalry />
       <StatusBar style="light" />
     </>
   );

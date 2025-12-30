@@ -179,16 +179,19 @@ export function Header({ title = 'Rivalry Club', hide }: HeaderProps) {
   );
 }
 
-export const HEADER_HEIGHT = 31;
+const BASE_HEADER_HEIGHT = 31;
 const HEADER_VERTICAL_PADDING = 0;
 const MENU_CONTAINER_TOP_OFFSET = 35;
+
+// Export the full header height including safe area insets
+export const HEADER_HEIGHT = BASE_HEADER_HEIGHT + 65;
 
 const headerContainerStyle = {
   position: absolute,
   top: 0,
   left: 0,
   right: 0,
-  height: HEADER_HEIGHT + 65,
+  height: HEADER_HEIGHT,
   flexDirection: row,
   alignItems: 'center' as const,
   justifyContent: 'space-between' as const,

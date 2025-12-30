@@ -4,6 +4,7 @@ import { useLocalSearchParams } from 'expo-router';
 import type { ReactNode } from 'react';
 import type { Rivalry } from '../../../../src/API';
 import { getMRivalry } from '../../../../src/models/m-rivalry';
+import { HeaderProvider } from '../../../../src/providers/header';
 import { RivalryProvider } from '../../../../src/providers/rivalry';
 import { UnsavedChangesProvider } from '../../../../src/providers/unsaved-changes';
 import TiersRoute from '../tiers';
@@ -82,11 +83,13 @@ describe('TiersRoute', () => {
 
     const { getByText } = render(
       <QueryClientProvider client={queryClient}>
-        <RivalryProvider rivalry={null}>
-          <UnsavedChangesProvider>
-            <TiersRoute />
-          </UnsavedChangesProvider>
-        </RivalryProvider>
+        <HeaderProvider>
+          <RivalryProvider rivalry={null}>
+            <UnsavedChangesProvider>
+              <TiersRoute />
+            </UnsavedChangesProvider>
+          </RivalryProvider>
+        </HeaderProvider>
       </QueryClientProvider>
     );
 
@@ -102,11 +105,13 @@ describe('TiersRoute', () => {
 
     render(
       <QueryClientProvider client={queryClient}>
-        <RivalryProvider rivalry={null}>
-          <UnsavedChangesProvider>
-            <TiersRoute />
-          </UnsavedChangesProvider>
-        </RivalryProvider>
+        <HeaderProvider>
+          <RivalryProvider rivalry={null}>
+            <UnsavedChangesProvider>
+              <TiersRoute />
+            </UnsavedChangesProvider>
+          </RivalryProvider>
+        </HeaderProvider>
       </QueryClientProvider>
     );
 
@@ -123,15 +128,17 @@ describe('TiersRoute', () => {
 
     render(
       <QueryClientProvider client={queryClient}>
-        <RivalryProvider
-          rivalry={mockRivalry}
-          userAName="Alice"
-          userBName="Bob"
-        >
-          <UnsavedChangesProvider>
-            <TiersRoute />
-          </UnsavedChangesProvider>
-        </RivalryProvider>
+        <HeaderProvider>
+          <RivalryProvider
+            rivalry={mockRivalry}
+            userAName="Alice"
+            userBName="Bob"
+          >
+            <UnsavedChangesProvider>
+              <TiersRoute />
+            </UnsavedChangesProvider>
+          </RivalryProvider>
+        </HeaderProvider>
       </QueryClientProvider>
     );
 
@@ -144,11 +151,13 @@ describe('TiersRoute', () => {
 
     const { root } = render(
       <QueryClientProvider client={queryClient}>
-        <RivalryProvider rivalry={null}>
-          <UnsavedChangesProvider>
-            <TiersRoute />
-          </UnsavedChangesProvider>
-        </RivalryProvider>
+        <HeaderProvider>
+          <RivalryProvider rivalry={null}>
+            <UnsavedChangesProvider>
+              <TiersRoute />
+            </UnsavedChangesProvider>
+          </RivalryProvider>
+        </HeaderProvider>
       </QueryClientProvider>
     );
 
@@ -160,11 +169,13 @@ describe('TiersRoute', () => {
 
     const { root } = render(
       <QueryClientProvider client={queryClient}>
-        <RivalryProvider rivalry={null}>
-          <UnsavedChangesProvider>
-            <TiersRoute />
-          </UnsavedChangesProvider>
-        </RivalryProvider>
+        <HeaderProvider>
+          <RivalryProvider rivalry={null}>
+            <UnsavedChangesProvider>
+              <TiersRoute />
+            </UnsavedChangesProvider>
+          </RivalryProvider>
+        </HeaderProvider>
       </QueryClientProvider>
     );
 
@@ -204,11 +215,13 @@ describe('TiersRoute', () => {
 
     const { getByText } = render(
       <QueryClientProvider client={queryClient}>
-        <RivalryProvider rivalry={null} userAName="Alice" userBName="Bob">
-          <UnsavedChangesProvider>
-            <TiersRoute />
-          </UnsavedChangesProvider>
-        </RivalryProvider>
+        <HeaderProvider>
+          <RivalryProvider rivalry={null} userAName="Alice" userBName="Bob">
+            <UnsavedChangesProvider>
+              <TiersRoute />
+            </UnsavedChangesProvider>
+          </RivalryProvider>
+        </HeaderProvider>
       </QueryClientProvider>
     );
 

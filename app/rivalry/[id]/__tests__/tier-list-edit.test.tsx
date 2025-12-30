@@ -93,6 +93,15 @@ jest.mock('../../../../src/providers/unsaved-changes', () => ({
   UnsavedChangesProvider: ({ children }: any) => children,
 }));
 
+jest.mock('../../../../src/providers/header', () => ({
+  useSetHeader: jest.fn(),
+  useHeaderConfig: jest.fn(() => ({
+    title: 'Edit Tier List',
+    showHeader: true,
+  })),
+  HeaderProvider: ({ children }: any) => children,
+}));
+
 jest.mock(
   '../../../../src/components/screens/parts/TierListEditDisplay',
   () => ({

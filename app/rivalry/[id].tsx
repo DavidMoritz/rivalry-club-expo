@@ -3,14 +3,16 @@ import { StatusBar } from 'expo-status-bar';
 import { useMemo } from 'react';
 
 import type { Schema } from '../../amplify/data/resource';
-import { Header } from '../../src/components/common/Header';
 import { ConnectedRivalryView } from '../../src/components/screens/ConnectedRivalryView';
 import { getMRivalry } from '../../src/models/m-rivalry';
 import { RivalryProvider } from '../../src/providers/rivalry';
+import { useSetHeader } from '../../src/providers/header';
 
 export default function RivalryDetailRoute() {
   const router = useRouter();
   const params = useLocalSearchParams();
+
+  useSetHeader({ title: 'Current Contest' });
   const rivalryId = params.id as string;
   const userAName = params.userAName as string | undefined;
   const userBName = params.userBName as string | undefined;
@@ -58,7 +60,6 @@ export default function RivalryDetailRoute() {
   return (
     <>
       <Stack.Screen options={{ headerShown: false }} />
-      <Header title="Current Contest" />
       <RivalryProvider
         rivalry={initialRivalry}
         userAName={userAName}

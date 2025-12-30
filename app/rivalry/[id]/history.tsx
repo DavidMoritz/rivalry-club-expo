@@ -6,7 +6,6 @@ import { useCallback, useState } from 'react';
 import { Text, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import type { Schema } from '../../../amplify/data/resource';
-import { Header, HEADER_HEIGHT } from '../../../src/components/common/Header';
 import { LoadingWithCharacter } from '../../../src/components/common/LoadingWithCharacter';
 import { ContestHistoryTable } from '../../../src/components/screens/parts/ContestHistoryTable';
 import { useDeleteMostRecentContestMutation } from '../../../src/controllers/c-rivalry';
@@ -15,6 +14,7 @@ import type { MGame } from '../../../src/models/m-game';
 import { getMRivalry, type MRivalry } from '../../../src/models/m-rivalry';
 import { getMUser } from '../../../src/models/m-user';
 import { useGame } from '../../../src/providers/game';
+import { useSetHeader } from '../../../src/providers/header';
 import { RivalryProvider } from '../../../src/providers/rivalry';
 
 import { center, darkStyles, styles } from '../../../src/utils/styles';
@@ -104,6 +104,9 @@ export default function HistoryRoute() {
   const userId = params.userId as string | undefined;
   const userAName = params.userAName as string | undefined;
   const userBName = params.userBName as string | undefined;
+
+  useSetHeader({ title: 'Contest History' });
+
   const queryClient = useQueryClient();
   const [contests, setContests] = useState<MContest[]>([]);
   const [nextToken, setNextToken] = useState<string | null>(null);
@@ -277,7 +280,6 @@ export default function HistoryRoute() {
     return (
       <>
         <Stack.Screen options={{ title: 'Contest History' }} />
-        <Header title="Contest History" />
         <SafeAreaView style={[styles.container, darkStyles.container]}>
           <LoadingWithCharacter
             message={isLoadingRivalry ? 'Loading rivalry data...' : 'Loading contests...'}
@@ -323,23 +325,13 @@ export default function HistoryRoute() {
   return (
     <>
       <Stack.Screen options={{ title: 'Contest History' }} />
-      <Header title="Contest History" />
       <RivalryProvider
         rivalry={rivalry}
         userAName={userAName}
         userBName={userBName}
         userId={userId}
       >
-        <SafeAreaView
-          edges={['left', 'right', 'bottom']}
-          style={[
-            styles.container,
-            darkStyles.container,
-            {
-              paddingTop: HEADER_HEIGHT
-            }
-          ]}
-        >
+        <SafeAreaView edges={['left', 'right', 'bottom']} style={[styles.container, darkStyles.container]}>
           <ContestHistoryTable
             contests={contests}
             deleteMostRecentContestMutation={deleteMostRecentContestMutation}

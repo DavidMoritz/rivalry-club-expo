@@ -2,20 +2,18 @@ import { useRouter } from 'expo-router';
 import { ScrollView, Text, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Button } from '../src/components/common/Button';
-import { Header, HEADER_HEIGHT } from '../src/components/common/Header';
 import { colors } from '../src/utils/colors';
+import { useSetHeader } from '../src/providers/header';
 import { bold, center, darkStyles, styles } from '../src/utils/styles';
 
 export default function HowToPlay() {
   const router = useRouter();
 
+  useSetHeader({ title: 'How to Play', hide: 'how-to-play' });
+
   return (
     <>
-      <Header title="How to Play" hide="how-to-play" />
-      <SafeAreaView
-        edges={['top', 'bottom']}
-        style={[styles.container, darkStyles.container, { paddingTop: HEADER_HEIGHT }]}
-      >
+      <SafeAreaView edges={['bottom']} style={[styles.container, darkStyles.container]}>
         <ScrollView contentContainerStyle={scrollContentStyle} style={scrollViewStyle}>
           {/* Header */}
           <View style={headerContainerStyle}>

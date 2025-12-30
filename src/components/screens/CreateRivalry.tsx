@@ -302,7 +302,7 @@ export function CreateRivalry() {
   };
 
   return (
-    <SafeAreaView edges={['top', 'bottom']} style={[styles.container, darkStyles.container]}>
+    <SafeAreaView edges={['bottom']} style={[styles.container, darkStyles.container]}>
       {creatingRivalry && <LoadingWithCharacter message={'Initiating Rivalry'} />}
 
       {!creatingRivalry && (

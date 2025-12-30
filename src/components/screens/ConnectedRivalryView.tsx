@@ -1,7 +1,6 @@
 import type React from 'react';
 import { useEffect, useRef, useState } from 'react';
 import { Text, View } from 'react-native';
-import { SafeAreaView } from 'react-native-safe-area-context';
 
 import { incrementFighterStats } from '../../controllers/c-increment-stats';
 import {
@@ -29,7 +28,6 @@ import { OfflineModal } from '../common/OfflineModal';
 import { BattleResults } from './parts/BattleResults';
 import { CurrentContest } from './parts/CurrentContest';
 import { RivalryView } from './parts/RivalryView';
-import { HEADER_HEIGHT } from '../common/Header';
 
 interface ConnectedRivalryViewProps {
   navigation: {
@@ -432,10 +430,7 @@ export function ConnectedRivalryView({
   const showPreparingTiers = canShowMainContent && !tiersReady && !isLoading && !isError;
 
   return (
-    <SafeAreaView
-      edges={['top', 'bottom']}
-      style={[styles.container, darkStyles.container, safeAreaStyle, { paddingTop: HEADER_HEIGHT }]}
-    >
+    <View style={{ flex: 1 }}>
       <OfflineModal onClose={() => setShowOfflineModal(false)} visible={showOfflineModal} />
 
       <RivalryViewContent
@@ -465,19 +460,15 @@ export function ConnectedRivalryView({
         shufflingSlot={shufflingSlot}
         tiersReady={tiersReady}
       />
-    </SafeAreaView>
+    </View>
   );
 }
 
 // Style constants
-const centeredContainerStyle = {
+const errorContainerStyle = {
   flex: 1,
   alignItems: center,
-  justifyContent: center
-};
-
-const errorContainerStyle = {
-  ...centeredContainerStyle,
+  justifyContent: center,
   paddingHorizontal: 16
 };
 

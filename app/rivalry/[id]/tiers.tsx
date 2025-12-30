@@ -180,7 +180,6 @@ export default function TiersRoute() {
             {!(isLoading || isError || rivalry) && (
               <View style={centeredContainerStyle}>
                 <Text style={loadingTextStyle}>Waiting for tier lists...</Text>
-                <Text style={debugTextStyle}>Check console logs for details</Text>
               </View>
             )}
 

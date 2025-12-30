@@ -1,9 +1,9 @@
 import { useQuery } from '@tanstack/react-query';
 import { generateClient } from 'aws-amplify/data';
-import { Stack, useLocalSearchParams, useRouter } from 'expo-router';
+import { Stack, useLocalSearchParams, useNavigation, useRouter } from 'expo-router';
 import { StatusBar } from 'expo-status-bar';
 import { useEffect, useState } from 'react';
-import { ActivityIndicator, SafeAreaView, Text, TouchableOpacity, View } from 'react-native';
+import { ActivityIndicator, Alert, SafeAreaView, Text, TouchableOpacity, View } from 'react-native';
 import type { Schema } from '../../../amplify/data/resource';
 
 import { HamburgerMenu } from '../../../src/components/common/HamburgerMenu';
@@ -14,6 +14,7 @@ import { getMRivalry, type MRivalry } from '../../../src/models/m-rivalry';
 import type { MTierList } from '../../../src/models/m-tier-list';
 import { getMUser } from '../../../src/models/m-user';
 import { RivalryProvider } from '../../../src/providers/rivalry';
+import { useUnsavedChanges } from '../../../src/providers/unsaved-changes';
 import { bold, center, darkStyles, styles } from '../../../src/utils/styles';
 import { colors } from '../../../src/utils/colors';
 
@@ -199,6 +200,7 @@ function renderContent({
   isPending,
   handleSave,
   handleTierListChange,
+  setHasUnsavedChanges,
   router
 }: {
   isLoading: boolean;
@@ -211,6 +213,7 @@ function renderContent({
   isPending: boolean;
   handleSave: () => void;
   handleTierListChange: () => void;
+  setHasUnsavedChanges: (hasChanges: boolean) => void;
   router: ReturnType<typeof useRouter>;
 }) {
   if (isLoading) {
@@ -267,7 +270,11 @@ function renderContent({
       <Text style={editTitleStyle}>Edit Your Tier List</Text>
 
       <View style={editDisplayContainerStyle}>
-        <TierListEditDisplay onChange={handleTierListChange} tierList={userTierList} />
+        <TierListEditDisplay
+          onChange={handleTierListChange}
+          tierList={userTierList}
+          onUnsavedChangesChange={setHasUnsavedChanges}
+        />
       </View>
 
       <TouchableOpacity
@@ -303,6 +310,8 @@ export default function TierListEditRoute() {
 
   const userId = useUserIdFromStorage(userIdParam);
   const userTierList = useUserTierList(rivalry, userId);
+  const navigation = useNavigation();
+  const { hasUnsavedChanges, setHasUnsavedChanges } = useUnsavedChanges();
 
   const { isLoading, isError, error } = useQuery({
     enabled: !!rivalryId,
@@ -316,6 +325,7 @@ export default function TierListEditRoute() {
     tierListSignifier: userTierList?.userId === rivalry?.userAId ? 'A' : 'B',
     onSuccess: () => {
       setHasChanges(false);
+      setHasUnsavedChanges(false);
       router.back();
     }
   });
@@ -327,6 +337,52 @@ export default function TierListEditRoute() {
   const handleTierListChange = () => {
     setHasChanges(true);
   };
+
+  // Navigation interception for unsaved changes
+  useEffect(() => {
+    const beforeRemove = (e: any) => {
+      if (!hasUnsavedChanges) {
+        return; // No unsaved changes, allow navigation
+      }
+
+      // Prevent default navigation
+      e.preventDefault();
+
+      // Show confirmation dialog
+      Alert.alert(
+        'Unsaved Changes',
+        'You have unsaved changes. What would you like to do?',
+        [
+          {
+            text: 'Discard',
+            style: 'destructive',
+            onPress: () => {
+              setHasUnsavedChanges(false);
+              navigation.dispatch(e.data.action);
+            }
+          },
+          { text: 'Cancel', style: 'cancel' },
+          {
+            text: 'Save Changes',
+            onPress: () => {
+              handleSave();
+              // Navigation handled by onSuccess callback in saveTierSlots
+            }
+          }
+        ]
+      );
+    };
+
+    navigation.addListener('beforeRemove', beforeRemove);
+    return () => navigation.removeListener('beforeRemove', beforeRemove);
+  }, [navigation, hasUnsavedChanges]);
+
+  // Reset unsaved changes when component unmounts
+  useEffect(() => {
+    return () => {
+      setHasUnsavedChanges(false);
+    };
+  }, []);
 
   return (
     <>
@@ -350,6 +406,7 @@ export default function TierListEditRoute() {
             isPending,
             handleSave,
             handleTierListChange,
+            setHasUnsavedChanges,
             router
           })}
         </SafeAreaView>

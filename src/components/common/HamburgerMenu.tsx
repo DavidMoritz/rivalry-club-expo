@@ -1,10 +1,11 @@
 import { useRouter } from 'expo-router';
 import { useState } from 'react';
-import { Modal, Pressable, Text, TouchableOpacity, View } from 'react-native';
+import { Alert, Modal, Pressable, Text, TouchableOpacity, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import { useAuthUser } from '../../hooks/useAuthUser';
 import { signOut } from '../../lib/amplify-auth';
+import { useUnsavedChanges } from '../../providers/unsaved-changes';
 import { colors } from '../../utils/colors';
 import { absolute, center } from '../../utils/styles';
 
@@ -13,46 +14,78 @@ export function HamburgerMenu() {
   const { user } = useAuthUser();
   const [menuVisible, setMenuVisible] = useState(false);
   const insets = useSafeAreaInsets();
+  const { hasUnsavedChanges, setHasUnsavedChanges } = useUnsavedChanges();
 
   // Check if user is anonymous
   const isAnonymous = user?.awsSub === 'anonymous';
 
-  const handleSignOut = async () => {
-    try {
-      // Sign out from Cognito
-      await signOut();
-
+  // Helper function to check for unsaved changes before navigation
+  const navigateWithUnsavedCheck = (navigationFn: () => void) => {
+    if (hasUnsavedChanges) {
+      Alert.alert(
+        'Unsaved Changes',
+        'You have unsaved changes. What would you like to do?',
+        [
+          {
+            text: 'Discard',
+            style: 'destructive',
+            onPress: () => {
+              setHasUnsavedChanges(false);
+              setMenuVisible(false);
+              navigationFn();
+            }
+          },
+          { text: 'Cancel', style: 'cancel' }
+        ]
+      );
+    } else {
       setMenuVisible(false);
-      // Navigate to home screen
-      router.replace('/auth');
-    } catch (error) {
-      console.error('Error signing out:', error);
+      navigationFn();
     }
   };
 
+  const handleSignOut = async () => {
+    navigateWithUnsavedCheck(async () => {
+      try {
+        // Sign out from Cognito
+        await signOut();
+
+        // Navigate to home screen
+        router.replace('/auth');
+      } catch (error) {
+        console.error('Error signing out:', error);
+      }
+    });
+  };
+
   const handleBack = () => {
-    setMenuVisible(false);
-    router.back();
+    navigateWithUnsavedCheck(() => {
+      router.back();
+    });
   };
 
   const handleRivalries = () => {
-    setMenuVisible(false);
-    router.push('/rivalries');
+    navigateWithUnsavedCheck(() => {
+      router.push('/rivalries');
+    });
   };
 
   const handleProfile = () => {
-    setMenuVisible(false);
-    router.push('/profile');
+    navigateWithUnsavedCheck(() => {
+      router.push('/profile');
+    });
   };
 
   const handlePendingRivalries = () => {
-    setMenuVisible(false);
-    router.push('/pending');
+    navigateWithUnsavedCheck(() => {
+      router.push('/pending');
+    });
   };
 
   const handleHowToPlay = () => {
-    setMenuVisible(false);
-    router.push('/how-to-play');
+    navigateWithUnsavedCheck(() => {
+      router.push('/how-to-play');
+    });
   };
 
   return (

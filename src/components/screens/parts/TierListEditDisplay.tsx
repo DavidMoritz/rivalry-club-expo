@@ -1,6 +1,7 @@
-import { type ReactNode, useEffect, useState } from 'react';
+import { type ReactNode, useEffect, useRef, useState } from 'react';
 import {
   Alert,
+  Keyboard,
   LayoutAnimation,
   Platform,
   ScrollView,
@@ -10,20 +11,21 @@ import {
   UIManager,
   View
 } from 'react-native';
+import { generateClient } from 'aws-amplify/data';
+import type { Schema } from '../../../../amplify/data/resource';
 import type { MGame } from '../../../models/m-game';
-import { type MTierList, TIERS } from '../../../models/m-tier-list';
+import { FIGHTER_COUNT, type MTierList, TIERS } from '../../../models/m-tier-list';
 import type { MTierSlot } from '../../../models/m-tier-slot';
 import { useGame } from '../../../providers/game';
 import { useRivalryContext } from '../../../providers/rivalry';
 import { fighterByIdFromGame } from '../../../utils';
 import { colors } from '../../../utils/colors';
+import { bold, center, row } from '../../../utils/styles';
 import { CharacterDisplay } from '../../common/CharacterDisplay';
 import {
   generateShareCode,
   isShareCodeAvailable,
-  useCloneSnapshotMutation,
   useCreateSnapshotMutation,
-  useSnapshotByShareCodeQuery,
   useUserSnapshotsQuery
 } from '../../../controllers/c-snapshot';
 import type { SnapshotArrangement } from '../../../models/m-tier-list-snapshot';
@@ -38,6 +40,7 @@ const MAX_TIER_POSITION = 85;
 interface TierListEditDisplayProps {
   tierList: MTierList;
   onChange: () => void;
+  onUnsavedChangesChange?: (hasChanges: boolean) => void;
 }
 
 interface MoveSlotOptions {
@@ -54,9 +57,14 @@ if (Platform.OS === 'android' && UIManager.setLayoutAnimationEnabledExperimental
   UIManager.setLayoutAnimationEnabledExperimental(true);
 }
 
-export function TierListEditDisplay({ tierList, onChange }: TierListEditDisplayProps): ReactNode {
+export function TierListEditDisplay({
+  tierList,
+  onChange,
+  onUnsavedChangesChange
+}: TierListEditDisplayProps): ReactNode {
   const game = useGame() as MGame;
   const { userId } = useRivalryContext();
+  const scrollViewRef = useRef<ScrollView>(null);
   const [positionedSlots, setPositionedSlots] = useState<MTierSlot[]>([]);
   const [unknownSlots, setUnknownSlots] = useState<MTierSlot[]>([]);
   const [selectedSlot, setSelectedSlot] = useState<MTierSlot | null>(null);
@@ -67,6 +75,8 @@ export function TierListEditDisplay({ tierList, onChange }: TierListEditDisplayP
   const [snapshotName, setSnapshotName] = useState('');
   const [shareCodeInput, setShareCodeInput] = useState('');
   const [importError, setImportError] = useState('');
+  const [keyboardHeight, setKeyboardHeight] = useState(0);
+  const [hasUnsavedChanges, setHasUnsavedChanges] = useState(false);
 
   // Snapshot hooks
   const { data: userSnapshots = [] } = useUserSnapshotsQuery({
@@ -87,17 +97,46 @@ export function TierListEditDisplay({ tierList, onChange }: TierListEditDisplayP
       Alert.alert('Error', error.message);
     }
   });
-  const { mutate: cloneSnapshot } = useCloneSnapshotMutation({
-    onSuccess: () => {
-      Alert.alert('Success', 'Snapshot imported to your collection!');
-      setShowImportDialog(false);
-      setShareCodeInput('');
-      setImportError('');
-    },
-    onError: (error) => {
-      setImportError('Not found');
+
+  // Notify parent when unsaved changes state changes
+  useEffect(() => {
+    onUnsavedChangesChange?.(hasUnsavedChanges);
+  }, [hasUnsavedChanges, onUnsavedChangesChange]);
+
+  // Keyboard event listeners
+  useEffect(() => {
+    const keyboardWillShow = Keyboard.addListener(
+      Platform.OS === 'ios' ? 'keyboardWillShow' : 'keyboardDidShow',
+      (e) => {
+        setKeyboardHeight(e.endCoordinates.height);
+        // Scroll to bottom when keyboard shows and either dialog is open
+        if (showImportDialog || showSaveDialog) {
+          setTimeout(() => {
+            scrollViewRef.current?.scrollToEnd({ animated: true });
+          }, 100);
+        }
+      }
+    );
+
+    const keyboardWillHide = Keyboard.addListener(
+      Platform.OS === 'ios' ? 'keyboardWillHide' : 'keyboardDidHide',
+      () => {
+        setKeyboardHeight(0);
+      }
+    );
+
+    return () => {
+      keyboardWillShow.remove();
+      keyboardWillHide.remove();
+    };
+  }, [showImportDialog, showSaveDialog]);
+
+  // Notify parent when unsaved changes state changes
+  useEffect(() => {
+    if (onUnsavedChangesChange) {
+      onUnsavedChangesChange(hasUnsavedChanges);
     }
-  });
+  }, [hasUnsavedChanges, onUnsavedChangesChange]);
 
   useEffect(() => {
     if (!tierList.slots?.length) return;
@@ -118,6 +157,12 @@ export function TierListEditDisplay({ tierList, onChange }: TierListEditDisplayP
     setPositionedSlots(sortedPositioned);
     setUnknownSlots(unknown);
   }, [tierList]);
+
+  // Helper function to mark changes and notify parent
+  const handleChange = () => {
+    setHasUnsavedChanges(true);
+    onChange();
+  };
 
   // Helper: Find first available position in a direction
   const findFirstAvailablePosition = (
@@ -302,7 +347,7 @@ export function TierListEditDisplay({ tierList, onChange }: TierListEditDisplayP
     setPositionedSlots(updatedSlots);
     updateTierListSlots(updatedSlots, newUnknownSlots);
 
-    onChange();
+    handleChange();
     return true;
   };
 
@@ -520,7 +565,7 @@ export function TierListEditDisplay({ tierList, onChange }: TierListEditDisplayP
     setSelectedSlot(null);
 
     // Notify parent of changes
-    onChange();
+    handleChange();
   };
 
   const handleSaveSnapshot = async () => {
@@ -560,41 +605,10 @@ export function TierListEditDisplay({ tierList, onChange }: TierListEditDisplayP
     });
   };
 
-  const handleImportByCode = async () => {
-    if (!shareCodeInput.trim()) {
-      setImportError('Please enter a share code');
-      return;
-    }
-
-    if (!game?.id) {
-      setImportError('Game information missing');
-      return;
-    }
-
+  const handleImportSnapshot = async (snapshotArrangement: string, snapshotName: string) => {
     try {
-      // Query the snapshot by share code
-      const client = (await import('aws-amplify/data')).generateClient<
-        typeof import('../../../amplify/data/resource')
-      >();
-      const { data, errors } = await client.models.TierListSnapshot.snapshotByShareCode({
-        shareCode: shareCodeInput.toUpperCase()
-      });
-
-      if (errors || !data || data.length === 0) {
-        setImportError('Not found');
-        return;
-      }
-
-      const snapshot = data[0];
-
-      // Validate game match
-      if (snapshot.gameId !== game.id) {
-        setImportError('Not found');
-        return;
-      }
-
       // Parse arrangement and apply to tier list
-      const arrangement = JSON.parse(snapshot.arrangement as string) as SnapshotArrangement[];
+      const arrangement = JSON.parse(snapshotArrangement) as SnapshotArrangement[];
 
       // Create a map of fighterId to position from the snapshot
       const positionMap = new Map(arrangement.map((item) => [item.fighterId, item.position]));
@@ -624,16 +638,94 @@ export function TierListEditDisplay({ tierList, onChange }: TierListEditDisplayP
       setUnknownSlots(unknown);
 
       // Notify parent of changes
-      onChange();
+      handleChange();
 
       // Close dialog and show success
       setShowImportDialog(false);
       setShareCodeInput('');
       setImportError('');
-      Alert.alert('Success!', `Imported tier list: ${snapshot.name}`);
+      Alert.alert('Success!', `Imported tier list: ${snapshotName}`);
     } catch (error) {
-      console.error('[handleImportByCode] Error:', error);
-      setImportError('Not found');
+      console.error('[handleImportSnapshot] Error:', error);
+      Alert.alert('Error', 'Failed to import snapshot');
+    }
+  };
+
+  const handleImportByShareCode = async () => {
+    if (!shareCodeInput.trim()) {
+      setImportError('Please enter a share code');
+      return;
+    }
+
+    if (!game?.id) {
+      setImportError('Game information missing');
+      return;
+    }
+
+    // Easter egg: "random" randomizes the tier list
+    if (shareCodeInput.trim().toUpperCase() === 'RANDOM') {
+      // Create array of all available positions (0 to FIGHTER_COUNT - 1)
+      const positions = Array.from({ length: FIGHTER_COUNT }, (_, i) => i);
+
+      // Shuffle positions using Fisher-Yates algorithm
+      for (let i = positions.length - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1));
+        [positions[i], positions[j]] = [positions[j], positions[i]];
+      }
+
+      // Assign random positions to all fighters
+      const updatedSlots = tierList.slots.map((slot, index) => ({
+        ...slot,
+        position: positions[index] ?? 0
+      }));
+
+      // Update tierList
+      tierList.slots = updatedSlots;
+
+      // Update local state
+      const positioned = updatedSlots
+        .filter((slot) => slot.position !== null && slot.position !== undefined)
+        .sort((a, b) => (a.position || 0) - (b.position || 0));
+
+      LayoutAnimation.configureNext(LayoutAnimation.Presets.easeInEaseOut);
+      setPositionedSlots(positioned);
+      setUnknownSlots([]);
+
+      // Notify parent of changes
+      handleChange();
+
+      // Close dialog and show success
+      setShowImportDialog(false);
+      setShareCodeInput('');
+      setImportError('');
+      Alert.alert('🎲 Random!', 'Your tier list has been completely randomized!');
+      return;
+    }
+
+    try {
+      // Query the snapshot by share code
+      const client = generateClient<Schema>();
+      const { data, errors } = await client.models.TierListSnapshot.snapshotByShareCode({
+        shareCode: shareCodeInput.trim().toUpperCase()
+      });
+
+      if (errors || !data || data.length === 0) {
+        setImportError('Snapshot not found');
+        return;
+      }
+
+      const snapshot = data[0];
+
+      // Validate game match
+      if (snapshot.gameId !== game.id) {
+        setImportError('Snapshot is for a different game');
+        return;
+      }
+
+      await handleImportSnapshot(snapshot.arrangement as string, snapshot.name);
+    } catch (error) {
+      console.error('[handleImportByShareCode] Error:', error);
+      setImportError('Snapshot not found');
     }
   };
 
@@ -679,7 +771,15 @@ export function TierListEditDisplay({ tierList, onChange }: TierListEditDisplayP
   };
 
   return (
-    <ScrollView style={{ flex: 1 }}>
+    <ScrollView
+      ref={scrollViewRef}
+      style={{ flex: 1 }}
+      contentContainerStyle={{
+        paddingBottom:
+          (showImportDialog || showSaveDialog) && keyboardHeight > 0 ? keyboardHeight * 0.6 : 0
+      }}
+      keyboardShouldPersistTaps="handled"
+    >
       {TIERS.map((tier, tierIndex) => {
         // Calculate cumulative start index based on previous tiers' fighter counts
         const startIdx = TIERS.slice(0, tierIndex).reduce((sum, t) => sum + t.fightersCount, 0);
@@ -757,8 +857,7 @@ export function TierListEditDisplay({ tierList, onChange }: TierListEditDisplayP
               flexDirection: 'row',
               borderBottomWidth: 1,
               borderBottomColor: colors.gray700,
-              backgroundColor: colors.tierU,
-              minHeight: 80
+              backgroundColor: colors.tierU
             }}
           >
             <View
@@ -838,116 +937,69 @@ export function TierListEditDisplay({ tierList, onChange }: TierListEditDisplayP
       )}
 
       {/* SNAPSHOT BUTTONS */}
-      {positionedSlots.length > 0 && (
-        <View style={{ marginTop: 16, marginHorizontal: 16, gap: 12 }}>
-          {/* Import Snapshot Button - Only show if user has snapshots */}
-          {userSnapshots.length > 0 && (
-            <TouchableOpacity
-              onPress={() => setShowImportDialog(true)}
-              style={{
-                backgroundColor: colors.blue500,
-                padding: 16,
-                borderRadius: 8,
-                alignItems: 'center'
-              }}
-            >
-              <Text
-                style={{
-                  color: colors.white,
-                  fontSize: 16,
-                  fontWeight: 'bold'
-                }}
-              >
-                Import Snapshot
-              </Text>
-            </TouchableOpacity>
-          )}
+      <View style={snapshotButtonsContainerStyle}>
+        {/* Import Snapshot Button - Only show if user has snapshots */}
+        {!showImportDialog && !showSaveDialog && (
+          <TouchableOpacity
+            onPress={() => {
+              setShowImportDialog(true);
+              setTimeout(() => {
+                scrollViewRef.current?.scrollToEnd({ animated: true });
+              }, 100);
+            }}
+            style={importButtonStyle}
+          >
+            <Text style={buttonTextStyle}>Import Snapshot</Text>
+          </TouchableOpacity>
+        )}
 
-          {/* Save Snapshot Button */}
-          {!showSaveDialog && (
-            <TouchableOpacity
-              onPress={() => setShowSaveDialog(true)}
-              style={{
-                backgroundColor: colors.green700,
-                padding: 16,
-                borderRadius: 8,
-                alignItems: 'center'
-              }}
-            >
-              <Text style={{ color: colors.white, fontSize: 16, fontWeight: 'bold' }}>
-                Save Snapshot
-              </Text>
-            </TouchableOpacity>
-          )}
-        </View>
-      )}
+        {/* Save Snapshot Button */}
+        {!showImportDialog && !showSaveDialog && (
+          <TouchableOpacity
+            onPress={() => {
+              setShowSaveDialog(true);
+              setTimeout(() => {
+                scrollViewRef.current?.scrollToEnd({ animated: true });
+              }, 100);
+            }}
+            style={saveButtonStyle}
+          >
+            <Text style={buttonTextStyle}>Save Snapshot</Text>
+          </TouchableOpacity>
+        )}
+
+        {/* RESET BUTTON: Shows whenever there are positioned fighters */}
+        {!showImportDialog && !showSaveDialog && positionedSlots.length > 0 && (
+          <TouchableOpacity onPress={handleResetAllFighters} style={resetButtonStyle}>
+            <Text style={resetButtonTextStyle}>⚠️ Reset all fighters</Text>
+          </TouchableOpacity>
+        )}
+      </View>
 
       {/* Save Snapshot Dialog */}
       {showSaveDialog && (
-        <View
-          style={{
-            marginTop: 16,
-            marginHorizontal: 16,
-            padding: 16,
-            backgroundColor: colors.gray800,
-            borderRadius: 8,
-            borderWidth: 2,
-            borderColor: colors.green700
-          }}
-        >
-          <Text
-            style={{
-              color: colors.white,
-              fontSize: 18,
-              fontWeight: 'bold',
-              marginBottom: 12
-            }}
-          >
-            Save Snapshot
-          </Text>
-          <Text style={{ color: colors.gray400, marginBottom: 8 }}>
-            Enter a name for this tier list:
-          </Text>
+        <View style={saveDialogContainerStyle}>
+          <Text style={dialogTitleStyle}>Save Snapshot</Text>
+          <Text style={dialogLabelStyle}>Enter a name for this tier list:</Text>
           <TextInput
             value={snapshotName}
             onChangeText={setSnapshotName}
             placeholder="e.g., My Best Tier List"
             placeholderTextColor={colors.gray500}
-            style={{
-              backgroundColor: colors.gray700,
-              color: colors.white,
-              padding: 12,
-              borderRadius: 4,
-              marginBottom: 12
-            }}
+            style={dialogInputStyle}
           />
-          <View style={{ flexDirection: 'row', gap: 8 }}>
+          <View style={dialogButtonRowStyle}>
             <TouchableOpacity
               onPress={() => {
                 setShowSaveDialog(false);
                 setSnapshotName('');
               }}
-              style={{
-                flex: 1,
-                backgroundColor: colors.gray600,
-                padding: 12,
-                borderRadius: 4,
-                alignItems: 'center'
-              }}
+              style={cancelButtonStyle}
             >
-              <Text style={{ color: colors.white, fontWeight: 'bold' }}>Cancel</Text>
+              <Text style={dialogButtonTextStyle}>Cancel</Text>
             </TouchableOpacity>
-            <TouchableOpacity
-              onPress={handleSaveSnapshot}
-              style={{
-                flex: 1,
-                backgroundColor: colors.green700,
-                padding: 12,
-                borderRadius: 4,
-                alignItems: 'center'
-              }}
-            >
-              <Text style={{ color: colors.white, fontWeight: 'bold' }}>Save</Text>
+            <TouchableOpacity onPress={handleSaveSnapshot} style={saveDialogButtonStyle}>
+              <Text style={dialogButtonTextStyle}>Save</Text>
             </TouchableOpacity>
           </View>
         </View>
@@ -955,101 +1007,214 @@ export function TierListEditDisplay({ tierList, onChange }: TierListEditDisplayP
 
       {/* Import Snapshot Dialog */}
       {showImportDialog && (
-        <View
-          style={{
-            marginTop: 16,
-            marginHorizontal: 16,
-            padding: 16,
-            backgroundColor: colors.gray800,
-            borderRadius: 8,
-            borderWidth: 2,
-            borderColor: colors.blue500
-          }}
-        >
-          <Text
-            style={{
-              color: colors.white,
-              fontSize: 18,
-              fontWeight: 'bold',
-              marginBottom: 12
-            }}
-          >
-            Import Snapshot
-          </Text>
-          <Text style={{ color: colors.gray400, marginBottom: 8 }}>Enter share code:</Text>
+        <View style={importDialogContainerStyle}>
+          <Text style={dialogTitleStyle}>Import Snapshot</Text>
+
+          {/* My Snapshots Section */}
+          {userSnapshots.length > 0 && (
+            <>
+              <Text style={dialogLabelStyle}>My Snapshots:</Text>
+              <ScrollView style={{ maxHeight: 150, marginBottom: 16 }}>
+                {userSnapshots
+                  .sort((a, b) => {
+                    // Sort by createdAt descending (most recent first)
+                    const dateA = new Date(a.createdAt || 0).getTime();
+                    const dateB = new Date(b.createdAt || 0).getTime();
+                    return dateB - dateA;
+                  })
+                  .map((snapshot) => (
+                    <TouchableOpacity
+                      key={snapshot.id}
+                      onPress={() =>
+                        handleImportSnapshot(snapshot.arrangement as string, snapshot.name)
+                      }
+                      style={snapshotListItemStyle}
+                    >
+                      <View>
+                        <Text style={snapshotNameStyle}>{snapshot.name}</Text>
+                        <Text style={snapshotDateStyle}>{snapshot.shareCode}</Text>
+                      </View>
+                    </TouchableOpacity>
+                  ))}
+              </ScrollView>
+            </>
+          )}
+
+          {/* Share Code Import Section */}
+          <Text style={dialogLabelStyle}>Or enter a share code:</Text>
           <TextInput
             value={shareCodeInput.toUpperCase()}
             onChangeText={(text) => {
-              setShareCodeInput(text.toUpperCase());
+              setShareCodeInput(text.trim().toUpperCase());
               setImportError('');
             }}
-            placeholder="e.g., A315A"
+            placeholder="e.g. CC084, RANDOM"
             placeholderTextColor={colors.gray500}
             autoCapitalize="characters"
-            style={{
-              backgroundColor: colors.gray700,
-              color: colors.white,
-              padding: 12,
-              borderRadius: 4,
-              marginBottom: 8
-            }}
+            style={dialogInputStyle}
           />
-          {importError && (
-            <Text style={{ color: colors.red500, marginBottom: 8, fontSize: 14 }}>
-              {importError}
-            </Text>
-          )}
-          <View style={{ flexDirection: 'row', gap: 8 }}>
+          {importError && <Text style={errorTextStyle}>{importError}</Text>}
+
+          <View style={dialogButtonRowStyle}>
             <TouchableOpacity
               onPress={() => {
                 setShowImportDialog(false);
                 setShareCodeInput('');
                 setImportError('');
               }}
-              style={{
-                flex: 1,
-                backgroundColor: colors.gray600,
-                padding: 12,
-                borderRadius: 4,
-                alignItems: 'center'
-              }}
+              style={cancelButtonStyle}
             >
-              <Text style={{ color: colors.white, fontWeight: 'bold' }}>Cancel</Text>
+              <Text style={dialogButtonTextStyle}>Cancel</Text>
             </TouchableOpacity>
-            <TouchableOpacity
-              onPress={handleImportByCode}
-              style={{
-                flex: 1,
-                backgroundColor: colors.blue500,
-                padding: 12,
-                borderRadius: 4,
-                alignItems: 'center'
-              }}
-            >
-              <Text style={{ color: colors.white, fontWeight: 'bold' }}>Import</Text>
+            <TouchableOpacity onPress={handleImportByShareCode} style={importDialogButtonStyle}>
+              <Text style={dialogButtonTextStyle}>Import</Text>
             </TouchableOpacity>
           </View>
         </View>
       )}
-
-      {/* RESET BUTTON: Shows whenever there are positioned fighters */}
-      {positionedSlots.length > 0 && (
-        <TouchableOpacity
-          onPress={handleResetAllFighters}
-          style={{
-            backgroundColor: colors.yellow500,
-            padding: 16,
-            marginTop: 16,
-            marginHorizontal: 16,
-            borderRadius: 8,
-            alignItems: 'center'
-          }}
-        >
-          <Text style={{ color: colors.black, fontSize: 16, fontWeight: 'bold' }}>
-            ⚠️ Reset all fighters
-          </Text>
-        </TouchableOpacity>
-      )}
     </ScrollView>
   );
 }
+
+// Snapshot button styles
+const snapshotButtonsContainerStyle = {
+  marginTop: 16,
+  marginHorizontal: 16,
+  gap: 12
+};
+
+const baseSnapshotButtonStyle = {
+  padding: 16,
+  borderRadius: 8,
+  alignItems: center
+};
+
+const importButtonStyle = {
+  ...baseSnapshotButtonStyle,
+  backgroundColor: colors.blue500
+};
+
+const saveButtonStyle = {
+  ...baseSnapshotButtonStyle,
+  backgroundColor: colors.green700
+};
+
+const buttonTextStyle = {
+  color: colors.white,
+  fontSize: 16,
+  fontWeight: bold
+};
+
+// Dialog containers
+const baseDialogContainerStyle = {
+  marginTop: 0,
+  marginHorizontal: 16,
+  padding: 16,
+  backgroundColor: colors.gray800,
+  borderRadius: 8,
+  borderWidth: 2
+};
+
+const saveDialogContainerStyle = {
+  ...baseDialogContainerStyle,
+  borderColor: colors.green700
+};
+
+const importDialogContainerStyle = {
+  ...baseDialogContainerStyle,
+  borderColor: colors.blue500
+};
+
+// Dialog text styles
+const dialogTitleStyle = {
+  color: colors.white,
+  fontSize: 18,
+  fontWeight: bold,
+  marginBottom: 12
+};
+
+const dialogLabelStyle = {
+  color: colors.gray400,
+  marginBottom: 8
+};
+
+const dialogInputStyle = {
+  backgroundColor: colors.gray700,
+  color: colors.white,
+  padding: 12,
+  borderRadius: 4,
+  marginBottom: 12
+};
+
+const errorTextStyle = {
+  color: colors.red500,
+  marginBottom: 8,
+  fontSize: 14
+};
+
+// Dialog button row
+const dialogButtonRowStyle = {
+  flexDirection: row,
+  gap: 8
+};
+
+const baseDialogButtonStyle = {
+  flex: 1,
+  padding: 12,
+  borderRadius: 4,
+  alignItems: center
+};
+
+const cancelButtonStyle = {
+  ...baseDialogButtonStyle,
+  backgroundColor: colors.gray600
+};
+
+const saveDialogButtonStyle = {
+  ...baseDialogButtonStyle,
+  backgroundColor: colors.green700
+};
+
+const importDialogButtonStyle = {
+  ...baseDialogButtonStyle,
+  backgroundColor: colors.blue500
+};
+
+const dialogButtonTextStyle = {
+  color: colors.white,
+  fontWeight: bold
+};
+
+// Snapshot list item styles
+const snapshotListItemStyle = {
+  backgroundColor: colors.gray700,
+  padding: 12,
+  marginBottom: 8,
+  borderRadius: 6,
+  borderWidth: 1,
+  borderColor: colors.blue500
+};
+
+const snapshotNameStyle = {
+  color: colors.white,
+  fontSize: 16,
+  fontWeight: bold,
+  marginBottom: 4
+};
+
+const snapshotDateStyle = {
+  color: colors.gray400,
+  fontSize: 12
+};
+
+// Reset button
+const resetButtonStyle = {
+  ...baseSnapshotButtonStyle,
+  backgroundColor: colors.yellow500
+};
+
+const resetButtonTextStyle = {
+  color: colors.black,
+  fontSize: 16,
+  fontWeight: bold
+};

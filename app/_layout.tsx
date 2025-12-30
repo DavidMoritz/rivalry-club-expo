@@ -9,6 +9,7 @@ import 'react-native-url-polyfill/auto';
 import outputs from '../amplify-config';
 import { AllRivalriesProvider } from '../src/providers/all-rivalries';
 import { GameProvider } from '../src/providers/game';
+import { UnsavedChangesProvider } from '../src/providers/unsaved-changes';
 import { colors } from '../src/utils/colors';
 import { preloadAssets } from '../src/utils/preload-assets';
 
@@ -83,7 +84,9 @@ export default function RootLayout() {
     <QueryClientProvider client={queryClient}>
       <GameProvider game={null}>
         <AllRivalriesProvider>
-          <Slot />
+          <UnsavedChangesProvider>
+            <Slot />
+          </UnsavedChangesProvider>
         </AllRivalriesProvider>
       </GameProvider>
     </QueryClientProvider>

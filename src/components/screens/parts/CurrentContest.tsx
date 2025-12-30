@@ -244,20 +244,14 @@ export function CurrentContest({
 
   return (
     <>
-      <View style={headerContainerStyle}>
-        <Text style={currentContestTitleStyle}>Current Contest</Text>
-        {canShuffle ? (
-          <View style={reshuffleButtonPlaceholderStyle}>
-            <Text style={reshuffleTextPlaceholderStyle}>Reshuffle</Text>
-          </View>
-        ) : (
-          <TouchableOpacity onPress={() => setCanShuffle(true)} style={reshuffleButtonStyle}>
-            <Text style={reshuffleTextStyle}>🔀 Reshuffle</Text>
-          </TouchableOpacity>
-        )}
-      </View>
-
       <View style={contestOuterContainerStyle}>
+        <View style={shuffleContainerStyle}>
+          {!canShuffle && (
+            <TouchableOpacity onPress={() => setCanShuffle(true)} style={reshuffleButtonStyle}>
+              <Text style={reshuffleTextStyle}>🔀 Reshuffle</Text>
+            </TouchableOpacity>
+          )}
+        </View>
         <View
           style={[fightersRowContainerStyle, { flexDirection: isUserB ? 'row-reverse' : 'row' }]}
         >
@@ -352,11 +346,10 @@ const winnerBadgeStyle = {
   height: 100
 };
 
-const headerContainerStyle = {
+const shuffleContainerStyle = {
   flexDirection: row,
   alignItems: center,
-  justifyContent: center,
-  marginBottom: 8
+  justifyContent: center
 };
 
 const currentContestTitleStyle = {
@@ -368,24 +361,20 @@ const currentContestTitleStyle = {
 
 const reshuffleButtonStyle = {
   alignItems: center,
+  marginTop: 5,
+  marginBottom: -35,
   paddingHorizontal: 16,
   paddingVertical: 8,
   borderWidth: 1,
   borderColor: colors.white,
   borderRadius: 12,
-  backgroundColor: colors.slate700,
-  marginStart: 80
-};
-
-const reshuffleButtonPlaceholderStyle = {
-  ...reshuffleButtonStyle,
-  borderColor: colors.none,
-  backgroundColor: colors.none
+  backgroundColor: colors.slate700
 };
 
 const contestOuterContainerStyle = {
   alignItems: center,
-  marginVertical: 6,
+  marginTop: 16,
+  marginBottom: 6,
   borderWidth: 1,
   borderColor: colors.yellow500,
   padding: 2
@@ -461,11 +450,6 @@ const loadingTextStyle = {
 const reshuffleTextStyle = {
   fontSize: 16,
   color: colors.white
-};
-
-const reshuffleTextPlaceholderStyle = {
-  fontSize: 16,
-  color: colors.none
 };
 
 const vsTextStyle = {

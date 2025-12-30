@@ -29,6 +29,7 @@ import { OfflineModal } from '../common/OfflineModal';
 import { BattleResults } from './parts/BattleResults';
 import { CurrentContest } from './parts/CurrentContest';
 import { RivalryView } from './parts/RivalryView';
+import { HEADER_HEIGHT } from '../common/Header';
 
 interface ConnectedRivalryViewProps {
   navigation: {
@@ -433,7 +434,7 @@ export function ConnectedRivalryView({
   return (
     <SafeAreaView
       edges={['top', 'bottom']}
-      style={[styles.container, darkStyles.container, safeAreaStyle]}
+      style={[styles.container, darkStyles.container, safeAreaStyle, { paddingTop: HEADER_HEIGHT }]}
     >
       <OfflineModal onClose={() => setShowOfflineModal(false)} visible={showOfflineModal} />
 

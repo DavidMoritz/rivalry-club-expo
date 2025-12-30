@@ -6,7 +6,7 @@ import { useEffect, useState } from 'react';
 import { ActivityIndicator, Alert, SafeAreaView, Text, TouchableOpacity, View } from 'react-native';
 import type { Schema } from '../../../amplify/data/resource';
 
-import { HamburgerMenu } from '../../../src/components/common/HamburgerMenu';
+import { Header, HEADER_HEIGHT } from '../../../src/components/common/Header';
 import { LoadingWithCharacter } from '../../../src/components/common/LoadingWithCharacter';
 import { TierListEditDisplay } from '../../../src/components/screens/parts/TierListEditDisplay';
 import { useUpdateTierSlotsMutation } from '../../../src/controllers/c-rivalry';
@@ -169,10 +169,6 @@ function useUserTierList(rivalry: MRivalry | null, userId: string | undefined) {
       return;
     }
 
-    console.log(
-      `[TierListEditRoute] Matching userId ${userId} against tierListA.userId=${rivalry.tierListA?.userId}, tierListB.userId=${rivalry.tierListB?.userId}`
-    );
-
     if (rivalry.tierListA?.userId === userId) {
       setUserTierList(rivalry.tierListA);
     } else if (rivalry.tierListB?.userId === userId) {
@@ -233,11 +229,7 @@ function renderContent({
   }
 
   if (!rivalry) {
-    return (
-      <View style={centeredContainerStyle}>
-        <Text style={messageTextStyle}>Could not load rivalry</Text>
-      </View>
-    );
+    return <LoadingWithCharacter message={'Loading rivalry...'} />;
   }
 
   if (!userTierList) {
@@ -345,28 +337,24 @@ export default function TierListEditRoute() {
       e.preventDefault();
 
       // Show confirmation dialog
-      Alert.alert(
-        'Unsaved Changes',
-        'You have unsaved changes. What would you like to do?',
-        [
-          {
-            text: 'Discard',
-            style: 'destructive',
-            onPress: () => {
-              setHasUnsavedChanges(false);
-              navigation.dispatch(e.data.action);
-            }
-          },
-          { text: 'Cancel', style: 'cancel' },
-          {
-            text: 'Save Changes',
-            onPress: () => {
-              handleSave();
-              // Navigation handled by onSuccess callback in saveTierSlots
-            }
+      Alert.alert('Unsaved Changes', 'You have unsaved changes. What would you like to do?', [
+        {
+          text: 'Discard',
+          style: 'destructive',
+          onPress: () => {
+            setHasUnsavedChanges(false);
+            navigation.dispatch(e.data.action);
           }
-        ]
-      );
+        },
+        { text: 'Stay', style: 'cancel' },
+        {
+          text: 'Save Changes',
+          onPress: () => {
+            handleSave();
+            // Navigation handled by onSuccess callback in saveTierSlots
+          }
+        }
+      ]);
     };
 
     navigation.addListener('beforeRemove', beforeRemove);
@@ -383,14 +371,14 @@ export default function TierListEditRoute() {
   return (
     <>
       <Stack.Screen options={{ title: 'Edit Tier List' }} />
-      <HamburgerMenu />
+      <Header title="Edit Tier List" />
       <RivalryProvider
         rivalry={rivalry}
         userAName={userAName}
         userBName={userBName}
         userId={userId}
       >
-        <SafeAreaView style={[styles.container, darkStyles.container]}>
+        <SafeAreaView style={[styles.container, darkStyles.container, { paddingTop: HEADER_HEIGHT }]}>
           {renderContent({
             isLoading,
             isError,

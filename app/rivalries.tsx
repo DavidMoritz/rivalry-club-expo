@@ -1,8 +1,9 @@
 import { useRouter } from 'expo-router';
 import { StatusBar } from 'expo-status-bar';
 import { useEffect } from 'react';
+import { View } from 'react-native';
 
-import { HamburgerMenu } from '../src/components/common/HamburgerMenu';
+import { Header, HEADER_HEIGHT } from '../src/components/common/Header';
 import { RivalryIndex } from '../src/components/screens/RivalryIndex';
 import { useAuthUser } from '../src/hooks/useAuthUser';
 
@@ -12,19 +13,17 @@ export default function RivalriesRoute() {
 
   // Redirect to profile if user hasn't set their name
   useEffect(() => {
-    if (
-      !isLoading &&
-      user &&
-      (!user.firstName || user.firstName.trim() === '')
-    ) {
+    if (!isLoading && user && (!user.firstName || user.firstName.trim() === '')) {
       router.replace('/profile');
     }
   }, [user, isLoading, router]);
 
   return (
     <>
-      <RivalryIndex />
-      <HamburgerMenu />
+      <Header title="Rivalries" hide="rivalries" />
+      <View style={{ paddingTop: HEADER_HEIGHT }}>
+        <RivalryIndex />
+      </View>
       <StatusBar style="light" />
     </>
   );

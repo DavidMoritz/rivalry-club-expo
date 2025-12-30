@@ -7,9 +7,14 @@ import { useAuthUser } from '../../hooks/useAuthUser';
 import { signOut } from '../../lib/amplify-auth';
 import { useUnsavedChanges } from '../../providers/unsaved-changes';
 import { colors } from '../../utils/colors';
-import { absolute, center } from '../../utils/styles';
+import { absolute, center, row } from '../../utils/styles';
 
-export function HamburgerMenu() {
+interface HeaderProps {
+  title?: string;
+  hide?: 'rivalries' | 'pending' | 'profile' | 'how-to-play';
+}
+
+export function Header({ title = 'Rivalry Club', hide }: HeaderProps) {
   const router = useRouter();
   const { user } = useAuthUser();
   const [menuVisible, setMenuVisible] = useState(false);
@@ -86,13 +91,27 @@ export function HamburgerMenu() {
 
   return (
     <>
-      <TouchableOpacity
-        onPress={() => setMenuVisible(true)}
-        style={[hamburgerButtonStyle, { top: insets.top + MENU_BUTTON_TOP_OFFSET }]}
-      >
-        <Text style={hamburgerIconStyle}>☰</Text>
-      </TouchableOpacity>
+      {/* Fixed Header Bar */}
+      <View style={[headerContainerStyle, { paddingTop: insets.top + HEADER_VERTICAL_PADDING }]}>
+        {/* Back Button */}
+        <TouchableOpacity onPress={handleBack} style={buttonStyle}>
+          <Text style={topIconStyle}>←</Text>
+        </TouchableOpacity>
 
+        {/* Title */}
+        <View style={titleContainerStyle}>
+          <Text style={titleTextStyle} numberOfLines={1}>
+            {title}
+          </Text>
+        </View>
+
+        {/* Menu Button */}
+        <TouchableOpacity onPress={() => setMenuVisible(true)} style={buttonStyle}>
+          <Text style={topIconStyle}>☰</Text>
+        </TouchableOpacity>
+      </View>
+
+      {/* Dropdown Menu Modal */}
       <Modal
         animationType="fade"
         onRequestClose={() => setMenuVisible(false)}
@@ -101,38 +120,47 @@ export function HamburgerMenu() {
       >
         <Pressable onPress={() => setMenuVisible(false)} style={modalBackdropStyle}>
           <View style={[menuContainerStyle, { top: insets.top + MENU_CONTAINER_TOP_OFFSET }]}>
-            <TouchableOpacity onPress={handleBack} style={menuItemStyle}>
-              <Text style={menuIconStyle}>←</Text>
-              <Text style={menuTextStyle}>Back</Text>
-            </TouchableOpacity>
+            {hide !== 'rivalries' && (
+              <>
+                <TouchableOpacity onPress={handleRivalries} style={menuItemStyle}>
+                  <Text style={menuItemIconStyle}>📋</Text>
+                  <Text style={menuItemTextStyle}>Rivalries</Text>
+                </TouchableOpacity>
 
-            <View style={dividerStyle} />
+                <View style={dividerStyle} />
+              </>
+            )}
 
-            <TouchableOpacity onPress={handleRivalries} style={menuItemStyle}>
-              <Text style={menuIconStyle}>📋</Text>
-              <Text style={menuTextStyle}>Rivalries</Text>
-            </TouchableOpacity>
+            {hide !== 'pending' && (
+              <>
+                <TouchableOpacity onPress={handlePendingRivalries} style={menuItemStyle}>
+                  <Text style={menuItemIconStyle}>🕐</Text>
+                  <Text style={menuItemTextStyle}>Pending Rivalries</Text>
+                </TouchableOpacity>
 
-            <View style={dividerStyle} />
+                <View style={dividerStyle} />
+              </>
+            )}
 
-            <TouchableOpacity onPress={handlePendingRivalries} style={menuItemStyle}>
-              <Text style={menuIconStyle}>🕐</Text>
-              <Text style={menuTextStyle}>Pending Rivalries</Text>
-            </TouchableOpacity>
+            {hide !== 'profile' && (
+              <>
+                <TouchableOpacity onPress={handleProfile} style={menuItemStyle}>
+                  <Text style={menuItemIconStyle}>👤</Text>
+                  <Text style={menuItemTextStyle}>Profile</Text>
+                </TouchableOpacity>
 
-            <View style={dividerStyle} />
+                {hide !== 'how-to-play' && <View style={dividerStyle} />}
+              </>
+            )}
 
-            <TouchableOpacity onPress={handleProfile} style={menuItemStyle}>
-              <Text style={menuIconStyle}>👤</Text>
-              <Text style={menuTextStyle}>Profile</Text>
-            </TouchableOpacity>
-
-            <View style={dividerStyle} />
-
-            <TouchableOpacity onPress={handleHowToPlay} style={menuItemStyle}>
-              <Text style={menuIconStyle}>❓</Text>
-              <Text style={menuTextStyle}>How to Play</Text>
-            </TouchableOpacity>
+            {hide !== 'how-to-play' && (
+              <>
+                <TouchableOpacity onPress={handleHowToPlay} style={menuItemStyle}>
+                  <Text style={menuItemIconStyle}>❓</Text>
+                  <Text style={menuItemTextStyle}>How to Play</Text>
+                </TouchableOpacity>
+              </>
+            )}
 
             {!isAnonymous && (
               <>
@@ -151,21 +179,48 @@ export function HamburgerMenu() {
   );
 }
 
-const MENU_BUTTON_TOP_OFFSET = 12;
-const MENU_CONTAINER_TOP_OFFSET = 64;
-const row = 'row' as const;
+export const HEADER_HEIGHT = 31;
+const HEADER_VERTICAL_PADDING = 0;
+const MENU_CONTAINER_TOP_OFFSET = 35;
 
-const hamburgerButtonStyle = {
+const headerContainerStyle = {
   position: absolute,
-  right: 16,
-  zIndex: 100,
-  padding: 12,
-  backgroundColor: colors.slate700,
-  borderRadius: 8
+  top: 0,
+  left: 0,
+  right: 0,
+  height: HEADER_HEIGHT + 65,
+  flexDirection: row,
+  alignItems: 'center' as const,
+  justifyContent: 'space-between' as const,
+  paddingHorizontal: 16,
+  paddingBottom: HEADER_VERTICAL_PADDING,
+  backgroundColor: colors.slate900,
+  borderBottomWidth: 1,
+  borderBottomColor: colors.slate700,
+  zIndex: 100
 };
 
-const hamburgerIconStyle = {
+const buttonStyle = {
+  paddingVertical: 0,
+  paddingHorizontal: 8,
+  minWidth: 40,
+  alignItems: 'flex-start' as const
+};
+
+const topIconStyle = {
   fontSize: 24,
+  color: colors.white
+};
+
+const titleContainerStyle = {
+  flex: 1,
+  alignItems: center,
+  paddingHorizontal: 8
+};
+
+const titleTextStyle = {
+  fontSize: 18,
+  fontWeight: '600' as const,
   color: colors.white
 };
 
@@ -201,24 +256,22 @@ const dividerStyle = {
   marginVertical: 4
 };
 
-const menuIconStyle = {
-  fontSize: 16,
-  color: colors.white,
-  marginRight: 12
-};
-
-const menuTextStyle = {
+const menuItemTextStyle = {
   fontSize: 16,
   color: colors.white
 };
 
-const signOutIconStyle = {
-  fontSize: 16,
-  color: colors.red600,
+const signOutTextStyle = {
+  ...menuItemTextStyle,
+  color: colors.red600
+};
+
+const menuItemIconStyle = {
+  ...menuItemTextStyle,
   marginRight: 12
 };
 
-const signOutTextStyle = {
-  fontSize: 16,
-  color: colors.red600
+const signOutIconStyle = {
+  ...signOutTextStyle,
+  marginRight: 12
 };

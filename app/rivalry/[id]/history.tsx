@@ -3,10 +3,10 @@ import { generateClient } from 'aws-amplify/data';
 import { Stack, useLocalSearchParams } from 'expo-router';
 import { StatusBar } from 'expo-status-bar';
 import { useCallback, useState } from 'react';
-import { ActivityIndicator, Text, View } from 'react-native';
+import { Text, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import type { Schema } from '../../../amplify/data/resource';
-import { HamburgerMenu } from '../../../src/components/common/HamburgerMenu';
+import { Header, HEADER_HEIGHT } from '../../../src/components/common/Header';
 import { LoadingWithCharacter } from '../../../src/components/common/LoadingWithCharacter';
 import { ContestHistoryTable } from '../../../src/components/screens/parts/ContestHistoryTable';
 import { useDeleteMostRecentContestMutation } from '../../../src/controllers/c-rivalry';
@@ -188,13 +188,16 @@ export default function HistoryRoute() {
     structuralSharing: false,
     queryFn: async () => {
       // Use the GSI query for efficient sorting by createdAt
-      const { data: contestData, errors, nextToken: responseNextToken } =
-        await getClient().models.Contest.contestsByRivalryIdAndCreatedAt({
-          rivalryId,
-          // @ts-expect-error - Amplify Gen 2 type doesn't recognize 'limit' parameter in IndexQueryInput but it works at runtime
-          limit: 100,
-          sortDirection: 'DESC'
-        });
+      const {
+        data: contestData,
+        errors,
+        nextToken: responseNextToken
+      } = await getClient().models.Contest.contestsByRivalryIdAndCreatedAt({
+        rivalryId,
+        // @ts-expect-error - Amplify Gen 2 type doesn't recognize 'limit' parameter in IndexQueryInput but it works at runtime
+        limit: 100,
+        sortDirection: 'DESC'
+      });
 
       if (errors) {
         console.error('[HistoryRoute] GraphQL errors:', errors);
@@ -274,6 +277,7 @@ export default function HistoryRoute() {
     return (
       <>
         <Stack.Screen options={{ title: 'Contest History' }} />
+        <Header title="Contest History" />
         <SafeAreaView style={[styles.container, darkStyles.container]}>
           <LoadingWithCharacter
             message={isLoadingRivalry ? 'Loading rivalry data...' : 'Loading contests...'}
@@ -307,7 +311,7 @@ export default function HistoryRoute() {
       <>
         <Stack.Screen options={{ title: 'Contest History' }} />
         <SafeAreaView style={[styles.container, darkStyles.container]}>
-          <View style={centeredContainerStyle}>
+          <View>
             <Text style={errorMessageStyle}>Game data not available</Text>
           </View>
         </SafeAreaView>
@@ -319,7 +323,7 @@ export default function HistoryRoute() {
   return (
     <>
       <Stack.Screen options={{ title: 'Contest History' }} />
-      <HamburgerMenu />
+      <Header title="Contest History" />
       <RivalryProvider
         rivalry={rivalry}
         userAName={userAName}
@@ -328,20 +332,24 @@ export default function HistoryRoute() {
       >
         <SafeAreaView
           edges={['left', 'right', 'bottom']}
-          style={[styles.container, darkStyles.container]}
+          style={[
+            styles.container,
+            darkStyles.container,
+            {
+              paddingTop: HEADER_HEIGHT
+            }
+          ]}
         >
-          <View style={historyContainerStyle}>
-            <ContestHistoryTable
-              contests={contests}
-              deleteMostRecentContestMutation={deleteMostRecentContestMutation}
-              game={game as MGame}
-              hideUndoButton={hideUndoButton}
-              isLoadingMore={isLoadingMore}
-              loadMore={loadMore}
-              onUndoClick={handleUndoClick}
-              rivalry={rivalry}
-            />
-          </View>
+          <ContestHistoryTable
+            contests={contests}
+            deleteMostRecentContestMutation={deleteMostRecentContestMutation}
+            game={game as MGame}
+            hideUndoButton={hideUndoButton}
+            isLoadingMore={isLoadingMore}
+            loadMore={loadMore}
+            onUndoClick={handleUndoClick}
+            rivalry={rivalry}
+          />
         </SafeAreaView>
       </RivalryProvider>
       <StatusBar style="light" />
@@ -366,8 +374,4 @@ const errorTitleStyle = {
 const errorMessageStyle = {
   ...styles.text,
   color: colors.gray400
-};
-
-const historyContainerStyle = {
-  paddingTop: 72
 };

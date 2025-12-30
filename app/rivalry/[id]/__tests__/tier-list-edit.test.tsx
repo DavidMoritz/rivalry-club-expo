@@ -27,6 +27,22 @@ jest.mock('expo-status-bar', () => ({
   StatusBar: () => null,
 }));
 
+// Mock the hooks used by Header component
+jest.mock('../../../../src/hooks/useAuthUser', () => ({
+  useAuthUser: () => ({
+    user: { id: 'test-user', firstName: 'Test', awsSub: 'test-sub' },
+    isLoading: false,
+    error: null,
+  }),
+}));
+
+jest.mock('../../../../src/providers/unsaved-changes', () => ({
+  useUnsavedChanges: () => ({
+    hasUnsavedChanges: false,
+    setHasUnsavedChanges: jest.fn(),
+  }),
+}));
+
 const mockUseQuery = jest.fn();
 
 jest.mock('@tanstack/react-query', () => {

@@ -15,12 +15,7 @@ interface ContestHistoryTableProps {
   contests: MContest[];
   game: MGame;
   rivalry: MRivalry;
-  deleteMostRecentContestMutation: UseMutationResult<
-    unknown,
-    Error,
-    void,
-    unknown
-  >;
+  deleteMostRecentContestMutation: UseMutationResult<unknown, Error, void, unknown>;
   loadMore: () => void;
   isLoadingMore: boolean;
   hideUndoButton: boolean;
@@ -35,7 +30,7 @@ export function ContestHistoryTable({
   loadMore,
   isLoadingMore,
   hideUndoButton,
-  onUndoClick,
+  onUndoClick
 }: ContestHistoryTableProps): ReactNode {
   const { userId } = useRivalryContext();
   const isUserB = userId === rivalry.userBId;
@@ -43,7 +38,7 @@ export function ContestHistoryTable({
 
   const handleUndoClick = () => {
     // Get the ID of the first contest with a result (the one being deleted)
-    const contestToDelete = contests.find(c => c.result);
+    const contestToDelete = contests.find((c) => c.result);
 
     if (!contestToDelete) return;
 
@@ -76,7 +71,7 @@ export function ContestHistoryTable({
             disabled={
               deleteMostRecentContestMutation.isPending ||
               !contests.length ||
-              !contests.some(c => c.result)
+              !contests.some((c) => c.result)
             }
             onPress={handleUndoClick}
             style={undoButtonStyle}
@@ -115,7 +110,7 @@ export function ContestHistoryTable({
       </View>
       <FlatList
         data={contests}
-        keyExtractor={item => item.id}
+        keyExtractor={(item) => item.id}
         ListEmptyComponent={
           <View style={emptyStateContainerStyle}>
             <Text style={emptyStateTextStyle}>No contests yet</Text>
@@ -142,61 +137,62 @@ const FADE_ANIMATION_DURATION_MS = 2000;
 
 const loaderContainerStyle = {
   paddingVertical: 20,
-  alignItems: center,
+  alignItems: center
 };
 
 const undoButtonContainerStyle = {
   alignSelf: 'flex-start' as const,
   marginBottom: 8,
-  marginTop: -14,
+  marginTop: -14
 };
 
 const undoButtonStyle = {
-  paddingVertical: 0,
+  paddingVertical: 0
 };
 
 const undoPlaceholderStyle = {
   alignSelf: 'flex-start' as const,
-  marginBottom: 8,
+  marginBottom: 8
 };
 
 const errorContainerStyle = {
   marginBottom: 16,
   padding: 12,
   backgroundColor: colors.red900,
-  borderRadius: 8,
+  borderRadius: 8
 };
 
 const errorTextStyle = {
   ...styles.text,
-  color: colors.red300,
+  color: colors.red300
 };
 
 const tableWrapperStyle = {
   padding: 10,
+  paddingTop: 85
 };
 
 const tableHeaderStyle = {
   fontWeight: bold,
-  fontSize: 20,
+  fontSize: 20
 };
 
 const headerTextStyle = {
   ...tableHeaderStyle,
-  color: colors.white,
+  color: colors.white
 };
 
 const tableHeaderRowStyle = {
   borderBottomWidth: 2,
-  borderBottomColor: 'yellow',
+  borderBottomColor: 'yellow'
 };
 
 const emptyStateContainerStyle = {
   paddingVertical: 40,
-  alignItems: center,
+  alignItems: center
 };
 
 const emptyStateTextStyle = {
   ...styles.text,
-  color: colors.gray400,
+  color: colors.gray400
 };

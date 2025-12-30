@@ -3,7 +3,7 @@ import { StatusBar } from 'expo-status-bar';
 import { useMemo } from 'react';
 
 import type { Schema } from '../../amplify/data/resource';
-import { HamburgerMenu } from '../../src/components/common/HamburgerMenu';
+import { Header } from '../../src/components/common/Header';
 import { ConnectedRivalryView } from '../../src/components/screens/ConnectedRivalryView';
 import { getMRivalry } from '../../src/models/m-rivalry';
 import { RivalryProvider } from '../../src/providers/rivalry';
@@ -26,7 +26,7 @@ export default function RivalryDetailRoute() {
     }
 
     const rivalry = getMRivalry({
-      rivalry: { id: rivalryId } as unknown as Schema['Rivalry']['type'],
+      rivalry: { id: rivalryId } as unknown as Schema['Rivalry']['type']
     });
 
     return rivalry;
@@ -40,24 +40,25 @@ export default function RivalryDetailRoute() {
       if (screen === 'RivalryTiersView') {
         router.push({
           pathname: `/rivalry/${rivalryId}/tiers`,
-          params: { userId, userAName, userBName },
+          params: { userId, userAName, userBName }
         });
       } else if (screen === 'ContestHistory') {
         router.push({
           pathname: `/rivalry/${rivalryId}/history`,
-          params: { userId, userAName, userBName },
+          params: { userId, userAName, userBName }
         });
       }
     },
     setOptions: (_options: { title?: string; headerTitle?: string }) => {
       // In Expo Router, we can use Stack.Screen to set options
       // For now, we'll handle this with Stack.Screen below
-    },
+    }
   };
 
   return (
     <>
       <Stack.Screen options={{ headerShown: false }} />
+      <Header title="Current Contest" />
       <RivalryProvider
         rivalry={initialRivalry}
         userAName={userAName}
@@ -65,7 +66,6 @@ export default function RivalryDetailRoute() {
         userId={userId}
       >
         <ConnectedRivalryView navigation={navigation} />
-        <HamburgerMenu />
       </RivalryProvider>
       <StatusBar style="light" />
     </>

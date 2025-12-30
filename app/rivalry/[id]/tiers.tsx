@@ -7,7 +7,7 @@ import { SafeAreaView, Text, View } from 'react-native';
 import type { Schema } from '../../../amplify/data/resource';
 
 import { Button } from '../../../src/components/common/Button';
-import { HamburgerMenu } from '../../../src/components/common/HamburgerMenu';
+import { Header, HEADER_HEIGHT } from '../../../src/components/common/Header';
 import { LoadingWithCharacter } from '../../../src/components/common/LoadingWithCharacter';
 import { TierListsDisplay } from '../../../src/components/screens/parts/TierListsDisplay';
 import { getMRivalry, type MRivalry } from '../../../src/models/m-rivalry';
@@ -154,7 +154,7 @@ export default function TiersRoute() {
   return (
     <>
       <Stack.Screen options={{ title: 'Tier Lists' }} />
-      <HamburgerMenu />
+      <Header title="Tier Lists" />
       <RivalryProvider
         rivalry={rivalry}
         userAName={userAName}
@@ -162,7 +162,9 @@ export default function TiersRoute() {
         userId={userId}
       >
         <SyncedScrollViewContext.Provider value={syncedScrollViewState}>
-          <SafeAreaView style={[styles.container, darkStyles.container]}>
+          <SafeAreaView
+            style={[styles.container, darkStyles.container, { paddingTop: HEADER_HEIGHT }]}
+          >
             {(isLoading || !(isError || rivalry)) && (
               <LoadingWithCharacter
                 message={isLoading ? 'Loading Tier Lists...' : 'Waiting for tier lists...'}
@@ -228,7 +230,8 @@ const errorTitleStyle = {
 
 const editButtonContainerStyle = {
   width: '100%' as const,
-  alignItems: center,
+  position: 'absolute',
+  alignItems: 'flexEnd',
   marginStart: 16,
   zIndex: 10
 };

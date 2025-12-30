@@ -11,6 +11,7 @@ const schema = a.schema({
       name: a.string().required(),
       fighters: a.hasMany('Fighter', 'gameId'),
       rivalries: a.hasMany('Rivalry', 'gameId'),
+      snapshots: a.hasMany('TierListSnapshot', 'gameId'),
       deletedAt: a.datetime(),
     })
     .authorization(allow => [allow.publicApiKey()]),

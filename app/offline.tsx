@@ -9,6 +9,7 @@ import { CharacterFace } from '../assets/images/games/ssbu/character-face-exampl
 import { Button } from '../src/components/common/Button';
 import { STOCK } from '../src/models/m-game';
 import { colors } from '../src/utils/colors';
+import { useSetHeader } from '../src/providers/header';
 
 interface OfflineContestResult {
   timestamp: Date;
@@ -123,10 +124,11 @@ export default function OfflineMode() {
 
   const characterKeys = Object.keys(characterImageMap);
 
+  // Hide header on offline page
+  useSetHeader({ showHeader: false });
+
   const getRandomCharacter = (excludedFighters: string[] = []) => {
-    const availableCharacters = characterKeys.filter(
-      (char) => !excludedFighters.includes(char)
-    );
+    const availableCharacters = characterKeys.filter((char) => !excludedFighters.includes(char));
 
     // If all characters are excluded, fall back to all characters
     if (availableCharacters.length === 0) {
@@ -173,11 +175,13 @@ export default function OfflineMode() {
     // Format the history as text
     const historyText = contestHistory
       .map((item, index) => {
-        const timeString = item.timestamp.toLocaleTimeString('en-US', {
-          hour: 'numeric',
-          minute: '2-digit',
-          hour12: true
-        }).toLowerCase();
+        const timeString = item.timestamp
+          .toLocaleTimeString('en-US', {
+            hour: 'numeric',
+            minute: '2-digit',
+            hour12: true
+          })
+          .toLowerCase();
         const result = `${item.stockRemaining} stock${item.stockRemaining !== 1 ? 's' : ''}`;
         const verb = item.winner === 'A' ? 'beat' : 'lost to';
 
@@ -367,9 +371,8 @@ const underline = 'underline' as const;
 
 const containerStyle = {
   flex: 1,
-  backgroundColor: colors.black,
-  paddingHorizontal: 16,
-  paddingTop: 60
+  backgroundColor: colors.gray900,
+  paddingHorizontal: 16
 };
 
 const topHeaderStyle = {

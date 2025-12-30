@@ -186,6 +186,9 @@ const MENU_CONTAINER_TOP_OFFSET = 35;
 // Export the full header height including safe area insets
 export const HEADER_HEIGHT = BASE_HEADER_HEIGHT + 65;
 
+const spaceBetween = 'space-between' as const;
+const flexStart = 'flex-start' as const;
+
 const headerContainerStyle = {
   position: absolute,
   top: 0,
@@ -193,8 +196,8 @@ const headerContainerStyle = {
   right: 0,
   height: HEADER_HEIGHT,
   flexDirection: row,
-  alignItems: 'center' as const,
-  justifyContent: 'space-between' as const,
+  alignItems: center,
+  justifyContent: spaceBetween,
   paddingHorizontal: 16,
   paddingBottom: HEADER_VERTICAL_PADDING,
   backgroundColor: colors.slate900,
@@ -207,7 +210,7 @@ const buttonStyle = {
   paddingVertical: 0,
   paddingHorizontal: 8,
   minWidth: 40,
-  alignItems: 'flex-start' as const
+  alignItems: flexStart
 };
 
 const topIconStyle = {
@@ -221,9 +224,11 @@ const titleContainerStyle = {
   paddingHorizontal: 8
 };
 
+const fontWeight600 = '600' as const;
+
 const titleTextStyle = {
   fontSize: 18,
-  fontWeight: '600' as const,
+  fontWeight: fontWeight600,
   color: colors.white
 };
 

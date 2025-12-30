@@ -44,5 +44,5 @@ export function useSetHeader(config: HeaderConfig) {
   // Use useEffect to avoid updating state during render
   useEffect(() => {
     context.setConfig(config);
-  }, [JSON.stringify(config)]);
+  }, [config.title, config.hide, config.showHeader, context.setConfig]);
 }

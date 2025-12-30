@@ -74,7 +74,7 @@ export default function RootLayout() {
       <View
         style={{
           flex: 1,
-          backgroundColor: colors.black,
+          backgroundColor: colors.gray900,
           alignItems: 'center',
           justifyContent: 'center'
         }}
@@ -111,12 +111,7 @@ export default function RootLayout() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: 'black',
-    paddingTop: HEADER_HEIGHT,
-    ...Platform.select({
-      android: {
-        paddingTop: 30 + HEADER_HEIGHT
-      }
-    })
+    backgroundColor: colors.gray900,
+    paddingTop: HEADER_HEIGHT
   }
 });

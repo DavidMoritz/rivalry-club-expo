@@ -1,3 +1,4 @@
+import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { fireEvent, render, waitFor } from '@testing-library/react-native';
 import type { MFighter } from '../../../../models/m-fighter';
 import type { MGame } from '../../../../models/m-game';
@@ -7,6 +8,18 @@ import { TierListEditDisplay } from '../TierListEditDisplay';
 // Mock dependencies
 jest.mock('../../../../providers/game', () => ({
   useGame: jest.fn(),
+}));
+
+jest.mock('../../../../controllers/c-snapshot', () => ({
+  useUserSnapshotsQuery: jest.fn(() => ({
+    data: [],
+    isLoading: false,
+    isError: false,
+  })),
+  useCreateSnapshotMutation: jest.fn(() => ({
+    mutate: jest.fn(),
+    isLoading: false,
+  })),
 }));
 
 jest.mock('../../../../utils', () => ({
@@ -42,6 +55,7 @@ const { useGame } = require('../../../../providers/game');
 
 describe('TierListEditDisplay', () => {
   const mockOnChange = jest.fn();
+  let queryClient: QueryClient;
 
   const createMockTierList = (): MTierList => {
     const slots = Array.from({ length: 84 }, (_, i) => ({
@@ -69,6 +83,13 @@ describe('TierListEditDisplay', () => {
 
   beforeEach(() => {
     jest.clearAllMocks();
+    queryClient = new QueryClient({
+      defaultOptions: {
+        queries: {
+          retry: false,
+        },
+      },
+    });
     useGame.mockReturnValue({
       id: 'test-game',
       name: 'Test Game',
@@ -79,7 +100,9 @@ describe('TierListEditDisplay', () => {
   it('renders all tier rows', () => {
     const tierList = createMockTierList();
     const { getByText } = render(
-      <TierListEditDisplay onChange={mockOnChange} tierList={tierList} />
+      <QueryClientProvider client={queryClient}>
+        <TierListEditDisplay onChange={mockOnChange} tierList={tierList} />
+      </QueryClientProvider>
     );
 
     // Check that all 7 tier labels are present (S, A, B, C, D, E, F)
@@ -95,7 +118,9 @@ describe('TierListEditDisplay', () => {
   it('renders all characters', () => {
     const tierList = createMockTierList();
     const { getByTestId } = render(
-      <TierListEditDisplay onChange={mockOnChange} tierList={tierList} />
+      <QueryClientProvider client={queryClient}>
+        <TierListEditDisplay onChange={mockOnChange} tierList={tierList} />
+      </QueryClientProvider>
     );
 
     // Check a few characters are rendered
@@ -107,7 +132,9 @@ describe('TierListEditDisplay', () => {
   it('moves a character when destination is clicked', async () => {
     const tierList = createMockTierList();
     const { getByTestId } = render(
-      <TierListEditDisplay onChange={mockOnChange} tierList={tierList} />
+      <QueryClientProvider client={queryClient}>
+        <TierListEditDisplay onChange={mockOnChange} tierList={tierList} />
+      </QueryClientProvider>
     );
 
     // Select first character
@@ -126,7 +153,9 @@ describe('TierListEditDisplay', () => {
   it('deselects the slot when clicking the same slot again', () => {
     const tierList = createMockTierList();
     const { getByTestId } = render(
-      <TierListEditDisplay onChange={mockOnChange} tierList={tierList} />
+      <QueryClientProvider client={queryClient}>
+        <TierListEditDisplay onChange={mockOnChange} tierList={tierList} />
+      </QueryClientProvider>
     );
 
     // Get the character wrapper (TouchableOpacity with onPress handler)

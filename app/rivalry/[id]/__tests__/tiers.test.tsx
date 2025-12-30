@@ -5,6 +5,7 @@ import type { ReactNode } from 'react';
 import type { Rivalry } from '../../../../src/API';
 import { getMRivalry } from '../../../../src/models/m-rivalry';
 import { RivalryProvider } from '../../../../src/providers/rivalry';
+import { UnsavedChangesProvider } from '../../../../src/providers/unsaved-changes';
 import TiersRoute from '../tiers';
 
 // Mock expo-router
@@ -82,7 +83,9 @@ describe('TiersRoute', () => {
     const { getByText } = render(
       <QueryClientProvider client={queryClient}>
         <RivalryProvider rivalry={null}>
-          <TiersRoute />
+          <UnsavedChangesProvider>
+            <TiersRoute />
+          </UnsavedChangesProvider>
         </RivalryProvider>
       </QueryClientProvider>
     );
@@ -100,7 +103,9 @@ describe('TiersRoute', () => {
     render(
       <QueryClientProvider client={queryClient}>
         <RivalryProvider rivalry={null}>
-          <TiersRoute />
+          <UnsavedChangesProvider>
+            <TiersRoute />
+          </UnsavedChangesProvider>
         </RivalryProvider>
       </QueryClientProvider>
     );
@@ -123,7 +128,9 @@ describe('TiersRoute', () => {
           userAName="Alice"
           userBName="Bob"
         >
-          <TiersRoute />
+          <UnsavedChangesProvider>
+            <TiersRoute />
+          </UnsavedChangesProvider>
         </RivalryProvider>
       </QueryClientProvider>
     );
@@ -138,7 +145,9 @@ describe('TiersRoute', () => {
     const { root } = render(
       <QueryClientProvider client={queryClient}>
         <RivalryProvider rivalry={null}>
-          <TiersRoute />
+          <UnsavedChangesProvider>
+            <TiersRoute />
+          </UnsavedChangesProvider>
         </RivalryProvider>
       </QueryClientProvider>
     );
@@ -152,7 +161,9 @@ describe('TiersRoute', () => {
     const { root } = render(
       <QueryClientProvider client={queryClient}>
         <RivalryProvider rivalry={null}>
-          <TiersRoute />
+          <UnsavedChangesProvider>
+            <TiersRoute />
+          </UnsavedChangesProvider>
         </RivalryProvider>
       </QueryClientProvider>
     );
@@ -194,7 +205,9 @@ describe('TiersRoute', () => {
     const { getByText } = render(
       <QueryClientProvider client={queryClient}>
         <RivalryProvider rivalry={null} userAName="Alice" userBName="Bob">
-          <TiersRoute />
+          <UnsavedChangesProvider>
+            <TiersRoute />
+          </UnsavedChangesProvider>
         </RivalryProvider>
       </QueryClientProvider>
     );

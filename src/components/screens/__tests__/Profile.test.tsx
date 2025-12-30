@@ -75,7 +75,7 @@ describe('Profile Component', () => {
 
       const { getByText } = render(<Profile />);
 
-      expect(getByText('Loading...')).toBeTruthy();
+      expect(getByText('Loading profile...')).toBeTruthy();
     });
   });
 

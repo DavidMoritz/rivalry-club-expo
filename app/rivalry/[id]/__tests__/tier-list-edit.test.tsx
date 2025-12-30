@@ -16,6 +16,11 @@ jest.mock('expo-router', () => ({
     userBName: 'User B',
   }),
   useRouter: jest.fn(),
+  useNavigation: jest.fn(() => ({
+    setOptions: jest.fn(),
+    addListener: jest.fn(() => jest.fn()),
+    removeListener: jest.fn(),
+  })),
 }));
 
 jest.mock('expo-status-bar', () => ({
@@ -62,6 +67,14 @@ jest.mock('../../../../src/components/common/HamburgerMenu', () => ({
 
 jest.mock('../../../../src/lib/user-identity', () => ({
   getStoredUuid: jest.fn().mockResolvedValue('test-user-id'),
+}));
+
+jest.mock('../../../../src/providers/unsaved-changes', () => ({
+  useUnsavedChanges: jest.fn(() => ({
+    hasUnsavedChanges: false,
+    setHasUnsavedChanges: jest.fn(),
+  })),
+  UnsavedChangesProvider: ({ children }: any) => children,
 }));
 
 jest.mock(

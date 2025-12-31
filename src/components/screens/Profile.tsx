@@ -9,7 +9,7 @@ import {
   Text,
   TextInput,
   TouchableOpacity,
-  View
+  View,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
@@ -51,7 +51,8 @@ const validatePasswordFields = (
 // Password error message mapper
 const getPasswordErrorMessage = (error: unknown): string => {
   const errorName = error instanceof Error && 'name' in error ? error.name : '';
-  const defaultMessage = error instanceof Error ? error.message : 'Failed to change password';
+  const defaultMessage =
+    error instanceof Error ? error.message : 'Failed to change password';
 
   if (errorName === 'NotAuthorizedException') {
     return 'Current password is incorrect';
@@ -115,7 +116,7 @@ export function Profile() {
       const result = await client.models.User.update({
         id: user.id,
         firstName: firstName.trim(),
-        lastName: lastName.trim() || ' '
+        lastName: lastName.trim() || ' ',
       });
 
       if (result.errors && result.errors.length > 0) {
@@ -127,7 +128,9 @@ export function Profile() {
 
       // Handle post-update navigation/cleanup
       const delay = wasNewUser ? REDIRECT_DELAY_MS : MESSAGE_CLEAR_DELAY_MS;
-      const action = wasNewUser ? () => router.replace('/rivalries') : () => setSuccessMessage('');
+      const action = wasNewUser
+        ? () => router.replace('/rivalries')
+        : () => setSuccessMessage('');
       setTimeout(action, delay);
     } catch (error) {
       setErrorMessage(getUpdateErrorMessage(error));
@@ -140,7 +143,11 @@ export function Profile() {
     setErrorMessage('');
     setSuccessMessage('');
 
-    const validationError = validatePasswordFields(currentPassword, newPassword, confirmPassword);
+    const validationError = validatePasswordFields(
+      currentPassword,
+      newPassword,
+      confirmPassword
+    );
     if (validationError) {
       setErrorMessage(validationError);
       return;
@@ -195,8 +202,8 @@ export function Profile() {
                 console.error('[Profile] Error clearing UUID:', error);
                 Alert.alert('Error', 'Failed to reset UUID');
               }
-            }
-          }
+            },
+          },
         ]
       );
     }
@@ -214,7 +221,10 @@ export function Profile() {
   const isNewUser = isUserNew(user?.firstName);
 
   return (
-    <SafeAreaView edges={['bottom']} style={[styles.container, darkStyles.container]}>
+    <SafeAreaView
+      edges={['bottom']}
+      style={[styles.container, darkStyles.container]}
+    >
       <KeyboardAvoidingView
         behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
         keyboardVerticalOffset={0}
@@ -252,7 +262,9 @@ export function Profile() {
           ) : null}
 
           <View style={sectionStyle}>
-            <Text style={[styles.text, sectionHeaderStyle]}>Personal Information</Text>
+            <Text style={[styles.text, sectionHeaderStyle]}>
+              Personal Information
+            </Text>
 
             <View style={fieldContainerStyle}>
               <Text style={[styles.text, fieldLabelStyle]}>First Name</Text>
@@ -281,9 +293,13 @@ export function Profile() {
             <View style={fieldContainerStyle}>
               {user?.email.endsWith('@anonymous.local') ? (
                 <>
-                  <Text style={[styles.text, smallLabelStyle]}>Friend Code</Text>
+                  <Text style={[styles.text, smallLabelStyle]}>
+                    Friend Code
+                  </Text>
                   <Text style={[styles.text, friendCodeStyle]}>
-                    {user.email.replace('Player_', '').replace('@anonymous.local', '')}
+                    {user.email
+                      .replace('Player_', '')
+                      .replace('@anonymous.local', '')}
                   </Text>
                   <Text style={[styles.text, helperTextStyle]}>
                     Friends can search for you using this code
@@ -292,7 +308,9 @@ export function Profile() {
               ) : (
                 <>
                   <Text style={[styles.text, smallLabelStyle]}>Email</Text>
-                  <Text style={[styles.text, emailDisplayStyle]}>{user?.email}</Text>
+                  <Text style={[styles.text, emailDisplayStyle]}>
+                    {user?.email}
+                  </Text>
                 </>
               )}
             </View>
@@ -302,19 +320,24 @@ export function Profile() {
               onPress={handleUpdateProfile}
               style={primaryButtonStyle}
             >
-              <Text style={buttonTextStyle}>{isUpdating ? 'Updating...' : 'Update Profile'}</Text>
+              <Text style={buttonTextStyle}>
+                {isUpdating ? 'Updating...' : 'Update Profile'}
+              </Text>
             </TouchableOpacity>
           </View>
 
           <View style={dividerSectionStyle}>
-            <Text style={[styles.text, sectionHeaderStyle]}>Account Linking</Text>
+            <Text style={[styles.text, sectionHeaderStyle]}>
+              Account Linking
+            </Text>
 
             {user?.awsSub === 'anonymous' ? (
               <>
                 <View style={anonymousInfoBannerStyle}>
                   <Text style={bannerHeaderStyle}>📱 Anonymous Account</Text>
                   <Text style={bannerSubtextStyle}>
-                    Your data is saved locally. Link an account for recovery and multi-device sync.
+                    Your data is saved locally. Link an account for recovery and
+                    multi-device sync.
                   </Text>
                 </View>
 
@@ -322,10 +345,12 @@ export function Profile() {
                   onPress={() => setShowLinkAccountModal(true)}
                   style={linkExistingButtonStyle}
                 >
-                  <Text style={linkExistingButtonTextStyle}>Link Existing Account</Text>
+                  <Text style={linkExistingButtonTextStyle}>
+                    Restore Existing Account
+                  </Text>
                   <Text style={linkExistingSubtextStyle}>
-                    Already have an account? Restore your data. This will remove all data for{' '}
-                    {user?.email.split('@')[0] ?? 'this profile'}.
+                    Already have an account? Restore your data. This will remove
+                    all data for {user?.email.split('@')[0] ?? 'this profile'}.
                   </Text>
                 </TouchableOpacity>
 
@@ -333,8 +358,12 @@ export function Profile() {
                   onPress={() => setShowCreateAccountModal(true)}
                   style={createAccountButtonStyle}
                 >
-                  <Text style={createAccountButtonTextStyle}>Create New Account</Text>
-                  <Text style={createAccountSubtextStyle}>Link email for recovery</Text>
+                  <Text style={createAccountButtonTextStyle}>
+                    Create New Account
+                  </Text>
+                  <Text style={createAccountSubtextStyle}>
+                    Link email for recovery
+                  </Text>
                 </TouchableOpacity>
               </>
             ) : (
@@ -359,10 +388,14 @@ export function Profile() {
           )}
           {viewChangePassword && (
             <View style={dividerSectionNoPaddingStyle}>
-              <Text style={[styles.text, sectionHeaderStyle]}>Change Password</Text>
+              <Text style={[styles.text, sectionHeaderStyle]}>
+                Change Password
+              </Text>
 
               <View style={fieldContainerStyle}>
-                <Text style={[styles.text, fieldLabelStyle]}>Current Password</Text>
+                <Text style={[styles.text, fieldLabelStyle]}>
+                  Current Password
+                </Text>
                 <TextInput
                   autoCapitalize="none"
                   onChangeText={setCurrentPassword}
@@ -388,7 +421,9 @@ export function Profile() {
               </View>
 
               <View style={fieldContainerStyle}>
-                <Text style={[styles.text, fieldLabelStyle]}>Confirm New Password</Text>
+                <Text style={[styles.text, fieldLabelStyle]}>
+                  Confirm New Password
+                </Text>
                 <TextInput
                   autoCapitalize="none"
                   onChangeText={setConfirmPassword}
@@ -414,7 +449,9 @@ export function Profile() {
 
           {/* Account Deletion Section */}
           <View style={deleteSectionStyle}>
-            <Text style={[styles.text, sectionHeaderWithSmallMarginStyle]}>Delete Account</Text>
+            <Text style={[styles.text, sectionHeaderWithSmallMarginStyle]}>
+              Delete Account
+            </Text>
             <Text style={[styles.text, deleteDescriptionStyle]}>
               {user?.awsSub === 'anonymous'
                 ? 'Deleting your account will make all your current rivalries inaccessible. This action cannot be undone.'
@@ -445,10 +482,13 @@ export function Profile() {
                         const updateResult = await client.models.User.update({
                           id: user.id,
                           email: 'anonymous',
-                          role: 5
+                          role: 5,
                         });
 
-                        if (updateResult.errors && updateResult.errors.length > 0) {
+                        if (
+                          updateResult.errors &&
+                          updateResult.errors.length > 0
+                        ) {
                           throw new Error(updateResult.errors[0].message);
                         }
 
@@ -464,11 +504,17 @@ export function Profile() {
                         // Navigate to home to restart flow
                         router.replace('/');
                       } catch (error) {
-                        console.error('[Profile] Error deleting account:', error);
-                        Alert.alert('Error', 'Failed to delete account. Please try again.');
+                        console.error(
+                          '[Profile] Error deleting account:',
+                          error
+                        );
+                        Alert.alert(
+                          'Error',
+                          'Failed to delete account. Please try again.'
+                        );
                       }
-                    }
-                  }
+                    },
+                  },
                 ]);
               }}
               style={deleteButtonStyle}
@@ -528,20 +574,20 @@ const dividerSectionStyle = {
   borderTopWidth: 1,
   borderTopColor: colors.gray700,
   paddingTop: 32,
-  marginBottom: 32
+  marginBottom: 32,
 };
 
 const dividerSectionNoPaddingStyle = {
   borderTopWidth: 1,
   borderTopColor: colors.gray700,
-  paddingTop: 32
+  paddingTop: 32,
 };
 
 const deleteSectionStyle = {
   borderTopWidth: 1,
   borderTopColor: colors.gray700,
   paddingTop: 32,
-  marginTop: 32
+  marginTop: 32,
 };
 
 const fieldContainerStyle = { marginBottom: 16 };
@@ -550,53 +596,53 @@ const fieldContainerStyle = { marginBottom: 16 };
 const sectionHeaderStyle = {
   fontSize: 20,
   fontWeight: '600' as const,
-  marginBottom: 16
+  marginBottom: 16,
 };
 
 const sectionHeaderWithSmallMarginStyle = {
   fontSize: 20,
   fontWeight: '600' as const,
-  marginBottom: 8
+  marginBottom: 8,
 };
 
 const fieldLabelStyle = { marginBottom: 8 };
 
 const centeredWhiteTextStyle = {
   color: colors.white,
-  textAlign: center
+  textAlign: center,
 };
 
 const smallLabelStyle = {
   marginBottom: 4,
   fontSize: 12,
-  color: colors.gray400
+  color: colors.gray400,
 };
 
 const friendCodeStyle = {
   fontSize: 18,
   color: colors.cyan400,
   fontWeight: '600' as const,
-  fontFamily: 'monospace' as const
+  fontFamily: 'monospace' as const,
 };
 
 const emailDisplayStyle = {
   fontSize: 18,
   color: colors.white,
-  fontWeight: '600' as const
+  fontWeight: '600' as const,
 };
 
 const helperTextStyle = {
   marginTop: 4,
   fontSize: 11,
   color: colors.gray500,
-  fontStyle: 'italic' as const
+  fontStyle: 'italic' as const,
 };
 
 const deleteDescriptionStyle = {
   fontSize: 14,
   color: colors.gray400,
   marginBottom: 16,
-  lineHeight: 20
+  lineHeight: 20,
 };
 
 // Input styles
@@ -607,7 +653,7 @@ const textInputStyle = {
   paddingVertical: 12,
   borderRadius: 8,
   borderWidth: 1,
-  borderColor: colors.gray600
+  borderColor: colors.gray600,
 };
 
 // Button styles
@@ -620,52 +666,52 @@ const primaryButtonStyle = {
   borderColor: colors.slate300,
   width: '100%' as const,
   alignItems: center,
-  marginTop: 8
+  marginTop: 8,
 };
 
 const buttonTextStyle = {
   color: colors.white,
   fontSize: 18,
-  fontWeight: bold
+  fontWeight: bold,
 };
 
 const deleteButtonStyle = {
   ...primaryButtonStyle,
   backgroundColor: colors.red600,
-  borderColor: colors.red900
+  borderColor: colors.red900,
 };
 
 // Banner styles (base)
 const baseBannerStyle = {
   padding: 12,
   borderRadius: 8,
-  marginBottom: 16
+  marginBottom: 16,
 };
 
 const welcomeBannerStyle = {
   ...baseBannerStyle,
   backgroundColor: colors.blue500,
-  padding: 16
+  padding: 16,
 };
 
 const successBannerStyle = {
   ...baseBannerStyle,
-  backgroundColor: colors.green600
+  backgroundColor: colors.green600,
 };
 
 const errorBannerStyle = {
   ...baseBannerStyle,
-  backgroundColor: colors.red600
+  backgroundColor: colors.red600,
 };
 
 const anonymousInfoBannerStyle = {
   ...baseBannerStyle,
-  backgroundColor: colors.slate600
+  backgroundColor: colors.slate600,
 };
 
 const linkedAccountBannerStyle = {
   ...baseBannerStyle,
-  backgroundColor: colors.green600
+  backgroundColor: colors.green600,
 };
 
 // Banner text styles
@@ -673,27 +719,27 @@ const welcomeHeaderStyle = {
   color: colors.white,
   textAlign: center,
   fontWeight: '600' as const,
-  marginBottom: 4
+  marginBottom: 4,
 };
 
 const bannerHeaderStyle = {
   color: colors.white,
   textAlign: center,
-  fontWeight: '600' as const
+  fontWeight: '600' as const,
 };
 
 const bannerSubtextStyle = {
   color: colors.slate300,
   textAlign: center,
   marginTop: 4,
-  fontSize: 13
+  fontSize: 13,
 };
 
 const linkedAccountSubtextStyle = {
   color: colors.green100,
   textAlign: center,
   marginTop: 4,
-  fontSize: 13
+  fontSize: 13,
 };
 
 // Account linking button styles
@@ -703,20 +749,20 @@ const linkExistingButtonStyle = {
   paddingVertical: 14,
   borderRadius: 8,
   alignItems: center,
-  marginBottom: 12
+  marginBottom: 12,
 };
 
 const linkExistingButtonTextStyle = {
   color: colors.darkText,
   fontSize: 16,
-  fontWeight: bold
+  fontWeight: bold,
 };
 
 const linkExistingSubtextStyle = {
   color: colors.darkText,
   fontSize: 12,
   marginTop: 2,
-  textAlign: center
+  textAlign: center,
 };
 
 const createAccountButtonStyle = {
@@ -724,17 +770,17 @@ const createAccountButtonStyle = {
   paddingHorizontal: 24,
   paddingVertical: 14,
   borderRadius: 8,
-  alignItems: center
+  alignItems: center,
 };
 
 const createAccountButtonTextStyle = {
   color: colors.white,
   fontSize: 16,
-  fontWeight: bold
+  fontWeight: bold,
 };
 
 const createAccountSubtextStyle = {
   color: colors.slate300,
   fontSize: 12,
-  marginTop: 2
+  marginTop: 2,
 };

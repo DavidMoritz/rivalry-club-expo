@@ -213,7 +213,7 @@ The app uses **AWS Cognito** for authentication with a flexible approach:
 ### Authentication Flow
 
 1. **No Auth Required**: Users start in the app immediately after game selection
-2. **Optional Link**: "Link Account" option in Profile screen
+2. **Optional Link**: "Restore Account" option in Profile screen
 3. **Sign In/Sign Up**: Custom auth UI (`Auth.tsx`)
 4. **Session Persistence**: Secure token storage via Expo SecureStore
 

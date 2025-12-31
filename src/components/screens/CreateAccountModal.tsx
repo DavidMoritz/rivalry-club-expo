@@ -9,12 +9,17 @@ import {
   Text,
   TextInput,
   TouchableOpacity,
-  View
+  View,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
 import type { Schema } from '../../../amplify/data/resource';
-import { confirmSignUp, getCurrentUser, signIn, signUp } from '../../lib/amplify-auth';
+import {
+  confirmSignUp,
+  getCurrentUser,
+  signIn,
+  signUp,
+} from '../../lib/amplify-auth';
 import { colors } from '../../utils/colors';
 import { center, darkStyles, styles } from '../../utils/styles';
 
@@ -29,7 +34,7 @@ export function CreateAccountModal({
   visible,
   currentUserId,
   onClose,
-  onSuccess
+  onSuccess,
 }: CreateAccountModalProps) {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
@@ -86,7 +91,7 @@ export function CreateAccountModal({
     try {
       await confirmSignUp(email.trim(), verificationCode.trim());
 
-      // After successful verification, sign in and link account
+      // After successful verification, sign in and restore account
       await signIn(email.trim(), password.trim());
       await linkAccountToCognito();
     } catch (err: unknown) {
@@ -98,7 +103,9 @@ export function CreateAccountModal({
       } else if (caughtError.name === 'ExpiredCodeException') {
         setError('Verification code has expired. Please try again.');
       } else {
-        setError(caughtError?.message || 'Verification failed. Please try again.');
+        setError(
+          caughtError?.message || 'Verification failed. Please try again.'
+        );
       }
       setLoading(false);
     }
@@ -117,7 +124,7 @@ export function CreateAccountModal({
         id: currentUserId,
         awsSub: cognitoAwsSub,
         email: email.trim(),
-        role: 1 // Regular user role
+        role: 1, // Regular user role
         // Keep existing firstName/lastName - user can change anytime in Profile
       });
 
@@ -125,17 +132,26 @@ export function CreateAccountModal({
       // DB is the single source of truth for their name
       onSuccess();
     } catch (err: unknown) {
-      console.error('[CreateAccountModal] Link error:', err);
+      console.error('[CreateAccountModal] Restore error:', err);
       const caughtError = err as Error;
-      setError(caughtError?.message || 'Failed to link account. Please try again.');
+      setError(
+        caughtError?.message || 'Failed to restore account. Please try again.'
+      );
     } finally {
       setLoading(false);
     }
   }
 
   return (
-    <Modal animationType="slide" presentationStyle="pageSheet" visible={visible}>
-      <SafeAreaView edges={['top', 'bottom']} style={[styles.container, darkStyles.container]}>
+    <Modal
+      animationType="slide"
+      presentationStyle="pageSheet"
+      visible={visible}
+    >
+      <SafeAreaView
+        edges={['top', 'bottom']}
+        style={[styles.container, darkStyles.container]}
+      >
         <KeyboardAvoidingView
           behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
           keyboardVerticalOffset={0}
@@ -183,7 +199,9 @@ export function CreateAccountModal({
                       </View>
 
                       <View style={inputContainerStyle}>
-                        <Text style={[styles.text, labelTextStyle]}>Password</Text>
+                        <Text style={[styles.text, labelTextStyle]}>
+                          Password
+                        </Text>
                         <TextInput
                           autoCapitalize="none"
                           onChangeText={setPassword}
@@ -197,7 +215,9 @@ export function CreateAccountModal({
                     </>
                   )}
                   <View style={inputContainerStyle}>
-                    <Text style={[styles.text, labelTextStyle]}>Verification Code</Text>
+                    <Text style={[styles.text, labelTextStyle]}>
+                      Verification Code
+                    </Text>
                     <TextInput
                       autoCapitalize="none"
                       keyboardType="number-pad"
@@ -209,7 +229,9 @@ export function CreateAccountModal({
                     />
                   </View>
 
-                  {error && <Text style={[styles.text, errorTextStyle]}>{error}</Text>}
+                  {error && (
+                    <Text style={[styles.text, errorTextStyle]}>{error}</Text>
+                  )}
 
                   <TouchableOpacity
                     disabled={loading || !verificationCode || !email}
@@ -238,7 +260,8 @@ export function CreateAccountModal({
               ) : (
                 <>
                   <Text style={[styles.text, instructionTextStyle]}>
-                    Create an account to back up your data and sync across devices
+                    Create an account to back up your data and sync across
+                    devices
                   </Text>
 
                   <View style={inputContainerStyle}>
@@ -269,7 +292,9 @@ export function CreateAccountModal({
                   </View>
 
                   <View style={inputContainerStyle}>
-                    <Text style={[styles.text, labelTextStyle]}>Confirm Password</Text>
+                    <Text style={[styles.text, labelTextStyle]}>
+                      Confirm Password
+                    </Text>
                     <TextInput
                       autoCapitalize="none"
                       onChangeText={setConfirmPassword}
@@ -281,10 +306,14 @@ export function CreateAccountModal({
                     />
                   </View>
 
-                  {error && <Text style={[styles.text, errorTextStyle]}>{error}</Text>}
+                  {error && (
+                    <Text style={[styles.text, errorTextStyle]}>{error}</Text>
+                  )}
 
                   <TouchableOpacity
-                    disabled={loading || !email || !password || !confirmPassword}
+                    disabled={
+                      loading || !email || !password || !confirmPassword
+                    }
                     onPress={handleSignUp}
                     style={primaryButtonStyle}
                   >
@@ -321,7 +350,7 @@ const flexOneStyle = { flex: 1 };
 
 const contentContainerStyle = {
   flex: 1,
-  paddingHorizontal: 24
+  paddingHorizontal: 24,
 };
 
 const headerContainerStyle = {
@@ -330,56 +359,56 @@ const headerContainerStyle = {
   alignItems: center,
   paddingVertical: 16,
   borderBottomWidth: 1,
-  borderBottomColor: colors.gray750
+  borderBottomColor: colors.gray750,
 };
 
 const scrollContentStyle = {
   flexGrow: 1,
   justifyContent: center,
-  paddingBottom: 40
+  paddingBottom: 40,
 };
 
 const inputContainerStyle = {
-  marginBottom: 20
+  marginBottom: 20,
 };
 
 // Text styles
 const headerTitleStyle = {
   fontSize: 24,
-  fontWeight: 'bold' as const
+  fontWeight: 'bold' as const,
 };
 
 const cancelTextStyle = {
   fontSize: 16,
-  color: colors.slate500
+  color: colors.slate500,
 };
 
 const instructionTextStyle = {
   marginBottom: 24,
   textAlign: center,
-  color: colors.gray300
+  color: colors.gray300,
 };
 
 const labelTextStyle = {
   marginBottom: 8,
   fontSize: 16,
-  fontWeight: '500' as const
+  fontWeight: '500' as const,
 };
 
 const errorTextStyle = {
   marginBottom: 16,
   textAlign: center,
-  color: colors.red400
+  color: colors.red400,
 };
 
 const linkTextStyle = {
   color: colors.cyan400,
-  fontSize: 16
+  fontSize: 16,
 };
 
 const verificationLinkTextStyle = {
   color: colors.gray200,
-  fontSize: 16
+  fontSize: 16,
 };
 
 // Input styles
@@ -391,7 +420,7 @@ const textInputStyle = {
   paddingVertical: 14,
   backgroundColor: colors.gray800,
   borderWidth: 2,
-  borderColor: colors.gray600
+  borderColor: colors.gray600,
 };
 
 // Button styles
@@ -404,16 +433,16 @@ const primaryButtonStyle = {
   borderColor: colors.slate300,
   width: '100%' as const,
   alignItems: center,
-  marginTop: 8
+  marginTop: 8,
 };
 
 const secondaryButtonStyle = {
   marginTop: 16,
-  alignItems: center
+  alignItems: center,
 };
 
 const buttonTextStyle = {
   color: colors.white,
   fontSize: 18,
-  fontWeight: 'bold' as const
+  fontWeight: 'bold' as const,
 };

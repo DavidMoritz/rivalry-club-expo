@@ -364,9 +364,9 @@ export function CreateAccountModal({
 
       onSuccess();
     } catch (err: unknown) {
-      console.error('[CreateAccountModal] Link error:', err);
+      console.error('[CreateAccountModal] Restore error:', err);
       const caughtError = err as Error;
-      setError(caughtError?.message || 'Failed to link account. Please try again.');
+      setError(caughtError?.message || 'Failed to restore account. Please try again.');
     } finally {
       setLoading(false);
     }
@@ -459,7 +459,7 @@ This pattern provides frictionless onboarding while preserving all user data whe
 
 1. **Device-stored UUID is the source of truth** for user identity
 2. **Always fetch by UUID** when a Cognito user is detected (not by awsSub)
-3. **Update, never create** when linking accounts
+3. **Update, never create** when linking/restoring accounts
 4. **One user, one record** - no duplicates
 
 This pattern has been battle-tested in Rivalry Club and prevents the race condition that causes duplicate user records.

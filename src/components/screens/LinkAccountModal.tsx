@@ -27,9 +27,9 @@ function getErrorMessage(err: unknown): string {
     if (errorName === 'UserNotFoundException') return 'User not found';
     if (errorName === 'UserNotConfirmedException')
       return 'Please verify your email before signing in';
-    return err.message || 'Failed to link account. Please try again.';
+    return err.message || 'Failed to restore account. Please try again.';
   }
-  return 'Failed to link account. Please try again.';
+  return 'Failed to restore account. Please try again.';
 }
 
 interface LinkAccountModalProps {
@@ -95,7 +95,7 @@ export function LinkAccountModal({
           id: currentUserId,
           awsSub: cognitoAwsSub,
           email: email.trim(),
-          role: 1 // Regular user role
+          role: 1, // Regular user role
           // Keep existing firstName/lastName - user can change anytime in Profile
         });
 
@@ -129,7 +129,7 @@ export function LinkAccountModal({
           <View style={containerStyle}>
             <View style={headerContainerStyle}>
               <Text style={[styles.text, headerTitleStyle]}>
-                Link Existing Account
+                Restore Existing Account
               </Text>
               <TouchableOpacity onPress={onClose}>
                 <Text style={[styles.text, cancelTextStyle]}>Cancel</Text>
@@ -186,7 +186,7 @@ export function LinkAccountModal({
                 {loading ? (
                   <ActivityIndicator color={colors.darkText} />
                 ) : (
-                  <Text style={buttonTextStyle}>Link Account</Text>
+                  <Text style={buttonTextStyle}>Restore Account</Text>
                 )}
               </TouchableOpacity>
             </ScrollView>

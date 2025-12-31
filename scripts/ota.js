@@ -27,7 +27,9 @@ if (!message) {
   console.error('❌ Error: Message is required.');
   console.error('Usage: npm run ota [--ios|--android] "your message"');
   console.error('  --ios:     Update iOS only (runtime version from app.json)');
-  console.error(`  --android: Update Android only (runtime version ${androidVersion})`);
+  console.error(
+    `  --android: Update Android only (runtime version ${androidVersion})`
+  );
   console.error('  (default): Update both platforms');
   process.exit(1);
 }
@@ -48,7 +50,9 @@ if (platform === 'ios') {
 } else if (versionsInSync) {
   console.log(`   Platform: Both (runtime version ${iosVersion})`);
 } else {
-  console.log(`   Platform: iOS (${iosVersion}) and Android (${androidVersion})`);
+  console.log(
+    `   Platform: iOS (${iosVersion}) and Android (${androidVersion})`
+  );
 }
 console.log('');
 
@@ -73,17 +77,16 @@ try {
     );
   } else if (versionsInSync) {
     // Both platforms are in sync - one update works for both
-    execSync(
-      `eas update --branch production --message "${message}"`,
-      {
-        stdio: 'inherit',
-        encoding: 'utf-8'
-      }
-    );
+    execSync(`eas update --branch production --message "${message}"`, {
+      stdio: 'inherit',
+      encoding: 'utf-8'
+    });
   } else {
     // Both platforms - different runtime versions, need to update app.json temporarily
     console.log('⚠️  Warning: iOS and Android have different versions.');
-    console.log('   You may want to use --ios or --android to target specific platform.');
+    console.log(
+      '   You may want to use --ios or --android to target specific platform.'
+    );
     console.log('');
     console.log('Publishing iOS update...');
     execSync(
@@ -139,7 +142,9 @@ try {
   });
 
   console.log('');
-  console.log('✅ OTA update published and committed!');
+  console.log(
+    '✅ OTA update published and committed!  Be sure to push your changes to remote.'
+  );
 } catch (error) {
   console.error('❌ Error occurred during OTA update');
   process.exit(1);

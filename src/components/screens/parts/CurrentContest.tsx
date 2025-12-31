@@ -175,10 +175,7 @@ function StockButton({
       ]}
     >
       <Text
-        style={{
-          fontSize: 24,
-          color: isSelected ? colors.white : colors.black
-        }}
+        style={[stockButtonTextStyle, { color: isSelected ? colors.white : colors.black }]}
       >
         {value}
       </Text>
@@ -470,6 +467,10 @@ const resolveButtonTextStyle = {
   fontSize: 20,
   fontWeight: 'bold' as const,
   color: colors.white
+};
+
+const stockButtonTextStyle = {
+  fontSize: 24
 };
 
 const relativePositionStyle = {

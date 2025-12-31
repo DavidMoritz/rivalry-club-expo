@@ -96,7 +96,7 @@ function FighterCard({
   const BADGE_RATIO = 0.25;
 
   return (
-    <View style={[fighterContainerStyle, isWinner ? fighterWinnerStyle : fighterNonWinnerStyle]}>
+    <>
       {canShuffle && (
         <TouchableOpacity
           disabled={shufflingSlot === slot}
@@ -108,45 +108,47 @@ function FighterCard({
           <Text style={shuffleEmojiStyle}>🔀</Text>
         </TouchableOpacity>
       )}
-      <Text style={[currentContestUserStyle, { color: getTextColor(isWinner) }]}>
-        {userName} {prestigeDisplay}
-      </Text>
-      <View style={relativePositionStyle}>
-        <CharacterDisplay
-          fighter={fighter}
-          height={180}
-          hideName={true}
-          onPress={() => {
-            setWinner(tierSlot);
-          }}
-          tierSlot={tierSlot}
-          width={140}
-          zoomMultiplier={1.55}
-        />
-        {/* Tier Badge Overlay for Unranked */}
-        {isUnranked && (
-          <View
-            style={[
-              tierBadgeStyles.badge,
-              {
-                backgroundColor: colors.gray500,
-                width: DISPLAY_WIDTH * BADGE_RATIO,
-                height: DISPLAY_WIDTH * BADGE_RATIO,
-                bottom: 8,
-                right: 8
-              }
-            ]}
-          >
-            <Text style={tierBadgeStyles.text}>U</Text>
-          </View>
-        )}
+      <View style={[fighterContainerStyle, isWinner ? fighterWinnerStyle : fighterNonWinnerStyle]}>
+        <Text style={[currentContestUserStyle, { color: getTextColor(isWinner) }]}>
+          {userName} {prestigeDisplay}
+        </Text>
+        <View style={relativePositionStyle}>
+          <CharacterDisplay
+            fighter={fighter}
+            height={180}
+            hideName={true}
+            onPress={() => {
+              setWinner(tierSlot);
+            }}
+            tierSlot={tierSlot}
+            width={140}
+            zoomMultiplier={1.55}
+          />
+          {/* Tier Badge Overlay for Unranked */}
+          {isUnranked && (
+            <View
+              style={[
+                tierBadgeStyles.badge,
+                {
+                  backgroundColor: colors.gray500,
+                  width: DISPLAY_WIDTH * BADGE_RATIO,
+                  height: DISPLAY_WIDTH * BADGE_RATIO,
+                  bottom: 8,
+                  right: 8
+                }
+              ]}
+            >
+              <Text style={tierBadgeStyles.text}>U</Text>
+            </View>
+          )}
+        </View>
+        <Text style={[fighterNameStyle, { color: getTextColor(isWinner) }]}>
+          {fighter.name}
+          {slot === 'A' ? ' ' : ''}
+        </Text>
+        {isWinner && <WinnerBadge />}
       </View>
-      <Text style={[fighterNameStyle, { color: getTextColor(isWinner) }]}>
-        {fighter.name}
-        {slot === 'A' ? ' ' : ''}
-      </Text>
-      {isWinner && <WinnerBadge />}
-    </View>
+    </>
   );
 }
 
@@ -245,13 +247,13 @@ export function CurrentContest({
   return (
     <>
       <View style={contestOuterContainerStyle}>
-        <View style={shuffleContainerStyle}>
-          {!canShuffle && (
+        {!canShuffle && (
+          <View style={shuffleContainerStyle}>
             <TouchableOpacity onPress={() => setCanShuffle(true)} style={reshuffleButtonStyle}>
               <Text style={reshuffleTextStyle}>🔀 Reshuffle</Text>
             </TouchableOpacity>
-          )}
-        </View>
+          </View>
+        )}
         <View
           style={[fightersRowContainerStyle, { flexDirection: isUserB ? 'row-reverse' : 'row' }]}
         >
@@ -326,8 +328,9 @@ export function CurrentContest({
 
 // Static style objects for winner/non-winner states
 const fighterWinnerStyle = {
-  borderColor: colors.yellow500,
-  backgroundColor: colors.blue100
+  borderColor: colors.green700,
+  backgroundColor: colors.blue100,
+  zIndex: 20
 };
 
 const fighterNonWinnerStyle = {
@@ -352,14 +355,8 @@ const shuffleContainerStyle = {
   justifyContent: center
 };
 
-const currentContestTitleStyle = {
-  fontSize: 18,
-  color: colors.white,
-  position: absolute,
-  left: 0
-};
-
 const reshuffleButtonStyle = {
+  zIndex: 10,
   alignItems: center,
   marginTop: 5,
   marginBottom: -35,
@@ -400,9 +397,10 @@ const fighterContainerStyle = {
 
 const shuffleButtonStyle = {
   position: absolute,
-  top: -25,
-  padding: 10,
-  zIndex: 10
+  top: 0,
+  paddingVertical: 10,
+  paddingHorizontal: 15,
+  zIndex: 5
 };
 
 const currentContestUserStyle = {

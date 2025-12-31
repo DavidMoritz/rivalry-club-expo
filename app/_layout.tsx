@@ -112,6 +112,11 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: colors.gray900,
-    paddingTop: HEADER_HEIGHT
+    paddingTop: HEADER_HEIGHT,
+    ...Platform.select({
+      android: {
+        paddingBottom: 30
+      }
+    })
   }
 });

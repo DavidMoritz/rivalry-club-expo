@@ -850,6 +850,7 @@ export function TierListEditDisplay({
       })}
 
       {/* UNKNOWN TIER: Display unknown fighters at bottom */}
+      {/* If I wanted to sort these, what information do I have available? */}
       {unknownSlots.length > 0 && (
         <View>
           <View
@@ -891,46 +892,52 @@ export function TierListEditDisplay({
                 gap: 4
               }}
             >
-              {unknownSlots.map((slot) => {
-                const fighter = fighterByIdFromGame(game, slot.fighterId);
-                if (!fighter) return null;
+              {unknownSlots
+                .sort((a, b) => {
+                  const fighterA = fighterByIdFromGame(game, a.fighterId);
+                  const fighterB = fighterByIdFromGame(game, b.fighterId);
+                  return (fighterA?.name || '').localeCompare(fighterB?.name || '');
+                })
+                .map((slot) => {
+                  const fighter = fighterByIdFromGame(game, slot.fighterId);
+                  if (!fighter) return null;
 
-                const isSelected = selectedSlot?.id === slot.id;
+                  const isSelected = selectedSlot?.id === slot.id;
 
-                return (
-                  <View
-                    key={slot.id}
-                    style={{
-                      opacity: isSelected ? SELECTED_OPACITY : 1,
-                      transform: [{ scale: isSelected ? SELECTED_SCALE : 1 }],
-                      borderWidth: isSelected ? 1 : 0,
-                      borderColor: colors.blue500,
-                      borderRadius: 4,
-                      margin: isSelected ? -1 : 0
-                    }}
-                  >
-                    <CharacterDisplay
-                      fighter={fighter}
-                      height={45}
-                      hideName={true}
-                      onPress={() => {
-                        if (selectedSlot && selectedSlot.id !== slot.id) {
-                          // Deselect - can't move unknown fighters to unknown tier
-                          setSelectedSlot(null);
-                        } else if (selectedSlot && selectedSlot.id === slot.id) {
-                          // If clicking the same slot, deselect it
-                          setSelectedSlot(null);
-                        } else {
-                          // No slot selected, select this unknown fighter
-                          handleSelectSlot(slot);
-                        }
+                  return (
+                    <View
+                      key={slot.id}
+                      style={{
+                        opacity: isSelected ? SELECTED_OPACITY : 1,
+                        transform: [{ scale: isSelected ? SELECTED_SCALE : 1 }],
+                        borderWidth: isSelected ? 1 : 0,
+                        borderColor: colors.blue500,
+                        borderRadius: 4,
+                        margin: isSelected ? -1 : 0
                       }}
-                      tierSlot={slot}
-                      zoomMultiplier={0.65}
-                    />
-                  </View>
-                );
-              })}
+                    >
+                      <CharacterDisplay
+                        fighter={fighter}
+                        height={45}
+                        hideName={true}
+                        onPress={() => {
+                          if (selectedSlot && selectedSlot.id !== slot.id) {
+                            // Deselect - can't move unknown fighters to unknown tier
+                            setSelectedSlot(null);
+                          } else if (selectedSlot && selectedSlot.id === slot.id) {
+                            // If clicking the same slot, deselect it
+                            setSelectedSlot(null);
+                          } else {
+                            // No slot selected, select this unknown fighter
+                            handleSelectSlot(slot);
+                          }
+                        }}
+                        tierSlot={slot}
+                        zoomMultiplier={0.65}
+                      />
+                    </View>
+                  );
+                })}
             </View>
           </View>
         </View>

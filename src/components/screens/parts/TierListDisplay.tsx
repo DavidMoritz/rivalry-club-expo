@@ -7,6 +7,9 @@ import {
   type TierWithSlots,
 } from '../../../models/m-tier-list';
 import type { MTierSlot } from '../../../models/m-tier-slot';
+import type { MGame } from '../../../models/m-game';
+import { useGame } from '../../../providers/game';
+import { fighterByIdFromGame } from '../../../utils';
 import { colors } from '../../../utils/colors';
 import { SyncedScrollView } from './SyncedScrollView';
 import TierListRow from './TierListRow';
@@ -18,6 +21,7 @@ export function TierListDisplay({
   tierList: MTierList;
   unlinked: boolean;
 }): ReactNode {
+  const game = useGame() as MGame;
   const [tierSlotsSorted, setTierSlotsSorted] = useState<TierWithSlots[]>([]);
   const [unknownSlots, setUnknownSlots] = useState<MTierSlot[]>([]);
 
@@ -61,9 +65,16 @@ export function TierListDisplay({
       };
     });
 
+    // Sort unknown slots alphabetically by fighter name
+    const sortedUnknownSlots = filteredUnknownSlots.sort((a, b) => {
+      const fighterA = fighterByIdFromGame(game, a.fighterId);
+      const fighterB = fighterByIdFromGame(game, b.fighterId);
+      return (fighterA?.name || '').localeCompare(fighterB?.name || '');
+    });
+
     setTierSlotsSorted(tiersWithSlots);
-    setUnknownSlots(filteredUnknownSlots);
-  }, [tierList]);
+    setUnknownSlots(sortedUnknownSlots);
+  }, [tierList, game]);
 
   return (
     <View style={{ flex: 1, marginVertical: 8 }}>

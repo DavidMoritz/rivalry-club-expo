@@ -359,7 +359,7 @@ const reshuffleButtonStyle = {
   zIndex: 10,
   alignItems: center,
   marginTop: 5,
-  marginBottom: -35,
+  marginBottom: -15,
   paddingHorizontal: 16,
   paddingVertical: 8,
   borderWidth: 1,

@@ -2,12 +2,18 @@ import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { Amplify } from 'aws-amplify';
 import { Slot } from 'expo-router';
 import { useEffect, useState } from 'react';
-import { ActivityIndicator, Platform, StyleSheet, Text, View } from 'react-native';
+import {
+  ActivityIndicator,
+  Platform,
+  StyleSheet,
+  Text,
+  View,
+} from 'react-native';
 import 'react-native-get-random-values';
 import 'react-native-url-polyfill/auto';
 
 import outputs from '../amplify-config';
-import { Header, HEADER_HEIGHT } from '../src/components/common/Header';
+import { HEADER_HEIGHT, Header } from '../src/components/common/Header';
 import { AllRivalriesProvider } from '../src/providers/all-rivalries';
 import { GameProvider } from '../src/providers/game';
 import { HeaderProvider, useHeaderConfig } from '../src/providers/header';
@@ -34,8 +40,15 @@ function HeaderFromContext() {
 
   return (
     <Header
+      hide={
+        config.hide as
+          | 'rivalries'
+          | 'pending'
+          | 'profile'
+          | 'how-to-play'
+          | undefined
+      }
       title={config.title}
-      hide={config.hide as 'rivalries' | 'pending' | 'profile' | 'how-to-play' | undefined}
     />
   );
 }
@@ -58,7 +71,9 @@ export default function RootLayout() {
         setIsReady(true);
       } catch (error) {
         console.error('[RootLayout] Initialization error:', error);
-        setLoadingError(error instanceof Error ? error.message : 'Unknown error');
+        setLoadingError(
+          error instanceof Error ? error.message : 'Unknown error'
+        );
         // Still show the app even if initialization fails
         setAssetsLoaded(true);
         setIsReady(true);
@@ -76,17 +91,22 @@ export default function RootLayout() {
           flex: 1,
           backgroundColor: colors.gray900,
           alignItems: 'center',
-          justifyContent: 'center'
+          justifyContent: 'center',
         }}
       >
         <ActivityIndicator color={colors.white} size="large" />
-        <Text style={{ color: colors.white, marginTop: 16, fontSize: 16 }}>Initializing...</Text>
+        <Text style={{ color: colors.white, marginTop: 16, fontSize: 16 }}>
+          Initializing...
+        </Text>
       </View>
     );
   }
 
   if (loadingError) {
-    console.warn('[RootLayout] Assets failed to preload, but continuing anyway:', loadingError);
+    console.warn(
+      '[RootLayout] Assets failed to preload, but continuing anyway:',
+      loadingError
+    );
   }
 
   // Don't pass userId here - let RivalryIndex handle it with the correct user.id
@@ -115,8 +135,8 @@ const styles = StyleSheet.create({
     paddingTop: HEADER_HEIGHT,
     ...Platform.select({
       android: {
-        paddingBottom: 30
-      }
-    })
-  }
+        paddingBottom: 30,
+      },
+    }),
+  },
 });

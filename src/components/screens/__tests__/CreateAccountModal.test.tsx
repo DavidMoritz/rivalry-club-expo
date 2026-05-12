@@ -41,10 +41,10 @@ describe('CreateAccountModal', () => {
     it('shows "Have a confirmation code? Verify" link on create account screen', () => {
       const { getByText } = render(
         <CreateAccountModal
-          visible={true}
           currentUserId={currentUserId}
           onClose={mockOnClose}
           onSuccess={mockOnSuccess}
+          visible={true}
         />
       );
 
@@ -54,10 +54,10 @@ describe('CreateAccountModal', () => {
     it('switches to verification screen when clicking verification link', () => {
       const { getByText } = render(
         <CreateAccountModal
-          visible={true}
           currentUserId={currentUserId}
           onClose={mockOnClose}
           onSuccess={mockOnSuccess}
+          visible={true}
         />
       );
 
@@ -71,10 +71,10 @@ describe('CreateAccountModal', () => {
     it('shows email input on verification screen when email is not filled', () => {
       const { getByText, getByPlaceholderText } = render(
         <CreateAccountModal
-          visible={true}
           currentUserId={currentUserId}
           onClose={mockOnClose}
           onSuccess={mockOnSuccess}
+          visible={true}
         />
       );
 
@@ -94,19 +94,22 @@ describe('CreateAccountModal', () => {
         },
       });
 
-      const { getByText, getByPlaceholderText, queryByPlaceholderText } = render(
-        <CreateAccountModal
-          visible={true}
-          currentUserId={currentUserId}
-          onClose={mockOnClose}
-          onSuccess={mockOnSuccess}
-        />
-      );
+      const { getByText, getByPlaceholderText, queryByPlaceholderText } =
+        render(
+          <CreateAccountModal
+            currentUserId={currentUserId}
+            onClose={mockOnClose}
+            onSuccess={mockOnSuccess}
+            visible={true}
+          />
+        );
 
       // Fill out sign up form
       const emailInput = getByPlaceholderText('Enter your email');
       const passwordInput = getByPlaceholderText('Enter your password');
-      const confirmPasswordInput = getByPlaceholderText('Confirm your password');
+      const confirmPasswordInput = getByPlaceholderText(
+        'Confirm your password'
+      );
 
       fireEvent.changeText(emailInput, 'test@test.com');
       fireEvent.changeText(passwordInput, 'Password123!');
@@ -130,10 +133,10 @@ describe('CreateAccountModal', () => {
     it('shows appropriate message based on whether email is filled', () => {
       const { getByText } = render(
         <CreateAccountModal
-          visible={true}
           currentUserId={currentUserId}
           onClose={mockOnClose}
           onSuccess={mockOnSuccess}
+          visible={true}
         />
       );
 
@@ -142,17 +145,19 @@ describe('CreateAccountModal', () => {
 
       // Should show message asking for both email and code
       expect(
-        getByText('Please enter your email and the verification code we sent you')
+        getByText(
+          'Please enter your email and the verification code we sent you'
+        )
       ).toBeTruthy();
     });
 
-    it('requires both email and verification code to enable verify button', async () => {
+    it('requires both email and verification code to enable verify button', () => {
       const { getByText, getByPlaceholderText } = render(
         <CreateAccountModal
-          visible={true}
           currentUserId={currentUserId}
           onClose={mockOnClose}
           onSuccess={mockOnSuccess}
+          visible={true}
         />
       );
 
@@ -192,10 +197,10 @@ describe('CreateAccountModal', () => {
 
       const { getByText, getByPlaceholderText } = render(
         <CreateAccountModal
-          visible={true}
           currentUserId={currentUserId}
           onClose={mockOnClose}
           onSuccess={mockOnSuccess}
+          visible={true}
         />
       );
 
@@ -203,15 +208,27 @@ describe('CreateAccountModal', () => {
       fireEvent.press(getByText('Have a confirmation code? Verify'));
 
       // Fill in email, password, and code
-      fireEvent.changeText(getByPlaceholderText('Enter your email'), 'test@test.com');
-      fireEvent.changeText(getByPlaceholderText('Enter your password'), 'Password123!');
-      fireEvent.changeText(getByPlaceholderText('Enter verification code'), '123456');
+      fireEvent.changeText(
+        getByPlaceholderText('Enter your email'),
+        'test@test.com'
+      );
+      fireEvent.changeText(
+        getByPlaceholderText('Enter your password'),
+        'Password123!'
+      );
+      fireEvent.changeText(
+        getByPlaceholderText('Enter verification code'),
+        '123456'
+      );
 
       // Submit verification
       fireEvent.press(getByText('Verify'));
 
       await waitFor(() => {
-        expect(mockConfirmSignUp).toHaveBeenCalledWith('test@test.com', '123456');
+        expect(mockConfirmSignUp).toHaveBeenCalledWith(
+          'test@test.com',
+          '123456'
+        );
       });
 
       await waitFor(() => {
@@ -222,10 +239,10 @@ describe('CreateAccountModal', () => {
     it('shows back button on verification screen', () => {
       const { getByText } = render(
         <CreateAccountModal
-          visible={true}
           currentUserId={currentUserId}
           onClose={mockOnClose}
           onSuccess={mockOnSuccess}
+          visible={true}
         />
       );
 
@@ -238,10 +255,10 @@ describe('CreateAccountModal', () => {
     it('returns to create account screen when clicking back', () => {
       const { getByText, queryByText } = render(
         <CreateAccountModal
-          visible={true}
           currentUserId={currentUserId}
           onClose={mockOnClose}
           onSuccess={mockOnSuccess}
+          visible={true}
         />
       );
 
@@ -262,15 +279,21 @@ describe('CreateAccountModal', () => {
     it('shows error when passwords do not match', async () => {
       const { getByText, getByPlaceholderText } = render(
         <CreateAccountModal
-          visible={true}
           currentUserId={currentUserId}
           onClose={mockOnClose}
           onSuccess={mockOnSuccess}
+          visible={true}
         />
       );
 
-      fireEvent.changeText(getByPlaceholderText('Enter your email'), 'test@test.com');
-      fireEvent.changeText(getByPlaceholderText('Enter your password'), 'Password123!');
+      fireEvent.changeText(
+        getByPlaceholderText('Enter your email'),
+        'test@test.com'
+      );
+      fireEvent.changeText(
+        getByPlaceholderText('Enter your password'),
+        'Password123!'
+      );
       fireEvent.changeText(
         getByPlaceholderText('Confirm your password'),
         'DifferentPassword!'

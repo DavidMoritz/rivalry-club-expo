@@ -11,27 +11,34 @@ interface TierListsDisplayProps {
   unlinked: boolean;
 }
 
-export function TierListsDisplay({ rivalry, unlinked }: TierListsDisplayProps): ReactNode {
+export function TierListsDisplay({
+  rivalry,
+  unlinked,
+}: TierListsDisplayProps): ReactNode {
   const { userId } = useRivalryContext();
 
   return (
     <View
       style={{
         flex: 1,
-        flexDirection: userId === rivalry.userBId ? 'column-reverse' : 'column'
+        flexDirection: userId === rivalry.userBId ? 'column-reverse' : 'column',
       }}
     >
       <View style={{ flex: 1 }}>
         <Text style={[darkStyles.text, tierListHeaderStyle]}>
           {rivalry.displayUserAName()} tier list
         </Text>
-        {rivalry.tierListA && <TierListDisplay tierList={rivalry.tierListA} unlinked={unlinked} />}
+        {rivalry.tierListA && (
+          <TierListDisplay tierList={rivalry.tierListA} unlinked={unlinked} />
+        )}
       </View>
       <View style={{ flex: 1 }}>
         <Text style={[darkStyles.text, tierListHeaderStyle]}>
           {rivalry.displayUserBName()} tier list
         </Text>
-        {rivalry.tierListB && <TierListDisplay tierList={rivalry.tierListB} unlinked={unlinked} />}
+        {rivalry.tierListB && (
+          <TierListDisplay tierList={rivalry.tierListB} unlinked={unlinked} />
+        )}
       </View>
     </View>
   );
@@ -40,5 +47,5 @@ export function TierListsDisplay({ rivalry, unlinked }: TierListsDisplayProps): 
 const tierListHeaderStyle = {
   fontSize: 18,
   marginBottom: 8,
-  marginTop: 16
+  marginTop: 16,
 };

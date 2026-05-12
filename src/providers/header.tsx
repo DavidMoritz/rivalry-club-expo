@@ -1,4 +1,10 @@
-import { createContext, useContext, useEffect, useState, type ReactNode } from 'react';
+import {
+  createContext,
+  type ReactNode,
+  useContext,
+  useEffect,
+  useState,
+} from 'react';
 
 interface HeaderConfig {
   title?: string;
@@ -39,10 +45,11 @@ export function useSetHeader(config: HeaderConfig) {
   if (context === undefined) {
     throw new Error('useSetHeader must be used within a HeaderProvider');
   }
+  const { title, hide, showHeader } = config;
 
   // Set the header config when the component mounts or config changes
   // Use useEffect to avoid updating state during render
   useEffect(() => {
-    context.setConfig(config);
-  }, [config.title, config.hide, config.showHeader, context.setConfig]);
+    context.setConfig({ title, hide, showHeader });
+  }, [title, hide, showHeader, context.setConfig]);
 }

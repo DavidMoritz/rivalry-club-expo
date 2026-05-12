@@ -1,4 +1,11 @@
-import { FlatList, Image, Linking, Text, TouchableOpacity, View } from 'react-native';
+import {
+  FlatList,
+  Image,
+  Linking,
+  Text,
+  TouchableOpacity,
+  View,
+} from 'react-native';
 
 import { logoImage } from '../../../assets/images/games/ssbu';
 import type { MFighter } from '../../models/m-fighter';
@@ -15,10 +22,11 @@ interface GameWithCharactersDisplayProps {
 
 export function GameWithCharactersDisplay({
   game,
-  onHowToPlayClick
+  onHowToPlayClick,
 }: GameWithCharactersDisplayProps) {
   // Cast fighters to access items (LazyLoader type)
-  const fighters = (game.fighters as { items?: MFighter[] } | undefined)?.items ?? [];
+  const fighters =
+    (game.fighters as { items?: MFighter[] } | undefined)?.items ?? [];
 
   return (
     <FlatList
@@ -26,12 +34,14 @@ export function GameWithCharactersDisplay({
       contentContainerStyle={contentContainerStyle}
       data={fighters}
       key="id"
-      keyExtractor={(item) => item?.id || ''}
+      keyExtractor={item => item?.id || ''}
       ListFooterComponent={
         <View style={footerContainerStyle}>
           <Text style={creditsTextStyle}>Custom artwork provided by</Text>
           <TouchableOpacity
-            onPress={() => Linking.openURL('https://www.deviantart.com/professorfandango')}
+            onPress={() =>
+              Linking.openURL('https://www.deviantart.com/professorfandango')
+            }
           >
             <Text style={linkTextStyle}>Professor Fandango</Text>
           </TouchableOpacity>
@@ -45,47 +55,51 @@ export function GameWithCharactersDisplay({
           )}
         </View>
       }
-      ListHeaderComponent={<Image source={logoImage} style={styles.gameLogoImage} />}
+      ListHeaderComponent={
+        <Image source={logoImage} style={styles.gameLogoImage} />
+      }
       numColumns={3}
-      renderItem={({ item }) => item && <CharacterDisplay fighter={item as MFighter} />}
+      renderItem={({ item }) =>
+        item && <CharacterDisplay fighter={item as MFighter} />
+      }
       style={containerStyle}
     />
   );
 }
 
 const columnWrapperStyle = {
-  justifyContent: 'space-evenly' as const
+  justifyContent: 'space-evenly' as const,
 };
 
 const contentContainerStyle = {
-  flexGrow: 1
+  flexGrow: 1,
 };
 
 const containerStyle = {
-  flex: 1
+  flex: 1,
 };
 
 const footerContainerStyle = {
   paddingTop: 12,
   paddingBottom: 24,
   paddingHorizontal: 16,
-  alignItems: center
+  alignItems: center,
 };
 
 const creditsTextStyle = {
   color: colors.gray400,
   fontSize: 17,
-  textAlign: center
+  textAlign: center,
 };
 
 const linkTextStyle = {
   color: colors.blue400,
   fontSize: 17,
-  textDecorationLine: 'underline' as const
+  textDecorationLine: 'underline' as const,
 };
 
 const buttonStyle = {
   marginTop: 26,
   width: '60%' as const,
-  paddingVertical: 0
+  paddingVertical: 0,
 };

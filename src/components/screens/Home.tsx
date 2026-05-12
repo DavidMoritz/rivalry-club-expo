@@ -5,7 +5,7 @@ import {
   SafeAreaView,
   Text,
   TouchableWithoutFeedback,
-  View
+  View,
 } from 'react-native';
 
 import { logoImage } from '../../../assets/images/games/ssbu';
@@ -37,12 +37,13 @@ export default function Home({ onEnterClick, onHowToPlayClick }: HomeProps) {
   const isLoading = !game;
 
   // Network status detection
-  const { isConnected, hasShownOfflineModal, setHasShownOfflineModal } = useNetworkStatus();
+  const { isConnected, hasShownOfflineModal, setHasShownOfflineModal } =
+    useNetworkStatus();
   const [showOfflineModal, setShowOfflineModal] = useState(false);
 
   // Show offline modal when app opens without connection (only once per disconnection)
   useEffect(() => {
-    if (!isConnected && !hasShownOfflineModal) {
+    if (!(isConnected || hasShownOfflineModal)) {
       setShowOfflineModal(true);
       setHasShownOfflineModal(true);
     }
@@ -54,17 +55,27 @@ export default function Home({ onEnterClick, onHowToPlayClick }: HomeProps) {
 
   return (
     <SafeAreaView style={[styles.container, darkStyles.container]}>
-      <OfflineModal onClose={() => setShowOfflineModal(false)} visible={showOfflineModal} />
+      <OfflineModal
+        onClose={() => setShowOfflineModal(false)}
+        visible={showOfflineModal}
+      />
       <View style={viewUpperStyle}>
         <TouchableWithoutFeedback onPress={() => game && onEnterClick(game)}>
-          <Image source={require('../../../assets/icon-blank.png')} style={siteLogoImageStyle} />
+          <Image
+            source={require('../../../assets/icon-blank.png')}
+            style={siteLogoImageStyle}
+          />
         </TouchableWithoutFeedback>
         <TouchableWithoutFeedback onPress={() => game && onEnterClick(game)}>
           <View style={titleContainerStyle}>
             <Text style={styles.title}>Rivalry Club</Text>
           </View>
         </TouchableWithoutFeedback>
-        <Button onPress={() => game && onEnterClick(game)} style={enterButtonStyle} text="Enter" />
+        <Button
+          onPress={() => game && onEnterClick(game)}
+          style={enterButtonStyle}
+          text="Enter"
+        />
       </View>
       <View style={viewLowerStyle}>
         {!game && <Image source={logoImage} style={styles.gameLogoImage} />}
@@ -75,7 +86,10 @@ export default function Home({ onEnterClick, onHowToPlayClick }: HomeProps) {
           </View>
         )}
         {game && !isLoading && (
-          <GameWithCharactersDisplay game={game} onHowToPlayClick={onHowToPlayClick} />
+          <GameWithCharactersDisplay
+            game={game}
+            onHowToPlayClick={onHowToPlayClick}
+          />
         )}
       </View>
     </SafeAreaView>
@@ -86,27 +100,27 @@ const enterButtonStyle = {
   marginTop: 4,
   marginBottom: 8,
   paddingVertical: 0,
-  paddingHorizontal: 45
+  paddingHorizontal: 45,
 };
 
 const loadingContainerStyle = {
   flex: 1,
   alignItems: center,
   justifyContent: center,
-  paddingTop: 40
+  paddingTop: 40,
 };
 
 const loadingTextStyle = {
   color: colors.gray400,
   fontSize: 16,
-  marginTop: 16
+  marginTop: 16,
 };
 
 const siteLogoImageStyle = {
   alignSelf: center,
   aspectRatio: 1,
   flex: 1,
-  resizeMode: 'contain' as const
+  resizeMode: 'contain' as const,
 };
 
 const titleContainerStyle = {
@@ -114,16 +128,16 @@ const titleContainerStyle = {
   bottom: 20,
   justifyContent: center,
   position: 'absolute' as const,
-  top: 0
+  top: 0,
 };
 
 const viewUpperStyle = {
   flex: 1,
   alignItems: center,
   justifyContent: 'space-between' as const,
-  width: '100%' as const
+  width: '100%' as const,
 };
 
 const viewLowerStyle = {
-  flex: 2
+  flex: 2,
 };

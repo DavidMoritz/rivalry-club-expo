@@ -10,6 +10,7 @@
       "!website",
       "!scripts",
       "!src/API.ts",
+      "!src/graphql/API.ts",
       "!amplify",
       "!*.js",
       "!assets/**/*.js",

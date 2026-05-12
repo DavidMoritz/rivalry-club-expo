@@ -188,6 +188,6 @@ export async function getStoredFirstName(): Promise<string | null> {
  * This is used ONLY when creating a new anonymous user.
  * The DB User record is the single source of truth for names after that.
  */
-export async function getDisplayName(uuid: string): Promise<string> {
+export function getDisplayName(uuid: string): string {
   return generateDisplayName(uuid);
 }

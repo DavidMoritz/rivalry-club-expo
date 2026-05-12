@@ -4,7 +4,11 @@ import { colors } from '../utils/colors';
 import type { MContest } from './m-contest';
 import { STEPS_PER_STOCK } from './m-game';
 import type { MRivalry } from './m-rivalry';
-import { getMTierSlot, type MTierSlot, normalizeTierSlotPositionToIndex } from './m-tier-slot';
+import {
+  getMTierSlot,
+  type MTierSlot,
+  normalizeTierSlotPositionToIndex,
+} from './m-tier-slot';
 
 // Extract Gen 2 types
 type TierList = Schema['TierList']['type'];
@@ -12,7 +16,12 @@ type TierSlot = Schema['TierSlot']['type'];
 
 type TierSlotPositionsPojo = Record<
   string,
-  { id: string; position: number | null; contestCount: number; winCount: number }
+  {
+    id: string;
+    position: number | null;
+    contestCount: number;
+    winCount: number;
+  }
 >;
 
 export interface MTierList extends Omit<TierList, 'rivalry'> {
@@ -66,14 +75,20 @@ export interface MTierList extends Omit<TierList, 'rivalry'> {
   rivalry?: MRivalry;
   sampleEligibleSlot(): MTierSlot;
   sampleFromEligibleSlots(eligibleSlots: MTierSlot[]): MTierSlot;
-  sampleUnknownFighterIfNeeded(eligibleSlots: MTierSlot[]): MTierSlot | undefined;
+  sampleUnknownFighterIfNeeded(
+    eligibleSlots: MTierSlot[]
+  ): MTierSlot | undefined;
   shiftFightersBetweenPositions(
     excludeId: string,
     oldPosition: number,
     newPosition: number,
     steps: number
   ): void;
-  shiftFightersUp(firstEmpty: number, targetPosition: number, excludeId: string): void;
+  shiftFightersUp(
+    firstEmpty: number,
+    targetPosition: number,
+    excludeId: string
+  ): void;
   slots: MTierSlot[];
   slotsPerTier: number;
   title: string;
@@ -95,44 +110,44 @@ export const TIERS = [
     label: 'S',
     position: 0,
     color: colors.tierS,
-    fightersCount: baseFightersPerTier
+    fightersCount: baseFightersPerTier,
   },
   {
     label: 'A',
     position: 1,
     color: colors.tierA,
-    fightersCount: baseFightersPerTier
+    fightersCount: baseFightersPerTier,
   },
   {
     label: 'B',
     position: 2,
     color: colors.tierB,
-    fightersCount: baseFightersPerTier
+    fightersCount: baseFightersPerTier,
   },
   {
     label: 'C',
     position: 3,
     color: colors.tierC,
-    fightersCount: baseFightersPerTier
+    fightersCount: baseFightersPerTier,
   },
   {
     label: 'D',
     position: 4,
     color: colors.tierD,
-    fightersCount: baseFightersPerTier
+    fightersCount: baseFightersPerTier,
   },
   {
     label: 'E',
     position: 5,
     color: colors.tierE,
-    fightersCount: baseFightersPerTier
+    fightersCount: baseFightersPerTier,
   },
   {
     label: 'F',
     position: 6,
     color: colors.tierF,
-    fightersCount: baseFightersPerTier + remainderFighters
-  }
+    fightersCount: baseFightersPerTier + remainderFighters,
+  },
 ] as const;
 
 export type Tier = (typeof TIERS)[number];
@@ -147,8 +162,8 @@ interface TierSlotsContainer {
 export function getMTierList(tierList: TierList): MTierList {
   // constructors
   const tierSlotsContainer = tierList.tierSlots as TierSlotsContainer | null;
-  const _mTierSlots = ((tierSlotsContainer?.items || []) as TierSlot[]).map((ts: TierSlot) =>
-    getMTierSlot(ts)
+  const _mTierSlots = ((tierSlotsContainer?.items || []) as TierSlot[]).map(
+    (ts: TierSlot) => getMTierSlot(ts)
   );
 
   return {
@@ -221,7 +236,9 @@ export function getMTierList(tierList: TierList): MTierList {
      */
     validatePosition(slotId: string, position: number | null | undefined) {
       if (position != null && position < 0) {
-        console.error(`INVALID POSITION: TierSlot ${slotId} has negative position: ${position}`);
+        console.error(
+          `INVALID POSITION: TierSlot ${slotId} has negative position: ${position}`
+        );
       } else if (position != null && position >= FIGHTER_COUNT) {
         console.error(
           `INVALID POSITION: TierSlot ${slotId} has position ${position} >= FIGHTER_COUNT (${FIGHTER_COUNT})`
@@ -232,9 +249,15 @@ export function getMTierList(tierList: TierList): MTierList {
     /**
      * Helper: Adjust position when all fighters are positioned (efficient reindexing)
      */
-    adjustFullyPositionedTierList(currentPosition: number, steps: number, trackStats: boolean) {
+    adjustFullyPositionedTierList(
+      currentPosition: number,
+      steps: number,
+      trackStats: boolean
+    ) {
       const sortedTierSlots = sortBy(this.slots, 'position');
-      const tierSlotIndex = sortedTierSlots.findIndex((slot) => slot.position === currentPosition);
+      const tierSlotIndex = sortedTierSlots.findIndex(
+        slot => slot.position === currentPosition
+      );
 
       if (tierSlotIndex === -1) {
         console.warn(
@@ -253,8 +276,14 @@ export function getMTierList(tierList: TierList): MTierList {
     /**
      * Helper: Adjust position with sparse positions (collision-aware shifting)
      */
-    adjustSparsePositionedTierList(currentPosition: number, steps: number, trackStats: boolean) {
-      const tierSlotToMove = this.slots.find((slot) => slot.position === currentPosition);
+    adjustSparsePositionedTierList(
+      currentPosition: number,
+      steps: number,
+      trackStats: boolean
+    ) {
+      const tierSlotToMove = this.slots.find(
+        slot => slot.position === currentPosition
+      );
 
       if (!tierSlotToMove) {
         console.warn(
@@ -264,10 +293,18 @@ export function getMTierList(tierList: TierList): MTierList {
       }
 
       const oldPosition = currentPosition;
-      const newPosition = Math.max(0, Math.min(currentPosition + steps, FIGHTER_COUNT - 1));
+      const newPosition = Math.max(
+        0,
+        Math.min(currentPosition + steps, FIGHTER_COUNT - 1)
+      );
 
       this.updateSlotStats(tierSlotToMove, steps, trackStats);
-      this.shiftFightersBetweenPositions(tierSlotToMove.id, oldPosition, newPosition, steps);
+      this.shiftFightersBetweenPositions(
+        tierSlotToMove.id,
+        oldPosition,
+        newPosition,
+        steps
+      );
       tierSlotToMove.position = newPosition;
 
       this.validatePosition(tierSlotToMove.id, newPosition);
@@ -286,7 +323,8 @@ export function getMTierList(tierList: TierList): MTierList {
     ): number {
       if (isMovingUp) {
         // Moving UP: shift fighters in [newPosition, oldPosition) down by 1
-        const inRange = slotPosition >= newPosition && slotPosition < oldPosition;
+        const inRange =
+          slotPosition >= newPosition && slotPosition < oldPosition;
         return inRange ? 1 : 0;
       }
       // Moving DOWN: shift fighters in (oldPosition, newPosition] up by 1
@@ -333,7 +371,7 @@ export function getMTierList(tierList: TierList): MTierList {
       steps = STEPS_PER_STOCK * -1,
       trackStats = true
     ) {
-      const allPositioned = this.slots.every((slot) => slot.position != null);
+      const allPositioned = this.slots.every(slot => slot.position != null);
 
       if (allPositioned) {
         this.adjustFullyPositionedTierList(currentPosition, steps, trackStats);
@@ -356,11 +394,15 @@ export function getMTierList(tierList: TierList): MTierList {
       return this.slots.filter((slot: MTierSlot) => {
         if (slot.position == null) return false; // Filters out null and undefined, keeps 0
 
-        return slot.position >= minSlotPosition && slot.position < maxSlotPosition;
+        return (
+          slot.position >= minSlotPosition && slot.position < maxSlotPosition
+        );
       });
     },
     getPrestige() {
-      return Math.floor((this.standing ?? this.baseTierList.standing ?? 0) / TIERS.length);
+      return Math.floor(
+        (this.standing ?? this.baseTierList.standing ?? 0) / TIERS.length
+      );
     },
     getPositionsPojo() {
       const pojo: TierSlotPositionsPojo = {};
@@ -372,7 +414,7 @@ export function getMTierList(tierList: TierList): MTierList {
           contestCount: slot.contestCount || 0,
           id: slot.id,
           position: slot.position, // Not null/undefined due to guard clause above
-          winCount: slot.winCount || 0
+          winCount: slot.winCount || 0,
         };
       }
       return pojo;
@@ -386,7 +428,8 @@ export function getMTierList(tierList: TierList): MTierList {
         winCount: number;
       }> = [];
 
-      const baseTierSlotsContainer = this.baseTierList.tierSlots as TierSlotsContainer | null;
+      const baseTierSlotsContainer = this.baseTierList
+        .tierSlots as TierSlotsContainer | null;
 
       for (const slot of this.slots) {
         const baseTierSlot = baseTierSlotsContainer?.items?.find(
@@ -394,15 +437,17 @@ export function getMTierList(tierList: TierList): MTierList {
         );
 
         const positionChanged = slot.position !== baseTierSlot?.position;
-        const contestCountChanged = (slot.contestCount || 0) !== (baseTierSlot?.contestCount || 0);
-        const winCountChanged = (slot.winCount || 0) !== (baseTierSlot?.winCount || 0);
+        const contestCountChanged =
+          (slot.contestCount || 0) !== (baseTierSlot?.contestCount || 0);
+        const winCountChanged =
+          (slot.winCount || 0) !== (baseTierSlot?.winCount || 0);
 
         if (positionChanged || contestCountChanged || winCountChanged) {
           changed.push({
             id: slot.id,
             position: slot.position ?? null,
             contestCount: slot.contestCount || 0,
-            winCount: slot.winCount || 0
+            winCount: slot.winCount || 0,
           });
         }
       }
@@ -445,16 +490,18 @@ export function getMTierList(tierList: TierList): MTierList {
     /**
      * Helper: Sample unknown fighter if current tier is not full
      */
-    sampleUnknownFighterIfNeeded(eligibleSlots: MTierSlot[]): MTierSlot | undefined {
+    sampleUnknownFighterIfNeeded(
+      eligibleSlots: MTierSlot[]
+    ): MTierSlot | undefined {
       const positionedInCurrentTier = eligibleSlots.filter(
-        (slot) => slot.position !== null && slot.position !== undefined
+        slot => slot.position !== null && slot.position !== undefined
       ).length;
 
       // If tier is full, no need to prioritize unknown fighters
       if (positionedInCurrentTier >= baseFightersPerTier) return;
 
       const unknownFighters = this.slots.filter(
-        (slot) => slot.position === null || slot.position === undefined
+        slot => slot.position === null || slot.position === undefined
       );
 
       if (unknownFighters.length === 0) return;
@@ -466,10 +513,12 @@ export function getMTierList(tierList: TierList): MTierList {
         : this.rivalry?.currentContest?.tierSlotBId;
 
       const availableUnknown = currentContestSlotId
-        ? unknownFighters.filter((slot) => slot.id !== currentContestSlotId)
+        ? unknownFighters.filter(slot => slot.id !== currentContestSlotId)
         : unknownFighters;
 
-      return sample(availableUnknown.length > 0 ? availableUnknown : unknownFighters) as MTierSlot;
+      return sample(
+        availableUnknown.length > 0 ? availableUnknown : unknownFighters
+      ) as MTierSlot;
     },
 
     /**
@@ -479,8 +528,15 @@ export function getMTierList(tierList: TierList): MTierList {
       const currentContestId = this.rivalry?.currentContest?.id;
       return (
         this.rivalry?.mContests
-          .filter((c) => c.id !== currentContestId && c.result !== null && c.result !== undefined)
-          .sort((a, b) => (b.createdAt || '').localeCompare(a.createdAt || '')) || []
+          .filter(
+            c =>
+              c.id !== currentContestId &&
+              c.result !== null &&
+              c.result !== undefined
+          )
+          .sort((a, b) =>
+            (b.createdAt || '').localeCompare(a.createdAt || '')
+          ) || []
       );
     },
 
@@ -494,7 +550,7 @@ export function getMTierList(tierList: TierList): MTierList {
     ): string[] {
       const resolvedContests = this.getResolvedContestsForSampling();
       const contestsToCheck = resolvedContests.slice(0, benchedRounds);
-      const avoidSlotIds: string[] = contestsToCheck.map((c) =>
+      const avoidSlotIds: string[] = contestsToCheck.map(c =>
         isA ? c.tierSlotAId : c.tierSlotBId
       );
 
@@ -519,8 +575,14 @@ export function getMTierList(tierList: TierList): MTierList {
       // Try to find slots with progressively fewer benched rounds
       let benchedRounds = INITIAL_BENCHED_ROUNDS;
       while (benchedRounds > 0) {
-        const avoidSlotIds = this.getAvoidSlotIds(benchedRounds, isA, currentContestSlotId);
-        const selectSlots = eligibleSlots.filter((ts) => !avoidSlotIds.includes(ts.id));
+        const avoidSlotIds = this.getAvoidSlotIds(
+          benchedRounds,
+          isA,
+          currentContestSlotId
+        );
+        const selectSlots = eligibleSlots.filter(
+          ts => !avoidSlotIds.includes(ts.id)
+        );
 
         if (selectSlots.length > 0) {
           return sample(selectSlots) as MTierSlot;
@@ -530,7 +592,9 @@ export function getMTierList(tierList: TierList): MTierList {
 
       // Fallback: try avoiding just the current contest fighter
       if (currentContestSlotId) {
-        const filtered = eligibleSlots.filter((ts) => ts.id !== currentContestSlotId);
+        const filtered = eligibleSlots.filter(
+          ts => ts.id !== currentContestSlotId
+        );
         if (filtered.length > 0) {
           return sample(filtered) as MTierSlot;
         }
@@ -542,11 +606,14 @@ export function getMTierList(tierList: TierList): MTierList {
     /**
      * Helper: Find first empty position searching UP from targetPosition toward 0
      */
-    findFirstEmptyPositionUp(targetPosition: number, excludeId: string): number {
+    findFirstEmptyPositionUp(
+      targetPosition: number,
+      excludeId: string
+    ): number {
       let firstEmpty = targetPosition - 1;
       while (firstEmpty >= 0) {
         const isOccupied = this.slots.some(
-          (slot) => slot.id !== excludeId && slot.position === firstEmpty
+          slot => slot.id !== excludeId && slot.position === firstEmpty
         );
         if (!isOccupied) break;
         firstEmpty--;
@@ -557,9 +624,15 @@ export function getMTierList(tierList: TierList): MTierList {
     /**
      * Helper: Shift fighters UP (position - 1) from firstEmpty+1 to targetPosition
      */
-    shiftFightersUp(firstEmpty: number, targetPosition: number, excludeId: string) {
+    shiftFightersUp(
+      firstEmpty: number,
+      targetPosition: number,
+      excludeId: string
+    ) {
       for (let pos = firstEmpty + 1; pos <= targetPosition; pos++) {
-        const slotAtPos = this.slots.find((slot) => slot.id !== excludeId && slot.position === pos);
+        const slotAtPos = this.slots.find(
+          slot => slot.id !== excludeId && slot.position === pos
+        );
         if (slotAtPos) {
           slotAtPos.position = pos - 1;
         }
@@ -571,28 +644,38 @@ export function getMTierList(tierList: TierList): MTierList {
      */
     resortSlotsByPosition() {
       this.slots = sortBy(this.slots, [
-        (slot) => (slot.position === null ? Number.POSITIVE_INFINITY : slot.position)
+        slot =>
+          slot.position === null ? Number.POSITIVE_INFINITY : slot.position,
       ]);
     },
 
     positionUnknownFighter(tierSlot: MTierSlot, newPosition: number) {
       // Clamp position to valid range (0-85, 0-based)
-      const clampedPosition = Math.max(0, Math.min(newPosition, FIGHTER_COUNT - 1));
+      const clampedPosition = Math.max(
+        0,
+        Math.min(newPosition, FIGHTER_COUNT - 1)
+      );
 
       // Find the tier slot in our list
-      const slotIndex = this.slots.findIndex((s) => s.id === tierSlot.id);
+      const slotIndex = this.slots.findIndex(s => s.id === tierSlot.id);
       if (slotIndex === -1) {
-        console.warn('[MTierList.positionUnknownFighter] Tier slot not found:', tierSlot.id);
+        console.warn(
+          '[MTierList.positionUnknownFighter] Tier slot not found:',
+          tierSlot.id
+        );
         return;
       }
 
       // Check if target position is already occupied
       const occupiedSlot = this.slots.find(
-        (slot) => slot.id !== tierSlot.id && slot.position === clampedPosition
+        slot => slot.id !== tierSlot.id && slot.position === clampedPosition
       );
 
       if (occupiedSlot) {
-        const firstEmpty = this.findFirstEmptyPositionUp(clampedPosition, tierSlot.id);
+        const firstEmpty = this.findFirstEmptyPositionUp(
+          clampedPosition,
+          tierSlot.id
+        );
         this.shiftFightersUp(firstEmpty, clampedPosition, tierSlot.id);
       }
 
@@ -607,19 +690,25 @@ export function getMTierList(tierList: TierList): MTierList {
       const bottomPosition = FIGHTER_COUNT - 1; // 85 (0-based)
 
       // Find the tier slot in our list
-      const slotIndex = this.slots.findIndex((s) => s.id === tierSlot.id);
+      const slotIndex = this.slots.findIndex(s => s.id === tierSlot.id);
       if (slotIndex === -1) {
-        console.warn('[MTierList.positionFighterAtBottom] Tier slot not found:', tierSlot.id);
+        console.warn(
+          '[MTierList.positionFighterAtBottom] Tier slot not found:',
+          tierSlot.id
+        );
         return;
       }
 
       // Check if bottom position is already occupied
       const occupiedSlot = this.slots.find(
-        (slot) => slot.id !== tierSlot.id && slot.position === bottomPosition
+        slot => slot.id !== tierSlot.id && slot.position === bottomPosition
       );
 
       if (occupiedSlot) {
-        const firstEmpty = this.findFirstEmptyPositionUp(bottomPosition, tierSlot.id);
+        const firstEmpty = this.findFirstEmptyPositionUp(
+          bottomPosition,
+          tierSlot.id
+        );
         this.shiftFightersUp(firstEmpty, bottomPosition, tierSlot.id);
       }
 
@@ -628,6 +717,6 @@ export function getMTierList(tierList: TierList): MTierList {
 
       // Re-sort slots by position (nulls at end)
       this.resortSlotsByPosition();
-    }
+    },
   };
 }

@@ -1,6 +1,13 @@
 import { useRouter } from 'expo-router';
 import { useState } from 'react';
-import { Alert, Modal, Pressable, Text, TouchableOpacity, View } from 'react-native';
+import {
+  Alert,
+  Modal,
+  Pressable,
+  Text,
+  TouchableOpacity,
+  View,
+} from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import { useAuthUser } from '../../hooks/useAuthUser';
@@ -27,35 +34,43 @@ export function Header({ title = 'Rivalry Club', hide }: HeaderProps) {
   // Helper function to check for unsaved changes before navigation
   const navigateWithUnsavedCheck = (navigationFn: () => void) => {
     if (hasUnsavedChanges) {
-      Alert.alert('Unsaved Changes', 'You have unsaved changes. What would you like to do?', [
-        {
-          text: 'Discard',
-          style: 'destructive',
-          onPress: () => {
-            setHasUnsavedChanges(false);
-            setMenuVisible(false);
-            navigationFn();
-          }
-        },
-        { text: 'Stay', style: 'cancel' }
-      ]);
+      Alert.alert(
+        'Unsaved Changes',
+        'You have unsaved changes. What would you like to do?',
+        [
+          {
+            text: 'Discard',
+            style: 'destructive',
+            onPress: () => {
+              setHasUnsavedChanges(false);
+              setMenuVisible(false);
+              navigationFn();
+            },
+          },
+          { text: 'Stay', style: 'cancel' },
+        ]
+      );
     } else {
       setMenuVisible(false);
       navigationFn();
     }
   };
 
-  const handleSignOut = async () => {
-    navigateWithUnsavedCheck(async () => {
-      try {
-        // Sign out from Cognito
-        await signOut();
+  const signOutAndRedirect = async () => {
+    try {
+      // Sign out from Cognito
+      await signOut();
 
-        // Navigate to home screen
-        router.replace('/auth');
-      } catch (error) {
-        console.error('Error signing out:', error);
-      }
+      // Navigate to home screen
+      router.replace('/auth');
+    } catch (error) {
+      console.error('Error signing out:', error);
+    }
+  };
+
+  const handleSignOut = () => {
+    navigateWithUnsavedCheck(() => {
+      signOutAndRedirect();
     });
   };
 
@@ -92,7 +107,12 @@ export function Header({ title = 'Rivalry Club', hide }: HeaderProps) {
   return (
     <>
       {/* Fixed Header Bar */}
-      <View style={[headerContainerStyle, { paddingTop: insets.top + HEADER_VERTICAL_PADDING }]}>
+      <View
+        style={[
+          headerContainerStyle,
+          { paddingTop: insets.top + HEADER_VERTICAL_PADDING },
+        ]}
+      >
         {/* Back Button */}
         <TouchableOpacity onPress={handleBack} style={buttonStyle}>
           <Text style={topIconStyle}>←</Text>
@@ -100,13 +120,16 @@ export function Header({ title = 'Rivalry Club', hide }: HeaderProps) {
 
         {/* Title */}
         <View style={titleContainerStyle}>
-          <Text style={titleTextStyle} numberOfLines={1}>
+          <Text numberOfLines={1} style={titleTextStyle}>
             {title}
           </Text>
         </View>
 
         {/* Menu Button */}
-        <TouchableOpacity onPress={() => setMenuVisible(true)} style={buttonStyle}>
+        <TouchableOpacity
+          onPress={() => setMenuVisible(true)}
+          style={buttonStyle}
+        >
           <Text style={topIconStyle}>☰</Text>
         </TouchableOpacity>
       </View>
@@ -118,11 +141,22 @@ export function Header({ title = 'Rivalry Club', hide }: HeaderProps) {
         transparent
         visible={menuVisible}
       >
-        <Pressable onPress={() => setMenuVisible(false)} style={modalBackdropStyle}>
-          <View style={[menuContainerStyle, { top: insets.top + MENU_CONTAINER_TOP_OFFSET }]}>
+        <Pressable
+          onPress={() => setMenuVisible(false)}
+          style={modalBackdropStyle}
+        >
+          <View
+            style={[
+              menuContainerStyle,
+              { top: insets.top + MENU_CONTAINER_TOP_OFFSET },
+            ]}
+          >
             {hide !== 'rivalries' && (
               <>
-                <TouchableOpacity onPress={handleRivalries} style={menuItemStyle}>
+                <TouchableOpacity
+                  onPress={handleRivalries}
+                  style={menuItemStyle}
+                >
                   <Text style={menuItemIconStyle}>📋</Text>
                   <Text style={menuItemTextStyle}>Rivalries</Text>
                 </TouchableOpacity>
@@ -133,7 +167,10 @@ export function Header({ title = 'Rivalry Club', hide }: HeaderProps) {
 
             {hide !== 'pending' && (
               <>
-                <TouchableOpacity onPress={handlePendingRivalries} style={menuItemStyle}>
+                <TouchableOpacity
+                  onPress={handlePendingRivalries}
+                  style={menuItemStyle}
+                >
                   <Text style={menuItemIconStyle}>🕐</Text>
                   <Text style={menuItemTextStyle}>Pending Rivalries</Text>
                 </TouchableOpacity>
@@ -154,12 +191,10 @@ export function Header({ title = 'Rivalry Club', hide }: HeaderProps) {
             )}
 
             {hide !== 'how-to-play' && (
-              <>
-                <TouchableOpacity onPress={handleHowToPlay} style={menuItemStyle}>
-                  <Text style={menuItemIconStyle}>❓</Text>
-                  <Text style={menuItemTextStyle}>How to Play</Text>
-                </TouchableOpacity>
-              </>
+              <TouchableOpacity onPress={handleHowToPlay} style={menuItemStyle}>
+                <Text style={menuItemIconStyle}>❓</Text>
+                <Text style={menuItemTextStyle}>How to Play</Text>
+              </TouchableOpacity>
             )}
 
             {!isAnonymous && (
@@ -182,9 +217,10 @@ export function Header({ title = 'Rivalry Club', hide }: HeaderProps) {
 const BASE_HEADER_HEIGHT = 31;
 const HEADER_VERTICAL_PADDING = 0;
 const MENU_CONTAINER_TOP_OFFSET = 35;
+const HEADER_SAFE_AREA_OFFSET = 65;
 
 // Export the full header height including safe area insets
-export const HEADER_HEIGHT = BASE_HEADER_HEIGHT + 65;
+export const HEADER_HEIGHT = BASE_HEADER_HEIGHT + HEADER_SAFE_AREA_OFFSET;
 
 const spaceBetween = 'space-between' as const;
 const flexStart = 'flex-start' as const;
@@ -203,25 +239,25 @@ const headerContainerStyle = {
   backgroundColor: colors.slate900,
   borderBottomWidth: 1,
   borderBottomColor: colors.slate700,
-  zIndex: 100
+  zIndex: 100,
 };
 
 const buttonStyle = {
   paddingVertical: 0,
   paddingHorizontal: 8,
   minWidth: 40,
-  alignItems: flexStart
+  alignItems: flexStart,
 };
 
 const topIconStyle = {
   fontSize: 24,
-  color: colors.white
+  color: colors.white,
 };
 
 const titleContainerStyle = {
   flex: 1,
   alignItems: center,
-  paddingHorizontal: 8
+  paddingHorizontal: 8,
 };
 
 const fontWeight600 = '600' as const;
@@ -229,12 +265,12 @@ const fontWeight600 = '600' as const;
 const titleTextStyle = {
   fontSize: 18,
   fontWeight: fontWeight600,
-  color: colors.white
+  color: colors.white,
 };
 
 const modalBackdropStyle = {
   flex: 1,
-  backgroundColor: colors.overlayLight
+  backgroundColor: colors.overlayLight,
 };
 
 const menuContainerStyle = {
@@ -248,38 +284,38 @@ const menuContainerStyle = {
   shadowOffset: { width: 0, height: 2 },
   shadowOpacity: 0.25,
   shadowRadius: 4,
-  elevation: 5
+  elevation: 5,
 };
 
 const menuItemStyle = {
   paddingVertical: 12,
   paddingHorizontal: 16,
   flexDirection: row,
-  alignItems: center
+  alignItems: center,
 };
 
 const dividerStyle = {
   height: 1,
   backgroundColor: colors.slate600,
-  marginVertical: 4
+  marginVertical: 4,
 };
 
 const menuItemTextStyle = {
   fontSize: 16,
-  color: colors.white
+  color: colors.white,
 };
 
 const signOutTextStyle = {
   ...menuItemTextStyle,
-  color: colors.red600
+  color: colors.red600,
 };
 
 const menuItemIconStyle = {
   ...menuItemTextStyle,
-  marginRight: 12
+  marginRight: 12,
 };
 
 const signOutIconStyle = {
   ...signOutTextStyle,
-  marginRight: 12
+  marginRight: 12,
 };

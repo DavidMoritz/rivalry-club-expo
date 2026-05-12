@@ -5,7 +5,7 @@ import type { Schema } from '../../amplify/data/resource';
 import {
   getMTierListSnapshot,
   type MTierListSnapshot,
-  type SnapshotArrangement
+  type SnapshotArrangement,
 } from '../models/m-tier-list-snapshot';
 
 // Lazy client initialization to avoid crashes when Amplify isn't configured (e.g., Expo Go)
@@ -28,7 +28,7 @@ const SNAPSHOT_SELECTION_SET = [
   'arrangement',
   'shareCode',
   'createdAt',
-  'deletedAt'
+  'deletedAt',
 ] as const;
 
 // Error constants
@@ -37,6 +37,9 @@ const ERROR_FAILED_TO_CREATE_SNAPSHOT = 'Failed to create snapshot';
 const ERROR_SNAPSHOT_NOT_FOUND = 'Snapshot not found';
 const ERROR_SHARE_CODE_UNAVAILABLE = 'Share code is already in use';
 const ERROR_GAME_MISMATCH = 'Snapshot is for a different game';
+const FIRST_SHARE_CODE_LENGTH = 5;
+const SHARE_CODE_PREFIX_LENGTH = 3;
+const SHARE_CODE_SUFFIX_LENGTH = 2;
 
 /** Interfaces */
 
@@ -75,13 +78,16 @@ interface CloneSnapshotParams {
  * First snapshot: first 5 characters of userId
  * Subsequent: first 3 chars of userId + 2 random alphanumeric
  */
-export function generateShareCode(userId: string, isFirstSnapshot: boolean = false): string {
+export function generateShareCode(
+  userId: string,
+  isFirstSnapshot = false
+): string {
   if (isFirstSnapshot) {
-    return userId.substring(0, 5).toUpperCase();
+    return userId.substring(0, FIRST_SHARE_CODE_LENGTH).toUpperCase();
   }
 
-  const prefix = userId.substring(0, 3).toUpperCase();
-  const suffix = generateRandomAlphanumeric(2);
+  const prefix = userId.substring(0, SHARE_CODE_PREFIX_LENGTH).toUpperCase();
+  const suffix = generateRandomAlphanumeric(SHARE_CODE_SUFFIX_LENGTH);
   return prefix + suffix;
 }
 
@@ -100,10 +106,13 @@ function generateRandomAlphanumeric(length: number): string {
 /**
  * Checks if a share code is available (not in use)
  */
-export async function isShareCodeAvailable(shareCode: string): Promise<boolean> {
-  const { data } = await getClient().models.TierListSnapshot.snapshotByShareCode({
-    shareCode: shareCode.toUpperCase()
-  });
+export async function isShareCodeAvailable(
+  shareCode: string
+): Promise<boolean> {
+  const { data } =
+    await getClient().models.TierListSnapshot.snapshotByShareCode({
+      shareCode: shareCode.toUpperCase(),
+    });
 
   return !data || data.length === 0;
 }
@@ -113,19 +122,22 @@ export async function isShareCodeAvailable(shareCode: string): Promise<boolean> 
 /**
  * Fetches all snapshots for a user in a specific game
  */
-export const useUserSnapshotsQuery = ({ userId, gameId }: UserSnapshotsQueryProps) =>
+export const useUserSnapshotsQuery = ({
+  userId,
+  gameId,
+}: UserSnapshotsQueryProps) =>
   useQuery({
     queryKey: ['userSnapshots', userId, gameId],
     queryFn: async () => {
-      if (!userId || !gameId) return [];
+      if (!(userId && gameId)) return [];
 
       const { data: snapshots, errors } =
         await getClient().models.TierListSnapshot.snapshotsByUserIdAndCreatedAt(
           {
-            userId
+            userId,
           },
           {
-            selectionSet: SNAPSHOT_SELECTION_SET
+            selectionSet: SNAPSHOT_SELECTION_SET,
           }
         );
 
@@ -136,29 +148,38 @@ export const useUserSnapshotsQuery = ({ userId, gameId }: UserSnapshotsQueryProp
 
       // Filter by gameId on client side (GSI is userId+createdAt)
       const gameSnapshots = (snapshots || [])
-        .filter((snapshot) => snapshot && snapshot.gameId === gameId && !snapshot.deletedAt)
-        .map((snapshot) => getMTierListSnapshot(snapshot as Schema['TierListSnapshot']['type']));
+        .filter(
+          snapshot =>
+            snapshot && snapshot.gameId === gameId && !snapshot.deletedAt
+        )
+        .map(snapshot =>
+          getMTierListSnapshot(snapshot as Schema['TierListSnapshot']['type'])
+        );
 
       return gameSnapshots;
     },
-    enabled: Boolean(userId && gameId)
+    enabled: Boolean(userId && gameId),
   });
 
 /**
  * Fetches a snapshot by share code
  */
-export const useSnapshotByShareCodeQuery = ({ shareCode, gameId }: SnapshotByShareCodeQueryProps) =>
+export const useSnapshotByShareCodeQuery = ({
+  shareCode,
+  gameId,
+}: SnapshotByShareCodeQueryProps) =>
   useQuery({
     queryKey: ['snapshotByShareCode', shareCode, gameId],
     queryFn: async () => {
-      const { data, errors } = await getClient().models.TierListSnapshot.snapshotByShareCode(
-        {
-          shareCode: shareCode.toUpperCase()
-        },
-        {
-          selectionSet: SNAPSHOT_SELECTION_SET
-        }
-      );
+      const { data, errors } =
+        await getClient().models.TierListSnapshot.snapshotByShareCode(
+          {
+            shareCode: shareCode.toUpperCase(),
+          },
+          {
+            selectionSet: SNAPSHOT_SELECTION_SET,
+          }
+        );
 
       if (errors) {
         console.error('[useSnapshotByShareCodeQuery] Errors:', errors);
@@ -176,9 +197,11 @@ export const useSnapshotByShareCodeQuery = ({ shareCode, gameId }: SnapshotBySha
         throw new Error(ERROR_GAME_MISMATCH);
       }
 
-      return getMTierListSnapshot(snapshot as Schema['TierListSnapshot']['type']);
+      return getMTierListSnapshot(
+        snapshot as Schema['TierListSnapshot']['type']
+      );
     },
-    enabled: Boolean(shareCode && shareCode.length >= 5)
+    enabled: Boolean(shareCode && shareCode.length >= FIRST_SHARE_CODE_LENGTH),
   });
 
 /** Mutations */
@@ -188,49 +211,60 @@ export const useSnapshotByShareCodeQuery = ({ shareCode, gameId }: SnapshotBySha
  */
 export const useCreateSnapshotMutation = ({
   onSuccess,
-  onError
+  onError,
 }: CreateSnapshotMutationProps = {}) => {
   const queryClient = useQueryClient();
 
   return useMutation({
-    mutationFn: async ({ userId, gameId, name, arrangement, shareCode }: CreateSnapshotParams) => {
+    mutationFn: async ({
+      userId,
+      gameId,
+      name,
+      arrangement,
+      shareCode,
+    }: CreateSnapshotParams) => {
       // Verify share code is available
       const isAvailable = await isShareCodeAvailable(shareCode);
       if (!isAvailable) {
         throw new Error(ERROR_SHARE_CODE_UNAVAILABLE);
       }
 
-      const { data: snapshot, errors } = await getClient().models.TierListSnapshot.create(
-        {
-          userId,
-          gameId,
-          name,
-          arrangement: JSON.stringify(arrangement),
-          shareCode: shareCode.toUpperCase()
-        },
-        {
-          selectionSet: SNAPSHOT_SELECTION_SET
-        }
-      );
+      const { data: snapshot, errors } =
+        await getClient().models.TierListSnapshot.create(
+          {
+            userId,
+            gameId,
+            name,
+            arrangement: JSON.stringify(arrangement),
+            shareCode: shareCode.toUpperCase(),
+          },
+          {
+            selectionSet: SNAPSHOT_SELECTION_SET,
+          }
+        );
 
       if (errors || !snapshot) {
         console.error('[useCreateSnapshotMutation] Errors:', errors);
-        throw new Error(errors?.[0]?.message || ERROR_FAILED_TO_CREATE_SNAPSHOT);
+        throw new Error(
+          errors?.[0]?.message || ERROR_FAILED_TO_CREATE_SNAPSHOT
+        );
       }
 
-      return getMTierListSnapshot(snapshot as Schema['TierListSnapshot']['type']);
+      return getMTierListSnapshot(
+        snapshot as Schema['TierListSnapshot']['type']
+      );
     },
     onSuccess: (snapshot, variables) => {
       // Invalidate user snapshots query
       queryClient.invalidateQueries({
-        queryKey: ['userSnapshots', variables.userId, variables.gameId]
+        queryKey: ['userSnapshots', variables.userId, variables.gameId],
       });
       onSuccess?.(snapshot);
     },
     onError: (error: Error) => {
       console.error('[useCreateSnapshotMutation] Error:', error);
       onError?.(error);
-    }
+    },
   });
 };
 
@@ -239,14 +273,16 @@ export const useCreateSnapshotMutation = ({
  */
 export const useCloneSnapshotMutation = ({
   onSuccess,
-  onError
+  onError,
 }: CreateSnapshotMutationProps = {}) => {
   const createMutation = useCreateSnapshotMutation({ onSuccess, onError });
 
   return useMutation({
     mutationFn: async ({ userId, sourceSnapshot }: CloneSnapshotParams) => {
       // Parse arrangement from source
-      const arrangement = JSON.parse(sourceSnapshot.arrangement as string) as SnapshotArrangement[];
+      const arrangement = JSON.parse(
+        sourceSnapshot.arrangement as string
+      ) as SnapshotArrangement[];
 
       // Generate new share code for the cloned snapshot
       let shareCode = generateShareCode(userId, false);
@@ -254,7 +290,10 @@ export const useCloneSnapshotMutation = ({
       const maxAttempts = 10;
 
       // Ensure unique share code
-      while (!(await isShareCodeAvailable(shareCode)) && attempts < maxAttempts) {
+      while (
+        !(await isShareCodeAvailable(shareCode)) &&
+        attempts < maxAttempts
+      ) {
         shareCode = generateShareCode(userId, false);
         attempts++;
       }
@@ -269,8 +308,8 @@ export const useCloneSnapshotMutation = ({
         gameId: sourceSnapshot.gameId,
         name: sourceSnapshot.name,
         arrangement,
-        shareCode
+        shareCode,
       });
-    }
+    },
   });
 };

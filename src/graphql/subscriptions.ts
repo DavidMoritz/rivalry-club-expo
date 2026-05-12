@@ -2,13 +2,15 @@
 /* eslint-disable */
 // this is an auto generated file. This will be overwritten
 
-import * as APITypes from "./API";
+import type * as APITypes from './API';
+
 type GeneratedSubscription<InputType, OutputType> = string & {
   __generatedSubscriptionInput: InputType;
   __generatedSubscriptionOutput: OutputType;
 };
 
-export const onCreateContest = /* GraphQL */ `subscription OnCreateContest($filter: ModelSubscriptionContestFilterInput) {
+export const onCreateContest =
+  /* GraphQL */ `subscription OnCreateContest($filter: ModelSubscriptionContestFilterInput) {
   onCreateContest(filter: $filter) {
     bias
     createdAt
@@ -38,10 +40,11 @@ export const onCreateContest = /* GraphQL */ `subscription OnCreateContest($filt
   }
 }
 ` as GeneratedSubscription<
-  APITypes.OnCreateContestSubscriptionVariables,
-  APITypes.OnCreateContestSubscription
->;
-export const onCreateFighter = /* GraphQL */ `subscription OnCreateFighter($filter: ModelSubscriptionFighterFilterInput) {
+    APITypes.OnCreateContestSubscriptionVariables,
+    APITypes.OnCreateContestSubscription
+  >;
+export const onCreateFighter =
+  /* GraphQL */ `subscription OnCreateFighter($filter: ModelSubscriptionFighterFilterInput) {
   onCreateFighter(filter: $filter) {
     contestCount
     createdAt
@@ -68,10 +71,11 @@ export const onCreateFighter = /* GraphQL */ `subscription OnCreateFighter($filt
   }
 }
 ` as GeneratedSubscription<
-  APITypes.OnCreateFighterSubscriptionVariables,
-  APITypes.OnCreateFighterSubscription
->;
-export const onCreateGame = /* GraphQL */ `subscription OnCreateGame($filter: ModelSubscriptionGameFilterInput) {
+    APITypes.OnCreateFighterSubscriptionVariables,
+    APITypes.OnCreateFighterSubscription
+  >;
+export const onCreateGame =
+  /* GraphQL */ `subscription OnCreateGame($filter: ModelSubscriptionGameFilterInput) {
   onCreateGame(filter: $filter) {
     createdAt
     deletedAt
@@ -94,10 +98,11 @@ export const onCreateGame = /* GraphQL */ `subscription OnCreateGame($filter: Mo
   }
 }
 ` as GeneratedSubscription<
-  APITypes.OnCreateGameSubscriptionVariables,
-  APITypes.OnCreateGameSubscription
->;
-export const onCreateRivalry = /* GraphQL */ `subscription OnCreateRivalry($filter: ModelSubscriptionRivalryFilterInput) {
+    APITypes.OnCreateGameSubscriptionVariables,
+    APITypes.OnCreateGameSubscription
+  >;
+export const onCreateRivalry =
+  /* GraphQL */ `subscription OnCreateRivalry($filter: ModelSubscriptionRivalryFilterInput) {
   onCreateRivalry(filter: $filter) {
     accepted
     contestCount
@@ -131,10 +136,11 @@ export const onCreateRivalry = /* GraphQL */ `subscription OnCreateRivalry($filt
   }
 }
 ` as GeneratedSubscription<
-  APITypes.OnCreateRivalrySubscriptionVariables,
-  APITypes.OnCreateRivalrySubscription
->;
-export const onCreateTierList = /* GraphQL */ `subscription OnCreateTierList($filter: ModelSubscriptionTierListFilterInput) {
+    APITypes.OnCreateRivalrySubscriptionVariables,
+    APITypes.OnCreateRivalrySubscription
+  >;
+export const onCreateTierList =
+  /* GraphQL */ `subscription OnCreateTierList($filter: ModelSubscriptionTierListFilterInput) {
   onCreateTierList(filter: $filter) {
     createdAt
     deletedAt
@@ -166,10 +172,11 @@ export const onCreateTierList = /* GraphQL */ `subscription OnCreateTierList($fi
   }
 }
 ` as GeneratedSubscription<
-  APITypes.OnCreateTierListSubscriptionVariables,
-  APITypes.OnCreateTierListSubscription
->;
-export const onCreateTierListSnapshot = /* GraphQL */ `subscription OnCreateTierListSnapshot(
+    APITypes.OnCreateTierListSubscriptionVariables,
+    APITypes.OnCreateTierListSubscription
+  >;
+export const onCreateTierListSnapshot =
+  /* GraphQL */ `subscription OnCreateTierListSnapshot(
   $filter: ModelSubscriptionTierListSnapshotFilterInput
 ) {
   onCreateTierListSnapshot(filter: $filter) {
@@ -194,10 +201,11 @@ export const onCreateTierListSnapshot = /* GraphQL */ `subscription OnCreateTier
   }
 }
 ` as GeneratedSubscription<
-  APITypes.OnCreateTierListSnapshotSubscriptionVariables,
-  APITypes.OnCreateTierListSnapshotSubscription
->;
-export const onCreateTierSlot = /* GraphQL */ `subscription OnCreateTierSlot($filter: ModelSubscriptionTierSlotFilterInput) {
+    APITypes.OnCreateTierListSnapshotSubscriptionVariables,
+    APITypes.OnCreateTierListSnapshotSubscription
+  >;
+export const onCreateTierSlot =
+  /* GraphQL */ `subscription OnCreateTierSlot($filter: ModelSubscriptionTierSlotFilterInput) {
   onCreateTierSlot(filter: $filter) {
     contestCount
     createdAt
@@ -234,10 +242,11 @@ export const onCreateTierSlot = /* GraphQL */ `subscription OnCreateTierSlot($fi
   }
 }
 ` as GeneratedSubscription<
-  APITypes.OnCreateTierSlotSubscriptionVariables,
-  APITypes.OnCreateTierSlotSubscription
->;
-export const onCreateUser = /* GraphQL */ `subscription OnCreateUser($filter: ModelSubscriptionUserFilterInput) {
+    APITypes.OnCreateTierSlotSubscriptionVariables,
+    APITypes.OnCreateTierSlotSubscription
+  >;
+export const onCreateUser =
+  /* GraphQL */ `subscription OnCreateUser($filter: ModelSubscriptionUserFilterInput) {
   onCreateUser(filter: $filter) {
     awsSub
     createdAt
@@ -252,10 +261,11 @@ export const onCreateUser = /* GraphQL */ `subscription OnCreateUser($filter: Mo
   }
 }
 ` as GeneratedSubscription<
-  APITypes.OnCreateUserSubscriptionVariables,
-  APITypes.OnCreateUserSubscription
->;
-export const onDeleteContest = /* GraphQL */ `subscription OnDeleteContest($filter: ModelSubscriptionContestFilterInput) {
+    APITypes.OnCreateUserSubscriptionVariables,
+    APITypes.OnCreateUserSubscription
+  >;
+export const onDeleteContest =
+  /* GraphQL */ `subscription OnDeleteContest($filter: ModelSubscriptionContestFilterInput) {
   onDeleteContest(filter: $filter) {
     bias
     createdAt
@@ -285,10 +295,11 @@ export const onDeleteContest = /* GraphQL */ `subscription OnDeleteContest($filt
   }
 }
 ` as GeneratedSubscription<
-  APITypes.OnDeleteContestSubscriptionVariables,
-  APITypes.OnDeleteContestSubscription
->;
-export const onDeleteFighter = /* GraphQL */ `subscription OnDeleteFighter($filter: ModelSubscriptionFighterFilterInput) {
+    APITypes.OnDeleteContestSubscriptionVariables,
+    APITypes.OnDeleteContestSubscription
+  >;
+export const onDeleteFighter =
+  /* GraphQL */ `subscription OnDeleteFighter($filter: ModelSubscriptionFighterFilterInput) {
   onDeleteFighter(filter: $filter) {
     contestCount
     createdAt
@@ -315,10 +326,11 @@ export const onDeleteFighter = /* GraphQL */ `subscription OnDeleteFighter($filt
   }
 }
 ` as GeneratedSubscription<
-  APITypes.OnDeleteFighterSubscriptionVariables,
-  APITypes.OnDeleteFighterSubscription
->;
-export const onDeleteGame = /* GraphQL */ `subscription OnDeleteGame($filter: ModelSubscriptionGameFilterInput) {
+    APITypes.OnDeleteFighterSubscriptionVariables,
+    APITypes.OnDeleteFighterSubscription
+  >;
+export const onDeleteGame =
+  /* GraphQL */ `subscription OnDeleteGame($filter: ModelSubscriptionGameFilterInput) {
   onDeleteGame(filter: $filter) {
     createdAt
     deletedAt
@@ -341,10 +353,11 @@ export const onDeleteGame = /* GraphQL */ `subscription OnDeleteGame($filter: Mo
   }
 }
 ` as GeneratedSubscription<
-  APITypes.OnDeleteGameSubscriptionVariables,
-  APITypes.OnDeleteGameSubscription
->;
-export const onDeleteRivalry = /* GraphQL */ `subscription OnDeleteRivalry($filter: ModelSubscriptionRivalryFilterInput) {
+    APITypes.OnDeleteGameSubscriptionVariables,
+    APITypes.OnDeleteGameSubscription
+  >;
+export const onDeleteRivalry =
+  /* GraphQL */ `subscription OnDeleteRivalry($filter: ModelSubscriptionRivalryFilterInput) {
   onDeleteRivalry(filter: $filter) {
     accepted
     contestCount
@@ -378,10 +391,11 @@ export const onDeleteRivalry = /* GraphQL */ `subscription OnDeleteRivalry($filt
   }
 }
 ` as GeneratedSubscription<
-  APITypes.OnDeleteRivalrySubscriptionVariables,
-  APITypes.OnDeleteRivalrySubscription
->;
-export const onDeleteTierList = /* GraphQL */ `subscription OnDeleteTierList($filter: ModelSubscriptionTierListFilterInput) {
+    APITypes.OnDeleteRivalrySubscriptionVariables,
+    APITypes.OnDeleteRivalrySubscription
+  >;
+export const onDeleteTierList =
+  /* GraphQL */ `subscription OnDeleteTierList($filter: ModelSubscriptionTierListFilterInput) {
   onDeleteTierList(filter: $filter) {
     createdAt
     deletedAt
@@ -413,10 +427,11 @@ export const onDeleteTierList = /* GraphQL */ `subscription OnDeleteTierList($fi
   }
 }
 ` as GeneratedSubscription<
-  APITypes.OnDeleteTierListSubscriptionVariables,
-  APITypes.OnDeleteTierListSubscription
->;
-export const onDeleteTierListSnapshot = /* GraphQL */ `subscription OnDeleteTierListSnapshot(
+    APITypes.OnDeleteTierListSubscriptionVariables,
+    APITypes.OnDeleteTierListSubscription
+  >;
+export const onDeleteTierListSnapshot =
+  /* GraphQL */ `subscription OnDeleteTierListSnapshot(
   $filter: ModelSubscriptionTierListSnapshotFilterInput
 ) {
   onDeleteTierListSnapshot(filter: $filter) {
@@ -441,10 +456,11 @@ export const onDeleteTierListSnapshot = /* GraphQL */ `subscription OnDeleteTier
   }
 }
 ` as GeneratedSubscription<
-  APITypes.OnDeleteTierListSnapshotSubscriptionVariables,
-  APITypes.OnDeleteTierListSnapshotSubscription
->;
-export const onDeleteTierSlot = /* GraphQL */ `subscription OnDeleteTierSlot($filter: ModelSubscriptionTierSlotFilterInput) {
+    APITypes.OnDeleteTierListSnapshotSubscriptionVariables,
+    APITypes.OnDeleteTierListSnapshotSubscription
+  >;
+export const onDeleteTierSlot =
+  /* GraphQL */ `subscription OnDeleteTierSlot($filter: ModelSubscriptionTierSlotFilterInput) {
   onDeleteTierSlot(filter: $filter) {
     contestCount
     createdAt
@@ -481,10 +497,11 @@ export const onDeleteTierSlot = /* GraphQL */ `subscription OnDeleteTierSlot($fi
   }
 }
 ` as GeneratedSubscription<
-  APITypes.OnDeleteTierSlotSubscriptionVariables,
-  APITypes.OnDeleteTierSlotSubscription
->;
-export const onDeleteUser = /* GraphQL */ `subscription OnDeleteUser($filter: ModelSubscriptionUserFilterInput) {
+    APITypes.OnDeleteTierSlotSubscriptionVariables,
+    APITypes.OnDeleteTierSlotSubscription
+  >;
+export const onDeleteUser =
+  /* GraphQL */ `subscription OnDeleteUser($filter: ModelSubscriptionUserFilterInput) {
   onDeleteUser(filter: $filter) {
     awsSub
     createdAt
@@ -499,10 +516,11 @@ export const onDeleteUser = /* GraphQL */ `subscription OnDeleteUser($filter: Mo
   }
 }
 ` as GeneratedSubscription<
-  APITypes.OnDeleteUserSubscriptionVariables,
-  APITypes.OnDeleteUserSubscription
->;
-export const onUpdateContest = /* GraphQL */ `subscription OnUpdateContest($filter: ModelSubscriptionContestFilterInput) {
+    APITypes.OnDeleteUserSubscriptionVariables,
+    APITypes.OnDeleteUserSubscription
+  >;
+export const onUpdateContest =
+  /* GraphQL */ `subscription OnUpdateContest($filter: ModelSubscriptionContestFilterInput) {
   onUpdateContest(filter: $filter) {
     bias
     createdAt
@@ -532,10 +550,11 @@ export const onUpdateContest = /* GraphQL */ `subscription OnUpdateContest($filt
   }
 }
 ` as GeneratedSubscription<
-  APITypes.OnUpdateContestSubscriptionVariables,
-  APITypes.OnUpdateContestSubscription
->;
-export const onUpdateFighter = /* GraphQL */ `subscription OnUpdateFighter($filter: ModelSubscriptionFighterFilterInput) {
+    APITypes.OnUpdateContestSubscriptionVariables,
+    APITypes.OnUpdateContestSubscription
+  >;
+export const onUpdateFighter =
+  /* GraphQL */ `subscription OnUpdateFighter($filter: ModelSubscriptionFighterFilterInput) {
   onUpdateFighter(filter: $filter) {
     contestCount
     createdAt
@@ -562,10 +581,11 @@ export const onUpdateFighter = /* GraphQL */ `subscription OnUpdateFighter($filt
   }
 }
 ` as GeneratedSubscription<
-  APITypes.OnUpdateFighterSubscriptionVariables,
-  APITypes.OnUpdateFighterSubscription
->;
-export const onUpdateGame = /* GraphQL */ `subscription OnUpdateGame($filter: ModelSubscriptionGameFilterInput) {
+    APITypes.OnUpdateFighterSubscriptionVariables,
+    APITypes.OnUpdateFighterSubscription
+  >;
+export const onUpdateGame =
+  /* GraphQL */ `subscription OnUpdateGame($filter: ModelSubscriptionGameFilterInput) {
   onUpdateGame(filter: $filter) {
     createdAt
     deletedAt
@@ -588,10 +608,11 @@ export const onUpdateGame = /* GraphQL */ `subscription OnUpdateGame($filter: Mo
   }
 }
 ` as GeneratedSubscription<
-  APITypes.OnUpdateGameSubscriptionVariables,
-  APITypes.OnUpdateGameSubscription
->;
-export const onUpdateRivalry = /* GraphQL */ `subscription OnUpdateRivalry($filter: ModelSubscriptionRivalryFilterInput) {
+    APITypes.OnUpdateGameSubscriptionVariables,
+    APITypes.OnUpdateGameSubscription
+  >;
+export const onUpdateRivalry =
+  /* GraphQL */ `subscription OnUpdateRivalry($filter: ModelSubscriptionRivalryFilterInput) {
   onUpdateRivalry(filter: $filter) {
     accepted
     contestCount
@@ -625,10 +646,11 @@ export const onUpdateRivalry = /* GraphQL */ `subscription OnUpdateRivalry($filt
   }
 }
 ` as GeneratedSubscription<
-  APITypes.OnUpdateRivalrySubscriptionVariables,
-  APITypes.OnUpdateRivalrySubscription
->;
-export const onUpdateTierList = /* GraphQL */ `subscription OnUpdateTierList($filter: ModelSubscriptionTierListFilterInput) {
+    APITypes.OnUpdateRivalrySubscriptionVariables,
+    APITypes.OnUpdateRivalrySubscription
+  >;
+export const onUpdateTierList =
+  /* GraphQL */ `subscription OnUpdateTierList($filter: ModelSubscriptionTierListFilterInput) {
   onUpdateTierList(filter: $filter) {
     createdAt
     deletedAt
@@ -660,10 +682,11 @@ export const onUpdateTierList = /* GraphQL */ `subscription OnUpdateTierList($fi
   }
 }
 ` as GeneratedSubscription<
-  APITypes.OnUpdateTierListSubscriptionVariables,
-  APITypes.OnUpdateTierListSubscription
->;
-export const onUpdateTierListSnapshot = /* GraphQL */ `subscription OnUpdateTierListSnapshot(
+    APITypes.OnUpdateTierListSubscriptionVariables,
+    APITypes.OnUpdateTierListSubscription
+  >;
+export const onUpdateTierListSnapshot =
+  /* GraphQL */ `subscription OnUpdateTierListSnapshot(
   $filter: ModelSubscriptionTierListSnapshotFilterInput
 ) {
   onUpdateTierListSnapshot(filter: $filter) {
@@ -688,10 +711,11 @@ export const onUpdateTierListSnapshot = /* GraphQL */ `subscription OnUpdateTier
   }
 }
 ` as GeneratedSubscription<
-  APITypes.OnUpdateTierListSnapshotSubscriptionVariables,
-  APITypes.OnUpdateTierListSnapshotSubscription
->;
-export const onUpdateTierSlot = /* GraphQL */ `subscription OnUpdateTierSlot($filter: ModelSubscriptionTierSlotFilterInput) {
+    APITypes.OnUpdateTierListSnapshotSubscriptionVariables,
+    APITypes.OnUpdateTierListSnapshotSubscription
+  >;
+export const onUpdateTierSlot =
+  /* GraphQL */ `subscription OnUpdateTierSlot($filter: ModelSubscriptionTierSlotFilterInput) {
   onUpdateTierSlot(filter: $filter) {
     contestCount
     createdAt
@@ -728,10 +752,11 @@ export const onUpdateTierSlot = /* GraphQL */ `subscription OnUpdateTierSlot($fi
   }
 }
 ` as GeneratedSubscription<
-  APITypes.OnUpdateTierSlotSubscriptionVariables,
-  APITypes.OnUpdateTierSlotSubscription
->;
-export const onUpdateUser = /* GraphQL */ `subscription OnUpdateUser($filter: ModelSubscriptionUserFilterInput) {
+    APITypes.OnUpdateTierSlotSubscriptionVariables,
+    APITypes.OnUpdateTierSlotSubscription
+  >;
+export const onUpdateUser =
+  /* GraphQL */ `subscription OnUpdateUser($filter: ModelSubscriptionUserFilterInput) {
   onUpdateUser(filter: $filter) {
     awsSub
     createdAt
@@ -746,6 +771,6 @@ export const onUpdateUser = /* GraphQL */ `subscription OnUpdateUser($filter: Mo
   }
 }
 ` as GeneratedSubscription<
-  APITypes.OnUpdateUserSubscriptionVariables,
-  APITypes.OnUpdateUserSubscription
->;
+    APITypes.OnUpdateUserSubscriptionVariables,
+    APITypes.OnUpdateUserSubscription
+  >;

@@ -854,7 +854,7 @@ describe('Profile Component', () => {
 
       // Mock Alert.alert to auto-confirm
       const mockAlert = jest.spyOn(require('react-native').Alert, 'alert');
-      mockAlert.mockImplementation((title, message, buttons) => {
+      mockAlert.mockImplementation((_title, _message, buttons) => {
         // Simulate pressing the "Delete Account" button
         const deleteButton = buttons?.find(
           (b: { text: string }) => b.text === 'Delete Account'
@@ -864,7 +864,7 @@ describe('Profile Component', () => {
 
       // Get the button (last occurrence of "Delete Account" text)
       const deleteButtons = getAllByText('Delete Account');
-      const deleteButton = deleteButtons[deleteButtons.length - 1];
+      const deleteButton = deleteButtons.at(-1);
       fireEvent.press(deleteButton);
 
       await waitFor(() => {
@@ -923,7 +923,7 @@ describe('Profile Component', () => {
 
       // Mock Alert.alert to auto-confirm
       const mockAlert = jest.spyOn(require('react-native').Alert, 'alert');
-      mockAlert.mockImplementation((title, message, buttons) => {
+      mockAlert.mockImplementation((_title, _message, buttons) => {
         const deleteButton = buttons?.find(
           (b: { text: string }) => b.text === 'Delete Account'
         );
@@ -932,7 +932,7 @@ describe('Profile Component', () => {
 
       // Get the button (last occurrence of "Delete Account" text)
       const deleteButtons = getAllByText('Delete Account');
-      const deleteButton = deleteButtons[deleteButtons.length - 1];
+      const deleteButton = deleteButtons.at(-1);
       fireEvent.press(deleteButton);
 
       await waitFor(() => {
@@ -1000,7 +1000,7 @@ describe('Profile Component', () => {
 
       // Get the button (last occurrence of "Delete Account" text)
       const deleteButtons = getAllByText('Delete Account');
-      const deleteButton = deleteButtons[deleteButtons.length - 1];
+      const deleteButton = deleteButtons.at(-1);
       fireEvent.press(deleteButton);
 
       await waitFor(() => {
@@ -1016,7 +1016,7 @@ describe('Profile Component', () => {
       mockAlert.mockRestore();
     });
 
-    it('allows user to cancel account deletion', async () => {
+    it('allows user to cancel account deletion', () => {
       mockUseAuthUser.mockReturnValue({
         user: {
           id: 'user-cancel',
@@ -1034,7 +1034,7 @@ describe('Profile Component', () => {
 
       // Mock Alert.alert to simulate cancel
       const mockAlert = jest.spyOn(require('react-native').Alert, 'alert');
-      mockAlert.mockImplementation((title, message, buttons) => {
+      mockAlert.mockImplementation((_title, _message, buttons) => {
         const cancelButton = buttons?.find(
           (b: { text: string }) => b.text === 'Cancel'
         );
@@ -1043,7 +1043,7 @@ describe('Profile Component', () => {
 
       // Get the button (last occurrence of "Delete Account" text)
       const deleteButtons = getAllByText('Delete Account');
-      const deleteButton = deleteButtons[deleteButtons.length - 1];
+      const deleteButton = deleteButtons.at(-1);
       fireEvent.press(deleteButton);
 
       // Should not perform any deletion actions

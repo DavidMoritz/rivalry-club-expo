@@ -18,7 +18,13 @@ interface ContestRowProps {
   shouldFadeOut?: boolean;
 }
 
-export function ContestRow({ contest, game, rivalry, flip, shouldFadeOut }: ContestRowProps) {
+export function ContestRow({
+  contest,
+  game,
+  rivalry,
+  flip,
+  shouldFadeOut,
+}: ContestRowProps) {
   const [updatedDisplay, setUpdatedDisplay] = useState<string>('');
   const [fighterA, setFighterA] = useState<MFighter | null>();
   const [fighterB, setFighterB] = useState<MFighter | null>();
@@ -37,17 +43,17 @@ export function ContestRow({ contest, game, rivalry, flip, shouldFadeOut }: Cont
       Animated.timing(fadeAnim, {
         toValue: 0,
         duration: 2000,
-        useNativeDriver: true
+        useNativeDriver: true,
       }).start();
     }
   }, [shouldFadeOut, fadeAnim]);
 
   useEffect(() => {
     const foundTierSlotA = rivalry?.tierListA?.slots.find(
-      (thisTierSlot) => thisTierSlot?.id === contest?.tierSlotAId
+      thisTierSlot => thisTierSlot?.id === contest?.tierSlotAId
     );
     const foundTierSlotB = rivalry?.tierListB?.slots.find(
-      (thisTierSlot) => thisTierSlot?.id === contest?.tierSlotBId
+      thisTierSlot => thisTierSlot?.id === contest?.tierSlotBId
     );
 
     setTierSlotA(foundTierSlotA);
@@ -65,14 +71,16 @@ export function ContestRow({ contest, game, rivalry, flip, shouldFadeOut }: Cont
       style={[
         contestStyles.row,
         {
-          opacity: fadeAnim
-        }
+          opacity: fadeAnim,
+        },
       ]}
     >
       <View style={contestStyles.item}>
         <Text style={textStyle}>{updatedDisplay}</Text>
       </View>
-      <View style={[contestStyles.item, displayResult > 0 ? winnerStyle : null]}>
+      <View
+        style={[contestStyles.item, displayResult > 0 ? winnerStyle : null]}
+      >
         <CharacterDisplay
           fighter={flip ? fighterB : fighterA}
           height={75}
@@ -83,7 +91,9 @@ export function ContestRow({ contest, game, rivalry, flip, shouldFadeOut }: Cont
       <View style={contestStyles.item}>
         <Text style={textStyle}>{scoreDisplay(displayResult)}</Text>
       </View>
-      <View style={[contestStyles.item, displayResult < 0 ? winnerStyle : null]}>
+      <View
+        style={[contestStyles.item, displayResult < 0 ? winnerStyle : null]}
+      >
         <CharacterDisplay
           fighter={flip ? fighterA : fighterB}
           height={75}
@@ -97,9 +107,9 @@ export function ContestRow({ contest, game, rivalry, flip, shouldFadeOut }: Cont
 
 const textStyle = {
   color: colors.white,
-  fontSize: 14
+  fontSize: 14,
 };
 
 const winnerStyle = {
-  backgroundColor: colors.green900
+  backgroundColor: colors.green900,
 };

@@ -33,7 +33,7 @@ export const CharacterFace: React.FC<CharacterFaceProps> = ({
   width,
   height,
   style,
-  zoomMultiplier = 1.0
+  zoomMultiplier = 1.0,
 }) => {
   const imageSource = fighterImages[characterKey];
 
@@ -58,12 +58,16 @@ export const CharacterFace: React.FC<CharacterFaceProps> = ({
         styles.container,
         {
           width: displayWidth,
-          height: displayHeight
+          height: displayHeight,
         },
-        style
+        style,
       ]}
     >
-      <Image resizeMode="cover" source={imageSource} style={[styles.image, zoomStyle]} />
+      <Image
+        resizeMode="cover"
+        source={imageSource}
+        style={[styles.image, zoomStyle]}
+      />
     </View>
   );
 };
@@ -74,11 +78,11 @@ const styles = StyleSheet.create({
     borderRadius: 8,
     backgroundColor: colors.gray900,
     borderWidth: 1,
-    borderColor: colors.gray500
+    borderColor: colors.gray500,
   },
   image: {
-    position: 'absolute'
-  }
+    position: 'absolute',
+  },
 });
 
 /**
@@ -94,13 +98,18 @@ export const CharacterFaceGrid: React.FC = () => {
     'kirby',
     'fox',
     'pikachu',
-    'donkey_kong'
+    'donkey_kong',
   ];
 
   return (
     <View style={gridStyles.container}>
-      {characters.map((char) => (
-        <CharacterFace characterKey={char} key={char} size={120} style={gridStyles.face} />
+      {characters.map(char => (
+        <CharacterFace
+          characterKey={char}
+          key={char}
+          size={120}
+          style={gridStyles.face}
+        />
       ))}
     </View>
   );
@@ -111,9 +120,9 @@ const gridStyles = StyleSheet.create({
     flexDirection: 'row',
     flexWrap: 'wrap',
     padding: 16,
-    gap: 16
+    gap: 16,
   },
   face: {
-    margin: 8
-  }
+    margin: 8,
+  },
 });

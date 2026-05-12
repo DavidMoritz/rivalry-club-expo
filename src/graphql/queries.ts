@@ -2,13 +2,15 @@
 /* eslint-disable */
 // this is an auto generated file. This will be overwritten
 
-import * as APITypes from "./API";
+import type * as APITypes from './API';
+
 type GeneratedQuery<InputType, OutputType> = string & {
   __generatedQueryInput: InputType;
   __generatedQueryOutput: OutputType;
 };
 
-export const contestsByRivalryIdAndCreatedAt = /* GraphQL */ `query ContestsByRivalryIdAndCreatedAt(
+export const contestsByRivalryIdAndCreatedAt =
+  /* GraphQL */ `query ContestsByRivalryIdAndCreatedAt(
   $createdAt: ModelStringKeyConditionInput
   $filter: ModelContestFilterInput
   $limit: Int
@@ -41,9 +43,9 @@ export const contestsByRivalryIdAndCreatedAt = /* GraphQL */ `query ContestsByRi
   }
 }
 ` as GeneratedQuery<
-  APITypes.ContestsByRivalryIdAndCreatedAtQueryVariables,
-  APITypes.ContestsByRivalryIdAndCreatedAtQuery
->;
+    APITypes.ContestsByRivalryIdAndCreatedAtQueryVariables,
+    APITypes.ContestsByRivalryIdAndCreatedAtQuery
+  >;
 export const getContest = /* GraphQL */ `query GetContest($id: ID!) {
   getContest(id: $id) {
     bias
@@ -202,7 +204,8 @@ export const getTierList = /* GraphQL */ `query GetTierList($id: ID!) {
   APITypes.GetTierListQueryVariables,
   APITypes.GetTierListQuery
 >;
-export const getTierListSnapshot = /* GraphQL */ `query GetTierListSnapshot($id: ID!) {
+export const getTierListSnapshot =
+  /* GraphQL */ `query GetTierListSnapshot($id: ID!) {
   getTierListSnapshot(id: $id) {
     arrangement
     createdAt
@@ -225,9 +228,9 @@ export const getTierListSnapshot = /* GraphQL */ `query GetTierListSnapshot($id:
   }
 }
 ` as GeneratedQuery<
-  APITypes.GetTierListSnapshotQueryVariables,
-  APITypes.GetTierListSnapshotQuery
->;
+    APITypes.GetTierListSnapshotQueryVariables,
+    APITypes.GetTierListSnapshotQuery
+  >;
 export const getTierSlot = /* GraphQL */ `query GetTierSlot($id: ID!) {
   getTierSlot(id: $id) {
     contestCount
@@ -516,7 +519,8 @@ export const snapshotByShareCode = /* GraphQL */ `query SnapshotByShareCode(
   APITypes.SnapshotByShareCodeQueryVariables,
   APITypes.SnapshotByShareCodeQuery
 >;
-export const snapshotsByUserIdAndCreatedAt = /* GraphQL */ `query SnapshotsByUserIdAndCreatedAt(
+export const snapshotsByUserIdAndCreatedAt =
+  /* GraphQL */ `query SnapshotsByUserIdAndCreatedAt(
   $createdAt: ModelStringKeyConditionInput
   $filter: ModelTierListSnapshotFilterInput
   $limit: Int
@@ -549,10 +553,11 @@ export const snapshotsByUserIdAndCreatedAt = /* GraphQL */ `query SnapshotsByUse
   }
 }
 ` as GeneratedQuery<
-  APITypes.SnapshotsByUserIdAndCreatedAtQueryVariables,
-  APITypes.SnapshotsByUserIdAndCreatedAtQuery
->;
-export const tierListsByUserIdAndUpdatedAt = /* GraphQL */ `query TierListsByUserIdAndUpdatedAt(
+    APITypes.SnapshotsByUserIdAndCreatedAtQueryVariables,
+    APITypes.SnapshotsByUserIdAndCreatedAtQuery
+  >;
+export const tierListsByUserIdAndUpdatedAt =
+  /* GraphQL */ `query TierListsByUserIdAndUpdatedAt(
   $filter: ModelTierListFilterInput
   $limit: Int
   $nextToken: String
@@ -583,6 +588,6 @@ export const tierListsByUserIdAndUpdatedAt = /* GraphQL */ `query TierListsByUse
   }
 }
 ` as GeneratedQuery<
-  APITypes.TierListsByUserIdAndUpdatedAtQueryVariables,
-  APITypes.TierListsByUserIdAndUpdatedAtQuery
->;
+    APITypes.TierListsByUserIdAndUpdatedAtQueryVariables,
+    APITypes.TierListsByUserIdAndUpdatedAtQuery
+  >;

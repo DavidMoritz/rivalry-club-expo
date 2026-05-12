@@ -1,6 +1,6 @@
 import { fireEvent, render, waitFor } from '@testing-library/react-native';
 import { useRouter } from 'expo-router';
-import React from 'react';
+import React, { type ReactNode } from 'react';
 import { useUpdateTierSlotsMutation } from '../../../../src/controllers/c-rivalry';
 import TierListEditRoute from '../tierListEdit';
 
@@ -90,7 +90,7 @@ jest.mock('../../../../src/providers/unsaved-changes', () => ({
     hasUnsavedChanges: false,
     setHasUnsavedChanges: jest.fn(),
   })),
-  UnsavedChangesProvider: ({ children }: any) => children,
+  UnsavedChangesProvider: ({ children }: { children: ReactNode }) => children,
 }));
 
 jest.mock('../../../../src/providers/header', () => ({
@@ -99,7 +99,7 @@ jest.mock('../../../../src/providers/header', () => ({
     title: 'Edit Tier List',
     showHeader: true,
   })),
-  HeaderProvider: ({ children }: any) => children,
+  HeaderProvider: ({ children }: { children: ReactNode }) => children,
 }));
 
 jest.mock(

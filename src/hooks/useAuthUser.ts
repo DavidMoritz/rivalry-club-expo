@@ -5,7 +5,13 @@ import { useEffect, useState } from 'react';
 
 import type { Schema } from '../../amplify/data/resource';
 import { getCurrentUser } from '../lib/amplify-auth';
-import { clearStoredUuid, getDisplayName, getOrCreateUserUuid, getStoredUuid, updateStoredUuid } from '../lib/user-identity';
+import {
+  clearStoredUuid,
+  getDisplayName,
+  getOrCreateUserUuid,
+  getStoredUuid,
+  updateStoredUuid,
+} from '../lib/user-identity';
 
 interface AuthUser {
   id: string;
@@ -136,7 +142,9 @@ export function useAuthUser() {
           break;
         case 'signedOut':
           // Clear stored UUID to prevent showing old user's data
-          clearStoredUuid().catch(err => console.error('[useAuthUser] Error clearing UUID:', err));
+          clearStoredUuid().catch(err =>
+            console.error('[useAuthUser] Error clearing UUID:', err)
+          );
           // Invalidate all queries to clear cached data
           queryClient.invalidateQueries();
           setCognitoUserId(null);

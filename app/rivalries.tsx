@@ -15,7 +15,11 @@ export default function RivalriesRoute() {
 
   // Redirect to profile if user hasn't set their name
   useEffect(() => {
-    if (!isLoading && user && (!user.firstName || user.firstName.trim() === '')) {
+    if (
+      !isLoading &&
+      user &&
+      (!user.firstName || user.firstName.trim() === '')
+    ) {
       router.replace('/profile');
     }
   }, [user, isLoading, router]);

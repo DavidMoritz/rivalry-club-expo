@@ -15,10 +15,12 @@ function getClient() {
  */
 export async function incrementTierSlotStats(tierSlotId: string, won: boolean) {
   try {
-    const { data, errors } = await getClient().mutations.incrementTierSlotStats({
-      tierSlotId,
-      won,
-    });
+    const { data, errors } = await getClient().mutations.incrementTierSlotStats(
+      {
+        tierSlotId,
+        won,
+      }
+    );
 
     if (errors) {
       console.error('[incrementTierSlotStats] GraphQL errors:', errors);

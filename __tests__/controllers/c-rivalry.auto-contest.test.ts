@@ -25,16 +25,12 @@ describe('Auto-Contest Creation', () => {
             {
               id: 'tier-list-a',
               userId: 'user-a',
-              tierSlots: [
-                { id: tierSlotAId, position: null, contestCount: 0 },
-              ],
+              tierSlots: [{ id: tierSlotAId, position: null, contestCount: 0 }],
             },
             {
               id: 'tier-list-b',
               userId: 'npc-user',
-              tierSlots: [
-                { id: tierSlotBId, position: null, contestCount: 0 },
-              ],
+              tierSlots: [{ id: tierSlotBId, position: null, contestCount: 0 }],
             },
           ],
         },
@@ -118,7 +114,7 @@ describe('Auto-Contest Creation', () => {
 
         // Rivalry creation should succeed despite contest failure
         expect(mockRivalryGet).toHaveBeenCalled();
-      } catch (error) {
+      } catch {
         // Should not throw
         fail('Rivalry creation should not fail when contest creation fails');
       }
@@ -141,16 +137,12 @@ describe('Auto-Contest Creation', () => {
             {
               id: 'tier-list-a',
               userId: 'user-a',
-              tierSlots: [
-                { id: tierSlotAId, position: null, contestCount: 0 },
-              ],
+              tierSlots: [{ id: tierSlotAId, position: null, contestCount: 0 }],
             },
             {
               id: 'tier-list-b',
               userId: 'user-b',
-              tierSlots: [
-                { id: tierSlotBId, position: null, contestCount: 0 },
-              ],
+              tierSlots: [{ id: tierSlotBId, position: null, contestCount: 0 }],
             },
           ],
         },

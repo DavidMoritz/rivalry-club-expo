@@ -11,17 +11,17 @@ export const relative = 'relative' as const;
 
 export const styles = StyleSheet.create({
   container: {
-    height: '100%'
+    height: '100%',
   },
   gameLogoImage: {
     alignSelf: 'center',
     height: 160,
     resizeMode: 'contain',
-    width: '95%'
+    width: '95%',
   },
   text: {
     fontSize: 14,
-    color: colors.white
+    color: colors.white,
   },
   title: {
     color: 'aqua',
@@ -31,30 +31,30 @@ export const styles = StyleSheet.create({
     textShadowColor: colors.black,
     textShadowOffset: {
       width: 2,
-      height: 2
+      height: 2,
     },
-    textShadowRadius: 1
-  }
+    textShadowRadius: 1,
+  },
 });
 
 export const darkStyles = StyleSheet.create({
   container: {
     backgroundColor: colors.gray900,
-    color: colors.white
+    color: colors.white,
   },
-  text: { color: colors.white }
+  text: { color: colors.white },
 });
 
 export const contestStyles = StyleSheet.create({
   row: {
     flexDirection: 'row',
     alignItems: 'center',
-    marginVertical: 5
+    marginVertical: 5,
   },
   item: {
     flex: 1,
-    alignItems: 'center'
-  }
+    alignItems: 'center',
+  },
 });
 
 export const tierBadgeStyles = StyleSheet.create({

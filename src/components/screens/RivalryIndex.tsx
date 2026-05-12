@@ -33,12 +33,13 @@ export function RivalryIndex() {
     allRivalries,
     isLoading: rivalriesLoading,
     error: rivalriesError,
-    refetch
+    refetch,
   } = useUserRivalries(user?.id);
   const { setRivalries } = useAllRivalriesUpdate();
   const [showHiddenRivalries, setShowHiddenRivalries] = useState(false);
   const [providerInitialized, setProviderInitialized] = useState(false);
-  const { isConnected, hasShownOfflineModal, setHasShownOfflineModal } = useNetworkStatus();
+  const { isConnected, hasShownOfflineModal, setHasShownOfflineModal } =
+    useNetworkStatus();
   const [showOfflineModal, setShowOfflineModal] = useState(false);
 
   const error = userError || rivalriesError;
@@ -59,7 +60,10 @@ export function RivalryIndex() {
       if (allRivalries.length > 0) {
         // Type assertion needed: hook returns simplified RivalryWithUsers,
         // provider expects MRivalry-based type (structurally compatible for this use)
-        setRivalries(allRivalries as Parameters<typeof setRivalries>[0], user.id);
+        setRivalries(
+          allRivalries as Parameters<typeof setRivalries>[0],
+          user.id
+        );
       }
       setProviderInitialized(true);
     }
@@ -80,7 +84,7 @@ export function RivalryIndex() {
 
   // Check if there are any hidden rivalries
   const hasHiddenRivalries = useMemo(() => {
-    return rivalries.some((rivalry) => {
+    return rivalries.some(rivalry => {
       const isUserA = rivalry.userAId === user?.id;
       return isUserA ? rivalry.hiddenByA : rivalry.hiddenByB;
     });
@@ -93,15 +97,16 @@ export function RivalryIndex() {
       params: {
         userAName: rivalry.userAName,
         userBName: rivalry.userBName,
-        userId: user?.id
-      }
+        userId: user?.id,
+      },
     });
   }
 
   function handleCreateRivalry() {
     // Get gameId from the first rivalry, or use the default game
     // TODO: In the future, let users select from multiple games
-    const gameId = rivalries[0]?.gameId || '73ed69cf-2775-43d6-bece-aed10da3e25a';
+    const gameId =
+      rivalries[0]?.gameId || '73ed69cf-2775-43d6-bece-aed10da3e25a';
 
     // Check if user has no rivalries (accepted or pending)
     const hasNoRivalries = allRivalries.length === 0;
@@ -111,18 +116,22 @@ export function RivalryIndex() {
       pathname: '/rivalry/create',
       params: {
         gameId,
-        autoSearchNpc: hasNoRivalries ? 'true' : undefined
-      }
+        autoSearchNpc: hasNoRivalries ? 'true' : undefined,
+      },
     });
   }
 
   // Check for errors before provider initialization to avoid stuck loading state
-  const isLoading = userLoading || rivalriesLoading || !(providerInitialized || error);
+  const isLoading =
+    userLoading || rivalriesLoading || !(providerInitialized || error);
 
   if (isLoading) {
     return (
       <SafeAreaView style={[styles.container, darkStyles.container]}>
-        <OfflineModal onClose={() => setShowOfflineModal(false)} visible={showOfflineModal} />
+        <OfflineModal
+          onClose={() => setShowOfflineModal(false)}
+          visible={showOfflineModal}
+        />
         <LoadingWithCharacter message="Loading rivalries..." />
       </SafeAreaView>
     );
@@ -131,7 +140,10 @@ export function RivalryIndex() {
   if (error) {
     return (
       <SafeAreaView style={[styles.container, darkStyles.container]}>
-        <OfflineModal onClose={() => setShowOfflineModal(false)} visible={showOfflineModal} />
+        <OfflineModal
+          onClose={() => setShowOfflineModal(false)}
+          visible={showOfflineModal}
+        />
         <View style={errorContainerStyle}>
           <Text style={errorTitleStyle}>Error</Text>
           <Text style={styles.text}>{error.message}</Text>
@@ -141,11 +153,19 @@ export function RivalryIndex() {
   }
 
   return (
-    <SafeAreaView edges={['bottom']} style={[styles.container, darkStyles.container]}>
-      <OfflineModal onClose={() => setShowOfflineModal(false)} visible={showOfflineModal} />
+    <SafeAreaView
+      edges={['bottom']}
+      style={[styles.container, darkStyles.container]}
+    >
+      <OfflineModal
+        onClose={() => setShowOfflineModal(false)}
+        visible={showOfflineModal}
+      />
 
       <View style={headerContainerStyle}>
-        <Text style={welcomeTextStyle}>Welcome{user?.firstName ? `, ${user.firstName}` : ''}!</Text>
+        <Text style={welcomeTextStyle}>
+          Welcome{user?.firstName ? `, ${user.firstName}` : ''}!
+        </Text>
         <Text style={subtitleTextStyle}>Select a rivalry to continue</Text>
 
         <TouchableOpacity
@@ -188,17 +208,12 @@ export function RivalryIndex() {
 const centeredContainerStyle = {
   flex: 1,
   alignItems: center,
-  justifyContent: center
-};
-
-const loadingTextStyle = {
-  ...styles.text,
-  fontSize: 18
+  justifyContent: center,
 };
 
 const errorContainerStyle = {
   ...centeredContainerStyle,
-  paddingHorizontal: 16
+  paddingHorizontal: 16,
 };
 
 const errorTitleStyle = {
@@ -206,69 +221,69 @@ const errorTitleStyle = {
   fontSize: 18,
   fontWeight: bold,
   color: colors.red600,
-  marginBottom: 16
+  marginBottom: 16,
 };
 
 const headerContainerStyle = {
   paddingHorizontal: 16,
   paddingVertical: 16,
   borderBottomWidth: 1,
-  borderBottomColor: colors.gray750
+  borderBottomColor: colors.gray750,
 };
 
 const welcomeTextStyle = {
   ...styles.text,
   fontSize: 24,
-  fontWeight: bold
+  fontWeight: bold,
 };
 
 const subtitleTextStyle = {
   ...styles.text,
   marginTop: 4,
-  color: colors.gray400
+  color: colors.gray400,
 };
 
 const baseButtonStyle = {
   paddingHorizontal: 24,
   paddingVertical: 12,
   borderRadius: 8,
-  alignItems: center
+  alignItems: center,
 };
 
 const createButtonStyle = {
   ...baseButtonStyle,
   backgroundColor: colors.purple900,
-  marginTop: 16
+  marginTop: 16,
 };
 
 const baseButtonTextStyle = {
   ...styles.text,
   fontSize: 16,
-  fontWeight: bold
+  fontWeight: bold,
 };
 
 const createButtonTextStyle = baseButtonTextStyle;
 
 const hiddenHeaderStyle = {
   paddingHorizontal: 16,
-  paddingTop: 8
+  paddingTop: 8,
 };
 
 const hiddenHeaderTextStyle = {
   ...styles.text,
   fontSize: 18,
   fontWeight: bold,
-  color: colors.gray400
+  color: colors.gray400,
 };
 
 const toggleContainerStyle = {
   paddingHorizontal: 16,
-  paddingBottom: 16
+  paddingBottom: 16,
 };
 
 const toggleButtonStyle = {
   ...baseButtonStyle,
-  backgroundColor: colors.gray700
+  backgroundColor: colors.gray700,
 };
 
 const toggleButtonTextStyle = baseButtonTextStyle;

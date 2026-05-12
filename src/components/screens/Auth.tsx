@@ -6,7 +6,7 @@ import {
   Text,
   TextInput,
   TouchableOpacity,
-  View
+  View,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
@@ -46,10 +46,14 @@ function getSignInErrorMessage(err: unknown): string {
   const errorMap: Record<string, string> = {
     NotAuthorizedException: 'Incorrect email or password',
     UserNotFoundException: 'User not found',
-    UserNotConfirmedException: 'Please verify your email before signing in'
+    UserNotConfirmedException: 'Please verify your email before signing in',
   };
 
-  return errorMap[errorName ?? ''] ?? errorMessage ?? 'Sign in failed. Please try again.';
+  return (
+    errorMap[errorName ?? ''] ??
+    errorMessage ??
+    'Sign in failed. Please try again.'
+  );
 }
 
 function getVerificationErrorMessage(err: unknown): string {
@@ -58,10 +62,15 @@ function getVerificationErrorMessage(err: unknown): string {
 
   const errorMap: Record<string, string> = {
     CodeMismatchException: 'Invalid verification code',
-    ExpiredCodeException: 'Verification code has expired. Please sign up again.'
+    ExpiredCodeException:
+      'Verification code has expired. Please sign up again.',
   };
 
-  return errorMap[errorName ?? ''] ?? errorMessage ?? 'Verification failed. Please try again.';
+  return (
+    errorMap[errorName ?? ''] ??
+    errorMessage ??
+    'Verification failed. Please try again.'
+  );
 }
 
 function getErrorColor(error: string): string {
@@ -77,13 +86,13 @@ const inputStyle = {
   paddingVertical: 14,
   backgroundColor: colors.gray800,
   borderWidth: 2,
-  borderColor: colors.gray600
+  borderColor: colors.gray600,
 };
 
 const labelStyle = {
   marginBottom: 8,
   fontSize: 16,
-  fontWeight: '500' as const
+  fontWeight: '500' as const,
 };
 
 const buttonStyle = {
@@ -96,40 +105,40 @@ const buttonStyle = {
   width: '75%' as const,
   alignItems: center,
   marginTop: 8,
-  marginBottom: 16
+  marginBottom: 16,
 };
 
 const buttonTextStyle = {
   color: colors.white,
   fontSize: 18,
-  fontWeight: 'bold' as const
+  fontWeight: 'bold' as const,
 };
 
 const inputContainerStyle = {
   width: '100%' as const,
-  marginBottom: 20
+  marginBottom: 20,
 };
 
 const errorTextStyle = {
   marginBottom: 16,
-  textAlign: center
+  textAlign: center,
 };
 
 const linkTextStyle = {
-  fontSize: 16
+  fontSize: 16,
 };
 
 const linkContainerStyle = {
-  marginTop: 12
+  marginTop: 12,
 };
 
 const verificationInstructionStyle = {
   marginBottom: 24,
-  textAlign: center
+  textAlign: center,
 };
 
 const titleContainerStyle = {
-  marginBottom: 48
+  marginBottom: 48,
 };
 
 const scrollViewContentStyle = {
@@ -137,7 +146,7 @@ const scrollViewContentStyle = {
   justifyContent: center,
   alignItems: center,
   paddingHorizontal: 32,
-  paddingBottom: 40
+  paddingBottom: 40,
 };
 
 interface VerificationFormProps {
@@ -159,7 +168,7 @@ function VerificationForm({
   onEmailChange,
   onCodeChange,
   onVerify,
-  onBack
+  onBack,
 }: VerificationFormProps) {
   return (
     <>
@@ -203,18 +212,22 @@ function VerificationForm({
 
       <TouchableOpacity
         accessibilityState={{
-          disabled: loading || !verificationCode || !email
+          disabled: loading || !verificationCode || !email,
         }}
         disabled={loading || !verificationCode || !email}
         onPress={onVerify}
         style={buttonStyle}
         testID="verify-submit-button"
       >
-        <Text style={buttonTextStyle}>{loading ? 'Verifying...' : 'Verify'}</Text>
+        <Text style={buttonTextStyle}>
+          {loading ? 'Verifying...' : 'Verify'}
+        </Text>
       </TouchableOpacity>
 
       <TouchableOpacity onPress={onBack} style={linkContainerStyle}>
-        <Text style={[linkTextStyle, { color: colors.cyan400 }]}>Back to Sign Up</Text>
+        <Text style={[linkTextStyle, { color: colors.cyan400 }]}>
+          Back to Sign Up
+        </Text>
       </TouchableOpacity>
     </>
   );
@@ -243,7 +256,7 @@ function AuthForm({
   onPasswordChange,
   onSubmit,
   onForgotPassword,
-  onVerifyCode
+  onVerifyCode,
 }: AuthFormProps) {
   return (
     <>
@@ -275,7 +288,9 @@ function AuthForm({
       </View>
 
       {error && (
-        <Text style={[styles.text, errorTextStyle, { color: getErrorColor(error) }]}>
+        <Text
+          style={[styles.text, errorTextStyle, { color: getErrorColor(error) }]}
+        >
           {error}
         </Text>
       )}
@@ -291,7 +306,9 @@ function AuthForm({
       </TouchableOpacity>
 
       <TouchableOpacity onPress={onForgotPassword} style={linkContainerStyle}>
-        <Text style={[linkTextStyle, { color: colors.gray200 }]}>Forgot Password?</Text>
+        <Text style={[linkTextStyle, { color: colors.gray200 }]}>
+          Forgot Password?
+        </Text>
       </TouchableOpacity>
 
       <TouchableOpacity onPress={onVerifyCode} style={linkContainerStyle}>
@@ -366,11 +383,19 @@ export function Auth({ onAuthSuccess }: AuthProps) {
 
   // Show forgot password screen if requested
   if (showForgotPassword) {
-    return <ForgotPassword initialEmail={email} onBack={() => setShowForgotPassword(false)} />;
+    return (
+      <ForgotPassword
+        initialEmail={email}
+        onBack={() => setShowForgotPassword(false)}
+      />
+    );
   }
 
   return (
-    <SafeAreaView edges={['top', 'bottom']} style={[styles.container, darkStyles.container]}>
+    <SafeAreaView
+      edges={['top', 'bottom']}
+      style={[styles.container, darkStyles.container]}
+    >
       <KeyboardAvoidingView
         behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
         keyboardVerticalOffset={0}

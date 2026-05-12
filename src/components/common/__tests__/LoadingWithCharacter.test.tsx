@@ -1,4 +1,5 @@
 import { render } from '@testing-library/react-native';
+import { Text } from 'react-native';
 import { LoadingWithCharacter } from '../LoadingWithCharacter';
 
 // Mock the fighter images
@@ -103,7 +104,7 @@ describe('LoadingWithCharacter', () => {
 
       // One of the fighter names should be present
       const fighterNames = ['Mario', 'Luigi', 'Peach', 'Bowser', 'Donkey Kong'];
-      const textElements = root.findAllByType('Text' as any);
+      const textElements = root.findAllByType(Text);
       const hasAnyFighterName = textElements.some(el =>
         fighterNames.includes(el.props.children)
       );

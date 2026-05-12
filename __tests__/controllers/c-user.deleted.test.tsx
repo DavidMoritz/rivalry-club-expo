@@ -8,7 +8,7 @@ describe('User Search - Deleted User Exclusion', () => {
     jest.clearAllMocks();
   });
 
-  it('should exclude users with role = 5 (deleted) from search results', async () => {
+  it('should exclude users with role = 5 (deleted) from search results', () => {
     // Mock user list with mix of active and deleted users
     const allUsers = [
       {
@@ -62,7 +62,7 @@ describe('User Search - Deleted User Exclusion', () => {
     const regularUsers = allUsers.filter(
       user =>
         user.role !== 13 && // Not NPC
-        user.role !== 5 &&  // Not DELETED
+        user.role !== 5 && // Not DELETED
         !user.deletedAt
     );
 
@@ -101,10 +101,7 @@ describe('User Search - Deleted User Exclusion', () => {
     ];
 
     const regularUsers = allUsers.filter(
-      user =>
-        user.role !== 13 &&
-        user.role !== 5 &&
-        !user.deletedAt
+      user => user.role !== 13 && user.role !== 5 && !user.deletedAt
     );
 
     // Should only have 1 active user
@@ -144,9 +141,7 @@ describe('User Search - Deleted User Exclusion', () => {
     ];
 
     const npcUsers = allUsers.filter(
-      user =>
-        user.role === 13 &&
-        !user.deletedAt
+      user => user.role === 13 && !user.deletedAt
     );
 
     // Should only have 1 NPC (the deleted one should have role 5, not 13)

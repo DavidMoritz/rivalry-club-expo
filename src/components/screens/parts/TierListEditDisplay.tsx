@@ -1,3 +1,4 @@
+import { generateClient } from 'aws-amplify/data';
 import { type ReactNode, useEffect, useRef, useState } from 'react';
 import {
   Alert,
@@ -9,12 +10,22 @@ import {
   TextInput,
   TouchableOpacity,
   UIManager,
-  View
+  View,
 } from 'react-native';
-import { generateClient } from 'aws-amplify/data';
 import type { Schema } from '../../../../amplify/data/resource';
+import {
+  generateShareCode,
+  isShareCodeAvailable,
+  useCreateSnapshotMutation,
+  useUserSnapshotsQuery,
+} from '../../../controllers/c-snapshot';
 import type { MGame } from '../../../models/m-game';
-import { FIGHTER_COUNT, type MTierList, TIERS } from '../../../models/m-tier-list';
+import {
+  FIGHTER_COUNT,
+  type MTierList,
+  TIERS,
+} from '../../../models/m-tier-list';
+import type { SnapshotArrangement } from '../../../models/m-tier-list-snapshot';
 import type { MTierSlot } from '../../../models/m-tier-slot';
 import { useGame } from '../../../providers/game';
 import { useRivalryContext } from '../../../providers/rivalry';
@@ -22,17 +33,12 @@ import { fighterByIdFromGame } from '../../../utils';
 import { colors } from '../../../utils/colors';
 import { bold, center, row } from '../../../utils/styles';
 import { CharacterDisplay } from '../../common/CharacterDisplay';
-import {
-  generateShareCode,
-  isShareCodeAvailable,
-  useCreateSnapshotMutation,
-  useUserSnapshotsQuery
-} from '../../../controllers/c-snapshot';
-import type { SnapshotArrangement } from '../../../models/m-tier-list-snapshot';
 
 // Style constants for selected state
 const SELECTED_OPACITY = 0.5;
 const SELECTED_SCALE = 0.9;
+const KEYBOARD_SCROLL_PADDING_RATIO = 0.6;
+const SNAPSHOT_SCROLL_DELAY_MS = 100;
 
 // Maximum tier position (total slots across all tiers minus 1)
 const MAX_TIER_POSITION = 85;
@@ -53,14 +59,17 @@ interface MoveSlotOptions {
 }
 
 // Enable LayoutAnimation on Android
-if (Platform.OS === 'android' && UIManager.setLayoutAnimationEnabledExperimental) {
+if (
+  Platform.OS === 'android' &&
+  UIManager.setLayoutAnimationEnabledExperimental
+) {
   UIManager.setLayoutAnimationEnabledExperimental(true);
 }
 
 export function TierListEditDisplay({
   tierList,
   onChange,
-  onUnsavedChangesChange
+  onUnsavedChangesChange,
 }: TierListEditDisplayProps): ReactNode {
   const game = useGame() as MGame;
   const { userId } = useRivalryContext();
@@ -81,10 +90,10 @@ export function TierListEditDisplay({
   // Snapshot hooks
   const { data: userSnapshots = [] } = useUserSnapshotsQuery({
     userId,
-    gameId: game?.id
+    gameId: game?.id,
   });
   const { mutate: createSnapshot } = useCreateSnapshotMutation({
-    onSuccess: (snapshot) => {
+    onSuccess: snapshot => {
       Alert.alert(
         'Snapshot Saved!',
         `Your tier list has been saved with code: ${snapshot.shareCode}\n\nShare this code with others to let them import your tier list!`,
@@ -93,9 +102,9 @@ export function TierListEditDisplay({
       setShowSaveDialog(false);
       setSnapshotName('');
     },
-    onError: (error) => {
+    onError: error => {
       Alert.alert('Error', error.message);
-    }
+    },
   });
 
   // Notify parent when unsaved changes state changes
@@ -107,13 +116,13 @@ export function TierListEditDisplay({
   useEffect(() => {
     const keyboardWillShow = Keyboard.addListener(
       Platform.OS === 'ios' ? 'keyboardWillShow' : 'keyboardDidShow',
-      (e) => {
+      e => {
         setKeyboardHeight(e.endCoordinates.height);
         // Scroll to bottom when keyboard shows and either dialog is open
         if (showImportDialog || showSaveDialog) {
           setTimeout(() => {
             scrollViewRef.current?.scrollToEnd({ animated: true });
-          }, 100);
+          }, SNAPSHOT_SCROLL_DELAY_MS);
         }
       }
     );
@@ -145,14 +154,16 @@ export function TierListEditDisplay({
 
     // UNKNOWN TIER: Separate positioned and unknown fighters
     const positioned = allSlots.filter(
-      (slot) => slot.position !== null && slot.position !== undefined
+      slot => slot.position !== null && slot.position !== undefined
     );
     const unknown = allSlots.filter(
-      (slot) => slot.position === null || slot.position === undefined
+      slot => slot.position === null || slot.position === undefined
     );
 
     // Sort only positioned fighters
-    const sortedPositioned = positioned.sort((a, b) => (a?.position || 0) - (b?.position || 0));
+    const sortedPositioned = positioned.sort(
+      (a, b) => (a?.position || 0) - (b?.position || 0)
+    );
 
     setPositionedSlots(sortedPositioned);
     setUnknownSlots(unknown);
@@ -193,7 +204,7 @@ export function TierListEditDisplay({
     const newPositionMap = new Map<number, number>();
     const delta = direction === 'down' ? 1 : -1;
 
-    const fightersToShift = slots.filter((s) => {
+    const fightersToShift = slots.filter(s => {
       const pos = s.position ?? 0;
       return direction === 'down'
         ? pos >= toIndex && pos < firstAvailablePos
@@ -209,8 +220,11 @@ export function TierListEditDisplay({
   };
 
   // Helper: Apply position map to slots
-  const applyPositionMap = (slots: MTierSlot[], positionMap: Map<number, number>): MTierSlot[] => {
-    return slots.map((slot) => {
+  const applyPositionMap = (
+    slots: MTierSlot[],
+    positionMap: Map<number, number>
+  ): MTierSlot[] => {
+    return slots.map(slot => {
       const oldPos = slot.position ?? 0;
       const newPos = positionMap.get(oldPos);
       if (newPos !== undefined) {
@@ -235,9 +249,11 @@ export function TierListEditDisplay({
       shiftDirection,
       movedSlot,
       newUnknownSlots,
-      unknownIndex
+      unknownIndex,
     } = options;
-    const occupiedPositions = new Set(currentPositionedSlots.map((s) => s.position));
+    const occupiedPositions = new Set(
+      currentPositionedSlots.map(s => s.position)
+    );
 
     const firstAvailablePos = findFirstAvailablePosition(
       occupiedPositions,
@@ -246,13 +262,21 @@ export function TierListEditDisplay({
     );
 
     const isOutOfBounds =
-      shiftDirection === 'down' ? firstAvailablePos > MAX_TIER_POSITION : firstAvailablePos < 0;
+      shiftDirection === 'down'
+        ? firstAvailablePos > MAX_TIER_POSITION
+        : firstAvailablePos < 0;
 
     if (isOutOfBounds) {
-      const range = shiftDirection === 'down' ? `[toIndex, ${MAX_TIER_POSITION}]` : '[0, toIndex]';
-      console.warn(`[moveSlot] Cannot place fighter - no empty slots in range ${range}`, {
-        toIndex
-      });
+      const range =
+        shiftDirection === 'down'
+          ? `[toIndex, ${MAX_TIER_POSITION}]`
+          : '[0, toIndex]';
+      console.warn(
+        `[moveSlot] Cannot place fighter - no empty slots in range ${range}`,
+        {
+          toIndex,
+        }
+      );
       newUnknownSlots.splice(unknownIndex, 0, movedSlot);
       return null;
     }
@@ -268,18 +292,21 @@ export function TierListEditDisplay({
   };
 
   // Helper: Update tier list with new slots
-  const updateTierListSlots = (updatedSlots: MTierSlot[], newUnknownSlots: MTierSlot[]): void => {
+  const updateTierListSlots = (
+    updatedSlots: MTierSlot[],
+    newUnknownSlots: MTierSlot[]
+  ): void => {
     const findSlotById = (id: string) =>
-      tierList.slots.find((s) => s.id === id) ?? ({} as MTierSlot);
+      tierList.slots.find(s => s.id === id) ?? ({} as MTierSlot);
 
     const allUpdatedSlots = [
-      ...updatedSlots.map((slot) => ({
+      ...updatedSlots.map(slot => ({
         ...findSlotById(slot.id),
-        position: slot.position
+        position: slot.position,
       })),
-      ...newUnknownSlots.map((slot) => ({
-        ...findSlotById(slot.id)
-      }))
+      ...newUnknownSlots.map(slot => ({
+        ...findSlotById(slot.id),
+      })),
     ];
 
     tierList.slots = allUpdatedSlots;
@@ -292,7 +319,7 @@ export function TierListEditDisplay({
       isFromUnknown = false,
       shiftDirection = 'down',
       customPositionedSlots,
-      customUnknownSlots
+      customUnknownSlots,
     } = options;
 
     if (!isFromUnknown && fromIndex === toIndex) return false;
@@ -305,19 +332,25 @@ export function TierListEditDisplay({
 
     if (!isFromUnknown) {
       // This shouldn't happen - we only support moving FROM unknown tier
-      console.warn('[moveSlot] Unexpected: moving within positioned fighters not supported');
+      console.warn(
+        '[moveSlot] Unexpected: moving within positioned fighters not supported'
+      );
       return false;
     }
 
     // Moving from unknown tier to positioned tier
-    const unknownIndex = currentUnknownSlots.findIndex((s) => s.id === selectedSlot?.id);
+    const unknownIndex = currentUnknownSlots.findIndex(
+      s => s.id === selectedSlot?.id
+    );
     if (unknownIndex === -1) return false;
 
     const newUnknownSlots = [...currentUnknownSlots];
     const [movedSlot] = newUnknownSlots.splice(unknownIndex, 1);
 
     // Handle collision: check if there's already a slot at toIndex
-    const existingSlotAtPosition = currentPositionedSlots.find((s) => s.position === toIndex);
+    const existingSlotAtPosition = currentPositionedSlots.find(
+      s => s.position === toIndex
+    );
 
     let newSlots: MTierSlot[];
     if (existingSlotAtPosition) {
@@ -327,7 +360,7 @@ export function TierListEditDisplay({
         shiftDirection,
         movedSlot,
         newUnknownSlots,
-        unknownIndex
+        unknownIndex,
       });
       if (result === null) return false;
       newSlots = result;
@@ -358,7 +391,7 @@ export function TierListEditDisplay({
   const handleMoveToPosition = (toIndex: number) => {
     if (!selectedSlot) return;
 
-    const fromIndex = positionedSlots.findIndex((s) => s.id === selectedSlot.id);
+    const fromIndex = positionedSlots.findIndex(s => s.id === selectedSlot.id);
     const isFromUnknown = fromIndex === -1;
 
     // If the selected fighter has a position, temporarily remove it
@@ -370,7 +403,7 @@ export function TierListEditDisplay({
       originalPosition = selectedSlot?.position;
 
       // Remove fighter from positioned slots
-      updatedPositioned = positionedSlots.filter((s) => s.id !== selectedSlot.id);
+      updatedPositioned = positionedSlots.filter(s => s.id !== selectedSlot.id);
       const removedFighter = { ...selectedSlot, position: null };
       updatedUnknown = [...unknownSlots, removedFighter];
 
@@ -386,7 +419,7 @@ export function TierListEditDisplay({
       isFromUnknown: true,
       shiftDirection: 'down',
       customPositionedSlots: updatedPositioned,
-      customUnknownSlots: updatedUnknown
+      customUnknownSlots: updatedUnknown,
     });
 
     // If that failed (no room going down), try 'up' direction
@@ -397,7 +430,7 @@ export function TierListEditDisplay({
         isFromUnknown: true,
         shiftDirection: 'up',
         customPositionedSlots: updatedPositioned,
-        customUnknownSlots: updatedUnknown
+        customUnknownSlots: updatedUnknown,
       });
     }
 
@@ -407,7 +440,7 @@ export function TierListEditDisplay({
         '[handleMoveToPosition] Both shift directions failed - restoring fighter to original position',
         {
           fighterId: selectedSlot.id,
-          originalPosition
+          originalPosition,
         }
       );
 
@@ -416,12 +449,16 @@ export function TierListEditDisplay({
       const restoredPositioned = [...updatedPositioned, selectedSlot].sort(
         (a, b) => (a.position || 0) - (b.position || 0)
       );
-      const restoredUnknown = updatedUnknown.filter((s) => s.id !== selectedSlot.id);
+      const restoredUnknown = updatedUnknown.filter(
+        s => s.id !== selectedSlot.id
+      );
 
       setPositionedSlots(restoredPositioned);
       setUnknownSlots(restoredUnknown);
     } else if (!success) {
-      console.warn('[handleMoveToPosition] Move failed - no room to place fighter');
+      console.warn(
+        '[handleMoveToPosition] Move failed - no room to place fighter'
+      );
     }
 
     // Clear selection after move
@@ -432,7 +469,7 @@ export function TierListEditDisplay({
     if (!selectedSlot) return;
 
     // If the selected fighter has a position, temporarily remove it
-    const fromIndex = positionedSlots.findIndex((s) => s.id === selectedSlot.id);
+    const fromIndex = positionedSlots.findIndex(s => s.id === selectedSlot.id);
     const isFromUnknown = fromIndex === -1;
 
     let updatedPositioned = positionedSlots;
@@ -443,14 +480,17 @@ export function TierListEditDisplay({
       originalPosition = selectedSlot.position;
 
       // Remove fighter from positioned slots
-      updatedPositioned = positionedSlots.filter((s) => s.id !== selectedSlot.id);
+      updatedPositioned = positionedSlots.filter(s => s.id !== selectedSlot.id);
       const removedFighter = { ...selectedSlot, position: null };
       updatedUnknown = [...unknownSlots, removedFighter];
       selectedSlot.position = null;
     }
 
     // Calculate the start index of the clicked tier (0-based position)
-    const targetPosition = TIERS.slice(0, tierIndex).reduce((sum, t) => sum + t.fightersCount, 0);
+    const targetPosition = TIERS.slice(0, tierIndex).reduce(
+      (sum, t) => sum + t.fightersCount,
+      0
+    );
 
     // Move the fighter to the start of the tier
     // Shift existing characters DOWN (higher positions) to make room
@@ -460,21 +500,26 @@ export function TierListEditDisplay({
       isFromUnknown: true,
       shiftDirection: 'down',
       customPositionedSlots: updatedPositioned,
-      customUnknownSlots: updatedUnknown
+      customUnknownSlots: updatedUnknown,
     });
 
     // If move failed and we had a positioned fighter, restore it
     if (!success && originalPosition !== null) {
-      console.warn('[handleTierLabelClick] Move failed - restoring fighter to original position', {
-        fighterId: selectedSlot.id,
-        originalPosition
-      });
+      console.warn(
+        '[handleTierLabelClick] Move failed - restoring fighter to original position',
+        {
+          fighterId: selectedSlot.id,
+          originalPosition,
+        }
+      );
 
       selectedSlot.position = originalPosition;
       const restoredPositioned = [...updatedPositioned, selectedSlot].sort(
         (a, b) => (a.position || 0) - (b.position || 0)
       );
-      const restoredUnknown = updatedUnknown.filter((s) => s.id !== selectedSlot.id);
+      const restoredUnknown = updatedUnknown.filter(
+        s => s.id !== selectedSlot.id
+      );
 
       setPositionedSlots(restoredPositioned);
       setUnknownSlots(restoredUnknown);
@@ -488,7 +533,7 @@ export function TierListEditDisplay({
     if (!selectedSlot) return;
 
     // If the selected fighter has a position, temporarily remove it
-    const fromIndex = positionedSlots.findIndex((s) => s.id === selectedSlot.id);
+    const fromIndex = positionedSlots.findIndex(s => s.id === selectedSlot.id);
     const isFromUnknown = fromIndex === -1;
 
     let updatedPositioned = positionedSlots;
@@ -499,7 +544,7 @@ export function TierListEditDisplay({
       originalPosition = selectedSlot.position;
 
       // Remove fighter from positioned slots
-      updatedPositioned = positionedSlots.filter((s) => s.id !== selectedSlot.id);
+      updatedPositioned = positionedSlots.filter(s => s.id !== selectedSlot.id);
       const removedFighter = { ...selectedSlot, position: null };
       updatedUnknown = [...unknownSlots, removedFighter];
       selectedSlot.position = null;
@@ -510,7 +555,8 @@ export function TierListEditDisplay({
       (sum, t) => sum + t.fightersCount,
       0
     );
-    const targetPosition = tierStartPosition + TIERS[tierIndex].fightersCount - 1;
+    const targetPosition =
+      tierStartPosition + TIERS[tierIndex].fightersCount - 1;
 
     // Move the fighter to the end of the tier
     // Shift existing characters UP (lower positions) to make room
@@ -520,7 +566,7 @@ export function TierListEditDisplay({
       isFromUnknown: true,
       shiftDirection: 'up',
       customPositionedSlots: updatedPositioned,
-      customUnknownSlots: updatedUnknown
+      customUnknownSlots: updatedUnknown,
     });
 
     // If move failed and we had a positioned fighter, restore it
@@ -529,7 +575,7 @@ export function TierListEditDisplay({
         '[handleTierBackgroundClick] Move failed - restoring fighter to original position',
         {
           fighterId: selectedSlot.id,
-          originalPosition
+          originalPosition,
         }
       );
 
@@ -537,7 +583,9 @@ export function TierListEditDisplay({
       const restoredPositioned = [...updatedPositioned, selectedSlot].sort(
         (a, b) => (a.position || 0) - (b.position || 0)
       );
-      const restoredUnknown = updatedUnknown.filter((s) => s.id !== selectedSlot.id);
+      const restoredUnknown = updatedUnknown.filter(
+        s => s.id !== selectedSlot.id
+      );
 
       setPositionedSlots(restoredPositioned);
       setUnknownSlots(restoredUnknown);
@@ -551,9 +599,9 @@ export function TierListEditDisplay({
     LayoutAnimation.configureNext(LayoutAnimation.Presets.easeInEaseOut);
 
     // Set all tier slots to position null
-    const resetSlots = tierList.slots.map((slot) => ({
+    const resetSlots = tierList.slots.map(slot => ({
       ...slot,
-      position: null
+      position: null,
     }));
 
     // Update tierList
@@ -574,15 +622,15 @@ export function TierListEditDisplay({
       return;
     }
 
-    if (!userId || !game?.id) {
+    if (!(userId && game?.id)) {
       Alert.alert('Error', 'Missing user or game information');
       return;
     }
 
     // Build arrangement from positioned slots
-    const arrangement: SnapshotArrangement[] = positionedSlots.map((slot) => ({
+    const arrangement: SnapshotArrangement[] = positionedSlots.map(slot => ({
       fighterId: slot.fighterId,
-      position: slot.position ?? 0
+      position: slot.position ?? 0,
     }));
 
     // Generate share code
@@ -601,24 +649,31 @@ export function TierListEditDisplay({
       gameId: game.id,
       name: snapshotName.trim(),
       arrangement,
-      shareCode
+      shareCode,
     });
   };
 
-  const handleImportSnapshot = async (snapshotArrangement: string, snapshotName: string) => {
+  const handleImportSnapshot = (
+    snapshotArrangement: string,
+    importedSnapshotName: string
+  ) => {
     try {
       // Parse arrangement and apply to tier list
-      const arrangement = JSON.parse(snapshotArrangement) as SnapshotArrangement[];
+      const arrangement = JSON.parse(
+        snapshotArrangement
+      ) as SnapshotArrangement[];
 
       // Create a map of fighterId to position from the snapshot
-      const positionMap = new Map(arrangement.map((item) => [item.fighterId, item.position]));
+      const positionMap = new Map(
+        arrangement.map(item => [item.fighterId, item.position])
+      );
 
       // Update all slots with the new positions
-      const updatedSlots = tierList.slots.map((slot) => {
+      const updatedSlots = tierList.slots.map(slot => {
         const newPosition = positionMap.get(slot.fighterId);
         return {
           ...slot,
-          position: newPosition ?? null
+          position: newPosition ?? null,
         };
       });
 
@@ -627,10 +682,10 @@ export function TierListEditDisplay({
 
       // Update local state
       const positioned = updatedSlots
-        .filter((slot) => slot.position !== null && slot.position !== undefined)
+        .filter(slot => slot.position !== null && slot.position !== undefined)
         .sort((a, b) => (a.position || 0) - (b.position || 0));
       const unknown = updatedSlots.filter(
-        (slot) => slot.position === null || slot.position === undefined
+        slot => slot.position === null || slot.position === undefined
       );
 
       LayoutAnimation.configureNext(LayoutAnimation.Presets.easeInEaseOut);
@@ -644,13 +699,14 @@ export function TierListEditDisplay({
       setShowImportDialog(false);
       setShareCodeInput('');
       setImportError('');
-      Alert.alert('Success!', `Imported tier list: ${snapshotName}`);
+      Alert.alert('Success!', `Imported tier list: ${importedSnapshotName}`);
     } catch (error) {
       console.error('[handleImportSnapshot] Error:', error);
       Alert.alert('Error', 'Failed to import snapshot');
     }
   };
 
+  // biome-ignore lint/complexity/noExcessiveCognitiveComplexity: Import flow.
   const handleImportByShareCode = async () => {
     if (!shareCodeInput.trim()) {
       setImportError('Please enter a share code');
@@ -676,7 +732,7 @@ export function TierListEditDisplay({
       // Assign random positions to all fighters
       const updatedSlots = tierList.slots.map((slot, index) => ({
         ...slot,
-        position: positions[index] ?? 0
+        position: positions[index] ?? 0,
       }));
 
       // Update tierList
@@ -684,7 +740,7 @@ export function TierListEditDisplay({
 
       // Update local state
       const positioned = updatedSlots
-        .filter((slot) => slot.position !== null && slot.position !== undefined)
+        .filter(slot => slot.position !== null && slot.position !== undefined)
         .sort((a, b) => (a.position || 0) - (b.position || 0));
 
       LayoutAnimation.configureNext(LayoutAnimation.Presets.easeInEaseOut);
@@ -698,16 +754,20 @@ export function TierListEditDisplay({
       setShowImportDialog(false);
       setShareCodeInput('');
       setImportError('');
-      Alert.alert('🎲 Random!', 'Your tier list has been completely randomized!');
+      Alert.alert(
+        '🎲 Random!',
+        'Your tier list has been completely randomized!'
+      );
       return;
     }
 
     try {
       // Query the snapshot by share code
       const client = generateClient<Schema>();
-      const { data, errors } = await client.models.TierListSnapshot.snapshotByShareCode({
-        shareCode: shareCodeInput.trim().toUpperCase()
-      });
+      const { data, errors } =
+        await client.models.TierListSnapshot.snapshotByShareCode({
+          shareCode: shareCodeInput.trim().toUpperCase(),
+        });
 
       if (errors || !data || data.length === 0) {
         setImportError('Snapshot not found');
@@ -744,7 +804,7 @@ export function TierListEditDisplay({
           borderWidth: isSelected ? 1 : 0,
           borderColor: colors.blue500,
           borderRadius: 4,
-          margin: isSelected ? -1 : 0
+          margin: isSelected ? -1 : 0,
         }}
       >
         <CharacterDisplay
@@ -772,23 +832,32 @@ export function TierListEditDisplay({
 
   return (
     <ScrollView
-      ref={scrollViewRef}
-      style={{ flex: 1 }}
       contentContainerStyle={{
         paddingBottom:
-          (showImportDialog || showSaveDialog) && keyboardHeight > 0 ? keyboardHeight * 0.6 : 0
+          (showImportDialog || showSaveDialog) && keyboardHeight > 0
+            ? keyboardHeight * KEYBOARD_SCROLL_PADDING_RATIO
+            : 0,
       }}
       keyboardShouldPersistTaps="handled"
+      ref={scrollViewRef}
+      style={{ flex: 1 }}
     >
       {TIERS.map((tier, tierIndex) => {
         // Calculate cumulative start index based on previous tiers' fighter counts
-        const startIdx = TIERS.slice(0, tierIndex).reduce((sum, t) => sum + t.fightersCount, 0);
+        const startIdx = TIERS.slice(0, tierIndex).reduce(
+          (sum, t) => sum + t.fightersCount,
+          0
+        );
         const endIdx = startIdx + tier.fightersCount;
 
         // Check if any fighter is selected (positioned or unknown)
         const isAnyFighterSelected = !!selectedSlot;
-        const TierLabelContainer = isAnyFighterSelected ? TouchableOpacity : View;
-        const TierBackgroundContainer = isAnyFighterSelected ? TouchableOpacity : View;
+        const TierLabelContainer = isAnyFighterSelected
+          ? TouchableOpacity
+          : View;
+        const TierBackgroundContainer = isAnyFighterSelected
+          ? TouchableOpacity
+          : View;
 
         return (
           <View key={tier.label}>
@@ -798,11 +867,15 @@ export function TierListEditDisplay({
                 borderBottomWidth: 1,
                 borderBottomColor: colors.gray700,
                 backgroundColor: tier.color,
-                minHeight: 40
+                minHeight: 40,
               }}
             >
               <TierLabelContainer
-                onPress={isAnyFighterSelected ? () => handleTierLabelClick(tierIndex) : undefined}
+                onPress={
+                  isAnyFighterSelected
+                    ? () => handleTierLabelClick(tierIndex)
+                    : undefined
+                }
                 style={{
                   width: 60,
                   justifyContent: 'center',
@@ -811,7 +884,7 @@ export function TierListEditDisplay({
                   borderRightColor: colors.slate800,
                   backgroundColor: isAnyFighterSelected
                     ? colors.tierRowDarkAlpha
-                    : colors.tierRowLight
+                    : colors.tierRowLight,
                 }}
               >
                 <Text
@@ -819,7 +892,7 @@ export function TierListEditDisplay({
                     fontSize: 32,
                     fontWeight: 'bold',
                     color: colors.black,
-                    opacity: 1
+                    opacity: 1,
                   }}
                 >
                   {tier.label}
@@ -827,7 +900,9 @@ export function TierListEditDisplay({
               </TierLabelContainer>
               <TierBackgroundContainer
                 onPress={
-                  isAnyFighterSelected ? () => handleTierBackgroundClick(tierIndex) : undefined
+                  isAnyFighterSelected
+                    ? () => handleTierBackgroundClick(tierIndex)
+                    : undefined
                 }
                 style={{
                   flex: 1,
@@ -835,12 +910,14 @@ export function TierListEditDisplay({
                   paddingHorizontal: 4,
                   flexDirection: 'row',
                   flexWrap: 'wrap',
-                  gap: 4
+                  gap: 4,
                 }}
               >
                 {Array.from({ length: endIdx - startIdx }, (_, i) => {
                   const position = startIdx + i;
-                  const slot = positionedSlots.find((s) => s.position === position);
+                  const slot = positionedSlots.find(
+                    s => s.position === position
+                  );
                   return slot ? renderCharacter(slot, position) : null;
                 })}
               </TierBackgroundContainer>
@@ -858,7 +935,7 @@ export function TierListEditDisplay({
               flexDirection: 'row',
               borderBottomWidth: 1,
               borderBottomColor: colors.gray700,
-              backgroundColor: colors.tierU
+              backgroundColor: colors.tierU,
             }}
           >
             <View
@@ -868,7 +945,7 @@ export function TierListEditDisplay({
                 alignItems: 'center',
                 borderRightWidth: 2,
                 borderRightColor: colors.slate800,
-                backgroundColor: colors.tierRowLight
+                backgroundColor: colors.tierRowLight,
               }}
             >
               <Text
@@ -876,7 +953,7 @@ export function TierListEditDisplay({
                   fontSize: 32,
                   fontWeight: 'bold',
                   color: colors.black,
-                  opacity: 1
+                  opacity: 1,
                 }}
               >
                 U
@@ -889,16 +966,18 @@ export function TierListEditDisplay({
                 paddingHorizontal: 4,
                 flexDirection: 'row',
                 flexWrap: 'wrap',
-                gap: 4
+                gap: 4,
               }}
             >
               {unknownSlots
                 .sort((a, b) => {
                   const fighterA = fighterByIdFromGame(game, a.fighterId);
                   const fighterB = fighterByIdFromGame(game, b.fighterId);
-                  return (fighterA?.name || '').localeCompare(fighterB?.name || '');
+                  return (fighterA?.name || '').localeCompare(
+                    fighterB?.name || ''
+                  );
                 })
-                .map((slot) => {
+                .map(slot => {
                   const fighter = fighterByIdFromGame(game, slot.fighterId);
                   if (!fighter) return null;
 
@@ -913,7 +992,7 @@ export function TierListEditDisplay({
                         borderWidth: isSelected ? 1 : 0,
                         borderColor: colors.blue500,
                         borderRadius: 4,
-                        margin: isSelected ? -1 : 0
+                        margin: isSelected ? -1 : 0,
                       }}
                     >
                       <CharacterDisplay
@@ -924,7 +1003,10 @@ export function TierListEditDisplay({
                           if (selectedSlot && selectedSlot.id !== slot.id) {
                             // Deselect - can't move unknown fighters to unknown tier
                             setSelectedSlot(null);
-                          } else if (selectedSlot && selectedSlot.id === slot.id) {
+                          } else if (
+                            selectedSlot &&
+                            selectedSlot.id === slot.id
+                          ) {
                             // If clicking the same slot, deselect it
                             setSelectedSlot(null);
                           } else {
@@ -946,13 +1028,13 @@ export function TierListEditDisplay({
       {/* SNAPSHOT BUTTONS */}
       <View style={snapshotButtonsContainerStyle}>
         {/* Import Snapshot Button - Only show if user has snapshots */}
-        {!showImportDialog && !showSaveDialog && (
+        {!(showImportDialog || showSaveDialog) && (
           <TouchableOpacity
             onPress={() => {
               setShowImportDialog(true);
               setTimeout(() => {
                 scrollViewRef.current?.scrollToEnd({ animated: true });
-              }, 100);
+              }, SNAPSHOT_SCROLL_DELAY_MS);
             }}
             style={importButtonStyle}
           >
@@ -961,13 +1043,13 @@ export function TierListEditDisplay({
         )}
 
         {/* Save Snapshot Button */}
-        {!showImportDialog && !showSaveDialog && (
+        {!(showImportDialog || showSaveDialog) && (
           <TouchableOpacity
             onPress={() => {
               setShowSaveDialog(true);
               setTimeout(() => {
                 scrollViewRef.current?.scrollToEnd({ animated: true });
-              }, 100);
+              }, SNAPSHOT_SCROLL_DELAY_MS);
             }}
             style={saveButtonStyle}
           >
@@ -976,11 +1058,15 @@ export function TierListEditDisplay({
         )}
 
         {/* RESET BUTTON: Shows whenever there are positioned fighters */}
-        {!showImportDialog && !showSaveDialog && positionedSlots.length > 0 && (
-          <TouchableOpacity onPress={handleResetAllFighters} style={resetButtonStyle}>
-            <Text style={resetButtonTextStyle}>⚠️ Reset all fighters</Text>
-          </TouchableOpacity>
-        )}
+        {!(showImportDialog || showSaveDialog) &&
+          positionedSlots.length > 0 && (
+            <TouchableOpacity
+              onPress={handleResetAllFighters}
+              style={resetButtonStyle}
+            >
+              <Text style={resetButtonTextStyle}>⚠️ Reset all fighters</Text>
+            </TouchableOpacity>
+          )}
       </View>
 
       {/* Save Snapshot Dialog */}
@@ -989,11 +1075,11 @@ export function TierListEditDisplay({
           <Text style={dialogTitleStyle}>Save Snapshot</Text>
           <Text style={dialogLabelStyle}>Enter a name for this tier list:</Text>
           <TextInput
-            value={snapshotName}
             onChangeText={setSnapshotName}
             placeholder="e.g., My Best Tier List"
             placeholderTextColor={colors.gray500}
             style={dialogInputStyle}
+            value={snapshotName}
           />
           <View style={dialogButtonRowStyle}>
             <TouchableOpacity
@@ -1005,7 +1091,10 @@ export function TierListEditDisplay({
             >
               <Text style={dialogButtonTextStyle}>Cancel</Text>
             </TouchableOpacity>
-            <TouchableOpacity onPress={handleSaveSnapshot} style={saveDialogButtonStyle}>
+            <TouchableOpacity
+              onPress={handleSaveSnapshot}
+              style={saveDialogButtonStyle}
+            >
               <Text style={dialogButtonTextStyle}>Save</Text>
             </TouchableOpacity>
           </View>
@@ -1029,17 +1118,22 @@ export function TierListEditDisplay({
                     const dateB = new Date(b.createdAt || 0).getTime();
                     return dateB - dateA;
                   })
-                  .map((snapshot) => (
+                  .map(snapshot => (
                     <TouchableOpacity
                       key={snapshot.id}
                       onPress={() =>
-                        handleImportSnapshot(snapshot.arrangement as string, snapshot.name)
+                        handleImportSnapshot(
+                          snapshot.arrangement as string,
+                          snapshot.name
+                        )
                       }
                       style={snapshotListItemStyle}
                     >
                       <View>
                         <Text style={snapshotNameStyle}>{snapshot.name}</Text>
-                        <Text style={snapshotDateStyle}>{snapshot.shareCode}</Text>
+                        <Text style={snapshotDateStyle}>
+                          {snapshot.shareCode}
+                        </Text>
                       </View>
                     </TouchableOpacity>
                   ))}
@@ -1050,15 +1144,15 @@ export function TierListEditDisplay({
           {/* Share Code Import Section */}
           <Text style={dialogLabelStyle}>Or enter a share code:</Text>
           <TextInput
-            value={shareCodeInput.toUpperCase()}
-            onChangeText={(text) => {
+            autoCapitalize="characters"
+            onChangeText={text => {
               setShareCodeInput(text.trim().toUpperCase());
               setImportError('');
             }}
             placeholder="e.g. CC084, RANDOM"
             placeholderTextColor={colors.gray500}
-            autoCapitalize="characters"
             style={dialogInputStyle}
+            value={shareCodeInput.toUpperCase()}
           />
           {importError && <Text style={errorTextStyle}>{importError}</Text>}
 
@@ -1073,7 +1167,10 @@ export function TierListEditDisplay({
             >
               <Text style={dialogButtonTextStyle}>Cancel</Text>
             </TouchableOpacity>
-            <TouchableOpacity onPress={handleImportByShareCode} style={importDialogButtonStyle}>
+            <TouchableOpacity
+              onPress={handleImportByShareCode}
+              style={importDialogButtonStyle}
+            >
               <Text style={dialogButtonTextStyle}>Import</Text>
             </TouchableOpacity>
           </View>
@@ -1087,29 +1184,29 @@ export function TierListEditDisplay({
 const snapshotButtonsContainerStyle = {
   marginTop: 16,
   marginHorizontal: 16,
-  gap: 12
+  gap: 12,
 };
 
 const baseSnapshotButtonStyle = {
   padding: 16,
   borderRadius: 8,
-  alignItems: center
+  alignItems: center,
 };
 
 const importButtonStyle = {
   ...baseSnapshotButtonStyle,
-  backgroundColor: colors.blue500
+  backgroundColor: colors.blue500,
 };
 
 const saveButtonStyle = {
   ...baseSnapshotButtonStyle,
-  backgroundColor: colors.green700
+  backgroundColor: colors.green700,
 };
 
 const buttonTextStyle = {
   color: colors.white,
   fontSize: 16,
-  fontWeight: bold
+  fontWeight: bold,
 };
 
 // Dialog containers
@@ -1119,17 +1216,17 @@ const baseDialogContainerStyle = {
   padding: 16,
   backgroundColor: colors.gray800,
   borderRadius: 8,
-  borderWidth: 2
+  borderWidth: 2,
 };
 
 const saveDialogContainerStyle = {
   ...baseDialogContainerStyle,
-  borderColor: colors.green700
+  borderColor: colors.green700,
 };
 
 const importDialogContainerStyle = {
   ...baseDialogContainerStyle,
-  borderColor: colors.blue500
+  borderColor: colors.blue500,
 };
 
 // Dialog text styles
@@ -1137,12 +1234,12 @@ const dialogTitleStyle = {
   color: colors.white,
   fontSize: 18,
   fontWeight: bold,
-  marginBottom: 12
+  marginBottom: 12,
 };
 
 const dialogLabelStyle = {
   color: colors.gray400,
-  marginBottom: 8
+  marginBottom: 8,
 };
 
 const dialogInputStyle = {
@@ -1150,46 +1247,46 @@ const dialogInputStyle = {
   color: colors.white,
   padding: 12,
   borderRadius: 4,
-  marginBottom: 12
+  marginBottom: 12,
 };
 
 const errorTextStyle = {
   color: colors.red500,
   marginBottom: 8,
-  fontSize: 14
+  fontSize: 14,
 };
 
 // Dialog button row
 const dialogButtonRowStyle = {
   flexDirection: row,
-  gap: 8
+  gap: 8,
 };
 
 const baseDialogButtonStyle = {
   flex: 1,
   padding: 12,
   borderRadius: 4,
-  alignItems: center
+  alignItems: center,
 };
 
 const cancelButtonStyle = {
   ...baseDialogButtonStyle,
-  backgroundColor: colors.gray600
+  backgroundColor: colors.gray600,
 };
 
 const saveDialogButtonStyle = {
   ...baseDialogButtonStyle,
-  backgroundColor: colors.green700
+  backgroundColor: colors.green700,
 };
 
 const importDialogButtonStyle = {
   ...baseDialogButtonStyle,
-  backgroundColor: colors.blue500
+  backgroundColor: colors.blue500,
 };
 
 const dialogButtonTextStyle = {
   color: colors.white,
-  fontWeight: bold
+  fontWeight: bold,
 };
 
 // Snapshot list item styles
@@ -1199,29 +1296,29 @@ const snapshotListItemStyle = {
   marginBottom: 8,
   borderRadius: 6,
   borderWidth: 1,
-  borderColor: colors.blue500
+  borderColor: colors.blue500,
 };
 
 const snapshotNameStyle = {
   color: colors.white,
   fontSize: 16,
   fontWeight: bold,
-  marginBottom: 4
+  marginBottom: 4,
 };
 
 const snapshotDateStyle = {
   color: colors.gray400,
-  fontSize: 12
+  fontSize: 12,
 };
 
 // Reset button
 const resetButtonStyle = {
   ...baseSnapshotButtonStyle,
-  backgroundColor: colors.yellow500
+  backgroundColor: colors.yellow500,
 };
 
 const resetButtonTextStyle = {
   color: colors.black,
   fontSize: 16,
-  fontWeight: bold
+  fontWeight: bold,
 };

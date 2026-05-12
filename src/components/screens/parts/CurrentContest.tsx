@@ -5,8 +5,7 @@ import type { MContest } from '../../../models/m-contest';
 import type { MFighter } from '../../../models/m-fighter';
 import { type MGame, STOCK } from '../../../models/m-game';
 import type { MRivalry } from '../../../models/m-rivalry';
-import { TIERS } from '../../../models/m-tier-list';
-import { computeTierFromPosition, type MTierSlot } from '../../../models/m-tier-slot';
+import type { MTierSlot } from '../../../models/m-tier-slot';
 import { useGame } from '../../../providers/game';
 import { useRivalry, useRivalryContext } from '../../../providers/rivalry';
 import { fighterByIdFromGame } from '../../../utils';
@@ -17,7 +16,7 @@ import {
   contestStyles,
   relative,
   row,
-  tierBadgeStyles
+  tierBadgeStyles,
 } from '../../../utils/styles';
 import { CharacterDisplay } from '../../common/CharacterDisplay';
 
@@ -50,6 +49,9 @@ interface StockButtonProps {
   value: number;
 }
 
+const TIER_BADGE_DISPLAY_WIDTH = 140;
+const TIER_BADGE_RATIO = 0.25;
+
 function WinnerBadge() {
   return (
     <Image
@@ -74,13 +76,16 @@ function FighterCard({
   setWinner,
   shufflingSlot,
   slot,
-  winner
+  winner,
 }: FighterCardProps): ReactNode {
   const tierSlot = slot === 'A' ? contest?.tierSlotA : contest?.tierSlotB;
   const isWinner = !!(winner && tierSlot === winner);
-  const userName = slot === 'A' ? rivalry.displayUserAName() : rivalry.displayUserBName();
+  const userName =
+    slot === 'A' ? rivalry.displayUserAName() : rivalry.displayUserBName();
   const prestigeDisplay =
-    slot === 'A' ? rivalry.tierListA?.prestigeDisplay : rivalry.tierListB?.prestigeDisplay;
+    slot === 'A'
+      ? rivalry.tierListA?.prestigeDisplay
+      : rivalry.tierListB?.prestigeDisplay;
   const getShufflePosition = () => {
     if (slot === 'A') return isUserB ? 'right' : 'left';
     return isUserB ? 'left' : 'right';
@@ -89,11 +94,6 @@ function FighterCard({
 
   // Determine tier for badge
   const isUnranked = tierSlot?.position === null;
-  const tier = isUnranked ? null : computeTierFromPosition(tierSlot?.position ?? null);
-  const tierData = tier ? TIERS.find((t) => t.label === tier) : null;
-
-  const DISPLAY_WIDTH = 140;
-  const BADGE_RATIO = 0.25;
 
   return (
     <>
@@ -108,8 +108,15 @@ function FighterCard({
           <Text style={shuffleEmojiStyle}>🔀</Text>
         </TouchableOpacity>
       )}
-      <View style={[fighterContainerStyle, isWinner ? fighterWinnerStyle : fighterNonWinnerStyle]}>
-        <Text style={[currentContestUserStyle, { color: getTextColor(isWinner) }]}>
+      <View
+        style={[
+          fighterContainerStyle,
+          isWinner ? fighterWinnerStyle : fighterNonWinnerStyle,
+        ]}
+      >
+        <Text
+          style={[currentContestUserStyle, { color: getTextColor(isWinner) }]}
+        >
           {userName} {prestigeDisplay}
         </Text>
         <View style={relativePositionStyle}>
@@ -131,11 +138,11 @@ function FighterCard({
                 tierBadgeStyles.badge,
                 {
                   backgroundColor: colors.gray500,
-                  width: DISPLAY_WIDTH * BADGE_RATIO,
-                  height: DISPLAY_WIDTH * BADGE_RATIO,
+                  width: TIER_BADGE_DISPLAY_WIDTH * TIER_BADGE_RATIO,
+                  height: TIER_BADGE_DISPLAY_WIDTH * TIER_BADGE_RATIO,
                   bottom: 8,
-                  right: 8
-                }
+                  right: 8,
+                },
               ]}
             >
               <Text style={tierBadgeStyles.text}>U</Text>
@@ -157,7 +164,7 @@ function StockButton({
   isLastButton,
   isSelected,
   onSelect,
-  value
+  value,
 }: StockButtonProps): ReactNode {
   return (
     <TouchableOpacity
@@ -170,12 +177,15 @@ function StockButton({
           borderTopLeftRadius: isFirstButton ? BUTTON_BORDER_RADIUS : 0,
           borderBottomLeftRadius: isFirstButton ? BUTTON_BORDER_RADIUS : 0,
           borderTopRightRadius: isLastButton ? BUTTON_BORDER_RADIUS : 0,
-          borderBottomRightRadius: isLastButton ? BUTTON_BORDER_RADIUS : 0
-        }
+          borderBottomRightRadius: isLastButton ? BUTTON_BORDER_RADIUS : 0,
+        },
       ]}
     >
       <Text
-        style={[stockButtonTextStyle, { color: isSelected ? colors.white : colors.black }]}
+        style={[
+          stockButtonTextStyle,
+          { color: isSelected ? colors.white : colors.black },
+        ]}
       >
         {value}
       </Text>
@@ -188,7 +198,7 @@ export function CurrentContest({
   onResolveContest,
   shufflingSlot,
   canShuffle,
-  setCanShuffle
+  setCanShuffle,
 }: CurrentContestProps): ReactNode {
   const game = useGame() as MGame;
   const [fighterA, setFighterA] = useState<MFighter>();
@@ -234,7 +244,8 @@ export function CurrentContest({
   function onPressResolve() {
     if (!(winner && onResolveContest && contest)) return;
 
-    const resultStr = winner === contest?.tierSlotA ? stockRemaining : `-${stockRemaining}`;
+    const resultStr =
+      winner === contest?.tierSlotA ? stockRemaining : `-${stockRemaining}`;
 
     contest.result = Number(resultStr);
 
@@ -242,84 +253,90 @@ export function CurrentContest({
   }
 
   return (
-    <>
-      <View style={contestOuterContainerStyle}>
-        {!canShuffle && (
-          <View style={shuffleContainerStyle}>
-            <TouchableOpacity onPress={() => setCanShuffle(true)} style={reshuffleButtonStyle}>
-              <Text style={reshuffleTextStyle}>🔀 Reshuffle</Text>
-            </TouchableOpacity>
+    <View style={contestOuterContainerStyle}>
+      {!canShuffle && (
+        <View style={shuffleContainerStyle}>
+          <TouchableOpacity
+            onPress={() => setCanShuffle(true)}
+            style={reshuffleButtonStyle}
+          >
+            <Text style={reshuffleTextStyle}>🔀 Reshuffle</Text>
+          </TouchableOpacity>
+        </View>
+      )}
+      <View
+        style={[
+          fightersRowContainerStyle,
+          { flexDirection: isUserB ? 'row-reverse' : 'row' },
+        ]}
+      >
+        {fighterA && (
+          <FighterCard
+            canShuffle={canShuffle}
+            contest={contest}
+            fighter={fighterA}
+            isUserB={isUserB}
+            onPressShuffle={onPressShuffle}
+            rivalry={rivalry}
+            setWinner={setWinner}
+            shufflingSlot={shufflingSlot}
+            slot="A"
+            winner={winner}
+          />
+        )}
+
+        {!(fighterA || fighterB) && (
+          <Text style={loadingTextStyle}>Loading fighters...</Text>
+        )}
+        {(fighterA || fighterB) && (
+          <View style={contestStyles.item}>
+            <Text style={vsTextStyle}>Vs</Text>
           </View>
         )}
-        <View
-          style={[fightersRowContainerStyle, { flexDirection: isUserB ? 'row-reverse' : 'row' }]}
-        >
-          {fighterA && (
-            <FighterCard
-              canShuffle={canShuffle}
-              contest={contest}
-              fighter={fighterA}
-              isUserB={isUserB}
-              onPressShuffle={onPressShuffle}
-              rivalry={rivalry}
-              setWinner={setWinner}
-              shufflingSlot={shufflingSlot}
-              slot="A"
-              winner={winner}
-            />
-          )}
-
-          {!(fighterA || fighterB) && <Text style={loadingTextStyle}>Loading fighters...</Text>}
-          {(fighterA || fighterB) && (
-            <View style={contestStyles.item}>
-              <Text style={vsTextStyle}>Vs</Text>
-            </View>
-          )}
-          {fighterB && (
-            <FighterCard
-              canShuffle={canShuffle}
-              contest={contest}
-              fighter={fighterB}
-              isUserB={isUserB}
-              onPressShuffle={onPressShuffle}
-              rivalry={rivalry}
-              setWinner={setWinner}
-              shufflingSlot={shufflingSlot}
-              slot="B"
-              winner={winner}
-            />
-          )}
-        </View>
-
-        {winner ? (
-          <>
-            <Text style={stockRemainingTextStyle}>Stock remaining</Text>
-            <View style={stockButtonsContainerStyle}>
-              {range(1, STOCK + 1).map((value, idx) => (
-                <StockButton
-                  isFirstButton={idx === 0}
-                  isLastButton={idx === STOCK - 1}
-                  isSelected={stockRemaining === value}
-                  key={value}
-                  onSelect={() => {
-                    setStockRemaining(value);
-                  }}
-                  value={value}
-                />
-              ))}
-            </View>
-
-            <TouchableOpacity onPress={onPressResolve} style={resolveButtonStyle}>
-              <Text style={resolveButtonTextStyle}>Resolve!</Text>
-            </TouchableOpacity>
-          </>
-        ) : (
-          <View style={selectWinnerContainerStyle}>
-            <Text style={loadingTextStyle}>Select the winner</Text>
-          </View>
+        {fighterB && (
+          <FighterCard
+            canShuffle={canShuffle}
+            contest={contest}
+            fighter={fighterB}
+            isUserB={isUserB}
+            onPressShuffle={onPressShuffle}
+            rivalry={rivalry}
+            setWinner={setWinner}
+            shufflingSlot={shufflingSlot}
+            slot="B"
+            winner={winner}
+          />
         )}
       </View>
-    </>
+
+      {winner ? (
+        <>
+          <Text style={stockRemainingTextStyle}>Stock remaining</Text>
+          <View style={stockButtonsContainerStyle}>
+            {range(1, STOCK + 1).map((value, idx) => (
+              <StockButton
+                isFirstButton={idx === 0}
+                isLastButton={idx === STOCK - 1}
+                isSelected={stockRemaining === value}
+                key={value}
+                onSelect={() => {
+                  setStockRemaining(value);
+                }}
+                value={value}
+              />
+            ))}
+          </View>
+
+          <TouchableOpacity onPress={onPressResolve} style={resolveButtonStyle}>
+            <Text style={resolveButtonTextStyle}>Resolve!</Text>
+          </TouchableOpacity>
+        </>
+      ) : (
+        <View style={selectWinnerContainerStyle}>
+          <Text style={loadingTextStyle}>Select the winner</Text>
+        </View>
+      )}
+    </View>
   );
 }
 
@@ -327,12 +344,12 @@ export function CurrentContest({
 const fighterWinnerStyle = {
   borderColor: colors.green700,
   backgroundColor: colors.blue100,
-  zIndex: 20
+  zIndex: 20,
 };
 
 const fighterNonWinnerStyle = {
   borderColor: colors.none,
-  backgroundColor: colors.none
+  backgroundColor: colors.none,
 };
 
 // Style constants
@@ -343,13 +360,13 @@ const winnerBadgeStyle = {
   right: -100,
   top: '78%' as const,
   width: 300,
-  height: 100
+  height: 100,
 };
 
 const shuffleContainerStyle = {
   flexDirection: row,
   alignItems: center,
-  justifyContent: center
+  justifyContent: center,
 };
 
 const reshuffleButtonStyle = {
@@ -362,7 +379,7 @@ const reshuffleButtonStyle = {
   borderWidth: 1,
   borderColor: colors.white,
   borderRadius: 12,
-  backgroundColor: colors.slate700
+  backgroundColor: colors.slate700,
 };
 
 const contestOuterContainerStyle = {
@@ -371,14 +388,14 @@ const contestOuterContainerStyle = {
   marginBottom: 6,
   borderWidth: 1,
   borderColor: colors.yellow500,
-  padding: 2
+  padding: 2,
 };
 
 const fightersRowContainerStyle = {
   alignItems: center,
   justifyContent: 'space-between' as const,
   marginVertical: 6,
-  padding: 2
+  padding: 2,
 };
 
 const fighterContainerStyle = {
@@ -389,7 +406,7 @@ const fighterContainerStyle = {
   padding: 8,
   borderRadius: 12,
   backgroundColor: colors.none,
-  borderColor: colors.none
+  borderColor: colors.none,
 };
 
 const shuffleButtonStyle = {
@@ -397,16 +414,16 @@ const shuffleButtonStyle = {
   top: 0,
   paddingVertical: 10,
   paddingHorizontal: 15,
-  zIndex: 5
+  zIndex: 5,
 };
 
 const currentContestUserStyle = {
   fontSize: 16,
-  fontWeight: 'bold' as const
+  fontWeight: 'bold' as const,
 };
 
 const fighterNameStyle = {
-  fontSize: 14
+  fontSize: 14,
 };
 
 const stockButtonStyle = {
@@ -415,7 +432,7 @@ const stockButtonStyle = {
   borderLeftWidth: 1,
   borderTopWidth: 1,
   borderBottomWidth: 1,
-  borderColor: colors.violet600
+  borderColor: colors.violet600,
 };
 
 const resolveButtonStyle = {
@@ -423,7 +440,7 @@ const resolveButtonStyle = {
   paddingVertical: 16,
   marginVertical: 16,
   backgroundColor: colors.green700,
-  borderRadius: 8
+  borderRadius: 8,
 };
 
 const selectWinnerContainerStyle = {
@@ -431,48 +448,48 @@ const selectWinnerContainerStyle = {
   alignItems: center,
   justifyContent: center,
   gap: 12,
-  paddingVertical: 8
+  paddingVertical: 8,
 };
 
 const shuffleEmojiStyle = {
-  fontSize: 16
+  fontSize: 16,
 };
 
 const loadingTextStyle = {
-  color: colors.purple100
+  color: colors.purple100,
 };
 
 const reshuffleTextStyle = {
   fontSize: 16,
-  color: colors.white
+  color: colors.white,
 };
 
 const vsTextStyle = {
   fontSize: 14,
-  color: colors.white
+  color: colors.white,
 };
 
 const stockRemainingTextStyle = {
   fontSize: 14,
   color: colors.white,
-  marginTop: 8
+  marginTop: 8,
 };
 
 const stockButtonsContainerStyle = {
   flexDirection: row,
-  marginTop: 8
+  marginTop: 8,
 };
 
 const resolveButtonTextStyle = {
   fontSize: 20,
   fontWeight: 'bold' as const,
-  color: colors.white
+  color: colors.white,
 };
 
 const stockButtonTextStyle = {
-  fontSize: 24
+  fontSize: 24,
 };
 
 const relativePositionStyle = {
-  position: relative
+  position: relative,
 };

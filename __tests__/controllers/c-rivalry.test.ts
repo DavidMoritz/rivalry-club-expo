@@ -592,7 +592,7 @@ describe('c-rivalry Controller', () => {
   });
 
   describe('useUpdateCurrentContestShuffleTierSlotsMutation', () => {
-    it('should NOT position slot A fighters that already have a position (bug fix for 90c88b3)', async () => {
+    it('should NOT position slot A fighters that already have a position (bug fix for 90c88b3)', () => {
       // This test verifies the fix for the bug where shuffling would move
       // ALL fighters to position 85, even those already positioned.
       // The fix adds a check: only position fighters with position === null
@@ -689,13 +689,15 @@ describe('c-rivalry Controller', () => {
 
       // Verify the mock setup is correct
       expect(shuffleRivalry.currentContest.tierSlotA?.position).toBe(10);
-      expect(shuffleRivalry.currentContest.tierSlotA?.id).toBe('slot-a-positioned');
+      expect(shuffleRivalry.currentContest.tierSlotA?.id).toBe(
+        'slot-a-positioned'
+      );
 
       // The fix ensures that positionFighterAtBottom is only called if position === null
       // So positioned fighters keep their original position when shuffled out
     });
 
-    it('should NOT position slot B fighters that already have a position (bug fix for 90c88b3)', async () => {
+    it('should NOT position slot B fighters that already have a position (bug fix for 90c88b3)', () => {
       // This test verifies the fix for the bug where shuffling would move
       // ALL fighters to position 85, even those already positioned.
       // The fix adds a check: only position fighters with position === null
@@ -792,7 +794,9 @@ describe('c-rivalry Controller', () => {
 
       // Verify the mock setup is correct
       expect(shuffleRivalry.currentContest.tierSlotB?.position).toBe(15);
-      expect(shuffleRivalry.currentContest.tierSlotB?.id).toBe('slot-b-positioned');
+      expect(shuffleRivalry.currentContest.tierSlotB?.id).toBe(
+        'slot-b-positioned'
+      );
 
       // The fix ensures that positionFighterAtBottom is only called if position === null
       // So positioned fighters keep their original position when shuffled out

@@ -6,7 +6,7 @@ import {
   Text,
   TextInput,
   TouchableOpacity,
-  View
+  View,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
@@ -42,7 +42,10 @@ interface ForgotPasswordProps {
   initialEmail?: string;
 }
 
-export function ForgotPassword({ onBack, initialEmail = '' }: ForgotPasswordProps) {
+export function ForgotPassword({
+  onBack,
+  initialEmail = '',
+}: ForgotPasswordProps) {
   const [email, setEmail] = useState(initialEmail);
   const [resetCode, setResetCode] = useState('');
   const [newPassword, setNewPassword] = useState('');
@@ -70,9 +73,12 @@ export function ForgotPassword({ onBack, initialEmail = '' }: ForgotPasswordProp
   }
 
   function getSendCodeErrorMessage(err: unknown): string {
-    if (!isCognitoError(err)) return getErrorMessage(err, 'Failed to send reset code');
-    if (err.name === 'UserNotFoundException') return 'No account found with this email';
-    if (err.name === 'LimitExceededException') return 'Too many attempts. Please try again later.';
+    if (!isCognitoError(err))
+      return getErrorMessage(err, 'Failed to send reset code');
+    if (err.name === 'UserNotFoundException')
+      return 'No account found with this email';
+    if (err.name === 'LimitExceededException')
+      return 'Too many attempts. Please try again later.';
     return getErrorMessage(err, 'Failed to send reset code');
   }
 
@@ -92,8 +98,14 @@ export function ForgotPassword({ onBack, initialEmail = '' }: ForgotPasswordProp
     setLoading(true);
 
     try {
-      await confirmResetPassword(email.trim(), resetCode.trim(), newPassword.trim());
-      setSuccess('Password reset successfully! You can now sign in with your new password.');
+      await confirmResetPassword(
+        email.trim(),
+        resetCode.trim(),
+        newPassword.trim()
+      );
+      setSuccess(
+        'Password reset successfully! You can now sign in with your new password.'
+      );
 
       // Wait a moment then go back to sign in
       setTimeout(() => {
@@ -108,7 +120,8 @@ export function ForgotPassword({ onBack, initialEmail = '' }: ForgotPasswordProp
   }
 
   function getResetPasswordErrorMessage(err: unknown): string {
-    if (!isCognitoError(err)) return getErrorMessage(err, 'Failed to reset password');
+    if (!isCognitoError(err))
+      return getErrorMessage(err, 'Failed to reset password');
     if (err.name === 'CodeMismatchException') return 'Invalid reset code';
     if (err.name === 'ExpiredCodeException')
       return 'Reset code has expired. Please request a new one.';
@@ -118,7 +131,10 @@ export function ForgotPassword({ onBack, initialEmail = '' }: ForgotPasswordProp
   }
 
   return (
-    <SafeAreaView edges={['top', 'bottom']} style={[styles.container, darkStyles.container]}>
+    <SafeAreaView
+      edges={['top', 'bottom']}
+      style={[styles.container, darkStyles.container]}
+    >
       <KeyboardAvoidingView
         behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
         keyboardVerticalOffset={0}
@@ -179,7 +195,9 @@ export function ForgotPassword({ onBack, initialEmail = '' }: ForgotPasswordProp
               </View>
 
               <View style={fieldContainerStyle}>
-                <Text style={[styles.text, fieldLabelStyle]}>Confirm New Password</Text>
+                <Text style={[styles.text, fieldLabelStyle]}>
+                  Confirm New Password
+                </Text>
                 <TextInput
                   autoCapitalize="none"
                   onChangeText={setConfirmPassword}
@@ -191,20 +209,31 @@ export function ForgotPassword({ onBack, initialEmail = '' }: ForgotPasswordProp
                 />
               </View>
 
-              {error && <Text style={[styles.text, errorMessageStyle]}>{error}</Text>}
+              {error && (
+                <Text style={[styles.text, errorMessageStyle]}>{error}</Text>
+              )}
 
-              {success && <Text style={[styles.text, successMessageStyle]}>{success}</Text>}
+              {success && (
+                <Text style={[styles.text, successMessageStyle]}>
+                  {success}
+                </Text>
+              )}
 
               <TouchableOpacity
                 accessibilityState={{
-                  disabled: loading || !resetCode || !newPassword || !confirmPassword
+                  disabled:
+                    loading || !resetCode || !newPassword || !confirmPassword,
                 }}
-                disabled={loading || !resetCode || !newPassword || !confirmPassword}
+                disabled={
+                  loading || !resetCode || !newPassword || !confirmPassword
+                }
                 onPress={handleResetPassword}
                 style={primaryButtonStyle}
                 testID="reset-password-button"
               >
-                <Text style={buttonTextStyle}>{loading ? 'Resetting...' : 'Reset Password'}</Text>
+                <Text style={buttonTextStyle}>
+                  {loading ? 'Resetting...' : 'Reset Password'}
+                </Text>
               </TouchableOpacity>
 
               <TouchableOpacity
@@ -224,7 +253,8 @@ export function ForgotPassword({ onBack, initialEmail = '' }: ForgotPasswordProp
           ) : (
             <>
               <Text style={[styles.text, instructionTextStyle]}>
-                Enter your email address and we'll send you a code to reset your password.
+                Enter your email address and we'll send you a code to reset your
+                password.
               </Text>
 
               <View style={fieldContainerStyle}>
@@ -242,9 +272,15 @@ export function ForgotPassword({ onBack, initialEmail = '' }: ForgotPasswordProp
                 />
               </View>
 
-              {error && <Text style={[styles.text, errorMessageStyle]}>{error}</Text>}
+              {error && (
+                <Text style={[styles.text, errorMessageStyle]}>{error}</Text>
+              )}
 
-              {success && <Text style={[styles.text, successMessageStyle]}>{success}</Text>}
+              {success && (
+                <Text style={[styles.text, successMessageStyle]}>
+                  {success}
+                </Text>
+              )}
 
               <TouchableOpacity
                 accessibilityState={{ disabled: loading || !email }}
@@ -253,7 +289,9 @@ export function ForgotPassword({ onBack, initialEmail = '' }: ForgotPasswordProp
                 style={primaryButtonStyle}
                 testID="send-code-button"
               >
-                <Text style={buttonTextStyle}>{loading ? 'Sending...' : 'Send Reset Code'}</Text>
+                <Text style={buttonTextStyle}>
+                  {loading ? 'Sending...' : 'Send Reset Code'}
+                </Text>
               </TouchableOpacity>
 
               <TouchableOpacity onPress={onBack} style={backButtonStyle}>
@@ -275,7 +313,7 @@ const scrollContentStyle = {
   justifyContent: center,
   alignItems: center,
   paddingHorizontal: 32,
-  paddingBottom: 40
+  paddingBottom: 40,
 };
 
 const titleMarginStyle = { marginBottom: 48 };
@@ -287,7 +325,7 @@ const fieldContainerStyle = { width: '100%' as const, marginBottom: 20 };
 const fieldLabelStyle = {
   marginBottom: 8,
   fontSize: 16,
-  fontWeight: '500' as const
+  fontWeight: '500' as const,
 };
 
 const inputStyle = {
@@ -298,22 +336,22 @@ const inputStyle = {
   paddingVertical: 14,
   backgroundColor: colors.gray800,
   borderWidth: 2,
-  borderColor: colors.gray600
+  borderColor: colors.gray600,
 };
 
 const messageStyle = {
   marginBottom: 16,
-  textAlign: center
+  textAlign: center,
 };
 
 const errorMessageStyle = {
   ...messageStyle,
-  color: colors.red400
+  color: colors.red400,
 };
 
 const successMessageStyle = {
   ...messageStyle,
-  color: colors.green300
+  color: colors.green300,
 };
 
 const primaryButtonStyle = {
@@ -326,13 +364,13 @@ const primaryButtonStyle = {
   width: '75%' as const,
   alignItems: center,
   marginTop: 8,
-  marginBottom: 16
+  marginBottom: 16,
 };
 
 const buttonTextStyle = {
   color: colors.white,
   fontSize: 18,
-  fontWeight: bold
+  fontWeight: bold,
 };
 
 const backButtonStyle = { marginTop: 8 };

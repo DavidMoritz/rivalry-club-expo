@@ -2,14 +2,21 @@ import { useRouter } from 'expo-router';
 import { StatusBar } from 'expo-status-bar';
 import { range } from 'lodash';
 import { type ReactNode, useEffect, useState } from 'react';
-import { FlatList, Image, Share, Text, TouchableOpacity, View } from 'react-native';
+import {
+  FlatList,
+  Image,
+  Share,
+  Text,
+  TouchableOpacity,
+  View,
+} from 'react-native';
 
 import { characterImageMap } from '../assets/images/games/ssbu/character_image_map';
 import { CharacterFace } from '../assets/images/games/ssbu/character-face-example';
 import { Button } from '../src/components/common/Button';
 import { STOCK } from '../src/models/m-game';
-import { colors } from '../src/utils/colors';
 import { useSetHeader } from '../src/providers/header';
+import { colors } from '../src/utils/colors';
 
 interface OfflineContestResult {
   timestamp: Date;
@@ -37,7 +44,11 @@ interface StockButtonProps {
 
 function WinnerBadge() {
   return (
-    <Image resizeMode="contain" source={require('../assets/winner.png')} style={winnerBadgeStyle} />
+    <Image
+      resizeMode="contain"
+      source={require('../assets/winner.png')}
+      style={winnerBadgeStyle}
+    />
   );
 }
 
@@ -48,7 +59,7 @@ function getTextColor(isWinner: boolean) {
 function formatFighterName(fighter: string) {
   return fighter
     .split('_')
-    .map((word) => word.charAt(0).toUpperCase() + word.slice(1))
+    .map(word => word.charAt(0).toUpperCase() + word.slice(1))
     .join(' ');
 }
 
@@ -57,23 +68,38 @@ function FighterCard({
   onPressShuffle,
   slot,
   winner,
-  setWinner
+  setWinner,
 }: FighterCardProps): ReactNode {
   const isWinner = winner === slot;
   const fighterName = formatFighterName(fighter);
 
   return (
-    <View style={[fighterContainerStyle, isWinner ? fighterWinnerStyle : fighterNonWinnerStyle]}>
+    <View
+      style={[
+        fighterContainerStyle,
+        isWinner ? fighterWinnerStyle : fighterNonWinnerStyle,
+      ]}
+    >
       <TouchableOpacity
         onPress={onPressShuffle}
         style={[shuffleButtonStyle, { [slot === 'A' ? 'left' : 'right']: -10 }]}
       >
         <Text style={{ fontSize: 16 }}>🔀</Text>
       </TouchableOpacity>
-      <TouchableOpacity onPress={() => setWinner(slot)} style={{ alignItems: 'center' }}>
-        <CharacterFace characterKey={fighter} height={180} width={140} zoomMultiplier={1.55} />
+      <TouchableOpacity
+        onPress={() => setWinner(slot)}
+        style={{ alignItems: 'center' }}
+      >
+        <CharacterFace
+          characterKey={fighter}
+          height={180}
+          width={140}
+          zoomMultiplier={1.55}
+        />
       </TouchableOpacity>
-      <Text style={[fighterNameStyle, { color: getTextColor(isWinner) }]}>{fighterName}</Text>
+      <Text style={[fighterNameStyle, { color: getTextColor(isWinner) }]}>
+        {fighterName}
+      </Text>
       {isWinner && <WinnerBadge />}
     </View>
   );
@@ -84,7 +110,7 @@ function StockButton({
   isLastButton,
   isSelected,
   onSelect,
-  value
+  value,
 }: StockButtonProps): ReactNode {
   return (
     <TouchableOpacity
@@ -97,14 +123,14 @@ function StockButton({
           borderTopLeftRadius: isFirstButton ? BUTTON_BORDER_RADIUS : 0,
           borderBottomLeftRadius: isFirstButton ? BUTTON_BORDER_RADIUS : 0,
           borderTopRightRadius: isLastButton ? BUTTON_BORDER_RADIUS : 0,
-          borderBottomRightRadius: isLastButton ? BUTTON_BORDER_RADIUS : 0
-        }
+          borderBottomRightRadius: isLastButton ? BUTTON_BORDER_RADIUS : 0,
+        },
       ]}
     >
       <Text
         style={{
           fontSize: 24,
-          color: isSelected ? colors.white : colors.black
+          color: isSelected ? colors.white : colors.black,
         }}
       >
         {value}
@@ -119,7 +145,9 @@ export default function OfflineMode() {
   const [fighterB, setFighterB] = useState<string>('');
   const [winner, setWinner] = useState<'A' | 'B' | null>(null);
   const [stockRemaining, setStockRemaining] = useState<number>(1);
-  const [contestHistory, setContestHistory] = useState<OfflineContestResult[]>([]);
+  const [contestHistory, setContestHistory] = useState<OfflineContestResult[]>(
+    []
+  );
   const [showHistory, setShowHistory] = useState<boolean>(false);
 
   const characterKeys = Object.keys(characterImageMap);
@@ -128,21 +156,27 @@ export default function OfflineMode() {
   useSetHeader({ showHeader: false });
 
   const getRandomCharacter = (excludedFighters: string[] = []) => {
-    const availableCharacters = characterKeys.filter((char) => !excludedFighters.includes(char));
+    const availableCharacters = characterKeys.filter(
+      char => !excludedFighters.includes(char)
+    );
 
     // If all characters are excluded, fall back to all characters
     if (availableCharacters.length === 0) {
       return characterKeys[Math.floor(Math.random() * characterKeys.length)];
     }
 
-    return availableCharacters[Math.floor(Math.random() * availableCharacters.length)];
+    return availableCharacters[
+      Math.floor(Math.random() * availableCharacters.length)
+    ];
   };
 
   const getRecentFightersForSide = (side: 'A' | 'B', count = 20): string[] => {
     return contestHistory
       .slice(0, count)
-      .map((contest) => (side === 'A' ? contest.fighterAName : contest.fighterBName))
-      .map((name) => name.toLowerCase().split(' ').join('_'));
+      .map(contest =>
+        side === 'A' ? contest.fighterAName : contest.fighterBName
+      )
+      .map(name => name.toLowerCase().split(' ').join('_'));
   };
 
   const shuffleBoth = () => {
@@ -166,7 +200,20 @@ export default function OfflineMode() {
 
   // Initialize with random characters
   useEffect(() => {
-    shuffleBoth();
+    const initialCharacters = Object.keys(characterImageMap);
+    const firstFighter =
+      initialCharacters[Math.floor(Math.random() * initialCharacters.length)];
+    const remainingCharacters = initialCharacters.filter(
+      character => character !== firstFighter
+    );
+    const secondFighter =
+      remainingCharacters[
+        Math.floor(Math.random() * remainingCharacters.length)
+      ];
+    setFighterA(firstFighter);
+    setFighterB(secondFighter);
+    setWinner(null);
+    setStockRemaining(1);
   }, []);
 
   const handleShareHistory = async () => {
@@ -179,7 +226,7 @@ export default function OfflineMode() {
           .toLocaleTimeString('en-US', {
             hour: 'numeric',
             minute: '2-digit',
-            hour12: true
+            hour12: true,
           })
           .toLowerCase();
         const result = `${item.stockRemaining} stock${item.stockRemaining !== 1 ? 's' : ''}`;
@@ -194,7 +241,7 @@ export default function OfflineMode() {
     try {
       await Share.share({
         message,
-        title: 'Offline Mode History'
+        title: 'Offline Mode History',
       });
     } catch (error) {
       console.error('Error sharing history:', error);
@@ -209,9 +256,9 @@ export default function OfflineMode() {
         winner,
         fighterAName: formatFighterName(fighterA),
         fighterBName: formatFighterName(fighterB),
-        stockRemaining
+        stockRemaining,
       };
-      setContestHistory((prev) => [newResult, ...prev]);
+      setContestHistory(prev => [newResult, ...prev]);
     }
 
     // Then shuffle both characters
@@ -238,9 +285,9 @@ export default function OfflineMode() {
             <FighterCard
               fighter={fighterA}
               onPressShuffle={shuffleA}
+              setWinner={setWinner}
               slot="A"
               winner={winner}
-              setWinner={setWinner}
             />
           )}
 
@@ -252,16 +299,18 @@ export default function OfflineMode() {
             <FighterCard
               fighter={fighterB}
               onPressShuffle={shuffleB}
+              setWinner={setWinner}
               slot="B"
               winner={winner}
-              setWinner={setWinner}
             />
           )}
         </View>
 
         {winner ? (
           <>
-            <Text style={{ fontSize: 14, color: colors.white, marginTop: 8 }}>Stock remaining</Text>
+            <Text style={{ fontSize: 14, color: colors.white, marginTop: 8 }}>
+              Stock remaining
+            </Text>
             <View style={{ flexDirection: 'row', marginTop: 8 }}>
               {range(1, STOCK + 1).map((value, idx) => (
                 <StockButton
@@ -277,12 +326,15 @@ export default function OfflineMode() {
               ))}
             </View>
 
-            <TouchableOpacity onPress={onPressResolve} style={resolveButtonStyle}>
+            <TouchableOpacity
+              onPress={onPressResolve}
+              style={resolveButtonStyle}
+            >
               <Text
                 style={{
                   fontSize: 20,
                   fontWeight: 'bold',
-                  color: colors.white
+                  color: colors.white,
                 }}
               >
                 Resolve!
@@ -319,13 +371,15 @@ export default function OfflineMode() {
         <View style={historyContainerStyle}>
           <FlatList
             data={contestHistory}
-            keyExtractor={(item, index) => `${item.timestamp.getTime()}-${index}`}
+            keyExtractor={(item, index) =>
+              `${item.timestamp.getTime()}-${index}`
+            }
             renderItem={({ item }) => {
               const timeString = item.timestamp
                 .toLocaleTimeString('en-US', {
                   hour: 'numeric',
                   minute: '2-digit',
-                  hour12: true
+                  hour12: true,
                 })
                 .toLowerCase();
               const result = `${item.stockRemaining} stock${item.stockRemaining !== 1 ? 's' : ''}`;
@@ -336,13 +390,17 @@ export default function OfflineMode() {
                   <View style={historyItemStyle}>
                     <Text style={historyTextStyle}>{timeString}</Text>
                   </View>
-                  <View style={[historyItemStyle, isAWinner && historyWinnerStyle]}>
+                  <View
+                    style={[historyItemStyle, isAWinner && historyWinnerStyle]}
+                  >
                     <Text style={historyTextStyle}>{item.fighterAName}</Text>
                   </View>
                   <View style={historyItemStyle}>
                     <Text style={historyTextStyle}>{result}</Text>
                   </View>
-                  <View style={[historyItemStyle, !isAWinner && historyWinnerStyle]}>
+                  <View
+                    style={[historyItemStyle, !isAWinner && historyWinnerStyle]}
+                  >
                     <Text style={historyTextStyle}>{item.fighterBName}</Text>
                   </View>
                 </View>
@@ -372,20 +430,20 @@ const underline = 'underline' as const;
 const containerStyle = {
   flex: 1,
   backgroundColor: colors.gray900,
-  paddingHorizontal: 16
+  paddingHorizontal: 16,
 };
 
 const topHeaderStyle = {
   flexDirection: row,
   alignItems: center,
   justifyContent: center,
-  marginBottom: 20
+  marginBottom: 20,
 };
 
 const backButtonStyle = {
   position: absolute,
   left: 0,
-  padding: 8
+  padding: 8,
 };
 
 const offlineBadgeStyle = {
@@ -394,14 +452,14 @@ const offlineBadgeStyle = {
   paddingVertical: 8,
   borderRadius: 20,
   borderWidth: 2,
-  borderColor: colors.orange700
+  borderColor: colors.orange700,
 };
 
 const offlineBadgeTextStyle = {
   fontSize: 18,
   fontWeight: bold,
   color: colors.black,
-  letterSpacing: 1
+  letterSpacing: 1,
 };
 
 const winnerBadgeStyle = {
@@ -409,7 +467,7 @@ const winnerBadgeStyle = {
   right: -100,
   top: '78%' as const,
   width: 300,
-  height: 100
+  height: 100,
 };
 
 const contestOuterContainerStyle = {
@@ -417,7 +475,7 @@ const contestOuterContainerStyle = {
   marginVertical: 6,
   borderWidth: 1,
   borderColor: colors.yellow500,
-  padding: 2
+  padding: 2,
 };
 
 const fightersRowContainerStyle = {
@@ -425,7 +483,7 @@ const fightersRowContainerStyle = {
   justifyContent: 'space-between' as const,
   marginVertical: 6,
   padding: 2,
-  flexDirection: row
+  flexDirection: row,
 };
 
 const fighterContainerStyle = {
@@ -436,29 +494,29 @@ const fighterContainerStyle = {
   padding: 8,
   borderRadius: 12,
   backgroundColor: colors.none,
-  borderColor: colors.none
+  borderColor: colors.none,
 };
 
 const fighterWinnerStyle = {
   borderColor: colors.green700,
-  backgroundColor: colors.blue100
+  backgroundColor: colors.blue100,
 };
 
 const fighterNonWinnerStyle = {
   borderColor: colors.none,
-  backgroundColor: colors.none
+  backgroundColor: colors.none,
 };
 
 const shuffleButtonStyle = {
   position: absolute,
   top: -25,
   padding: 10,
-  zIndex: 10
+  zIndex: 10,
 };
 
 const fighterNameStyle = {
   fontSize: 14,
-  marginTop: 4
+  marginTop: 4,
 };
 
 const stockButtonStyle = {
@@ -467,7 +525,7 @@ const stockButtonStyle = {
   borderLeftWidth: 1,
   borderTopWidth: 1,
   borderBottomWidth: 1,
-  borderColor: colors.violet600
+  borderColor: colors.violet600,
 };
 
 const resolveButtonStyle = {
@@ -475,7 +533,7 @@ const resolveButtonStyle = {
   paddingVertical: 16,
   marginVertical: 16,
   backgroundColor: colors.green700,
-  borderRadius: 8
+  borderRadius: 8,
 };
 
 const selectWinnerContainerStyle = {
@@ -483,7 +541,7 @@ const selectWinnerContainerStyle = {
   alignItems: center,
   justifyContent: center,
   gap: 12,
-  paddingVertical: 8
+  paddingVertical: 8,
 };
 
 const historyButtonsContainerStyle = {
@@ -491,7 +549,7 @@ const historyButtonsContainerStyle = {
   alignItems: center,
   justifyContent: center,
   gap: 16,
-  marginTop: 8
+  marginTop: 8,
 };
 
 const linkButtonStyle = {
@@ -501,14 +559,14 @@ const linkButtonStyle = {
   width: auto,
   paddingHorizontal: 4,
   paddingVertical: 4,
-  marginTop: 0
+  marginTop: 0,
 };
 
 const linkTextStyle = {
   color: colors.slate400,
   fontSize: 14,
   fontWeight: normal,
-  textDecorationLine: underline
+  textDecorationLine: underline,
 };
 
 const historyContainerStyle = {
@@ -516,31 +574,31 @@ const historyContainerStyle = {
   borderTopWidth: 2,
   borderTopColor: colors.yellow500,
   paddingTop: 16,
-  maxHeight: 300
+  maxHeight: 300,
 };
 
 const historyScrollStyle = {
-  flexGrow: 0
+  flexGrow: 0,
 };
 
 const historyRowStyle = {
   flexDirection: row,
   paddingVertical: 12,
   borderBottomWidth: 1,
-  borderBottomColor: colors.slate700
+  borderBottomColor: colors.slate700,
 };
 
 const historyItemStyle = {
   flex: 1,
   alignItems: center,
-  justifyContent: center
+  justifyContent: center,
 };
 
 const historyWinnerStyle = {
-  backgroundColor: colors.green900
+  backgroundColor: colors.green900,
 };
 
 const historyTextStyle = {
   color: colors.white,
-  fontSize: 12
+  fontSize: 12,
 };

@@ -2,7 +2,8 @@
 /* eslint-disable */
 // this is an auto generated file. This will be overwritten
 
-import * as APITypes from "./API";
+import type * as APITypes from './API';
+
 type GeneratedMutation<InputType, OutputType> = string & {
   __generatedMutationInput: InputType;
   __generatedMutationOutput: OutputType;
@@ -184,7 +185,8 @@ export const createTierList = /* GraphQL */ `mutation CreateTierList(
   APITypes.CreateTierListMutationVariables,
   APITypes.CreateTierListMutation
 >;
-export const createTierListSnapshot = /* GraphQL */ `mutation CreateTierListSnapshot(
+export const createTierListSnapshot =
+  /* GraphQL */ `mutation CreateTierListSnapshot(
   $condition: ModelTierListSnapshotConditionInput
   $input: CreateTierListSnapshotInput!
 ) {
@@ -210,9 +212,9 @@ export const createTierListSnapshot = /* GraphQL */ `mutation CreateTierListSnap
   }
 }
 ` as GeneratedMutation<
-  APITypes.CreateTierListSnapshotMutationVariables,
-  APITypes.CreateTierListSnapshotMutation
->;
+    APITypes.CreateTierListSnapshotMutationVariables,
+    APITypes.CreateTierListSnapshotMutation
+  >;
 export const createTierSlot = /* GraphQL */ `mutation CreateTierSlot(
   $condition: ModelTierSlotConditionInput
   $input: CreateTierSlotInput!
@@ -453,7 +455,8 @@ export const deleteTierList = /* GraphQL */ `mutation DeleteTierList(
   APITypes.DeleteTierListMutationVariables,
   APITypes.DeleteTierListMutation
 >;
-export const deleteTierListSnapshot = /* GraphQL */ `mutation DeleteTierListSnapshot(
+export const deleteTierListSnapshot =
+  /* GraphQL */ `mutation DeleteTierListSnapshot(
   $condition: ModelTierListSnapshotConditionInput
   $input: DeleteTierListSnapshotInput!
 ) {
@@ -479,9 +482,9 @@ export const deleteTierListSnapshot = /* GraphQL */ `mutation DeleteTierListSnap
   }
 }
 ` as GeneratedMutation<
-  APITypes.DeleteTierListSnapshotMutationVariables,
-  APITypes.DeleteTierListSnapshotMutation
->;
+    APITypes.DeleteTierListSnapshotMutationVariables,
+    APITypes.DeleteTierListSnapshotMutation
+  >;
 export const deleteTierSlot = /* GraphQL */ `mutation DeleteTierSlot(
   $condition: ModelTierSlotConditionInput
   $input: DeleteTierSlotInput!
@@ -546,7 +549,8 @@ export const deleteUser = /* GraphQL */ `mutation DeleteUser(
   APITypes.DeleteUserMutationVariables,
   APITypes.DeleteUserMutation
 >;
-export const incrementFighterStats = /* GraphQL */ `mutation IncrementFighterStats($fighterId: ID!, $won: Boolean!) {
+export const incrementFighterStats =
+  /* GraphQL */ `mutation IncrementFighterStats($fighterId: ID!, $won: Boolean!) {
   incrementFighterStats(fighterId: $fighterId, won: $won) {
     contestCount
     createdAt
@@ -573,10 +577,11 @@ export const incrementFighterStats = /* GraphQL */ `mutation IncrementFighterSta
   }
 }
 ` as GeneratedMutation<
-  APITypes.IncrementFighterStatsMutationVariables,
-  APITypes.IncrementFighterStatsMutation
->;
-export const incrementTierSlotStats = /* GraphQL */ `mutation IncrementTierSlotStats($tierSlotId: ID!, $won: Boolean!) {
+    APITypes.IncrementFighterStatsMutationVariables,
+    APITypes.IncrementFighterStatsMutation
+  >;
+export const incrementTierSlotStats =
+  /* GraphQL */ `mutation IncrementTierSlotStats($tierSlotId: ID!, $won: Boolean!) {
   incrementTierSlotStats(tierSlotId: $tierSlotId, won: $won) {
     contestCount
     createdAt
@@ -613,9 +618,9 @@ export const incrementTierSlotStats = /* GraphQL */ `mutation IncrementTierSlotS
   }
 }
 ` as GeneratedMutation<
-  APITypes.IncrementTierSlotStatsMutationVariables,
-  APITypes.IncrementTierSlotStatsMutation
->;
+    APITypes.IncrementTierSlotStatsMutationVariables,
+    APITypes.IncrementTierSlotStatsMutation
+  >;
 export const updateContest = /* GraphQL */ `mutation UpdateContest(
   $condition: ModelContestConditionInput
   $input: UpdateContestInput!
@@ -792,7 +797,8 @@ export const updateTierList = /* GraphQL */ `mutation UpdateTierList(
   APITypes.UpdateTierListMutationVariables,
   APITypes.UpdateTierListMutation
 >;
-export const updateTierListSnapshot = /* GraphQL */ `mutation UpdateTierListSnapshot(
+export const updateTierListSnapshot =
+  /* GraphQL */ `mutation UpdateTierListSnapshot(
   $condition: ModelTierListSnapshotConditionInput
   $input: UpdateTierListSnapshotInput!
 ) {
@@ -818,9 +824,9 @@ export const updateTierListSnapshot = /* GraphQL */ `mutation UpdateTierListSnap
   }
 }
 ` as GeneratedMutation<
-  APITypes.UpdateTierListSnapshotMutationVariables,
-  APITypes.UpdateTierListSnapshotMutation
->;
+    APITypes.UpdateTierListSnapshotMutationVariables,
+    APITypes.UpdateTierListSnapshotMutation
+  >;
 export const updateTierSlot = /* GraphQL */ `mutation UpdateTierSlot(
   $condition: ModelTierSlotConditionInput
   $input: UpdateTierSlotInput!

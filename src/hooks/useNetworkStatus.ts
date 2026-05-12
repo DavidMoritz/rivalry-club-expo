@@ -6,7 +6,7 @@ let globalHasShownOfflineModal = false;
 
 export function useNetworkStatus() {
   const [isConnected, setIsConnected] = useState<boolean>(true);
-  const [hasShownOfflineModal, setHasShownOfflineModal] = useState(false);
+  const [, setHasShownOfflineModal] = useState(false);
 
   useEffect(() => {
     const unsubscribe = NetInfo.addEventListener(state => {

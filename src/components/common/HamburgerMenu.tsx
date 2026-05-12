@@ -1,6 +1,13 @@
 import { useRouter } from 'expo-router';
 import { useState } from 'react';
-import { Alert, Modal, Pressable, Text, TouchableOpacity, View } from 'react-native';
+import {
+  Alert,
+  Modal,
+  Pressable,
+  Text,
+  TouchableOpacity,
+  View,
+} from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import { useAuthUser } from '../../hooks/useAuthUser';
@@ -22,35 +29,43 @@ export function HamburgerMenu() {
   // Helper function to check for unsaved changes before navigation
   const navigateWithUnsavedCheck = (navigationFn: () => void) => {
     if (hasUnsavedChanges) {
-      Alert.alert('Unsaved Changes', 'You have unsaved changes. What would you like to do?', [
-        {
-          text: 'Discard',
-          style: 'destructive',
-          onPress: () => {
-            setHasUnsavedChanges(false);
-            setMenuVisible(false);
-            navigationFn();
-          }
-        },
-        { text: 'Stay', style: 'cancel' }
-      ]);
+      Alert.alert(
+        'Unsaved Changes',
+        'You have unsaved changes. What would you like to do?',
+        [
+          {
+            text: 'Discard',
+            style: 'destructive',
+            onPress: () => {
+              setHasUnsavedChanges(false);
+              setMenuVisible(false);
+              navigationFn();
+            },
+          },
+          { text: 'Stay', style: 'cancel' },
+        ]
+      );
     } else {
       setMenuVisible(false);
       navigationFn();
     }
   };
 
-  const handleSignOut = async () => {
-    navigateWithUnsavedCheck(async () => {
-      try {
-        // Sign out from Cognito
-        await signOut();
+  const signOutAndRedirect = async () => {
+    try {
+      // Sign out from Cognito
+      await signOut();
 
-        // Navigate to home screen
-        router.replace('/auth');
-      } catch (error) {
-        console.error('Error signing out:', error);
-      }
+      // Navigate to home screen
+      router.replace('/auth');
+    } catch (error) {
+      console.error('Error signing out:', error);
+    }
+  };
+
+  const handleSignOut = () => {
+    navigateWithUnsavedCheck(() => {
+      signOutAndRedirect();
     });
   };
 
@@ -88,7 +103,10 @@ export function HamburgerMenu() {
     <>
       <TouchableOpacity
         onPress={() => setMenuVisible(true)}
-        style={[hamburgerButtonStyle, { top: insets.top + MENU_BUTTON_TOP_OFFSET }]}
+        style={[
+          hamburgerButtonStyle,
+          { top: insets.top + MENU_BUTTON_TOP_OFFSET },
+        ]}
       >
         <Text style={hamburgerIconStyle}>☰</Text>
       </TouchableOpacity>
@@ -99,8 +117,16 @@ export function HamburgerMenu() {
         transparent
         visible={menuVisible}
       >
-        <Pressable onPress={() => setMenuVisible(false)} style={modalBackdropStyle}>
-          <View style={[menuContainerStyle, { top: insets.top + MENU_CONTAINER_TOP_OFFSET }]}>
+        <Pressable
+          onPress={() => setMenuVisible(false)}
+          style={modalBackdropStyle}
+        >
+          <View
+            style={[
+              menuContainerStyle,
+              { top: insets.top + MENU_CONTAINER_TOP_OFFSET },
+            ]}
+          >
             <TouchableOpacity onPress={handleBack} style={menuItemStyle}>
               <Text style={menuIconStyle}>←</Text>
               <Text style={menuTextStyle}>Back</Text>
@@ -115,7 +141,10 @@ export function HamburgerMenu() {
 
             <View style={dividerStyle} />
 
-            <TouchableOpacity onPress={handlePendingRivalries} style={menuItemStyle}>
+            <TouchableOpacity
+              onPress={handlePendingRivalries}
+              style={menuItemStyle}
+            >
               <Text style={menuIconStyle}>🕐</Text>
               <Text style={menuTextStyle}>Pending Rivalries</Text>
             </TouchableOpacity>
@@ -161,17 +190,17 @@ const hamburgerButtonStyle = {
   zIndex: 100,
   padding: 12,
   backgroundColor: colors.slate700,
-  borderRadius: 8
+  borderRadius: 8,
 };
 
 const hamburgerIconStyle = {
   fontSize: 24,
-  color: colors.white
+  color: colors.white,
 };
 
 const modalBackdropStyle = {
   flex: 1,
-  backgroundColor: colors.overlayLight
+  backgroundColor: colors.overlayLight,
 };
 
 const menuContainerStyle = {
@@ -185,40 +214,40 @@ const menuContainerStyle = {
   shadowOffset: { width: 0, height: 2 },
   shadowOpacity: 0.25,
   shadowRadius: 4,
-  elevation: 5
+  elevation: 5,
 };
 
 const menuItemStyle = {
   paddingVertical: 12,
   paddingHorizontal: 16,
   flexDirection: row,
-  alignItems: center
+  alignItems: center,
 };
 
 const dividerStyle = {
   height: 1,
   backgroundColor: colors.slate600,
-  marginVertical: 4
+  marginVertical: 4,
 };
 
 const menuIconStyle = {
   fontSize: 16,
   color: colors.white,
-  marginRight: 12
+  marginRight: 12,
 };
 
 const menuTextStyle = {
   fontSize: 16,
-  color: colors.white
+  color: colors.white,
 };
 
 const signOutIconStyle = {
   fontSize: 16,
   color: colors.red600,
-  marginRight: 12
+  marginRight: 12,
 };
 
 const signOutTextStyle = {
   fontSize: 16,
-  color: colors.red600
+  color: colors.red600,
 };

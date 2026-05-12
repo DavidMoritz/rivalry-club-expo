@@ -14,9 +14,12 @@ import { getMUser } from '../../../src/models/m-user';
 
 import { useSetHeader } from '../../../src/providers/header';
 import { RivalryProvider } from '../../../src/providers/rivalry';
-import { SyncedScrollViewContext, syncedScrollViewState } from '../../../src/providers/scroll-view';
-import { bold, center, darkStyles, styles } from '../../../src/utils/styles';
+import {
+  SyncedScrollViewContext,
+  syncedScrollViewState,
+} from '../../../src/providers/scroll-view';
 import { colors } from '../../../src/utils/colors';
+import { bold, center, darkStyles, styles } from '../../../src/utils/styles';
 
 // Type definitions for tier list data structures
 type TierSlotData = Schema['TierSlot']['type'];
@@ -25,8 +28,11 @@ type TierListData = {
   tierSlots?: AsyncIterable<TierSlotData>;
   [key: string]: unknown;
 };
+type ProcessedTierList = Omit<TierListData, 'tierSlots'> & {
+  tierSlots: { items: TierSlotData[] };
+};
 type TierListWithItems = {
-  items: Array<TierListData & { tierSlots: { items: TierSlotData[] } }>;
+  items: ProcessedTierList[];
 };
 
 // Lazy client initialization to avoid crashes when Amplify isn't configured
@@ -57,13 +63,14 @@ async function processTierSlots(
 async function processTierLists(
   tierLists: AsyncIterable<TierListData> | undefined
 ): Promise<TierListWithItems> {
-  const tierListsArray: Array<TierListData & { tierSlots: { items: TierSlotData[] } }> = [];
+  const tierListsArray: TierListWithItems['items'] = [];
   if (tierLists) {
     for await (const tierListData of tierLists) {
       const tierSlotsArray = await processTierSlots(tierListData.tierSlots);
+      const { tierSlots: _tierSlots, ...rest } = tierListData;
       tierListsArray.push({
-        ...tierListData,
-        tierSlots: { items: tierSlotsArray } as any
+        ...rest,
+        tierSlots: { items: tierSlotsArray },
       });
     }
   }
@@ -71,20 +78,24 @@ async function processTierLists(
 }
 
 // Helper function to load user data for a rivalry
-async function loadUserData(mRivalry: MRivalry, userAId: string, userBId: string): Promise<void> {
+async function loadUserData(
+  mRivalry: MRivalry,
+  userAId: string,
+  userBId: string
+): Promise<void> {
   const [userAResult, userBResult] = await Promise.all([
     getClient().models.User.get({ id: userAId }),
-    getClient().models.User.get({ id: userBId })
+    getClient().models.User.get({ id: userBId }),
   ]);
 
   if (userAResult.data) {
     mRivalry.userA = getMUser({
-      user: userAResult.data as Schema['User']['type']
+      user: userAResult.data as Schema['User']['type'],
     });
   }
   if (userBResult.data) {
     mRivalry.userB = getMUser({
-      user: userBResult.data as Schema['User']['type']
+      user: userBResult.data as Schema['User']['type'],
     });
   }
 }
@@ -107,24 +118,25 @@ export default function TiersRoute() {
     queryKey: ['rivalryTiers', rivalryId],
     structuralSharing: false,
     queryFn: async () => {
-      const { data: rivalryData, errors } = await getClient().models.Rivalry.get(
-        { id: rivalryId },
-        {
-          selectionSet: [
-            'id',
-            'userAId',
-            'userBId',
-            'gameId',
-            'contestCount',
-            'currentContestId',
-            'createdAt',
-            'updatedAt',
-            'deletedAt',
-            'tierLists.*',
-            'tierLists.tierSlots.*'
-          ]
-        }
-      );
+      const { data: rivalryData, errors } =
+        await getClient().models.Rivalry.get(
+          { id: rivalryId },
+          {
+            selectionSet: [
+              'id',
+              'userAId',
+              'userBId',
+              'gameId',
+              'contestCount',
+              'currentContestId',
+              'createdAt',
+              'updatedAt',
+              'deletedAt',
+              'tierLists.*',
+              'tierLists.tierSlots.*',
+            ],
+          }
+        );
 
       if (errors) {
         console.error('[TiersRoute] GraphQL errors loading rivalry:', errors);
@@ -136,13 +148,17 @@ export default function TiersRoute() {
       }
 
       const tierLists = await processTierLists(
-        rivalryData.tierLists as unknown as AsyncIterable<TierListData> | undefined
+        rivalryData.tierLists as unknown as
+          | AsyncIterable<TierListData>
+          | undefined
       );
 
       const mRivalry = getMRivalry({
-        rivalry: rivalryData as unknown as Schema['Rivalry']['type']
+        rivalry: rivalryData as unknown as Schema['Rivalry']['type'],
       });
-      mRivalry.setMTierLists(tierLists as unknown as Parameters<MRivalry['setMTierLists']>[0]);
+      mRivalry.setMTierLists(
+        tierLists as unknown as Parameters<MRivalry['setMTierLists']>[0]
+      );
 
       // Load user data separately
       await loadUserData(mRivalry, rivalryData.userAId, rivalryData.userBId);
@@ -150,7 +166,7 @@ export default function TiersRoute() {
       setRivalry(mRivalry);
 
       return mRivalry;
-    }
+    },
   });
 
   return (
@@ -166,7 +182,11 @@ export default function TiersRoute() {
           <SafeAreaView style={[styles.container, darkStyles.container]}>
             {(isLoading || !(isError || rivalry)) && (
               <LoadingWithCharacter
-                message={isLoading ? 'Loading Tier Lists...' : 'Waiting for tier lists...'}
+                message={
+                  isLoading
+                    ? 'Loading Tier Lists...'
+                    : 'Waiting for tier lists...'
+                }
               />
             )}
 
@@ -186,7 +206,7 @@ export default function TiersRoute() {
                     onPress={() => {
                       router.push({
                         pathname: `/rivalry/${rivalryId}/tierListEdit`,
-                        params: { userId, userAName, userBName }
+                        params: { userId, userAName, userBName },
                       });
                     }}
                     style={editButtonStyle}
@@ -215,7 +235,7 @@ const errorContainerStyle = {
   flex: 1,
   alignItems: center,
   justifyContent: center,
-  paddingHorizontal: 16
+  paddingHorizontal: 16,
 };
 
 const errorTitleStyle = {
@@ -224,21 +244,21 @@ const errorTitleStyle = {
   fontSize: 18,
   fontWeight: bold,
   color: colors.red600,
-  marginBottom: 16
+  marginBottom: 16,
 };
 
 const editButtonContainerStyle = {
   width: '100%' as const,
   position: 'absolute',
-  zIndex: 10
+  zIndex: 10,
 };
 
 const editButtonStyle = {
   left: 100,
   paddingVertical: 4,
-  paddingHorizontal: 4
+  paddingHorizontal: 4,
 };
 
 const linkButtonStyle = {
-  paddingVertical: 0
+  paddingVertical: 0,
 };

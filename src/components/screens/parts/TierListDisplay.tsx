@@ -1,13 +1,12 @@
 import { type ReactNode, useEffect, useState } from 'react';
 import { View } from 'react-native';
-
+import type { MGame } from '../../../models/m-game';
 import {
   type MTierList,
   TIERS,
   type TierWithSlots,
 } from '../../../models/m-tier-list';
 import type { MTierSlot } from '../../../models/m-tier-slot';
-import type { MGame } from '../../../models/m-game';
 import { useGame } from '../../../providers/game';
 import { fighterByIdFromGame } from '../../../utils';
 import { colors } from '../../../utils/colors';

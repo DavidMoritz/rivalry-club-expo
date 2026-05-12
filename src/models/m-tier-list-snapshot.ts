@@ -12,7 +12,9 @@ export interface SnapshotArrangement {
   position: number;
 }
 
-export function getMTierListSnapshot(snapshot: TierListSnapshot): MTierListSnapshot {
+export function getMTierListSnapshot(
+  snapshot: TierListSnapshot
+): MTierListSnapshot {
   return {
     ...snapshot,
 

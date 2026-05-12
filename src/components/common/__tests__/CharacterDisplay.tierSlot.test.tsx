@@ -5,6 +5,9 @@ import { CharacterDisplay } from '../CharacterDisplay';
 
 type TierSlot = Schema['TierSlot']['type'];
 
+const TIER_U_REGEX = /Tier U/i;
+const UNKNOWN_POSITION_REGEX = /Position: \?\?/;
+
 /** Creates a mock TierSlot for testing purposes */
 const createMockTierSlot = (
   overrides: Partial<TierSlot> & {
@@ -101,8 +104,8 @@ describe('CharacterDisplay with TierSlot', () => {
         const statsHeader = queryByText('Rivalry Stats');
         if (statsHeader) {
           // If modal is open, verify "Tier U" is displayed
-          expect(queryByText(/Tier U/i)).toBeTruthy();
-          expect(queryByText(/Position: \?\?/)).toBeTruthy();
+          expect(queryByText(TIER_U_REGEX)).toBeTruthy();
+          expect(queryByText(UNKNOWN_POSITION_REGEX)).toBeTruthy();
         }
       },
       { timeout: 2000 }

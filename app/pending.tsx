@@ -9,7 +9,9 @@ export default function PendingRivalriesRoute() {
 
   return (
     <>
-      <Stack.Screen options={{ title: 'Pending Rivalries', headerShown: false }} />
+      <Stack.Screen
+        options={{ title: 'Pending Rivalries', headerShown: false }}
+      />
       <PendingRivalries />
       <StatusBar style="light" />
     </>

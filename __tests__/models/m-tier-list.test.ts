@@ -241,6 +241,20 @@ describe('MTierList Model', () => {
       expect(movedSlot.winCount).toBe(1);
     });
 
+    it('should keep S-tier winners at the top on large upward moves', () => {
+      const mTierList = getMTierList(mockTierList);
+      const initialPosition = 5;
+      const steps = -6;
+
+      mTierList.adjustTierSlotPositionBySteps(initialPosition, steps);
+
+      const movedSlot = mTierList.slots.find(slot => slot.id === 'slot-5');
+
+      expect(movedSlot?.position).toBe(0);
+      expect(movedSlot?.contestCount).toBe(1);
+      expect(movedSlot?.winCount).toBe(1);
+    });
+
     it('should move slot down (positive steps) and not increment winCount', () => {
       const mTierList = getMTierList(mockTierList);
       const initialPosition = 5;

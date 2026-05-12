@@ -267,8 +267,12 @@ export function getMTierList(tierList: TierList): MTierList {
       }
 
       const tierSlotToMove = sortedTierSlots.splice(tierSlotIndex, 1)[0];
+      const targetIndex = Math.max(
+        0,
+        Math.min(tierSlotIndex + steps, sortedTierSlots.length)
+      );
       this.updateSlotStats(tierSlotToMove, steps, trackStats);
-      sortedTierSlots.splice(tierSlotIndex + steps, 0, tierSlotToMove);
+      sortedTierSlots.splice(targetIndex, 0, tierSlotToMove);
       this.slots = sortedTierSlots.map(normalizeTierSlotPositionToIndex);
       this.validatePosition(tierSlotToMove.id, tierSlotToMove.position);
     },

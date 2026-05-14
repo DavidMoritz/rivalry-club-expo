@@ -1,3 +1,4 @@
+import Constants from 'expo-constants';
 import { useRouter } from 'expo-router';
 import { ScrollView, Text, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
@@ -8,6 +9,7 @@ import { bold, center, darkStyles, styles } from '../src/utils/styles';
 
 export default function HowToPlay() {
   const router = useRouter();
+  const updateLabel = Constants.expoConfig?.extra?.updateLabel;
 
   useSetHeader({ title: 'How to Play', hide: 'how-to-play' });
 
@@ -16,6 +18,12 @@ export default function HowToPlay() {
       edges={['bottom']}
       style={[styles.container, darkStyles.container]}
     >
+      {typeof updateLabel === 'string' && (
+        <View style={updateLabelContainerStyle}>
+          <Text style={updateLabelTextStyle}>{updateLabel}</Text>
+        </View>
+      )}
+
       <ScrollView
         contentContainerStyle={scrollContentStyle}
         style={scrollViewStyle}
@@ -210,6 +218,19 @@ const headerContainerStyle = {
   alignItems: center,
   borderBottomWidth: 1,
   borderBottomColor: colors.gray750,
+};
+
+const updateLabelContainerStyle = {
+  position: 'absolute',
+  right: 12,
+  top: 8,
+  zIndex: 1,
+};
+
+const updateLabelTextStyle = {
+  ...styles.text,
+  color: colors.gray400,
+  fontSize: 11,
 };
 
 const titleTextStyle = {

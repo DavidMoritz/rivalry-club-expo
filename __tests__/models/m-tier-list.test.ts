@@ -1,4 +1,6 @@
 import type { Schema } from '../../amplify/data/resource';
+import type { MContest } from '../../src/models/m-contest';
+import type { MRivalry } from '../../src/models/m-rivalry';
 import { getMTierList, TIERS } from '../../src/models/m-tier-list';
 
 type TierList = Schema['TierList']['type'];
@@ -224,6 +226,36 @@ describe('MTierList Model', () => {
       // Tier 2 (B) starts at position 24 (12 * 2)
       // Mock only has 21 slots, so no slots will be in this range
       expect(eligibleSlots.length).toBe(0);
+    });
+  });
+
+  describe('sampleEligibleSlot', () => {
+    it('avoids recently used fighters when another slot is eligible', () => {
+      const mTierList = getMTierList({
+        ...mockTierList,
+        tierSlots: {
+          items: createMockTierSlots(86),
+        },
+      } as unknown as TierList);
+
+      const recentContests = Array.from({ length: 10 }, (_, i) => ({
+        id: `contest-${i}`,
+        tierSlotAId: `slot-${i}`,
+        tierSlotBId: `enemy-slot-${i}`,
+        result: 1,
+        createdAt: `2024-01-${String(10 - i).padStart(2, '0')}`,
+      })) as MContest[];
+
+      mTierList.rivalry = {
+        tierListA: mTierList,
+        mContests: recentContests,
+        currentContest: {
+          id: 'current-contest',
+          tierSlotAId: 'slot-10',
+        } as MContest,
+      } as MRivalry;
+
+      expect(mTierList.sampleEligibleSlot().id).toBe('slot-11');
     });
   });
 

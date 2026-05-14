@@ -58,6 +58,7 @@ const UPDATE_RIVALRY_KEYS = ['id', 'contestCount', 'currentContestId'];
 const TIER_SLOT_BATCH_SIZE = 10;
 const CONTEST_COUNT_TEMPLATE_THRESHOLD = 100;
 const MAX_RESAMPLE_ATTEMPTS = 100;
+const SORT_DESC = 'DESC';
 
 // Error message constants
 const ERROR_FAILED_TO_FETCH_RIVALRY = 'Failed to fetch rivalry';
@@ -433,6 +434,7 @@ export const useRivalryWithAllInfoQuery = ({
       const { data: recentContests, errors: contestErrors } =
         await getClient().models.Contest.contestsByRivalryIdAndCreatedAt({
           rivalryId: rivalryData.id,
+          sortDirection: SORT_DESC,
           // @ts-expect-error - Amplify Gen 2 type doesn't recognize 'limit' parameter in IndexQueryInput but it works at runtime
           limit: 100,
         });
